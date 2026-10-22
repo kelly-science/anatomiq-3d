@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Scene Library</title>
+  <title>Anatomy Studio • Teacher Studio & Scene Library</title>
   <script type="importmap">
   {
     "imports": {
@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 0.6</span>
+        <span class="version">STUDIO 0.7</span>
       </div>
       <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
         <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
@@ -32,8 +32,6 @@
       </nav>
       <div class="top-actions">
         <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
-        <button id="library-open-top" class="button teacher-only" type="button">▤ Scene Library</button>
-        <button id="publish-open" class="button primary teacher-only" type="button">↗ Share student link</button>
         <span id="connectivity" class="status" aria-live="polite"><span class="status-dot"></span>Preparing</span>
         <button id="save-offline" class="button subtle" hidden title="Cache the 3D model and application files on this Chromebook">Save offline</button>
         <button id="install" class="button subtle" hidden>Install app</button>
@@ -41,6 +39,70 @@
         <button id="menu-toggle" class="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
       </div>
     </header>
+
+    <nav id="studio-menubar" class="studio-menubar teacher-only" aria-label="Teacher Studio menu bar">
+      <div class="menu-group" data-menu="file">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-file">File</button>
+        <div id="menu-file" class="menu-dropdown" role="menu" aria-label="File" hidden>
+          <button id="new-project" class="menu-item" role="menuitem" type="button">New lesson</button>
+          <div class="menu-separator" role="separator"></div>
+          <button id="save-library" class="menu-item" role="menuitem" type="button">Save to Library <span class="menu-shortcut">Ctrl / ⌘ S</span></button>
+          <button id="save-library-as" class="menu-item" role="menuitem" type="button">Save as New…</button>
+          <button id="save-draft-action" class="menu-item" role="menuitem" type="button">Save working draft</button>
+          <div class="menu-separator" role="separator"></div>
+          <button id="import-project" class="menu-item" role="menuitem" type="button">Import lesson JSON…</button>
+          <button id="export-project" class="menu-item" role="menuitem" type="button">Export lesson JSON…</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden />
+          <div class="menu-separator" role="separator"></div>
+          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Share student link…</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="edit">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-edit">Edit</button>
+        <div id="menu-edit" class="menu-dropdown" role="menu" aria-label="Edit" hidden>
+          <button id="edit-undo" class="menu-item" role="menuitem" type="button" disabled>Undo <span class="menu-shortcut">Ctrl / ⌘ Z</span></button>
+          <button id="edit-redo" class="menu-item" role="menuitem" type="button" disabled>Redo <span class="menu-shortcut">Ctrl / ⌘ ⇧ Z</span></button>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="add-chapter">Add chapter</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="duplicate-chapter">Duplicate chapter</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="restore-all">Restore hidden bones</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="clear-selection">Clear selection</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="view">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-view">View</button>
+        <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skull">Skull</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skeleton">Full skeleton</button>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="front">Front</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="back">Back</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="left">Left</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="right">Right</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="reset-camera">Reset camera</button>
+        </div>
+      </div>
+      <div class="menu-group menu-group-library" data-menu="library">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-library">Library</button>
+        <div id="menu-library" class="menu-dropdown menu-library-dropdown" role="menu" aria-label="Library" hidden>
+          <button id="library-open-top" class="menu-item highlighted" role="menuitem" type="button">▤ Open Scene Library…</button>
+          <div class="menu-separator" role="separator"></div>
+          <div class="menu-caption">SAVED SCENES ON THIS DEVICE</div>
+          <div id="menu-library-items" class="menu-library-items" role="group" aria-label="Saved scenes"><span class="menu-empty">Open Library to view your saved scenes.</span></div>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="library-backup">Back up entire library…</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="library-import">Import library backup…</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="help">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-help">Help</button>
+        <div id="menu-help" class="menu-dropdown" role="menu" aria-label="Help" hidden>
+          <button id="open-menu-help" class="menu-item" role="menuitem" type="button">Keyboard shortcuts & storage…</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="save-offline">Prepare offline access</button>
+        </div>
+      </div>
+      <span class="menubar-context" id="menubar-context">Working draft · Not saved to library</span>
+    </nav>
 
     <div class="workspace">
       <aside id="left-sidebar" class="sidebar left-sidebar" aria-label="Structure explorer">
@@ -60,14 +122,7 @@
           <input class="text-input" id="project-title" maxlength="90" value="Skull exploration" placeholder="Name your full lesson" />
           <label class="field-label chapter-title-field" for="scene-title">Current chapter title</label>
           <input class="text-input" id="scene-title" maxlength="90" value="Skull: Exterior" placeholder="e.g., Skull: Exterior" />
-          <div class="studio-row">
-            <button id="save-library" class="button small primary" type="button">Save to Library</button>
-            <button id="save-library-as" class="button small subtle" type="button">Save as New</button>
-          </div>
-          <div class="studio-row">
-            <button id="library-open" class="button small" type="button">Open Library</button>
-            <button id="new-project" class="button small subtle" type="button">New lesson</button>
-          </div>
+          <p class="studio-menu-hint">Use <strong>File</strong> to save or share this lesson, or <strong>Library</strong> to open a saved scene.</p>
           <small id="library-status" class="studio-hint" aria-live="polite">Not yet saved to the library.</small>
           <small id="draft-status" class="studio-hint">Your current working draft autosaves locally.</small>
         </section>
@@ -179,9 +234,6 @@
             <option value="hidden">Hide labels (practice)</option>
           </select>
           <label class="switch-row"><span>Students can hide / isolate bones <small>Otherwise the published scene stays fixed</small></span><input id="student-explore" type="checkbox" /></label>
-          <button id="export-project" class="button full" type="button">⇩ Export editable JSON</button>
-          <button id="import-project" class="button full subtle" type="button">⇧ Import JSON project</button>
-          <input id="import-file" type="file" accept=".json,application/json" hidden />
         </section>
         <div class="info-bottom">
           <span class="eyebrow">CLASSROOM TIP</span>
@@ -217,6 +269,14 @@
       <div class="library-summary"><span id="library-count">Loading…</span><span id="library-message" role="status" aria-live="polite"></span></div>
       <div id="library-items" class="library-items" aria-live="polite"></div>
       <p class="footnote">Important: the library does not sync across Chromebooks. Chrome site-data clearing or school device resets can erase it. Use <strong>Back up library</strong> to keep a copy in Google Drive or another safe location. Importing a backup adds lessons without overwriting existing ones.</p>
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="help-dialog" hidden>
+    <section class="share-dialog help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="dialog-header"><div><span class="eyebrow">ANATOMY STUDIO</span><h2 id="help-title">Menus & keyboard shortcuts</h2></div><button type="button" id="help-close" class="icon-button" aria-label="Close Help">✕</button></div>
+      <p><strong>File</strong> manages the current lesson: save, import/export, drafts and student links. <strong>Edit</strong> includes Undo/Redo and chapter actions. <strong>Library</strong> lists saved lessons in this Chrome profile.</p>
+      <div class="help-shortcuts"><span>Save to Library</span><kbd>Ctrl / ⌘ + S</kbd><span>Undo</span><kbd>Ctrl / ⌘ + Z</kbd><span>Redo</span><kbd>Ctrl / ⌘ + Shift + Z</kbd><span>Open Library</span><kbd>Ctrl / ⌘ + O</kbd></div>
+      <p class="footnote">Scene Library data is local to this website and Chrome profile, and is not automatically backed up or synced. Use <strong>Library → Back up entire library</strong> regularly. Clearing site data may remove your library and drafts. Sharing a student link does not upload your saved library.</p>
     </section>
   </div>
   <div id="app-toast" class="app-toast" role="status" hidden></div>

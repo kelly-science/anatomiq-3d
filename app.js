@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { encodeScene, decodeScene, validateScene, validateProject, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
+import {SceneHistory} from './scene-history.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
@@ -56,6 +57,11 @@ let libraryRows = [];
 let libraryBusy = false;
 let labelMode = 'shown';
 let studentExplore = false;
+const editHistory = new SceneHistory(50);
+let historyTimeout = 0;
+let applyingHistory = false;
+let openMenuName = null;
+let menuRequestId = 0;
 const round = (n,places=4) => Number(n.toFixed(places));
 
 
@@ -498,10 +504,11 @@ function cancelPlacing(){
 function queueDraft(){
   if(!teacherMode || restoringScene || !sceneRoot)return;
   clearTimeout(draftTimeout);
+  scheduleHistoryCommit();
   draftTimeout=setTimeout(()=>{
     saveDraft(false);
     if(libraryLessonId && lastLibrarySnapshot && hasUnsavedLibraryChanges())
-      noteLibraryState('● Unsaved changes in the library lesson · Save to Library to update it.');
+      noteLibraryState('● Unsaved changes · File → Save to Library to update.');
   },650);
 }
 function snapshotScene(){
@@ -517,6 +524,42 @@ function snapshotScene(){
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
   });
+}
+function updateHistoryButtons(){
+  if(!teacherMode)return;
+  $('edit-undo').disabled=!editHistory.canUndo;
+  $('edit-redo').disabled=!editHistory.canRedo;
+}
+function commitHistory(){
+  if(!teacherMode||applyingHistory||restoringScene||!sceneRoot)return;
+  clearTimeout(historyTimeout);
+  try{editHistory.record(JSON.stringify(snapshotProject()));updateHistoryButtons();}
+  catch(err){console.warn('Could not record editor history:',err);}
+}
+function scheduleHistoryCommit(){
+  if(!teacherMode||applyingHistory||restoringScene||!sceneRoot)return;
+  clearTimeout(historyTimeout);
+  historyTimeout=setTimeout(commitHistory,430);
+}
+function resetHistory(){
+  clearTimeout(historyTimeout);
+  if(teacherMode && sceneRoot){editHistory.reset(JSON.stringify(snapshotProject()));updateHistoryButtons();}
+}
+async function navigateHistory(direction){
+  if(!teacherMode||!sceneRoot||applyingHistory)return;
+  commitHistory();
+  const target=direction==='undo'?editHistory.undo():editHistory.redo();
+  if(!target)return;
+  applyingHistory=true;
+  clearTimeout(draftTimeout);clearTimeout(historyTimeout);cancelPlacing();cancelPainting();
+  try{
+    await loadProject(JSON.parse(target));
+    saveDraft(false);
+    noteLibraryState(libraryLessonId?'● Restored an earlier edit · Save to Library to keep it.':'Working draft edited · Save to Library to keep it.');
+    showToast(direction==='undo'?'Edit undone.':'Edit redone.');
+  }catch(error){
+    showToast('Unable to restore edit: '+error.message);
+  }finally{applyingHistory=false;updateHistoryButtons();}
 }
 function snapshotProject(){
   if (!sceneRoot) throw new Error('Model not loaded.');
@@ -612,6 +655,7 @@ function saveDraft(explicit=true){
 // --- Local Scene Library (IndexedDB; separate from the autosaved working draft) ---
 function noteLibraryState(message){
   $('library-status').textContent=message;
+  $('menubar-context').textContent=message;
 }
 function hasUnsavedLibraryChanges(){
   if (!sceneRoot) return false;
@@ -695,6 +739,7 @@ async function saveToLibrary(asNew=false){
     noteLibraryState(`✓ Saved: ${record.title} · ${formatLibraryDate(record.updatedAt)}`);
     showToast(asNew?'Saved as a new library lesson.':'Lesson saved in your local library.');
     if(!$('library-dialog').hidden) await refreshLibrary();
+    if(openMenuName==='library') await refreshMenuLibrary();
   }catch(error){noteLibraryState('Save failed: '+error.message);showToast('Could not save to library: '+error.message);}
   finally{libraryBusy=false;buttons.forEach(b=>b.disabled=false);}
 }
@@ -709,6 +754,7 @@ async function openLibraryLesson(id){
     verifyProjectModel(record.project); // Don't discard current state for incompatible model.
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     await loadProject(structuredClone(record.project));
+    resetHistory();
     libraryLessonId=id;lastLibrarySnapshot=JSON.stringify(record.project);
     noteLibraryState(`✓ Editing: ${record.title} · Saved ${formatLibraryDate(record.updatedAt)}`);
     saveDraft(false);closeLibrary();showToast(`Opened ${record.title}`);
@@ -740,7 +786,6 @@ async function removeLibraryLesson(rec){
   finally{libraryBusy=false;}
 }
 $('library-open-top').addEventListener('click',openLibrary);
-$('library-open').addEventListener('click',openLibrary);
 $('library-close').addEventListener('click',closeLibrary);
 $('library-dialog').addEventListener('click',e=>{if(e.target===$('library-dialog'))closeLibrary();});
 $('library-search').addEventListener('input',renderLibraryRows);
@@ -912,7 +957,7 @@ async function initializeStudioScene(){
       }
     }else setMode(mode);
     if(!chapters.length){chapters=[snapshotScene()];activeChapter=0;}
-    renderChapterUI();renderLabelEditor();
+    renderChapterUI();renderLabelEditor();resetHistory();
   }
 }
 async function publishScene(){
@@ -929,7 +974,7 @@ async function publishScene(){
     $('share-dialog').hidden=false;$('copy-url').focus();
     saveDraft(false);
   }catch(err){showToast('Could not create link: '+err.message);}
-  finally{button.disabled=false;button.textContent='↗ Share student link';}
+  finally{button.disabled=false;button.textContent='↗ Share student link…';}
 }
 $('publish-open').addEventListener('click',publishScene);
 $('close-dialog').addEventListener('click',()=>$('share-dialog').hidden=true);
@@ -995,7 +1040,7 @@ $('new-project').addEventListener('click',()=>{
   labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
-  renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);
+  renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
 });
 $('export-project').addEventListener('click',()=>{
   try{
@@ -1015,7 +1060,120 @@ $('import-file').addEventListener('change',async()=>{
     const data=JSON.parse(await file.text());verifyProjectModel(validateProject(data));
     if(!protectCurrentEdits('import this lesson'))return;
     await loadProject(data);libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Imported lesson — use Save to Library to keep it.');
-    saveDraft(false);showToast('Lesson imported with all chapters.');
+    saveDraft(false);resetHistory();showToast('Lesson imported with all chapters.');
   }catch(err){showToast('Could not import scene: '+err.message);}
   finally{$('import-file').value='';}
+});
+
+// --- Chromebook-friendly desktop menu bar ---
+function closeStudioMenus(returnFocus=false){
+  if(!teacherMode)return;
+  const last=openMenuName;
+  openMenuName=null;
+  for(const group of document.querySelectorAll('.studio-menubar .menu-group')){
+    const isOpen=false;
+    group.classList.toggle('is-open',isOpen);
+    const trigger=group.querySelector('.menu-trigger');
+    trigger.setAttribute('aria-expanded','false');
+    group.querySelector('.menu-dropdown').hidden=true;
+    if(returnFocus && group.dataset.menu===last)trigger.focus();
+  }
+}
+async function refreshMenuLibrary(){
+  if(!teacherMode)return;
+  const id=++menuRequestId;
+  const target=$('menu-library-items');
+  target.replaceChildren();
+  const waiting=document.createElement('span');waiting.className='menu-empty';waiting.textContent='Loading saved scenes…';target.append(waiting);
+  try{
+    const entries=await listLessons();
+    if(id!==menuRequestId || openMenuName!=='library')return;
+    target.replaceChildren();
+    if(!entries.length){
+      const blank=document.createElement('span');blank.className='menu-empty';blank.textContent='No saved scenes yet. Use File → Save to Library.';
+      target.append(blank);return;
+    }
+    for(const rec of entries.slice(0,12)){
+      const button=document.createElement('button');button.type='button';button.className='menu-item menu-scene';button.setAttribute('role','menuitem');
+      const title=document.createElement('span');title.textContent=rec.title;title.className='menu-scene-title';
+      const meta=document.createElement('span');meta.textContent=sceneMetrics(rec.project);meta.className='menu-scene-meta';
+      button.append(title,meta);
+      if(rec.id===libraryLessonId)button.classList.add('current');
+      button.addEventListener('click',()=>{closeStudioMenus();openLibraryLesson(rec.id);});
+      target.append(button);
+    }
+    if(entries.length>12){const note=document.createElement('span');note.className='menu-empty';note.textContent=`+ ${entries.length-12} more — Open Scene Library to browse all`;target.append(note);}
+  }catch(err){
+    if(id!==menuRequestId)return;
+    target.replaceChildren();const error=document.createElement('span');error.className='menu-empty';error.textContent='Cannot read local library: '+err.message;target.append(error);
+  }
+}
+function showMenu(name,focusFirst=false){
+  if(!teacherMode)return;
+  closeStudioMenus();
+  const group=document.querySelector(`.studio-menubar .menu-group[data-menu="${name}"]`);
+  if(!group)return;
+  openMenuName=name;
+  group.classList.add('is-open');
+  group.querySelector('.menu-trigger').setAttribute('aria-expanded','true');
+  const dropdown=group.querySelector('.menu-dropdown');dropdown.hidden=false;
+  if(focusFirst){dropdown.querySelector('.menu-item:not([disabled])')?.focus();}
+  if(name==='library')refreshMenuLibrary();
+}
+const menuGroups=[...document.querySelectorAll('.studio-menubar .menu-group')];
+menuGroups.forEach((group,index)=>{
+  const trigger=group.querySelector('.menu-trigger');
+  trigger.addEventListener('click',()=>openMenuName===group.dataset.menu?closeStudioMenus():showMenu(group.dataset.menu));
+  trigger.addEventListener('keydown',event=>{
+    if(event.key==='ArrowDown'){event.preventDefault();showMenu(group.dataset.menu,true);}
+    if(event.key==='ArrowRight'||event.key==='ArrowLeft'){
+      event.preventDefault();const next=menuGroups[(index+(event.key==='ArrowRight'?1:-1)+menuGroups.length)%menuGroups.length];
+      showMenu(next.dataset.menu);next.querySelector('.menu-trigger').focus();
+    }
+  });
+  group.querySelector('.menu-dropdown').addEventListener('keydown',event=>{
+    const items=[...group.querySelectorAll('.menu-item:not([disabled])')];const current=items.indexOf(document.activeElement);
+    if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+      event.preventDefault();items[(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();
+    }
+    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeStudioMenus(true);}
+  });
+});
+$('studio-menubar').addEventListener('click',event=>{
+  const action=event.target.closest('.menu-item');
+  if(!action)return;
+  const targetId=action.dataset.menuClick;
+  const view=action.dataset.menuView;
+  if(targetId){
+    const target=$(targetId);
+    if(target && !target.disabled)target.click();
+  }
+  if(view)orient(view);
+  closeStudioMenus();
+});
+document.addEventListener('pointerdown',event=>{
+  if(openMenuName && !event.target.closest('#studio-menubar'))closeStudioMenus();
+});
+$('save-draft-action').addEventListener('click',()=>saveDraft(true));
+$('edit-undo').addEventListener('click',()=>navigateHistory('undo'));
+$('edit-redo').addEventListener('click',()=>navigateHistory('redo'));
+$('open-menu-help').addEventListener('click',()=>{$('help-dialog').hidden=false;$('help-close').focus();});
+$('help-close').addEventListener('click',()=>{$('help-dialog').hidden=true;});
+$('help-dialog').addEventListener('click',event=>{if(event.target===$('help-dialog'))$('help-dialog').hidden=true;});
+window.addEventListener('keydown',event=>{
+  if(!teacherMode)return;
+  if(event.key==='Escape'){
+    if(openMenuName)closeStudioMenus(true);
+    if(!$('help-dialog').hidden)$('help-dialog').hidden=true;
+    return;
+  }
+  if(!(event.ctrlKey||event.metaKey)||event.altKey)return;
+  const key=event.key.toLowerCase();
+  const typing=['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable;
+  // Never hijack native text editing; typing Undo/Redo stays in the text field.
+  if(typing && (key==='z'||key==='y'))return;
+  if(key==='s') {event.preventDefault();saveToLibrary(event.shiftKey);}
+  if(key==='o') {event.preventDefault();openLibrary();}
+  if(key==='z') {event.preventDefault();navigateHistory(event.shiftKey?'redo':'undo');}
+  if(key==='y') {event.preventDefault();navigateHistory('redo');}
 });
