@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#101720" />
+  <meta name="description" content="Explore the skull and skeletal system in interactive 3D, designed for Chromebook anatomy classes." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Anatomy Studio • Skull & Skeleton</title>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
+        <span class="version">BETA 0.2</span>
+      </div>
+      <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
+        <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
+        <button id="mode-skeleton" class="mode-tab" role="tab" aria-selected="false" data-mode="skeleton">Full skeleton</button>
+      </nav>
+      <div class="top-actions">
+        <span id="connectivity" class="status" aria-live="polite"><span class="status-dot"></span>Preparing</span>
+        <button id="save-offline" class="button subtle" hidden title="Cache the 3D model and application files on this Chromebook">Save offline</button>
+        <button id="install" class="button subtle" hidden>Install app</button>
+        <button id="details-toggle" class="icon-button details-toggle" title="Structure details" aria-label="Toggle structure details" aria-expanded="false">ⓘ</button>
+        <button id="menu-toggle" class="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside id="left-sidebar" class="sidebar left-sidebar" aria-label="Structure explorer">
+        <div class="sidebar-top">
+          <span class="eyebrow">EXPLORER</span>
+          <h1 id="explorer-title">Skull</h1>
+          <p class="muted" id="explorer-subtitle">Select a bone from the model or search below.</p>
+        </div>
+        <div class="search-wrap">
+          <span aria-hidden="true" class="search-icon">⌕</span>
+          <input id="search" type="search" placeholder="Search bones…" autocomplete="off" aria-label="Search anatomical structures" />
+          <button id="clear-search" class="clear-search" aria-label="Clear search" hidden>×</button>
+        </div>
+        <div class="explorer-settings">
+          <label class="switch-row"><span>Show teeth <small>Skull and dental structures</small></span><input id="toggle-teeth" type="checkbox" checked /></label>
+          <label class="switch-row"><span>Show cartilage <small>Ribs, discs and nasal cartilage</small></span><input id="toggle-cartilage" type="checkbox" checked /></label>
+        </div>
+        <div class="list-header"><span id="list-label">ANATOMICAL STRUCTURES</span><span id="list-count">—</span></div>
+        <div id="bone-list" class="bone-list" aria-live="polite"><p class="empty-list">Loading anatomical structures…</p></div>
+        <div class="sidebar-footer"><button id="restore-all" class="button full">↺ &nbsp;Restore hidden structures</button></div>
+      </aside>
+
+      <main class="viewer-panel">
+        <div id="canvas-container" class="canvas-container" role="application" aria-label="Interactive 3D anatomical model"></div>
+        <div class="viewer-top">
+          <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip">Drag to rotate · Scroll or pinch to zoom · Click a bone to select</span></div>
+          <button id="reset-camera" class="floating-button" title="Reset camera">⟳ <span>Reset view</span></button>
+        </div>
+        <div class="loading-overlay" id="loader" aria-live="polite">
+          <div class="loader-icon">✦</div>
+          <h2 id="loading-title">Preparing the anatomy viewer</h2>
+          <p id="loading-description">Loading a detailed anatomical model for the first time.</p>
+          <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+          <small id="loading-progress">Connecting to model source…</small>
+          <button id="retry" class="button primary" hidden>Try again</button>
+        </div>
+        <div class="viewer-bottom">
+          <div class="view-presets" role="group" aria-label="Camera presets">
+            <button data-view="front" class="preset active">Front</button>
+            <button data-view="back" class="preset">Back</button>
+            <button data-view="left" class="preset">Left</button>
+            <button data-view="right" class="preset">Right</button>
+          </div>
+          <div class="zoom-actions" role="group" aria-label="Zoom">
+            <button id="zoom-out" title="Zoom out">−</button><button id="zoom-in" title="Zoom in">+</button>
+          </div>
+        </div>
+      </main>
+
+      <aside id="info-sidebar" class="sidebar info-sidebar" aria-label="Selected structure information">
+        <div class="info-top"><span class="eyebrow">STRUCTURE DETAILS</span><span class="info-type">OSTEOLOGY</span></div>
+        <div id="no-selection" class="no-selection"><div class="detail-graphic">✳</div><h2>Explore a structure</h2><p>Click a bone in the model or choose one from the list to see its name, location, and controls.</p></div>
+        <div id="selection-content" class="selection-content" hidden>
+          <span id="selected-category" class="detail-category">SKELETAL SYSTEM</span>
+          <h2 id="selected-name">—</h2>
+          <p id="selected-side" class="muted">—</p>
+          <div class="detail-separator"></div>
+          <span class="eyebrow">LOCATION & NOTES</span>
+          <p id="selected-description" class="structure-description"></p>
+          <div class="detail-separator"></div>
+          <span class="eyebrow">VIEW OPTIONS</span>
+          <div class="detail-actions"><button id="focus-selected" class="button primary full">◎ &nbsp;Focus on structure</button><button id="isolate-selected" class="button full">◈ &nbsp;Isolate structure</button><button id="hide-selected" class="button full">◌ &nbsp;Hide structure</button></div>
+          <button id="clear-selection" class="text-button">Clear selection</button>
+        </div>
+        <div class="info-bottom">
+          <span class="eyebrow">CLASSROOM TIP</span>
+          <p id="class-tip">Use the side or rear camera presets to compare skull landmarks from multiple perspectives.</p>
+          <details class="credits"><summary>Model credits & limitations</summary><p>3D geometry: Écorché by Charleeh, based on BodyParts3D (DBCLS) and Z-Anatomy. Model licensed CC BY-SA 4.0. This is an educational visualization, not a diagnostic tool. Some fine landmarks are simplified.</p><a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">Source and attribution ↗</a></details>
+        </div>
+      </aside>
+    </div>
+    <footer class="mobile-footer">Anatomy Studio · Educational visualization · <a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">3D model attribution</a></footer>
+  </div>
+  <script type="module">
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      try {
+        await navigator.serviceWorker.register('./sw.js');
+        await navigator.serviceWorker.ready;
+        if (!navigator.serviceWorker.controller) {
+          await Promise.race([
+            new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once:true })),
+            new Promise(resolve => setTimeout(resolve, 2500))
+          ]);
+        }
+      } catch (e) { console.warn('Offline features unavailable:', e); }
+    }
+    await import('./app.js');
+  </script>
+</body>
+</html>
