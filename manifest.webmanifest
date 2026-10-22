@@ -1,8 +1,8 @@
 {
   "id": "./index.html",
-  "name": "Anatomy Studio — Bone Paint, Chapters & Student Viewer",
+  "name": "Anatomy Studio — Scene Library, Bone Paint, Chapters & Student Viewer",
   "short_name": "Anatomy Studio",
-  "description": "Paint, edit, label, and share multi-chapter 3D skeletal lessons as student links on Chromebooks.",
+  "description": "Save a local library; paint, edit, label, and share multi-chapter 3D skeletal lessons as student links on Chromebooks.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

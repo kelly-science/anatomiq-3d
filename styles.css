@@ -105,3 +105,24 @@ body.student-mode.student-explore-enabled #restore-all,body.student-mode.student
 .paint-editor>.button{margin-top:8px}
 .paint-editor button:disabled{opacity:.45;cursor:not-allowed}
 .paint-list-dot{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px #0008;margin-left:auto}
+
+/* Studio 0.6 — local lesson library */
+.top-actions #library-open-top{font-size:11px;white-space:nowrap;padding:9px 10px}
+.library-dialog{width:min(810px,100%)}
+.library-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:17px}
+.library-toolbar .text-input{flex:1 1 210px;margin:0;font-size:12px}
+.library-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#8baebf;font-size:11px;margin:15px 0 9px}
+.library-items{display:flex;flex-direction:column;gap:10px;max-height:min(53vh,570px);overflow-y:auto;padding:2px 3px 5px 0;scrollbar-color:#345566 transparent;scrollbar-width:thin}
+.library-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px;background:#10212d;border:1px solid #344e5d;border-radius:11px}
+.library-item-current{border-color:#71aeb5;background:#17323c}
+.library-item-info{min-width:0;flex:1}
+.library-item-title{color:#edf8fa;font-weight:750;font-size:14px;overflow-wrap:anywhere}
+.library-item-subtitle{font-size:11px;color:#94acb9;line-height:1.55;margin-top:6px;overflow-wrap:anywhere}
+.library-item-buttons{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;max-width:360px}
+.library-item-buttons .button{flex:0 0 auto;padding:8px 10px}
+.library-item-buttons .library-delete{border-color:#6e4246;color:#e4aab0}
+.library-empty{font-size:12px;color:#b0c5d0;text-align:center;line-height:1.7;border:1px dashed #385869;border-radius:12px;padding:28px 20px}
+.library-items button:focus-visible{outline:2px solid #84d7df;outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;border:0;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:850px){.top-actions #library-open-top{font-size:0;padding:8px}.top-actions #library-open-top::before{content:'▤';font-size:19px}.library-item{flex-direction:column}.library-item-buttons{justify-content:flex-start;max-width:none}}
+@media(max-width:630px){.library-item-buttons .button{font-size:10px;padding:7px 9px}}

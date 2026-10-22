@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { encodeScene, decodeScene, validateScene, validateProject, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
+import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
@@ -49,6 +50,10 @@ const markers = new Map();
 const labelSVG = $('label-lines');
 const labelContainer = $('label-markers');
 let sharedLink = '';
+let libraryLessonId = null; // Active library entry; never included in student share links.
+let lastLibrarySnapshot = null;
+let libraryRows = [];
+let libraryBusy = false;
 let labelMode = 'shown';
 let studentExplore = false;
 const round = (n,places=4) => Number(n.toFixed(places));
@@ -493,7 +498,11 @@ function cancelPlacing(){
 function queueDraft(){
   if(!teacherMode || restoringScene || !sceneRoot)return;
   clearTimeout(draftTimeout);
-  draftTimeout=setTimeout(()=>saveDraft(false),650);
+  draftTimeout=setTimeout(()=>{
+    saveDraft(false);
+    if(libraryLessonId && lastLibrarySnapshot && hasUnsavedLibraryChanges())
+      noteLibraryState('● Unsaved changes in the library lesson · Save to Library to update it.');
+  },650);
 }
 function snapshotScene(){
   if(!sceneRoot)throw new Error('Model not loaded.');
@@ -600,6 +609,168 @@ function saveDraft(explicit=true){
     if(explicit)showToast('Draft saved locally.');
   } catch(err) {$('draft-status').textContent='Could not save draft: '+err.message;}
 }
+// --- Local Scene Library (IndexedDB; separate from the autosaved working draft) ---
+function noteLibraryState(message){
+  $('library-status').textContent=message;
+}
+function hasUnsavedLibraryChanges(){
+  if (!sceneRoot) return false;
+  try{return JSON.stringify(snapshotProject()) !== lastLibrarySnapshot;}
+  catch{return true;}
+}
+function protectCurrentEdits(action='open another lesson'){
+  if (!hasUnsavedLibraryChanges()) return true;
+  return confirm(`Your current lesson has changes that are not saved in the Scene Library. ${action.charAt(0).toUpperCase()+action.slice(1)} anyway?\n\nSelect Cancel, then use Save to Library to keep the latest edits. Your current autosaved draft is not a permanent library backup.`);
+}
+function triggerJSONDownload(data, filename){
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function safeFilename(name){return (name||'anatomy-lesson').replace(/[^a-z0-9_-]+/gi,'-').slice(0,50)||'anatomy-lesson';}
+function formatLibraryDate(value){
+  try {return new Date(value).toLocaleString(undefined,{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}
+  catch{return 'Date unavailable';}
+}
+function sceneMetrics(project){
+  const parts=project.v===1?[project]:project.chapters;
+  const labelCount=parts.reduce((sum,c)=>sum+c.labels.length,0);
+  return `${parts.length} chapter${parts.length===1?'':'s'} · ${labelCount} label${labelCount===1?'':'s'}`;
+}
+function createLibraryButton(title, callback, extra=''){
+  const b=document.createElement('button');b.type='button';b.className=`button small ${extra}`.trim();
+  b.textContent=title;b.addEventListener('click',callback);return b;
+}
+function renderLibraryRows(){
+  const query=$('library-search').value.trim().toLocaleLowerCase();
+  const matches=libraryRows.filter(rec=>{
+    const ch=rec.project.v===1?[rec.project]:rec.project.chapters;
+    return [rec.title,...ch.map(c=>c.t)].some(t=>t.toLocaleLowerCase().includes(query));
+  });
+  $('library-count').textContent=`${libraryRows.length} saved lesson${libraryRows.length===1?'':'s'}${query?` · ${matches.length} matching`:''}`;
+  const container=$('library-items');container.replaceChildren();
+  if(!matches.length){
+    const el=document.createElement('div');el.className='library-empty';
+    el.textContent=libraryRows.length?'No lessons match this search.':'Your library is empty. Customize a lesson and choose Save to Library.';
+    container.append(el);return;
+  }
+  for(const rec of matches){
+    const item=document.createElement('div');item.className='library-item'+(rec.id===libraryLessonId?' library-item-current':'');
+    const info=document.createElement('div');info.className='library-item-info';
+    const name=document.createElement('div');name.className='library-item-title';name.textContent=rec.title;
+    const detail=document.createElement('div');detail.className='library-item-subtitle';
+    detail.textContent=`${sceneMetrics(rec.project)} · Updated ${formatLibraryDate(rec.updatedAt)}${rec.id===libraryLessonId?' · Currently editing':''}`;
+    info.append(name,detail);
+    const controls=document.createElement('div');controls.className='library-item-buttons';
+    controls.append(
+      createLibraryButton('Open',()=>openLibraryLesson(rec.id),'primary'),
+      createLibraryButton('Duplicate',()=>duplicateLibraryLesson(rec.id)),
+      createLibraryButton('Export',()=>{triggerJSONDownload(rec.project,safeFilename(rec.title)+'.json');showToast('Lesson JSON downloaded.');},'subtle'),
+      createLibraryButton('Delete',()=>removeLibraryLesson(rec),'library-delete')
+    );
+    item.append(info,controls);container.append(item);
+  }
+}
+async function refreshLibrary(){
+  libraryRows=await listLessons();renderLibraryRows();
+}
+async function openLibrary(){
+  if(!teacherMode)return;
+  $('library-dialog').hidden=false;
+  $('library-message').textContent='';
+  try{await refreshLibrary();}catch(err){$('library-message').textContent=err.message;showToast(err.message);}
+  $('library-search').focus();
+}
+function closeLibrary(){$('library-dialog').hidden=true;}
+async function saveToLibrary(asNew=false){
+  if(!teacherMode || !sceneRoot || libraryBusy)return;
+  libraryBusy=true;
+  const buttons=[$('save-library'),$('save-library-as')];buttons.forEach(b=>b.disabled=true);
+  try{
+    const project=snapshotProject();
+    const record=await saveLesson(project,asNew?null:libraryLessonId);
+    libraryLessonId=record.id;lastLibrarySnapshot=JSON.stringify(record.project);
+    saveDraft(false);
+    noteLibraryState(`✓ Saved: ${record.title} · ${formatLibraryDate(record.updatedAt)}`);
+    showToast(asNew?'Saved as a new library lesson.':'Lesson saved in your local library.');
+    if(!$('library-dialog').hidden) await refreshLibrary();
+  }catch(error){noteLibraryState('Save failed: '+error.message);showToast('Could not save to library: '+error.message);}
+  finally{libraryBusy=false;buttons.forEach(b=>b.disabled=false);}
+}
+async function openLibraryLesson(id){
+  if(libraryBusy || !sceneRoot)return showToast('Finish loading the 3D model before opening a lesson.');
+  if(id===libraryLessonId && !hasUnsavedLibraryChanges()){closeLibrary();return;}
+  if(id!==libraryLessonId && !protectCurrentEdits('open this saved lesson'))return;
+  libraryBusy=true;
+  try{
+    const record=await getLesson(id);
+    if(!record)throw new Error('This lesson is no longer in the library.');
+    verifyProjectModel(record.project); // Don't discard current state for incompatible model.
+    clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
+    await loadProject(structuredClone(record.project));
+    libraryLessonId=id;lastLibrarySnapshot=JSON.stringify(record.project);
+    noteLibraryState(`✓ Editing: ${record.title} · Saved ${formatLibraryDate(record.updatedAt)}`);
+    saveDraft(false);closeLibrary();showToast(`Opened ${record.title}`);
+  }catch(err){showToast('Could not open lesson: '+err.message);}
+  finally{libraryBusy=false;}
+}
+async function duplicateLibraryLesson(id){
+  if(libraryBusy)return;
+  libraryBusy=true;
+  try{
+    const old=await getLesson(id);if(!old)throw new Error('Original lesson not found.');
+    const project=structuredClone(old.project);
+    const newTitle=(old.title.slice(0,83)+' (copy)').slice(0,90);
+    project.t=newTitle;
+    const record=await saveLesson(project,null);
+    $('library-message').textContent=`Created a copy of “${old.title}”.`;
+    await refreshLibrary();showToast(`Duplicated as ${record.title}`);
+  }catch(err){showToast('Could not duplicate lesson: '+err.message);}
+  finally{libraryBusy=false;}
+}
+async function removeLibraryLesson(rec){
+  if(libraryBusy || !confirm(`Delete “${rec.title}” from the Scene Library?\n\nThis cannot be undone unless you have a JSON backup. Already-shared student links will still work.`))return;
+  libraryBusy=true;
+  try{
+    await deleteLesson(rec.id);
+    if(rec.id===libraryLessonId){libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Removed from library. Your open working draft remains editable.');}
+    await refreshLibrary();showToast('Lesson removed from local library.');
+  }catch(err){showToast('Could not delete lesson: '+err.message);}
+  finally{libraryBusy=false;}
+}
+$('library-open-top').addEventListener('click',openLibrary);
+$('library-open').addEventListener('click',openLibrary);
+$('library-close').addEventListener('click',closeLibrary);
+$('library-dialog').addEventListener('click',e=>{if(e.target===$('library-dialog'))closeLibrary();});
+$('library-search').addEventListener('input',renderLibraryRows);
+$('save-library').addEventListener('click',()=>saveToLibrary(false));
+$('save-library-as').addEventListener('click',()=>saveToLibrary(true));
+$('library-backup').addEventListener('click',async()=>{
+  try{
+    const all=await listLessons();if(!all.length)return showToast('Save a lesson before exporting your library.');
+    triggerJSONDownload(prepareBackup(all),`anatomy-studio-library-${new Date().toISOString().slice(0,10)}.json`);
+    $('library-message').textContent=`Exported ${all.length} saved lessons.`;
+  }catch(err){showToast('Library backup failed: '+err.message);}
+});
+$('library-import').addEventListener('click',()=>$('library-import-file').click());
+$('library-import-file').addEventListener('change',async()=>{
+  const file=$('library-import-file').files?.[0];if(!file)return;
+  try{
+    if(file.size>16*1024*1024)throw new Error('Backup is larger than 16 MB.');
+    const projects=parseBackup(await file.text());
+    if(!projects.length)return showToast('This backup contains no lessons.');
+    const imported=await restoreBackup(projects);
+    await refreshLibrary();
+    $('library-message').textContent=`Imported ${imported.length} lessons as new copies.`;
+    showToast(`Added ${imported.length} lessons to your library.`);
+  }catch(err){showToast('Import failed: '+err.message);}
+  finally{$('library-import-file').value='';}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && !$('library-dialog').hidden){e.stopPropagation();closeLibrary();}
+});
+
 function renderLabelEditor(){
   const list=$('label-list');list.replaceChildren();
   if(!labels.length){const p=document.createElement('p');p.className='studio-hint';p.textContent='No labels yet. Add your first callout above.';list.appendChild(p);return;}
@@ -814,11 +985,12 @@ $('add-chapter').addEventListener('click',()=>createChapter(false));
 $('duplicate-chapter').addEventListener('click',()=>createChapter(true));
 $('student-label-mode').addEventListener('change',()=>{labelMode=$('student-label-mode').value;queueDraft();});
 $('student-explore').addEventListener('change',()=>{studentExplore=$('student-explore').checked;queueDraft();});
-$('save-project').addEventListener('click',()=>saveDraft(true));
+// Current working lesson continues to autosave as a draft in localStorage.
 $('new-project').addEventListener('click',()=>{
-  if(!confirm('Start a new lesson? All chapters and labels in your current local draft will be cleared. Existing student links will still work. Export a JSON backup first if needed.'))return;
+  if(!protectCurrentEdits('start a new lesson'))return;
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
   restoreBonePaint([]);
+  libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
   chapters=[];activeChapter=0;
   labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
@@ -840,7 +1012,10 @@ $('import-file').addEventListener('change',async()=>{
   const file=$('import-file').files?.[0];if(!file)return;
   try{
     if(file.size>160000)throw new Error('JSON lesson is too large.');
-    await loadProject(JSON.parse(await file.text()));saveDraft(false);showToast('Lesson imported with all chapters.');
+    const data=JSON.parse(await file.text());verifyProjectModel(validateProject(data));
+    if(!protectCurrentEdits('import this lesson'))return;
+    await loadProject(data);libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Imported lesson — use Save to Library to keep it.');
+    saveDraft(false);showToast('Lesson imported with all chapters.');
   }catch(err){showToast('Could not import scene: '+err.message);}
   finally{$('import-file').value='';}
 });

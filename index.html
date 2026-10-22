@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Bone Paint & Chapters</title>
+  <title>Anatomy Studio • Scene Library</title>
   <script type="importmap">
   {
     "imports": {
@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 0.5</span>
+        <span class="version">STUDIO 0.6</span>
       </div>
       <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
         <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
@@ -32,6 +32,7 @@
       </nav>
       <div class="top-actions">
         <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
+        <button id="library-open-top" class="button teacher-only" type="button">▤ Scene Library</button>
         <button id="publish-open" class="button primary teacher-only" type="button">↗ Share student link</button>
         <span id="connectivity" class="status" aria-live="polite"><span class="status-dot"></span>Preparing</span>
         <button id="save-offline" class="button subtle" hidden title="Cache the 3D model and application files on this Chromebook">Save offline</button>
@@ -60,10 +61,15 @@
           <label class="field-label chapter-title-field" for="scene-title">Current chapter title</label>
           <input class="text-input" id="scene-title" maxlength="90" value="Skull: Exterior" placeholder="e.g., Skull: Exterior" />
           <div class="studio-row">
-            <button id="save-project" class="button small" type="button">Save draft</button>
-            <button id="new-project" class="button small subtle" type="button">New scene</button>
+            <button id="save-library" class="button small primary" type="button">Save to Library</button>
+            <button id="save-library-as" class="button small subtle" type="button">Save as New</button>
           </div>
-          <small id="draft-status" class="studio-hint" aria-live="polite">Scenes are saved locally on this device until shared.</small>
+          <div class="studio-row">
+            <button id="library-open" class="button small" type="button">Open Library</button>
+            <button id="new-project" class="button small subtle" type="button">New lesson</button>
+          </div>
+          <small id="library-status" class="studio-hint" aria-live="polite">Not yet saved to the library.</small>
+          <small id="draft-status" class="studio-hint">Your current working draft autosaves locally.</small>
         </section>
         <section class="chapters-manager teacher-only" aria-label="Manage lesson chapters">
           <div class="chapters-heading"><span class="eyebrow">LESSON CHAPTERS</span><span id="chapter-count" class="chapter-count">1 chapter</span></div>
@@ -195,6 +201,22 @@
       <div id="share-feedback" class="studio-hint" aria-live="polite"></div>
       <div class="dialog-buttons"><button id="copy-url" class="button primary">Copy link</button><button id="preview-url" class="button">Open student preview ↗</button></div>
       <p class="footnote">Anyone with the link can view all chapters. The URL contains your labels and settings; editing this draft later does not update previously shared links.</p>
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="library-dialog" hidden>
+    <section role="dialog" aria-modal="true" aria-labelledby="library-heading" class="share-dialog library-dialog">
+      <div class="dialog-header"><div><span class="eyebrow">TEACHER STORAGE</span><h2 id="library-heading">Scene Library</h2></div><button id="library-close" type="button" class="icon-button" aria-label="Close Scene Library">✕</button></div>
+      <p>Saved lessons are stored on this Chromebook in this Chrome profile. Student links stay independent of the library.</p>
+      <div class="library-toolbar">
+        <label for="library-search" class="sr-only">Search saved lessons</label>
+        <input id="library-search" type="search" class="text-input" placeholder="Search lesson titles or chapters…" autocomplete="off" />
+        <button id="library-backup" type="button" class="button small">⇩ Back up library</button>
+        <button id="library-import" type="button" class="button small subtle">⇧ Import backup</button>
+        <input id="library-import-file" type="file" accept=".json,application/json" hidden />
+      </div>
+      <div class="library-summary"><span id="library-count">Loading…</span><span id="library-message" role="status" aria-live="polite"></span></div>
+      <div id="library-items" class="library-items" aria-live="polite"></div>
+      <p class="footnote">Important: the library does not sync across Chromebooks. Chrome site-data clearing or school device resets can erase it. Use <strong>Back up library</strong> to keep a copy in Google Drive or another safe location. Importing a backup adds lessons without overwriting existing ones.</p>
     </section>
   </div>
   <div id="app-toast" class="app-toast" role="status" hidden></div>
