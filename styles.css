@@ -200,3 +200,13 @@ body.embed-mode .viewer-tip{display:none}
 .bone-tree-subgroup>summary{cursor:pointer;list-style-position:inside;padding:9px 12px;font-size:11px;color:#92b6c4}
 .bone-tree-items{margin-left:12px;border-left:1px solid #355261;padding-left:5px}
 .bone-tree-items .bone-item{padding:8px 10px;font-size:11px}
+
+/* 1.0: skeletal + muscular systems. A compact four-way header on Chromebooks. */
+.systems-panel{margin:0 16px 14px;padding:12px;border:1px solid #344957;border-radius:12px;background:#101d28}
+.systems-panel[hidden]{display:none!important}
+.systems-header{padding:4px 3px 7px}
+.systems-header p{margin:8px 0 0}
+.systems-panel .switch-row{font-size:12px}
+@media(max-width:1180px){.topbar{gap:10px;padding-left:14px;padding-right:14px}.mode-tab{padding:9px 11px}}
+@media(max-width:890px){.brand-label small{display:none}.top-actions{gap:6px}.mode-tabs{flex-shrink:0}.mode-tab{padding:8px;font-size:11px}}
+@media(max-width:630px){.topbar{flex-wrap:wrap;height:auto;min-height:76px;padding:7px 9px}.brand{width:auto}.mode-tabs{order:3;width:100%;justify-content:space-around}.mode-tab{flex:1}.top-actions{margin-left:auto}.app-shell{height:100dvh}}

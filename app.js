@@ -4,10 +4,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
+import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '0.9.0';
+const APP_VERSION = '1.0.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -26,7 +27,10 @@ let selected = null;
 let isolated = false;
 const hidden = new Set();
 let structures = [];
-const materials = new Map(); // Model-authored original material(s) for each bone.
+let legacyStructureCount = 0;
+let legacyFingerprint = '';
+const systemLayers = {skeletal:true,deep:false,superficial:true};
+const materials = new Map(); // Model-authored original material(s) for each anatomical structure.
 const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
 const bonePaint = new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
 let paintMode = false;
@@ -132,11 +136,24 @@ function openDetails(open) {
   elements.detailsToggle.setAttribute('aria-expanded',String(open));
 }
 function tissueVisible(s){return s.tissue !== 'eye' && (elements.teeth.checked || s.tissue !== 'tooth') && (elements.cartilage.checked || s.tissue !== 'cartilage');}
-function currentStructures(){return structures.filter(s=>mode==='skeleton'||s.skull);}
+function layerEnabled(s){
+  if(s.system==='muscular')return (mode==='muscular'||mode==='systems') && (s.layer==='deep muscles'?systemLayers.deep:systemLayers.superficial);
+  if(mode==='skull')return s.skull;
+  if(mode==='skeleton')return true;
+  if(mode==='systems')return systemLayers.skeletal;
+  return false;
+}
+function currentStructures(){return structures.filter(layerEnabled);}
+function updateSystemControls(){
+  for(const [key,id] of [['skeletal','system-skeletal'],['deep','system-deep'],['superficial','system-superficial']])$(id).checked=systemLayers[key];
+  $('systems-panel').hidden=!(mode==='systems'||mode==='muscular');
+  $('skeletal-layer-row').hidden=mode==='muscular';
+  $('layer-description').textContent=mode==='muscular'?'Choose which muscle layers appear.':'Combine bones with deep and superficial muscle layers.';
+}
 function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible);}
 function refreshVisibility(){
   for(const s of structures){
-    s.mesh.visible = (mode==='skeleton'||s.skull) && tissueVisible(s) && !hidden.has(s.mesh) && (!isolated||s===selected);
+    s.mesh.visible = layerEnabled(s) && tissueVisible(s) && !hidden.has(s.mesh) && (!isolated||s===selected);
   }
   renderList();
   invalidate(2);
@@ -183,9 +200,28 @@ const descriptions = [
   [/cartilage|disk/i,'Supportive connective tissue that helps cushion and connect adjacent skeletal structures.'],
   [/phalanx|metacarp|metatars|tars|carpal/i,'One of the small bones contributing to fine hand or foot movement and load distribution.']
 ];
+const muscleDescriptions = [
+  [/deltoid/i,'Shoulder muscle with anterior, middle and posterior portions; important for lifting and positioning the arm.'],
+  [/biceps brachii/i,'Anterior arm muscle that flexes the elbow and supinates the forearm.'],
+  [/triceps brachii/i,'Posterior arm muscle responsible for extending the elbow.'],
+  [/pectoralis major/i,'Large anterior chest muscle that adducts, flexes and medially rotates the humerus.'],
+  [/trapezius/i,'Superficial back and neck muscle that moves and stabilizes the scapula.'],
+  [/latissimus dorsi/i,'Broad back muscle that extends, adducts and medially rotates the humerus.'],
+  [/supraspinatus/i,'Rotator cuff muscle that helps initiate shoulder abduction and stabilize the glenohumeral joint.'],
+  [/infraspinatus/i,'Rotator cuff muscle that externally rotates the humerus and stabilizes the shoulder.'],
+  [/subscapularis/i,'Rotator cuff muscle on the anterior scapula; internally rotates the humerus.'],
+  [/teres minor/i,'Rotator cuff muscle that externally rotates the humerus and helps stabilize the shoulder.'],
+  [/rectus abdominis/i,'Vertical anterior abdominal muscle that helps flex the trunk and stabilize the abdomen.'],
+  [/external oblique/i,'Superficial abdominal muscle involved in trunk rotation, lateral flexion and abdominal compression.'],
+  [/gluteus maximus/i,'Large hip extensor important for rising, climbing and powerful lower-limb movement.'],
+  [/gastrocnemius/i,'Superficial calf muscle that plantarflexes the ankle and helps flex the knee.'],
+  [/soleus/i,'Deep calf muscle that plantarflexes the ankle and contributes to standing posture.'],
+  [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
+];
 function descriptionFor(s){
+  if(s.system==='muscular')return muscleDescriptions.find(([rx])=>rx.test(s.name))?.[1] || 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.';
   const d=descriptions.find(([rx])=>rx.test(s.name));
-  return d ? d[1] : 'An identifiable structure in the human skeletal system. Rotate the model to examine its shape and anatomical relationships.';
+  return d ? d[1] : s.system==='muscular' ? 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.' : 'An identifiable structure in the human skeletal system. Rotate the model to examine its shape and anatomical relationships.';
 }
 function disposeMaterial(material){
   if(Array.isArray(material))material.forEach(m=>m?.dispose());
@@ -236,10 +272,10 @@ function updatePaintControls(){
   $('paint-selected').disabled=!canSelect;
   $('erase-selected').disabled=!canSelect||!bonePaint.has(selected.index);
   $('erase-all').disabled=bonePaint.size===0;
-  $('paint-status').textContent=`${bonePaint.size} painted bone${bonePaint.size===1?'':'s'} in this chapter`;
+  $('paint-status').textContent=`${bonePaint.size} painted structure${bonePaint.size===1?'':'s'} in this chapter`;
   $('paint-mode').classList.toggle('placing',paintMode);
   $('paint-mode').setAttribute('aria-pressed',String(paintMode));
-  $('paint-mode').textContent=paintMode?'✓ Painting bones — click to color':'◉ Paint mode — click bones';
+  $('paint-mode').textContent=paintMode?'✓ Painting structures — click to color':'◉ Paint mode — click structures';
   document.querySelectorAll('.paint-swatch').forEach(button=>button.classList.toggle('active',button.dataset.color===paintColor));
 }
 function setBoneColor(s,hex){
@@ -274,7 +310,7 @@ function setSelection(s){
     elements.selectionContent.hidden=false;
     elements.selName.textContent=s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
-    elements.selCategory.textContent=s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
+    elements.selCategory.textContent=s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
     elements.selDesc.textContent=descriptionFor(s);
   }else{
     elements.noSelection.hidden=false;
@@ -291,10 +327,17 @@ function setMode(newMode){
   isolated=false;
   hidden.clear();
   setSelection(null);
-  elements.title.textContent=mode==='skull'?'Skull':'Skeletal system';
-  elements.subtitle.textContent=mode==='skull'?'Explore individual cranial bones, facial bones, and teeth.':'Explore the axial and appendicular skeleton.';
-  elements.context.textContent=mode==='skull'?'Skull':'Skeletal system';
-  elements.tip.textContent=mode==='skull'?'Use the side or rear camera presets to compare skull landmarks from multiple perspectives.':'Click a major bone, then focus or isolate it to explore its relationship to nearby structures.';
+  const display={
+    skull:['Skull','Explore cranial and facial bones, cartilage, and teeth.'],
+    skeleton:['Skeletal system','Explore the axial and appendicular skeleton.'],
+    muscular:['Muscular system','Explore superficial and deep muscles, independently.'],
+    systems:['Combined systems','Explore bones and muscles together, layer by layer.']
+  }[mode];
+  if(!display)throw new Error('Unknown anatomical system.');
+  elements.title.textContent=display[0];elements.subtitle.textContent=display[1];
+  elements.context.textContent=display[0];
+  elements.tip.textContent=mode==='skull'?'Use the side or rear camera presets to compare skull landmarks.':'Click a structure to inspect, isolate, label or paint it.';
+  updateSystemControls();
   for(const tab of document.querySelectorAll('.mode-tab')){const active=tab.dataset.mode===mode;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));}
   elements.search.value='';
   elements.clearSearch.hidden=true;
@@ -374,7 +417,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -421,27 +464,32 @@ renderer.domElement.addEventListener('pointerup',event=>{
   } else {isolated=false;setSelection(s);} 
 });
 function prepareStructures(root){
-  structures=[];
+  const found=[];
   root.traverse(obj=>{
     if(!obj.isMesh)return;
-    let meta=obj.userData||{};
-    if(meta.layer!=='skeleton'){
-      // Only skeletal objects. Upstream also has deep/superficial muscle layers.
+    const meta=obj.userData||{};
+    if(!['skeleton','deep muscles','superficial muscles'].includes(meta.layer)){
       obj.visible=false;return;
     }
-    const name=(meta.name||obj.name||'Unnamed structure').trim();
-    const tissue=meta.tissue||'bone';
+    const system=meta.layer==='skeleton'?'skeletal':'muscular';
+    const tissue=system==='muscular'?'muscle':(meta.tissue||'bone');
     if(tissue==='eye'){obj.visible=false;return;}
-    const entry={mesh:obj,name,side:meta.side||'midline',tissue,skull:isSkull(name,tissue)};
-    structures.push(entry);
+    const name=(meta.name||obj.name||'Unnamed structure').trim();
+    found.push({mesh:obj,name,side:meta.side||'midline',tissue,
+      system,layer:meta.layer,skull:system==='skeletal'&&isSkull(name,tissue)});
     materials.set(obj,obj.material);
   });
-  // Use a deterministic index and fingerprint so share links cannot silently target the wrong bone.
-  structures.sort((a,b)=>(`${a.name}|${a.side}|${a.tissue}|${a.mesh.name}`).localeCompare(`${b.name}|${b.side}|${b.tissue}|${b.mesh.name}`));
-  structures.forEach((s,i)=>s.index=i);
-  sceneFingerprint=hashForStructures(structures.map(s=>`${s.name}|${s.side}|${s.tissue}|${s.mesh.name}`));
-  console.info(`Anatomy Studio: ${structures.length} skeletal structures; ${structures.filter(x=>x.skull).length} skull structures`);
-  if(structures.length<100 || structures.filter(x=>x.skull).length<12)throw new Error('The model did not contain the expected separately named bones.');
+  // Append muscles AFTER the exact legacy skeleton ordering. This preserves
+  // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
+  const catalog=catalogAnatomy(found);
+  structures=catalog.structures;
+  legacyStructureCount=catalog.legacyCount;
+  legacyFingerprint=catalog.legacyFingerprint;
+  sceneFingerprint=catalog.fullFingerprint;
+  structures.forEach((entry,i)=>entry.index=i);
+  console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${structures.length-legacyStructureCount} muscles; ${structures.filter(x=>x.skull).length} skull structures`);
+  if(legacyStructureCount<100 || structures.filter(x=>x.skull).length<12 || structures.length-legacyStructureCount<250)
+    throw new Error('The model did not contain the expected separate bones and muscle meshes.');
 }
 function loadingProgress(ev){
   if(ev.total){const p=Math.min(100,Math.round(ev.loaded/ev.total*100));elements.progress.style.width=p+'%';elements.loadText.textContent=p+'% downloaded';}
@@ -450,7 +498,7 @@ function loadingProgress(ev){
 function loadGLB(url){return new Promise((resolve,reject)=>{const loader=new GLTFLoader();loader.load(url,resolve,loadingProgress,reject);});}
 async function loadAnatomy(){
   elements.loader.hidden=false;elements.retry.hidden=true;elements.loadTitle.textContent='Preparing the anatomy viewer';
-  elements.loadDesc.textContent='Loading the 3D skeletal anatomy model. The first visit needs an internet connection.';
+  elements.loadDesc.textContent='Loading the 3D skeletal and muscular anatomy model. The first visit needs an internet connection.';
   elements.loadText.textContent='Connecting to model source…';elements.progress.style.width='3%';
   setStatus(navigator.onLine?'Loading model':'Offline',navigator.onLine?'':'error');
   try{
@@ -488,6 +536,16 @@ async function loadAnatomy(){
 
 $('mode-skull').addEventListener('click',()=>{if(teacherMode)setMode('skull');});
 $('mode-skeleton').addEventListener('click',()=>{if(teacherMode)setMode('skeleton');});
+$('mode-muscular').addEventListener('click',()=>{if(teacherMode)setMode('muscular');});
+$('mode-systems').addEventListener('click',()=>{if(teacherMode)setMode('systems');});
+for(const [id,layer] of [['system-skeletal','skeletal'],['system-deep','deep'],['system-superficial','superficial']]){
+  $(id).addEventListener('change',()=>{
+    if(!teacherMode)return;
+    systemLayers[layer]=$(id).checked;
+    refreshVisibility();
+    frameVisible(activePreset||'front');
+  });
+}
 elements.search.addEventListener('input',renderList);
 elements.clearSearch.addEventListener('click',()=>{elements.search.value='';renderList();elements.search.focus();});
 elements.teeth.addEventListener('change',refreshVisibility);
@@ -584,6 +642,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,
     cam:[...camera.position.toArray(),...controls.target.toArray()].map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
@@ -634,7 +693,8 @@ function snapshotProject(){
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
-  if(sample.n!==structures.length || sample.f!==sceneFingerprint) throw new Error('This lesson uses an incompatible anatomical model.');
+  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint))
+    throw new Error('This lesson uses an incompatible anatomical model.');
 }
 function renderChapterUI(){
   const count=chapters.length;
@@ -959,11 +1019,14 @@ function updateAnnotationPositions(){
 }
 async function applyScene(saved){
   validateScene(saved);
-  if(saved.n!==structures.length || saved.f!==sceneFingerprint){
+  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint)){
     throw new Error('The anatomical model has changed since this scene was published.');
   }
   restoringScene=true;
   try{
+    systemLayers.skeletal=saved.sb ?? true;
+    systemLayers.deep=saved.dm ?? false;
+    systemLayers.superficial=saved.sm ?? true;
     setMode(saved.m);
     elements.teeth.checked=saved.te;
     elements.cartilage.checked=saved.ca;
@@ -977,8 +1040,12 @@ async function applyScene(saved){
     isolated=false;
     hidden.clear();
     restoreBonePaint(saved.pc||[]);
-    const visible=readVisibilityBits(saved.b,structures.length);
-    structures.forEach((s,i)=>{if(!visible[i] && (mode==='skeleton'||s.skull) && (s.tissue!=='tooth'||saved.te) && (s.tissue!=='cartilage'||saved.ca))hidden.add(s.mesh);});
+    const visible=readVisibilityBits(saved.b,saved.n);
+    structures.forEach((s,i)=>{
+      // Legacy scenes contain only skeletal bits, so added muscles stay hidden.
+      if(i>=saved.n)return;
+      if(!visible[i] && layerEnabled(s) && (s.tissue!=='tooth'||saved.te) && (s.tissue!=='cartilage'||saved.ca))hidden.add(s.mesh);
+    });
     refreshVisibility();
     const c=saved.cam;
     camera.position.set(c[0],c[1],c[2]);controls.target.set(c[3],c[4],c[5]);
@@ -999,7 +1066,7 @@ async function loadProject(data){
   const project=validateProject(data);
   verifyProjectModel(project);
   // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
-  chapters=project.v===1?[structuredClone(project)]:project.chapters.map(ch=>structuredClone(ch));
+  chapters=(project.v===1?[project]:project.chapters).map(ch=>upgradeLegacyScene(ch,structures.length,sceneFingerprint));
   activeChapter=project.v===1?0:project.start;
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode)studentPermissions={...publishPermissions};
@@ -1143,6 +1210,7 @@ $('new-project').addEventListener('click',()=>{
   chapters=[];activeChapter=0;
   publishPermissions={...STUDY_PERMISSIONS};labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
+  Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true});
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
   renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
 });

@@ -42,13 +42,15 @@ const num = n => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) < 10
 const vector = (arr, n) => Array.isArray(arr) && arr.length === n && arr.every(num);
 export function validateScene(scene) {
   if (!scene || typeof scene !== 'object' || Array.isArray(scene) || scene.v !== 1) throw new Error('This scene format is unsupported.');
-  if (!['skull', 'skeleton'].includes(scene.m)) throw new Error('Invalid anatomical mode.');
+  if (!['skull', 'skeleton', 'muscular', 'systems'].includes(scene.m)) throw new Error('Invalid anatomical mode.');
   if (!Number.isInteger(scene.n) || scene.n < 1 || scene.n > 2000) throw new Error('Invalid model size.');
   if (typeof scene.f !== 'string' || !/^[0-9a-z]{1,16}$/.test(scene.f)) throw new Error('Invalid model fingerprint.');
   readVisibilityBits(scene.b, scene.n);
   if (!boundedText(scene.t, 90)) throw new Error('A scene title is required (90 characters maximum).');
   if (!['shown', 'reveal', 'hidden'].includes(scene.lm)) throw new Error('Invalid label visibility.');
   if (typeof scene.x !== 'boolean' || typeof scene.te !== 'boolean' || typeof scene.ca !== 'boolean') throw new Error('Invalid student permissions.');
+  for(const prop of ['sb','dm','sm'])if(scene[prop]!==undefined&&typeof scene[prop]!=='boolean')throw new Error('Invalid anatomical system layer setting.');
+  if((scene.m==='muscular'||scene.m==='systems') && !['sb','dm','sm'].every(k=>typeof scene[k]==='boolean'))throw new Error('Muscle scenes require explicit layer settings.');
   if (!vector(scene.cam, 6)) throw new Error('Invalid saved camera position.');
   if (!Array.isArray(scene.labels) || scene.labels.length > 64) throw new Error('Too many labels (maximum 64).');
   for (const label of scene.labels) {

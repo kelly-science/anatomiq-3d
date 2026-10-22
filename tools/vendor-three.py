@@ -15,7 +15,19 @@ shutil.copy2(npm_dir / 'LICENSE', output_dir / 'LICENSE')
 
 pending = ['controls/OrbitControls.js', 'loaders/GLTFLoader.js']
 seen = set()
-import_pattern = re.compile(r'''\bfrom\s*['"]([^'"]+)['"]|\bimport\s*['"]([^'"]+)['"]''')
+# Match real top-level ES module import/re-export declarations, not the word
+# 'from' in JavaScript comments or documentation. In GLTFLoader.js there
+# are illustrative URLs like https://my-cnd-server.com/... in comments.
+# The old unanchored regex mistook these for package imports.
+import_pattern = re.compile(
+    r"""(?mxs)
+      ^[ \t]*(?:import|export)[ \t]+
+      (?:
+        ['\"](?P<side_effect>[^'\"\r\n]+)['\"]
+        | [^;]*?\bfrom[ \t\r\n]*['\"](?P<from_module>[^'\"\r\n]+)['\"]
+      )
+    """
+)
 
 while pending:
     name = pending.pop()
@@ -32,8 +44,8 @@ while pending:
     copied_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(file, copied_path)
     seen.add(name)
-    for imported_from, direct_import in import_pattern.findall(file.read_text(encoding='utf-8')):
-        dependency = imported_from or direct_import
+    for match in import_pattern.finditer(file.read_text(encoding='utf-8')):
+        dependency = match.group('from_module') or match.group('side_effect')
         if dependency == 'three':
             continue
         if dependency.startswith('.'):

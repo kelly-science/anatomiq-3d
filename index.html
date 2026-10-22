@@ -4,16 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#101720" />
-  <meta name="description" content="Explore the skull and skeletal system in interactive 3D, designed for Chromebook anatomy classes." />
+  <meta name="description" content="Explore skeletal and muscular systems in interactive 3D, designed for Chromebook anatomy classes." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Student Publishing & Schoology</title>
+  <title>Anatomy Studio • Skeletal & Muscular Anatomy</title>
   <script type="importmap" id="renderer-importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/"
     }
   }
   </script>
@@ -24,11 +24,13 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 0.9</span>
+        <span class="version">STUDIO 1.0</span>
       </div>
       <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
         <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
-        <button id="mode-skeleton" class="mode-tab" role="tab" aria-selected="false" data-mode="skeleton">Full skeleton</button>
+        <button id="mode-skeleton" class="mode-tab" role="tab" aria-selected="false" data-mode="skeleton">Skeleton</button>
+        <button id="mode-muscular" class="mode-tab" role="tab" aria-selected="false" data-mode="muscular">Muscular</button>
+        <button id="mode-systems" class="mode-tab" role="tab" aria-selected="false" data-mode="systems">Combined</button>
       </nav>
       <div class="top-actions">
         <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
@@ -74,6 +76,8 @@
         <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skull">Skull</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skeleton">Full skeleton</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-muscular">Muscular system</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-systems">Combined systems</button>
           <div class="menu-separator" role="separator"></div>
           <button class="menu-item" role="menuitem" type="button" data-menu-view="front">Front</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-view="back">Back</button>
@@ -120,7 +124,7 @@
         </div>
         <div class="search-wrap">
           <span aria-hidden="true" class="search-icon">⌕</span>
-          <input id="search" type="search" placeholder="Search bones…" autocomplete="off" aria-label="Search anatomical structures" />
+          <input id="search" type="search" placeholder="Search anatomical structures…" autocomplete="off" aria-label="Search anatomical structures" />
           <button id="clear-search" class="clear-search" aria-label="Clear search" hidden>×</button>
         </div>
         <section class="studio-card teacher-only" aria-label="Scene setup">
@@ -142,6 +146,12 @@
             <button id="duplicate-chapter" class="button small subtle" type="button">⧉ Duplicate</button>
           </div>
         </section>
+        <div id="systems-panel" class="systems-panel teacher-only" hidden>
+          <div class="systems-header"><span class="eyebrow">ANATOMICAL SYSTEMS</span><p id="layer-description" class="studio-hint">Choose the layers to show.</p></div>
+          <label id="skeletal-layer-row" class="switch-row"><span>Skeletal system <small>Bones, teeth and cartilage</small></span><input id="system-skeletal" type="checkbox" checked /></label>
+          <label class="switch-row"><span>Superficial muscles <small>Outer skeletal muscle layer</small></span><input id="system-superficial" type="checkbox" checked /></label>
+          <label class="switch-row"><span>Deep muscles <small>Rotator cuff, iliacus and deeper muscles</small></span><input id="system-deep" type="checkbox" /></label>
+        </div>
         <div class="explorer-settings">
           <label class="switch-row"><span>Show teeth <small>Skull and dental structures</small></span><input id="toggle-teeth" type="checkbox" checked /></label>
           <label class="switch-row"><span>Show cartilage <small>Ribs, discs and nasal cartilage</small></span><input id="toggle-cartilage" type="checkbox" checked /></label>
@@ -154,7 +164,7 @@
       <main class="viewer-panel">
         <div id="canvas-container" class="canvas-container" role="application" aria-label="Interactive 3D anatomical model"></div>
         <div class="viewer-top">
-          <div id="place-hint" class="place-hint" hidden>Click the bone where you want the label to point. Esc cancels.</div>
+          <div id="place-hint" class="place-hint" hidden>Click the structure where you want the label to point. Esc cancels.</div>
           <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip">Drag to rotate · Scroll or pinch to zoom · Click a bone to select</span></div>
           <button id="reset-camera" class="floating-button" title="Reset camera">⟳ <span>Reset view</span></button>
         </div>
@@ -187,7 +197,7 @@
 
       <aside id="info-sidebar" class="sidebar info-sidebar" aria-label="Selected structure information">
         <div class="info-top"><span class="eyebrow">STRUCTURE DETAILS</span><span class="info-type">OSTEOLOGY</span></div>
-        <div id="no-selection" class="no-selection"><div class="detail-graphic">✳</div><h2>Explore a structure</h2><p>Click a bone in the model or choose one from the list to see its name, location, and controls.</p></div>
+        <div id="no-selection" class="no-selection"><div class="detail-graphic">✳</div><h2>Explore a structure</h2><p>Click a bone or muscle to see its name and controls.</p></div>
         <div id="selection-content" class="selection-content" hidden>
           <span id="selected-category" class="detail-category">SKELETAL SYSTEM</span>
           <h2 id="selected-name">—</h2>
@@ -205,7 +215,7 @@
           <p class="annotation-help">Color whole bones to distinguish anatomical structures. Colors are saved separately for each chapter.</p>
           <label for="paint-color" class="field-label">Paint color</label>
           <div class="paint-color-row">
-            <input id="paint-color" type="color" value="#e45d58" aria-label="Choose bone paint color" />
+            <input id="paint-color" type="color" value="#e45d58" aria-label="Choose structure paint color" />
             <output id="paint-hex" for="paint-color">#E45D58</output>
           </div>
           <div class="paint-swatches" role="group" aria-label="Preset bone colors">
@@ -218,7 +228,7 @@
             <button type="button" class="paint-swatch" data-color="#e895b6" style="--swatch:#e895b6" aria-label="Pink" title="Pink"></button>
             <button type="button" class="paint-swatch" data-color="#f6f6ef" style="--swatch:#f6f6ef" aria-label="White" title="White"></button>
           </div>
-          <button id="paint-mode" class="button full" type="button" aria-pressed="false">◉ Paint mode — click bones</button>
+          <button id="paint-mode" class="button full" type="button" aria-pressed="false">◉ Paint mode — click structures</button>
           <div class="paint-action-row">
             <button id="paint-selected" type="button" class="button small" disabled>Color selected</button>
             <button id="erase-selected" type="button" class="button small subtle" disabled>Erase selected</button>
@@ -315,7 +325,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">0.9.0</strong>
+        <span>Installed version</span><strong id="settings-installed">1.0.0</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>

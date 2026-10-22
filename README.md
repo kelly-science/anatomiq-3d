@@ -1,53 +1,56 @@
-# Anatomy Studio 0.9 — Schoology Embed & Student Publishing Controls
+# Anatomy Studio 1.0 — Skeletal + Muscular Systems
 
-This update extends 0.8 (Chromebook PWA) and retains all existing skull/skeleton, paint, annotations, chapters, student links, teacher menus, local Scene Library, update checks, and optional self-hosting support.
+Installable Chromebook PWA hosted on GitHub Pages. This release extends the existing 0.9 teacher editor and student publishing system, rather than starting over.
 
-## Publishing study scenes and practical questions
+## New in 1.0
 
-1. Open a saved lesson in **Teacher Studio**; adjust its chapters, bones, colors, camera, and custom labels.
-2. Select **File → Share student link…**.
-3. Select **Study Mode**, **Practical Exam**, or **Custom permissions**. The options apply to every chapter of that published link:
-   - **Search**: show search and allow finding bones by anatomical names.
-   - **Structure explorer**: show a collapsible hierarchy of Bones/Teeth/Cartilage and Left/Right/Midline, with a bone list.
-   - **Identify by clicking**: allow clicking a bone to reveal its name/description in the details panel. When disabled, bone picking is ignored in the 3D canvas; if the list is available, it uses anonymous structure numbers.
-   - **Teacher annotations**: include the chapter's labels and its original Show / Click to reveal / Hide policy. Disabling this option hides all labels on the student view, regardless of chapter settings.
-   - **Hide and isolate bones**: let students alter bone visibility in the published view. Disabled for practical questions.
-4. Click **Generate student links & embed code**. The dialog provides a direct link, an embed-optimized link (`?embed=1#scene=…`), and optional iframe HTML, with copy and preview controls.
-5. These controls **do not change the saved scene's anatomy**. Each new published link contains its own settings, so you can publish study and practical versions of the same lesson.
+- **Skull**: the original individual cranial and facial bones.
+- **Skeleton**: original full-skeleton view.
+- **Muscular**: selectable, searchable, paintable and labelable deep and superficial muscles, based on the same Écorché GLB already used in 0.9.
+- **Combined**: skeletal structures and muscle layers in the same 3D view. The left sidebar's **Anatomical Systems** panel controls bones, superficial muscles, and deep muscles independently. Deep muscles default to OFF so they can be exposed by hiding the superficial layer.
+- Each chapter saves its own view mode, 3D camera, visibility, paint, labels and layer settings; share links and Schoology practical permissions still work.
+- **Legacy scenes**: 0.3–0.9 skeletal scenes/links still load against the unchanged model. Teacher-opened older chapters are migrated into the expanded indexing format before they are resaved. **Back up your local library** before making major changes, and keep a copy of the old 0.9 code for rollback.
 
-**Study Mode** enables all five controls; **Practical Exam** disables all five. A custom mode can enable only selected controls. You can use teacher-created labels such as `A`, `B`, `C` in practical scenes by enabling Teacher annotations and setting the chapter label mode to Show. Avoid including answers in labels if you intend students to see them.
+The source GLB has 198 bones, 42 cartilage meshes, 28 teeth, two eyes, 159 deep and 203 superficial muscle meshes, with named structure metadata. Eye meshes are deliberately not included in the selectable structure list.
 
-## Embedding in Schoology
+## Installer hotfix (Three.js dependency scan)
 
-### Recommended: Schoology's built-in external link iframe
+The original `tools/vendor-three.py` mistakenly treated an example URL in a
+`GLTFLoader.js` comment as a third-party package and stopped with
+`Unexpected external package: https://my-cnd-server.com/...`. The included
+fixed scanner checks actual ES module import statements instead.
 
-1. In your course, choose **Add Materials → Add File/Link/External Tool → Link**.
-2. Paste the **Schoology embedded viewer link** produced by Anatomy Studio.
-3. Choose **Display in Schoology** rather than opening the link in a new window, if available for your course.
-4. Publish, then check the link as a **student** on a school-managed Chromebook.
+If the self-hosting command previously failed, just run
+`bash tools/download-self-hosted-assets.sh` again from this project folder.
+It is safe to rerun; the downloader overwrites the generated asset copies,
+then writes the local import map and SHA-256 manifest on success.
 
-This uses Schoology's supported external-link display, which opens an external website in an iframe. Not every district permits all embeds and some configurations open in a new tab instead. If the embedded version fails, use the direct student link.
+## GitHub Pages installation / upgrade
 
-### Optional: HTML iframe
+1. **Back up your local scenes now**: open the current app on your Chromebook and choose **Library → Back up entire library**. Browser-local data may be lost after Chrome site-data clearing or school device resets.
+2. Extract the release ZIP. Open `anatomy-pwa-studio/`.
+3. Upload/replace its **contents**, not the outer folder, in the root of your existing GitHub Pages repository. The complete application files in the ZIP are designed to be deployed together. The added runtime module is **`structure-layout.js`**. To avoid an older service worker serving stale files, replace `sw.js`, `version.json`, `index.html`, `app.js`, `scene-codec.js`, and `styles.css` together.
+4. **Keep your locally hosted `models/ecorche.glb`, `vendor/three/` and model credit/license files in the repository**. These large binary assets are **not included** in this ZIP. The new muscular viewer uses the very same GLB; no additional model download is needed if 0.9 was already self-hosted.
+5. If you have *not* yet self-hosted them, on a Mac with internet access run `bash tools/download-self-hosted-assets.sh` from this extracted folder and then upload the generated `models/`, `vendor/` and `ASSET_SHA256.txt` to GitHub. That script also switches `index.html` to your own locally hosted Three.js import map. If you already self-host Three.js, ensure the replacement `index.html` points back to the local paths, or rerun the downloader before upload.
+6. Open the deployed site in Chrome (online on first visit), verify the **STUDIO 1.0** label and visit **Settings → App Settings → Check local files**. Avoid clearing site data to force an update, as this will erase locally saved scenes.
 
-The generated HTML uses the embedded viewer link in an iframe with `width:100%`, `height:640px`, and no border. If the district's Schoology Page HTML editor accepts iframes, you may paste it there. **Schoology does not support script embed codes and may sanitize pasted HTML**. The built-in external Link method is preferred.
+## Suggested classroom walkthrough
 
-Embedding requires the hosted site's response headers to allow framing. Schoology and your browser/security policies may also restrict the iframe. Test after publishing.
+1. Click **Muscular**. The superficial muscle layer appears by default. Toggle **Deep muscles** on or **Superficial muscles** off to examine deep structures.
+2. Search **deltoid**, select its structure, **Focus**, paint it or place a custom label.
+3. Click **Combined** and leave **Skeletal system** on; hide the superficial muscles to view deep muscle relationships to bones.
+4. Use **Add Chapter** for a second view. Each chapter remembers its own system settings.
+5. Save the scene via **File → Save to Library**, then **File → Share Student Link**. Student pages use the teacher-selected layers and obey Study/Practical Exam naming/search permissions. They cannot edit muscle layers through the teacher controls.
 
-## Important for practical exams
+## Reliability and licensing
 
-Anatomy Studio uses **client-side presentation permissions, not authenticated security**. Someone who can use browser developer tools, inspect the downloaded GLB model, or decode the URL may recover anatomical names or reveal hidden controls. It is useful for identification practice and instructor-controlled *presentation*, but it is **not a secure, locked-down exam engine**. For graded secure assessments, use Schoology's assessment controls and school testing policies; never depend solely on Anatomy Studio to conceal answers.
+- Same model source: [Écorché](https://github.com/Charleeh/ecorche), CC BY-SA 4.0. Geometry derived from BodyParts3D and Z-Anatomy. Read source `ATTRIBUTION.md` / `LICENSE.md`, and keep these credits with your hosted assets.
+- Three.js is pinned to 0.169.0 under the MIT license. To fully self-host, use the downloader and upload its files rather than relying on CDN fallbacks.
+- GitHub Pages serves a static site, no database or account. Student scene data is encoded in their URL; the teacher Scene Library uses browser-local IndexedDB.
+- The model includes bones, teeth, cartilage and muscles but **not** organs, nerves, vessels or a skin layer.
+- Muscle geometry belongs to one adult male specimen with fixed pose. Use for gross anatomy classroom demonstrations, not clinical interpretation.
+- The offline service worker must cache the full model and renderer. Use the built-in **Save offline** control and confirm readiness before working without Wi-Fi.
 
-Long scene links may run into Schoology link length limits. If a long link is rejected, shorten lesson content/chapters or use a hosted scene library with short IDs in a future release.
+## Validation
 
-## Updating an existing GitHub Pages repository
-
-Replace these root files with the v0.9 versions: `index.html`, `app.js`, `styles.css`, `scene-codec.js`, `sw.js`, `manifest.webmanifest`, `version.json`, `library-store.js`, `scene-history.js`. Existing `icons/`, `models/`, `vendor/three/`, and `tools/` can stay, but do not delete your previously downloaded local Three.js and `ecorche.glb` assets. **If you previously changed your `index.html` import map to local vendor files, preserve those paths**. The ZIP retains the original CDN fallback import map to avoid breaking fresh deployments; re-run `bash tools/download-self-hosted-assets.sh` after extracting the new project on your Mac, or restore your local import map manually before uploading.
-
-Back up your Scene Library via **Library → Back up entire library** before major upgrades and school-managed Chromebook resets. The local IndexedDB scene library is **not uploaded to GitHub** and is not synced across profiles. Do **not clear site data** to force an update.
-
-Run automated tests with `npm test` (Node 20+). Browser rendering and Schoology iframe support still require checking on your school's actual devices.
-
-## Self-hosting and licenses
-
-The included ZIP does **not** embed the third-party renderer or GLB. Run `bash tools/download-self-hosted-assets.sh` on an internet-connected Mac to download them into `vendor/three/` and `models/ecorche.glb`. Then upload those folders to GitHub Pages. The 3D viewer's first run otherwise relies on a Three.js CDN and the original anatomy-model provider. Three.js is MIT licensed; Écorché credits and CC BY-SA 4.0 attribution apply to the model. See `tools/` and the application's Model Credits for attribution.
+Run `npm test` (Node 20+) or `node --test tests/*.test.mjs` to check chapter serialization, new system layer settings, older scene compatibility, library backups, publisher permissions, and update metadata. These are automated logic tests. **An end-to-end Chromebook rendering test with the real GLB and Schoology is still necessary.**
