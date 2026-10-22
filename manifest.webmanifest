@@ -1,6 +1,6 @@
 {
   "id": "./index.html",
-  "name": "Anatomy Studio — Teacher Menus, Scene Library, Chapters & Student Viewer",
+  "name": "Anatomy Studio \u2014 Self-hosted 3D Classroom Studio",
   "short_name": "Anatomy Studio",
   "description": "Use a desktop-style teacher menu; save a local library; paint, edit, label, and share multi-chapter 3D skeletal lessons as student links on Chromebooks.",
   "start_url": "./index.html",
@@ -10,7 +10,17 @@
   "theme_color": "#111820",
   "orientation": "any",
   "icons": [
-    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

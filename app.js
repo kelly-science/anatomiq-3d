@@ -7,6 +7,7 @@ import {SceneHistory} from './scene-history.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
+const APP_VERSION = '0.8.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -32,7 +33,7 @@ let paintMode = false;
 let paintColor = '#e45d58';
 let selectedHighlight = null;
 let activePreset = 'front';
-let currentModelURL = REMOTE_MODEL;
+let currentModelURL = LOCAL_MODEL;
 let offlineReady = false;
 const teacherMode = !location.hash.startsWith('#scene=');
 document.body.classList.toggle('student-mode', !teacherMode);
@@ -453,7 +454,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external'});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -1157,6 +1158,86 @@ document.addEventListener('pointerdown',event=>{
 $('save-draft-action').addEventListener('click',()=>saveDraft(true));
 $('edit-undo').addEventListener('click',()=>navigateHistory('undo'));
 $('edit-redo').addEventListener('click',()=>navigateHistory('redo'));
+// --- Self-hosted App Settings and version checks (also work without loading the anatomy model) ---
+const APP_VERSION_URL = './version.json';
+const LOCAL_ASSETS = [
+  ['./vendor/three/build/three.module.js','Three.js core'],
+  ['./vendor/three/examples/jsm/controls/OrbitControls.js','OrbitControls'],
+  ['./vendor/three/examples/jsm/loaders/GLTFLoader.js','GLTFLoader'],
+  ['./models/ecorche.glb','Écorché model']
+];
+let updateAvailable = false;
+function displayLocalAssetName(url){
+  return new URL(url,location.href).origin===location.origin ? 'Locally hosted' : 'External fallback';
+}
+async function checkLocalAssets(){
+  const display=$('settings-assets');
+  display.textContent='Checking…';
+  const statuses=await Promise.all(LOCAL_ASSETS.map(async ([path,label])=>{
+    try {
+      const result=await fetch(path,{method:'HEAD',cache:'no-store'});
+      return {label,ok:result.ok && !/text\/html/i.test(result.headers.get('content-type')||'')};
+    } catch {return {label,ok:false};}
+  }));
+  const missing=statuses.filter(x=>!x.ok).map(x=>x.label);
+  display.textContent=missing.length ? `${statuses.length-missing.length}/${statuses.length} present — missing: ${missing.join(', ')}` : 'All main assets hosted locally';
+  display.classList.toggle('status-success',missing.length===0);
+  $('settings-renderer').textContent=window.__ANATOMY_RENDERER_SOURCE==='local'?'Local Three.js 0.169.0':'CDN fallback (Three.js 0.169.0)';
+  $('settings-model').textContent=sceneRoot ? displayLocalAssetName(currentModelURL) : 'Not loaded';
+}
+function openAppSettings(){
+  $('settings-dialog').hidden=false;
+  $('settings-installed').textContent=APP_VERSION;
+  $('settings-reload').hidden=!updateAvailable;
+  checkLocalAssets().catch(e=>{$('settings-assets').textContent='Could not verify local files';console.warn(e);});
+  $('settings-close').focus();
+}
+function closeAppSettings(){$('settings-dialog').hidden=true;}
+function compareVersions(a,b){
+  const A=String(a).split('.').map(n=>Number(n)||0),B=String(b).split('.').map(n=>Number(n)||0);
+  for(let i=0;i<3;i++)if((A[i]||0)!==(B[i]||0))return (A[i]||0)-(B[i]||0);
+  return 0;
+}
+async function checkAppUpdates(){
+  const status=$('settings-check-result');
+  const button=$('settings-check-updates');
+  openAppSettings();
+  status.textContent='Checking the published version on this site…';
+  button.disabled=true;
+  try {
+    const response=await fetch(`${APP_VERSION_URL}?check=${Date.now()}`,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const info=await response.json();
+    if(!/^\d+\.\d+\.\d+$/.test(info.version||''))throw new Error('Invalid version.json');
+    $('settings-published').textContent=info.version;
+    updateAvailable=compareVersions(info.version,APP_VERSION)>0;
+    if(updateAvailable){
+      status.textContent=`Version ${info.version} is published. Reload to install it.`;
+      $('settings-reload').hidden=false;
+      if('serviceWorker' in navigator){
+        const reg=await navigator.serviceWorker.getRegistration();
+        await reg?.update();
+      }
+    }else{
+      status.textContent=compareVersions(info.version,APP_VERSION)<0
+        ? `This copy is newer than the version published on this website (${info.version}).`
+        : `You're running the latest published version (${APP_VERSION}).`;
+      $('settings-reload').hidden=true;
+    }
+  }catch(error){
+    status.textContent=`Unable to check for updates. Connect to your GitHub Pages site and try again. (${error.message})`;
+  }finally{button.disabled=false;}
+}
+$('open-app-settings').addEventListener('click',openAppSettings);
+$('menu-check-updates').addEventListener('click',checkAppUpdates);
+$('settings-check-updates').addEventListener('click',checkAppUpdates);
+$('settings-recheck-assets').addEventListener('click',checkLocalAssets);
+$('settings-reload').addEventListener('click',async()=>{
+  try{await (await navigator.serviceWorker?.getRegistration())?.update();}catch(e){console.warn(e);}
+  location.reload();
+});
+$('settings-close').addEventListener('click',closeAppSettings);
+$('settings-dialog').addEventListener('click',event=>{if(event.target===$('settings-dialog'))closeAppSettings();});
 $('open-menu-help').addEventListener('click',()=>{$('help-dialog').hidden=false;$('help-close').focus();});
 $('help-close').addEventListener('click',()=>{$('help-dialog').hidden=true;});
 $('help-dialog').addEventListener('click',event=>{if(event.target===$('help-dialog'))$('help-dialog').hidden=true;});
@@ -1165,6 +1246,7 @@ window.addEventListener('keydown',event=>{
   if(event.key==='Escape'){
     if(openMenuName)closeStudioMenus(true);
     if(!$('help-dialog').hidden)$('help-dialog').hidden=true;
+    if(!$('settings-dialog').hidden)closeAppSettings();
     return;
   }
   if(!(event.ctrlKey||event.metaKey)||event.altKey)return;

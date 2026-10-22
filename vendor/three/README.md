@@ -1,0 +1,1 @@
+Run `bash tools/download-self-hosted-assets.sh` from the app folder while online to obtain the pinned MIT-licensed Three.js 0.169.0 runtime. Upload the resulting `vendor/three/` folder. This starter ZIP does not contain the binary libraries.
