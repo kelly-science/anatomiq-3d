@@ -8,3 +8,56 @@
 
 .details-toggle{display:none}
 @media(max-width:850px){.workspace{position:relative}.details-toggle{display:inline-flex}.info-sidebar{display:none;position:absolute;right:0;top:0;bottom:0;z-index:10;width:min(320px,85vw);box-shadow:-12px 0 30px #0008;background:#161f29}.info-sidebar.open{display:flex}}
+
+/* Teacher Studio 0.3 — annotation tools, share dialog and student presentation */
+.viewer-role{font-size:10px;font-weight:800;letter-spacing:.1em;color:#88cbd2;white-space:nowrap;border:1px solid #355e67;border-radius:7px;padding:9px 11px}
+.studio-card{border:1px solid #315160;border-radius:12px;background:#1b2c38;margin:2px 14px 16px;padding:14px}
+.field-label{font-size:11px;font-weight:650;color:#bcccd8;display:block;margin:13px 0 7px}
+.text-input{width:100%;padding:10px;border:1px solid #395265;background:#101e28;color:#eff8fc;border-radius:8px;font-size:12px;outline:none;min-width:0}
+.text-input:focus{border-color:#65bfc8;box-shadow:0 0 0 2px #58b9c31c}
+select.text-input{appearance:auto}
+.studio-row{display:flex;gap:8px;margin-top:10px}.studio-row .button{flex:1;min-width:0}
+.button.small{padding:8px 6px;font-size:11px}
+.studio-hint{display:block;color:#8ca9b8;font-size:10px;line-height:1.5;margin-top:8px}
+.annotation-editor{border-top:1px solid #375362;margin-top:22px;padding-top:24px}
+.annotation-help{color:#93a8b7;font-size:11px;line-height:1.6}
+.annotation-editor>.button{margin-top:9px}
+.button.placing{background:#3a7480;color:white;border-color:#65bdc8}
+.label-editor-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.label-editor-row{display:flex;align-items:center;gap:6px}
+.label-editor-row .label-index{color:#7593a4;min-width:15px;font-size:10px}
+.label-editor-row input{min-width:0;flex:1;border:1px solid #355063;border-radius:7px;padding:8px;color:#edf5f8;background:#0d1b25;font-size:11px}
+.label-editor-row button{padding:5px 8px}
+.annotation-editor .switch-row{margin-top:16px;padding:13px 0}
+.label-overlay{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.label-overlay #label-markers{position:absolute;inset:0;pointer-events:none}
+.label-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.leader-line{stroke:#6dd0d7;stroke-width:1.3;stroke-opacity:.75}
+.leader-dot{fill:#82dee0;stroke:#172c32;stroke-width:1}
+.anatomy-label{position:absolute;z-index:1;display:flex;align-items:center;gap:7px;max-width:210px;min-height:26px;border:1px solid #4e99a3;border-radius:8px;background:#102a36ed;box-shadow:0 4px 20px #0c1929bb;color:#eaf7f8;padding:5px 9px 5px 5px;text-align:left;pointer-events:auto;cursor:grab;line-height:1.3;font-size:11px;white-space:normal}
+.anatomy-label:active{cursor:grabbing}
+.callout-number{border-radius:5px;display:grid;place-items:center;min-width:20px;height:20px;background:#3a96a0;color:#f0feff;font-size:10px;font-weight:800;flex:none}
+.callout-text{overflow-wrap:anywhere}
+.anatomy-label.reveal{padding:4px;border-radius:8px;cursor:pointer}
+.anatomy-label.reveal .callout-text{display:none}
+.anatomy-label.reveal.revealed .callout-text{display:inline}
+.anatomy-label.reveal.revealed{padding:5px 9px 5px 5px}
+.place-hint{pointer-events:none;position:absolute;z-index:4;top:68px;left:50%;transform:translateX(-50%);background:#173d46e8;border:1px solid #6cc5cb;border-radius:10px;padding:12px 17px;box-shadow:0 10px 25px #0005;color:white;font-size:12px;text-align:center;max-width:calc(100% - 40px)}
+.dialog-backdrop{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:30;padding:16px}
+.share-dialog{background:#182632;border:1px solid #44616f;border-radius:16px;box-shadow:0 30px 85px #000a;width:min(560px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:25px}
+.dialog-header{display:flex;align-items:start;justify-content:space-between}.dialog-header h2{margin:8px 0 0;font-size:23px}
+.share-dialog p{color:#aec0cc;font-size:12px;line-height:1.65}
+.share-url{resize:vertical;width:100%;border:1px solid #466877;background:#0c1823;color:#e0eef4;border-radius:10px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.5;padding:12px;overflow-wrap:anywhere}
+.dialog-buttons{display:flex;gap:10px;margin-top:17px;flex-wrap:wrap}.dialog-buttons .button{min-width:145px}
+.share-dialog .footnote{font-size:10px;color:#8199a7;margin-bottom:0}
+.app-toast{position:fixed;z-index:40;bottom:18px;left:50%;transform:translateX(-50%);border:1px solid #5b9ca5;background:#183943;color:#e7f8fa;border-radius:10px;padding:11px 17px;font-size:12px;box-shadow:0 10px 35px #0008;max-width:min(90vw,500px);text-align:center}
+body.student-mode .teacher-only{display:none!important}
+body.student-mode .mode-tabs,body.student-mode .explorer-settings,body.student-mode:not(.student-explore-enabled) #restore-all,body.student-mode:not(.student-explore-enabled) #hide-selected,body.student-mode:not(.student-explore-enabled) #isolate-selected{display:none!important}
+body.student-mode .info-sidebar{padding-top:27px}
+body.student-mode .brand-mark{background:linear-gradient(145deg,#447e89,#244f62)}
+@media(max-width:1050px){.topbar{gap:8px}.top-actions{gap:7px}.top-actions #publish-open{padding:9px 10px;font-size:11px}.status{display:none}}
+@media(max-width:850px){.annotation-editor{padding-bottom:10px}.place-hint{top:60px}}
+@media(max-width:630px){.top-actions #publish-open{display:inline-flex;font-size:0;padding:8px}.top-actions #publish-open:before{content:'↗';font-size:19px}.viewer-role{display:none}.share-dialog{padding:18px}.dialog-buttons .button{flex:1}.place-hint{top:60px}}
+/* Keep search usable when a Chromebook viewport leaves less height for the explorer. */
+.left-sidebar>.sidebar-top,.left-sidebar>.search-wrap,.left-sidebar>.studio-card,.left-sidebar>.explorer-settings,.left-sidebar>.list-header,.left-sidebar>.sidebar-footer{flex-shrink:0}
+body.student-mode.student-explore-enabled #restore-all,body.student-mode.student-explore-enabled #hide-selected,body.student-mode.student-explore-enabled #isolate-selected{display:inline-flex!important}

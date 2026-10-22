@@ -1,7 +1,7 @@
 /* Anatomy Studio PWA. Offline assets are cached on first successful online load.
    Keep third-party model attribution in the application and README. */
-const VERSION = 'anatomy-v0.2.0';
-const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+const VERSION = 'anatomy-v0.3.0';
+const SHELL = ['./', './index.html', './styles.css', './app.js', './scene-codec.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const THREE_BASE = 'https://cdn.jsdelivr.net/npm/three@0.169.0/';
 const EXTERNALS = [
   THREE_BASE + 'build/three.module.js',

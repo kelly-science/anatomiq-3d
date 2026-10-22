@@ -1,8 +1,8 @@
 {
   "id": "./index.html",
-  "name": "Anatomy Studio — Skull & Skeleton",
+  "name": "Anatomy Studio — Teacher Studio & Student Viewer",
   "short_name": "Anatomy Studio",
-  "description": "Interactive 3D skull and skeletal system viewer for Chromebook anatomy classes.",
+  "description": "Edit, label, and share customized 3D skeletal scenes as student links on Chromebooks.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
