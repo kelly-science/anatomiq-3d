@@ -1,53 +1,81 @@
-# Anatomy Studio 0.3 — Chromebook PWA with teacher scenes and student links
+# Anatomy Studio 0.5 — Chromebook PWA with per-bone coloring and multi-chapter lessons
 
-**What is new:** A teacher-facing editor can customize the skull or skeleton, hide individual bones, add point-anchored custom labels, set the start camera, and generate a URL that reproduces the scene in a read-only student viewer. This uses **Option A**: the scene configuration is compressed into the URL fragment, and there is **no database, login, or backend**. The same underlying 3D anatomical model is used by all scenes.
+One interactive anatomical lesson can contain **multiple chapters**, each saving its own structure visibility, **bone colors**, camera orientation, labels, and student permissions. Publish **one link** for the entire lesson. Students use chapter tabs or Previous/Next to move through it. The app remains a GitHub Pages PWA; **no database, login, or backend is required**.
 
-## Publish the website on GitHub Pages
+## New in version 0.5: Paint bones
 
-1. Extract `Anatomy-Studio-Scene-Sharing-Chromebook-PWA.zip`.
-2. Upload the contents of the included `anatomy-pwa-studio` folder (not the enclosing folder) to the **root** of a public GitHub repository. The repository should contain `index.html`, `app.js`, `scene-codec.js`, `styles.css`, `sw.js`, `manifest.webmanifest`, `icons/`, and `models/`.
-3. In the repository go to **Settings > Pages > Build and deployment > Deploy from a branch**. Select `main`, `/ (root)`, and Save.
-4. Open `https://YOURUSERNAME.github.io/YOURREPO/` in Chrome on the Chromebook, then allow the model to load. The first visit requires internet access.
-5. Optional: use Chrome's **Install page as app** option. School-managed Chromebooks may restrict PWA installation, but the URL can still work in Chrome if the school allows the required websites and WebGL.
+Teacher Studio now includes a **BONE PAINT** panel in the right Structure Details sidebar, above Custom Labels. This paints the **entire individually modeled bone**, not freehand patches on its surface.
 
-**Important model dependency:** The ZIP includes application source and icons, **not** the ~13.7 MB third-party 3D geometry. When `models/ecorche.glb` is absent, the app attempts to load it from jsDelivr and the Écorché GitHub Pages mirror. For the most reliable classroom deployment and to avoid unexpected upstream changes to shared links, download the original `ecorche.glb` file from <https://github.com/Charleeh/ecorche/tree/main/model> and place it at `models/ecorche.glb` **before** publishing. Leave the file name unchanged. The app also imports Three.js from jsDelivr on first load; blocked school networks can prevent the viewer from opening, even if the site is hosted by GitHub Pages.
+1. Choose a preset color or use the color picker.
+2. Click **Paint mode — click bones**. Click one or more visible bones in the 3D viewer to assign that color; painting does not hide bones. Press **Esc** or click the button again to stop painting.
+3. Alternatively, select a bone normally and choose **Color selected** to recolor it.
+4. **Erase selected** restores the selected bone’s original model material. **Reset all chapter colors** clears all custom bone colors for the active chapter (with confirmation).
+5. Different chapters can have entirely different colors. **Add Chapter** carries forward the colors as a starting point and **Duplicate Chapter** preserves them too; future edits stay chapter-specific.
+6. **Save draft**, **Export editable JSON**, and **Share student link** all include the colors. Students see the painted bones, but cannot change the published colors through Student View.
 
-## Teacher: create a skull study scene
+Older version 0.3 and 0.4 scene links and JSON projects without bone colors still open normally. Existing student links do not automatically update when you repaint a lesson; create a new link.
 
-1. Open the **base website address** (without `#scene=...`). This is Studio mode.
-2. Switch to **Skull** in the top bar. This hides the other bones of the skeleton; the full model is still available in Studio.
-3. Select any individual bone in the structure explorer or the 3D model. Use **Hide structure** or **Isolate structure** to customize the view. Change the camera with drag, zoom and presets.
-4. In the Teacher Studio panel, enter a scene title such as `Skull: Cranial Bones`.
-5. Under **Custom labels** at right, type `Frontal bone` or `Coronal suture` and click **Place label on bone**. Click the relevant location **on the 3D model**. Its label is anchored to the 3D surface and tracks the structure as the skull rotates. Drag the callout to adjust its screen-space offset.
-6. Repeat as needed. Modify label text or remove a label with the list in the right panel. Labels are saved on the teacher device as you work.
-7. Choose whether students see labels, click numbered labels to reveal them, or don't see any labels. Optional: allow students to change bone visibility while viewing. By default students can rotate and inspect, but cannot alter the published visibility configuration.
-8. Click **Share student link** in the top right. Click **Copy link**, then paste into Google Classroom or another LMS. Click **Open student preview** to verify the scene yourself.
+## Updating from Anatomy Studio 0.4
 
-## Student viewer
+Extract the ZIP, then upload the **contents** of the `anatomy-pwa-studio` directory directly into the **root** of the existing GitHub repository. Replace files of the same name:
 
-Opening a URL ending in `#scene=...` shows **Student View**, not the editor. The shared title, visible bones, labels and camera orientation are restored. Students can rotate, zoom, use view presets, identify visible structures, and interact with numbered label reveals if enabled. Hidden teacher controls do not appear in the student UI. The saved scene is not modified by student interactions.
+- `index.html`
+- `app.js`
+- `styles.css`
+- `scene-codec.js`
+- `sw.js` (version bumped to 0.5 to refresh the PWA cache)
+- `manifest.webmanifest`
 
-**Not access control:** Anyone can open the base site (without the scene fragment) and make their own local editable draft. There is no teacher authentication. The shared link is an immutable snapshot of the scene, not a private or centrally editable class assignment. Updates to the teacher's draft do **not** change links already shared; publish and post a new link when necessary.
+The included `icons/` assets are unchanged; you can keep existing copies or upload them again. Keep an existing `models/ecorche.glb` if you host your own copy. The ZIP does **not** include the large model file. The `README.md`, `tests/`, and `package.json` are documentation/development aids.
 
-## Drafts, portability and link size
+Wait for GitHub Pages to deploy, then reload Chrome or fully close and reopen the installed PWA. The service worker should switch from the 0.3 cache to the 0.4 cache. If an older version persists, reload the website online; clearing site storage also deletes **locally saved lesson drafts**, so export a JSON backup before doing that.
 
-- The teacher draft is automatically saved to this browser's `localStorage` as well as by the **Save draft** button. Clearing Chrome site data, changing devices, or using a different Chromebook removes access to this **local** draft (it does not invalidate already-shared student links).
-- Use **Export editable JSON** to keep a backup or move projects between devices. **Import JSON project** reconstructs it on another installation that uses the identical anatomy model.
-- A share URL contains compressed scene data, including annotations. It may be several hundred or a few thousand characters long. The app warns when it is above 2,000 characters. Test large links by pasting them into Google Classroom and opening them from a student's account. If a platform truncates a URL, you will need a different sharing method (e.g. a static scene JSON file or backend short links); Option A cannot generate short permanent IDs.
-- Labels are rendered using their coordinates relative to the target bone. The viewport offset of each callout is stored in pixels; on very differently sized screens, students may need to adjust their view.
-- Scene links are checked against the number and identity/order of model structures. If a newer model has changed, the app will show an incompatibility error instead of displaying labels on the wrong bones. Hosting `models/ecorche.glb` yourself keeps the model fixed and protects old scene links.
-- The scene URL is public and carries teacher-authored label text. Do not include private student information or other confidential data in labels.
+## Example: two chapters for skull anatomy
 
-## Offline use
+1. Open the main website without a `#scene=...` fragment (Teacher Studio).
+2. **Lesson title:** `Skull Anatomy and Landmarks`.
+3. **Chapter 1 title:** `Skull: Exterior`. Hide unwanted structures, rotate to the desired view, and add exterior labels.
+4. Click **＋ Add chapter**. This carries over the current visibility and camera but starts with **no labels**, so you can prepare the interior without clearing old labels. Or select **⧉ Duplicate** to carry over the labels as well.
+5. Name the second chapter `Skull: Interior`. Hide individual cranial bones to reveal the interior, orient the camera, and add interior labels. A chapter can use a different student label-display setting.
+6. Switch between the chapters in the **Lesson Chapters** sidebar or tabs above the 3D viewer. Changes stay with their own chapter.
+7. Use ↑/↓ next to a chapter to reorder it, and × to delete an unneeded chapter. The chapter name is edited using the **Current chapter title** field when that chapter is active.
+8. Click **Share student link**. The generated URL includes **all chapters** and opens in read-only Student View. The student can use chapter tabs or the ‹ › arrows to navigate.
+9. Use **Open student preview** to test the link before sending it via Google Classroom.
 
-The viewer's **Save offline** control caches the application, model, and Three.js library files after a successful online load. The display should say **✓ Offline ready** before testing by disconnecting Wi-Fi. On school-managed Chromebooks, storage may be cleared automatically, and CDNs may be blocked. The generated URL works offline **only if** the complete application and 3D assets have already been cached on that Chromebook. Sharing a scene does not copy 3D geometry into the URL.
+**Model limitation:** The current model supports hiding individual bones, rotating, and viewing exposed surfaces. It does **not** yet provide an anatomical slice plane, cutaway geometry, or detailed internal bone structures beyond what is present in the original GLB. Chapter switching does not fabricate additional anatomy.
 
-## Testing
+## What is stored per chapter
 
-Run `npm test` (or `node --test`) from the project directory to test the scene encoder, decoder, model fingerprints, bone visibility bitmasks, and corruption/error handling. No external npm dependencies are required.
+- Chapter title
+- Per-bone color overrides (sparse list stored by stable structure index)
+- Skull versus full skeleton
+- Hidden/visible skeletal structures, teeth and cartilage switches
+- Camera position and orbit target
+- Custom point-anchored labels and their callout positions
+- Show / click-to-reveal / hide-label setting
+- Whether students can hide or isolate bones
 
-The code and share-link serialization have passed automated checks, and the teacher/student layouts have been inspected in a desktop Chromium renderer. **Live 3D loading, labeling, and scene restoration have not been verified end-to-end on a Chromebook**, so treat this as a test build until validated on a school device.
+The **lesson title** and **chapter order** belong to the whole project. A chapter retains its edits when you switch away from it.
 
-## License and attribution
+## Drafts, backward compatibility, and sharing
 
-Anatomical geometry: [Écorché by Charleeh](https://github.com/Charleeh/ecorche), based on BodyParts3D and Z-Anatomy, distributed under **CC BY-SA 4.0**. Preserve attribution when distributing or modifying geometry; follow any applicable share-alike license conditions. The 3D renderer uses [Three.js](https://threejs.org/) (MIT license). For educational exploration only, not a clinical reference.
+- Teacher drafts save in browser `localStorage` on the device. **Export editable JSON** backs up **all chapters**; **Import JSON project** restores them. A 0.3 single-scene JSON draft is automatically treated as a one-chapter lesson. Older 0.4 multi-chapter lessons import with original bone colors.
+- Existing **0.3 and 0.4 `#scene=` student links remain supported**; the older v1 data loads as a one-chapter lesson. The old v1 local draft is migrated on first open if no 0.4 draft exists.
+- A published link is an immutable snapshot; saving changes to your teacher draft **does not** change the already-shared link. Publish a new link after edits.
+- The student viewer is *read-only for published scene editing* but not an authentication system. Anyone can visit the base URL and make their own local studio draft. Links are public: do not put confidential student information into labels.
+- Up to **12 chapters** per lesson and 64 labels per chapter (240 total across chapters). The scene URL length is capped and warned about above 2,000 characters. Lots of labels and chapters can create links too long for some learning management systems. There is no short-link server in this option.
+- Chrome site storage can be cleared by school management. Export JSON backups for important teacher lessons. Student links do not depend on the teacher device's local storage.
+- Shared scenes are tied to the specific model's structure names/order. If the upstream anatomy model changes, the app refuses to load a mismatched scene rather than applying visibility to the wrong bones. Host `models/ecorche.glb` inside your repository to pin the model.
+
+## Hosting, installing, and offline use
+
+1. In GitHub Pages, enable **Settings → Pages → Deploy from branch** (`main`, `/ (root)`). The site should resolve as `https://YOURUSERNAME.github.io/YOURREPO/`.
+2. The first visit needs internet access to load Three.js and the GLB model. The app looks for `models/ecorche.glb` locally, and otherwise tries the Écorché model hosted on jsDelivr or the project's GitHub Pages mirror. For school reliability, download the 3D model from <https://github.com/Charleeh/ecorche/tree/main/model> and add it at `models/ecorche.glb`.
+3. On a Chromebook open the published site in Chrome and choose **Install app** when available. Managed school devices may disable installation or external model hosts.
+4. Once online, wait for **✓ Offline ready**. This caches the shell, libraries, and model. Test offline operation on the same Chromebook. The link contains scene data, **not** the actual 3D geometry.
+
+## Validation and credits
+
+Run `npm test` (or `node --test`) to verify v1/v2 scene encoding, decoding, model fingerprints, per-chapter visibility, camera data, legacy links, and size/error validation. JavaScript syntax and generated HTML element references were checked. This update has **not** been verified end-to-end with the live 3D model on a school Chromebook, so test the scene editor and published link there before assigning to a class.
+
+3D geometry: [Écorché by Charleeh](https://github.com/Charleeh/ecorche), based on BodyParts3D and Z-Anatomy, CC BY-SA 4.0. Preserve proper attribution and associated terms. Renderer: [Three.js](https://threejs.org/) (MIT). Educational visualization, not a clinical reference.

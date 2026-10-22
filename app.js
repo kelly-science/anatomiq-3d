@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { encodeScene, decodeScene, validateScene, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
+import { encodeScene, decodeScene, validateScene, validateProject, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
@@ -23,7 +23,12 @@ let selected = null;
 let isolated = false;
 const hidden = new Set();
 let structures = [];
-const materials = new Map();
+const materials = new Map(); // Model-authored original material(s) for each bone.
+const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
+const bonePaint = new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
+let paintMode = false;
+let paintColor = '#e45d58';
+let selectedHighlight = null;
 let activePreset = 'front';
 let currentModelURL = REMOTE_MODEL;
 let offlineReady = false;
@@ -36,7 +41,10 @@ let labelSequence = 0;
 let placingLabel = false;
 let restoringScene = false;
 let draftTimeout = 0;
-const DRAFT_KEY = 'anatomy-studio-project-v1';
+const DRAFT_KEY = 'anatomy-studio-project-v2';
+const OLD_DRAFT_KEY = 'anatomy-studio-project-v1';
+let chapters = [];
+let activeChapter = 0;
 const markers = new Map();
 const labelSVG = $('label-lines');
 const labelContainer = $('label-markers');
@@ -142,18 +150,89 @@ function descriptionFor(s){
   const d=descriptions.find(([rx])=>rx.test(s.name));
   return d ? d[1] : 'An identifiable structure in the human skeletal system. Rotate the model to examine its shape and anatomical relationships.';
 }
+function disposeMaterial(material){
+  if(Array.isArray(material))material.forEach(m=>m?.dispose());
+  else material?.dispose();
+}
+function displayMaterial(s){return paintedMaterials.get(s.mesh)||materials.get(s.mesh);}
+function makePaintedMaterial(original,hex){
+  const paintOne=m=>{
+    const copy=m.clone();
+    // A solid bone tint should not inherit colored model textures or vertex color multipliers.
+    if(copy.color?.isColor)copy.color.set(hex);
+    if('map' in copy)copy.map=null;
+    if('vertexColors' in copy)copy.vertexColors=false;
+    if(copy.emissive?.isColor)copy.emissive.set('#000000');
+    if('emissiveMap' in copy)copy.emissiveMap=null;
+    return copy;
+  };
+  return Array.isArray(original)?original.map(paintOne):paintOne(original);
+}
+function updateBoneMaterial(s){
+  if(!s)return;
+  if(selected===s){
+    disposeMaterial(selectedHighlight);
+    selectedHighlight=null;
+  }
+  const old=paintedMaterials.get(s.mesh);
+  if(bonePaint.has(s.index)){
+    paintedMaterials.set(s.mesh,makePaintedMaterial(materials.get(s.mesh),bonePaint.get(s.index)));
+  }else paintedMaterials.delete(s.mesh);
+  if(old)disposeMaterial(old);
+  s.mesh.material=displayMaterial(s);
+  if(selected===s)highlightSelection(s);
+  invalidate(3);
+}
+function highlightSelection(s){
+  const source=displayMaterial(s);
+  const accent=m=>{
+    const copy=m.clone();
+    if(copy.emissive?.isColor){copy.emissive.set('#20bcc6');copy.emissiveIntensity=0.34;}
+    return copy;
+  };
+  selectedHighlight=Array.isArray(source)?source.map(accent):accent(source);
+  s.mesh.material=selectedHighlight;
+}
+function updatePaintControls(){
+  if(!teacherMode)return;
+  const canSelect=Boolean(selected);
+  $('paint-selected').disabled=!canSelect;
+  $('erase-selected').disabled=!canSelect||!bonePaint.has(selected.index);
+  $('erase-all').disabled=bonePaint.size===0;
+  $('paint-status').textContent=`${bonePaint.size} painted bone${bonePaint.size===1?'':'s'} in this chapter`;
+  $('paint-mode').classList.toggle('placing',paintMode);
+  $('paint-mode').setAttribute('aria-pressed',String(paintMode));
+  $('paint-mode').textContent=paintMode?'✓ Painting bones — click to color':'◉ Paint mode — click bones';
+  document.querySelectorAll('.paint-swatch').forEach(button=>button.classList.toggle('active',button.dataset.color===paintColor));
+}
+function setBoneColor(s,hex){
+  if(!teacherMode||!s)return;
+  if(hex)bonePaint.set(s.index,hex.toLowerCase());else bonePaint.delete(s.index);
+  updateBoneMaterial(s);updatePaintControls();renderList();queueDraft();
+}
+function restoreBonePaint(entries=[]){
+  const changed=new Set(bonePaint.keys());
+  bonePaint.clear();
+  for(const [index,hex] of entries){bonePaint.set(index,hex.toLowerCase());changed.add(index);}
+  for(const index of changed)if(structures[index])updateBoneMaterial(structures[index]);
+  updatePaintControls();
+}
+function cancelPainting(){
+  paintMode=false;elements.stage.style.cursor='';
+  $('place-hint').textContent='Click the bone where you want the label to point. Esc cancels.';
+  $('place-hint').hidden=true;
+  updatePaintControls();
+}
 function setSelection(s){
-  if(selected?.mesh?.material && materials.has(selected.mesh))selected.mesh.material=materials.get(selected.mesh);
+  if(selected){
+    selected.mesh.material=displayMaterial(selected);
+    disposeMaterial(selectedHighlight);
+    selectedHighlight=null;
+  }
   selected=s;
   $('isolate-selected').textContent='◈   Isolate structure';
   if(s){
-    const mat=materials.get(s.mesh);
-    if(mat){
-      const active=mat.clone();
-      active.emissive=new THREE.Color(0x21c9d2);
-      active.emissiveIntensity=0.48;
-      s.mesh.material=active;
-    }
+    if(displayMaterial(s))highlightSelection(s);
     elements.noSelection.hidden=true;
     elements.selectionContent.hidden=false;
     elements.selName.textContent=s.name;
@@ -165,7 +244,8 @@ function setSelection(s){
     elements.selectionContent.hidden=true;
   }
   refreshVisibility();
-  if (s && matchMedia('(max-width:850px)').matches && !placingLabel) openDetails(true);
+  updatePaintControls();
+  if (s && matchMedia('(max-width:850px)').matches && !placingLabel && !paintMode) openDetails(true);
 }
 function setMode(newMode){
   if(!sceneRoot)return;
@@ -233,6 +313,11 @@ function renderList(){
     const b=document.createElement('button');b.className='bone-item'+(selected===s?' active':'');
     b.setAttribute('aria-pressed',String(selected===s));
     const t=document.createElement('span');t.textContent=s.name;b.appendChild(t);
+    if(bonePaint.has(s.index)){
+      const chip=document.createElement('span');chip.className='paint-list-dot';
+      chip.style.backgroundColor=bonePaint.get(s.index);chip.setAttribute('aria-label',`Painted ${bonePaint.get(s.index)}`);
+      chip.title=`Bone color: ${bonePaint.get(s.index)}`;b.appendChild(chip);
+    }
     b.addEventListener('click',()=>{if(teacherMode||studentExplore)hidden.delete(s.mesh);isolated=false;setSelection(s);focusSelected();if(innerWidth<630)elements.sidebar.classList.remove('open');});
     frag.appendChild(b);
   }
@@ -249,7 +334,9 @@ renderer.domElement.addEventListener('pointerup',event=>{
   if(!hit)return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
-  if(placingLabel && teacherMode){
+  if(paintMode && teacherMode){
+    setBoneColor(s,paintColor);isolated=false;setSelection(s);
+  } else if(placingLabel && teacherMode){
     const text=$('new-label-text').value.trim();
     if(!text){showToast('Enter label text first.');cancelPlacing();return;}
     const local=hit.object.worldToLocal(hit.point.clone());
@@ -342,7 +429,7 @@ $('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target)
 $('menu-toggle').addEventListener('click',()=>{openDetails(false);elements.sidebar.classList.toggle('open');});
 elements.detailsToggle.addEventListener('click',()=>{elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
 elements.retry.addEventListener('click',loadAnatomy);
-window.addEventListener('keydown',event=>{if(event.key==='Escape'&&placingLabel){cancelPlacing();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(event.key.toLowerCase()==='f')orient('front');if(event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
+window.addEventListener('keydown',event=>{if(event.key==='Escape'&&(placingLabel||paintMode)){if(placingLabel)cancelPlacing();if(paintMode)cancelPainting();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(event.key.toLowerCase()==='f')orient('front');if(event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
 
 let installPrompt=null;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;elements.install.hidden=false;});
@@ -411,19 +498,104 @@ function queueDraft(){
 function snapshotScene(){
   if(!sceneRoot)throw new Error('Model not loaded.');
   const visible=structures.map(s=>s.mesh.visible);
+  const pc=[...bonePaint.entries()].sort((a,b)=>a[0]-b[0]);
   return validateScene({
     v:1,m:mode,n:structures.length,f:sceneFingerprint,
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     cam:[...camera.position.toArray(),...controls.target.toArray()].map(n=>round(n,5)),
-    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)}))
+    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
+    ...(pc.length?{pc}:{})
   });
+}
+function snapshotProject(){
+  if (!sceneRoot) throw new Error('Model not loaded.');
+  const current = snapshotScene();
+  if (!chapters.length) chapters = [current];
+  chapters[activeChapter] = current;
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c))});
+}
+function verifyProjectModel(project){
+  const sample = project.v === 1 ? project : project.chapters[0];
+  if(sample.n!==structures.length || sample.f!==sceneFingerprint) throw new Error('This lesson uses an incompatible anatomical model.');
+}
+function renderChapterUI(){
+  const count=chapters.length;
+  if(!count)return;
+  const nav=$('chapter-nav');nav.hidden=count<2;
+  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}`;
+  $('chapter-progress').textContent=`CHAPTER ${activeChapter+1} OF ${count}`;
+  $('previous-chapter').disabled=activeChapter===0;
+  $('next-chapter').disabled=activeChapter===count-1;
+  const tabs=$('chapter-tabs');tabs.replaceChildren();
+  chapters.forEach((ch,i)=>{
+    const b=document.createElement('button');b.type='button';b.className='chapter-tab'+(i===activeChapter?' active':'');
+    b.textContent=ch.t;b.title=ch.t;b.setAttribute('aria-current',i===activeChapter?'step':'false');
+    b.addEventListener('click',()=>switchChapter(i));tabs.append(b);
+  });
+  if(!teacherMode)return;
+  const list=$('teacher-chapter-list');list.replaceChildren();
+  chapters.forEach((ch,i)=>{
+    const row=document.createElement('div');row.className='teacher-chapter-row'+(i===activeChapter?' active':'');
+    const choose=document.createElement('button');choose.type='button';choose.className='chapter-choose';
+    choose.textContent=`${i+1}. ${ch.t}`;choose.title=`Edit ${ch.t}`;
+    choose.setAttribute('aria-current',i===activeChapter?'step':'false');choose.addEventListener('click',()=>switchChapter(i));
+    row.append(choose);
+    const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move chapter up';up.setAttribute('aria-label',`Move ${ch.t} up`);up.disabled=i===0;
+    up.addEventListener('click',()=>moveChapter(i,-1));row.append(up);
+    const down=document.createElement('button');down.type='button';down.textContent='↓';down.title='Move chapter down';down.setAttribute('aria-label',`Move ${ch.t} down`);down.disabled=i===count-1;
+    down.addEventListener('click',()=>moveChapter(i,1));row.append(down);
+    const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.title='Delete chapter';remove.setAttribute('aria-label',`Delete ${ch.t}`);remove.disabled=count===1;
+    remove.addEventListener('click',()=>deleteChapter(i));row.append(remove);
+    list.append(row);
+  });
+  $('add-chapter').disabled=count>=MAX_CHAPTERS;
+  $('duplicate-chapter').disabled=count>=MAX_CHAPTERS;
+}
+async function switchChapter(index){
+  if(!sceneRoot || index<0 || index>=chapters.length || index===activeChapter)return;
+  if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
+  clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
+  activeChapter=index;
+  await applyScene(chapters[activeChapter]);
+  renderChapterUI();
+  if(teacherMode)queueDraft();
+}
+function createChapter(duplicate){
+  if(!teacherMode || !sceneRoot)return;
+  if(chapters.length>=MAX_CHAPTERS){showToast(`Maximum ${MAX_CHAPTERS} chapters per lesson.`);return;}
+  try{
+    chapters[activeChapter]=snapshotScene();
+    const fresh=structuredClone(chapters[activeChapter]);
+    fresh.t=`Chapter ${chapters.length+1}`;
+    if(!duplicate)fresh.labels=[];
+    chapters.splice(activeChapter+1,0,fresh);
+    clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
+    activeChapter++;
+    applyScene(fresh).then(()=>{renderChapterUI();queueDraft();$('scene-title').focus();$('scene-title').select();showToast('Chapter added. Rename it and customize its view.');});
+  }catch(error){showToast('Could not add chapter: '+error.message);}
+}
+function moveChapter(index,step){
+  if(!teacherMode || index+step<0 || index+step>=chapters.length)return;
+  try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
+  [chapters[index],chapters[index+step]]=[chapters[index+step],chapters[index]];
+  if(activeChapter===index)activeChapter=index+step;
+  else if(activeChapter===index+step)activeChapter=index;
+  renderChapterUI();queueDraft();
+}
+async function deleteChapter(index){
+  if(!teacherMode || chapters.length===1 || !confirm(`Delete chapter "${chapters[index].t}"? This removes its labels and bone settings from this draft.`))return;
+  try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
+  chapters.splice(index,1);
+  if(activeChapter>index)activeChapter--;
+  else if(activeChapter===index)activeChapter=Math.min(index,chapters.length-1);
+  await applyScene(chapters[activeChapter]);renderChapterUI();queueDraft();
 }
 function saveDraft(explicit=true){
   if(!teacherMode || !sceneRoot)return;
   try {
-    localStorage.setItem(DRAFT_KEY,JSON.stringify(snapshotScene()));
+    localStorage.setItem(DRAFT_KEY,JSON.stringify(snapshotProject()));
     $('draft-status').textContent=explicit?'Draft saved on this Chromebook.':'Draft autosaved on this Chromebook.';
     if(explicit)showToast('Draft saved locally.');
   } catch(err) {$('draft-status').textContent='Could not save draft: '+err.message;}
@@ -522,6 +694,7 @@ async function applyScene(saved){
     document.body.classList.toggle('student-explore-enabled',!teacherMode&&studentExplore);
     isolated=false;
     hidden.clear();
+    restoreBonePaint(saved.pc||[]);
     const visible=readVisibilityBits(saved.b,structures.length);
     structures.forEach((s,i)=>{if(!visible[i] && (mode==='skeleton'||s.skull) && (s.tissue!=='tooth'||saved.te) && (s.tissue!=='cartilage'||saved.ca))hidden.add(s.mesh);});
     refreshVisibility();
@@ -540,32 +713,48 @@ async function applyScene(saved){
     }
   }finally{restoringScene=false;}
 }
+async function loadProject(data){
+  const project=validateProject(data);
+  verifyProjectModel(project);
+  // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
+  chapters=project.v===1?[structuredClone(project)]:project.chapters.map(ch=>structuredClone(ch));
+  activeChapter=project.v===1?0:project.start;
+  $('project-title').value=project.t;
+  await applyScene(chapters[activeChapter]);
+  renderChapterUI();
+  document.title=project.t+' • Anatomy Studio';
+}
 async function initializeStudioScene(){
   if(!teacherMode){
     const fragment=location.hash.slice('#scene='.length);
-    const shared=await decodeScene(fragment);
-    await applyScene(shared);
-    document.title=shared.t+' • Anatomy Studio';
+    await loadProject(await decodeScene(fragment));
   }else{
-    const draft=localStorage.getItem(DRAFT_KEY);
+    const draft=localStorage.getItem(DRAFT_KEY)||localStorage.getItem(OLD_DRAFT_KEY);
     if(draft){
-      try {await applyScene(JSON.parse(draft));$('draft-status').textContent='Restored your last locally saved draft.';}
-      catch(err){console.warn('Ignoring outdated local draft:',err);setMode(mode);$('draft-status').textContent='Saved draft could not be restored; a new scene is ready.';}
+      try{
+        await loadProject(JSON.parse(draft));
+        $('draft-status').textContent='Restored your last locally saved lesson.';
+        if(!localStorage.getItem(DRAFT_KEY))saveDraft(false);
+      }catch(err){
+        console.warn('Ignoring outdated local draft:',err);setMode(mode);
+        $('draft-status').textContent='Saved draft could not be restored; a new lesson is ready.';
+      }
     }else setMode(mode);
-    renderLabelEditor();
+    if(!chapters.length){chapters=[snapshotScene()];activeChapter=0;}
+    renderChapterUI();renderLabelEditor();
   }
 }
 async function publishScene(){
   if(!teacherMode || !sceneRoot)return;
   const button=$('publish-open');button.disabled=true;button.textContent='Preparing link…';
   try{
-    const encoded=await encodeScene(snapshotScene());
+    const encoded=await encodeScene(snapshotProject());
     const link=new URL(location.href);link.hash='scene='+encoded;link.search='';
     sharedLink=link.href;
     $('share-url').value=sharedLink;
     $('share-feedback').textContent=sharedLink.length > 2000
       ? `This link is ${sharedLink.length.toLocaleString()} characters long. Test it in Google Classroom; some systems shorten long URLs.`
-      : `Link created (${sharedLink.length} characters). Share it in Google Classroom.`;
+      : `Link created with ${chapters.length} chapter${chapters.length===1?'':'s'} (${sharedLink.length} characters). Share it in Google Classroom.`;
     $('share-dialog').hidden=false;$('copy-url').focus();
     saveDraft(false);
   }catch(err){showToast('Could not create link: '+err.message);}
@@ -586,6 +775,7 @@ $('copy-url').addEventListener('click',async()=>{
 $('preview-url').addEventListener('click',()=>{if(sharedLink)window.open(sharedLink,'_blank','noopener');});
 $('place-label').addEventListener('click',()=>{
   if(!teacherMode || !sceneRoot)return;
+  if(paintMode)cancelPainting();
   if(placingLabel){cancelPlacing();return;}
   if(!$('new-label-text').value.trim()){showToast('Enter label text before placing it.');$('new-label-text').focus();return;}
   if(labels.length>=64){showToast('Maximum 64 annotations per scene.');return;}
@@ -593,22 +783,55 @@ $('place-label').addEventListener('click',()=>{
   $('place-label').textContent='Cancel placing label';$('place-label').classList.add('placing');
   $('place-hint').hidden=false;elements.stage.style.cursor='crosshair';
 });
-$('scene-title').addEventListener('input',queueDraft);
+// Teacher paint brush: one click colors a complete anatomical mesh (not surface pixels).
+$('paint-color').addEventListener('input',event=>{
+  paintColor=event.target.value.toLowerCase();$('paint-hex').textContent=paintColor.toUpperCase();updatePaintControls();
+});
+for(const swatch of document.querySelectorAll('.paint-swatch'))swatch.addEventListener('click',()=>{
+  paintColor=swatch.dataset.color;$('paint-color').value=paintColor;
+  $('paint-hex').textContent=paintColor.toUpperCase();updatePaintControls();
+});
+$('paint-mode').addEventListener('click',()=>{
+  if(!teacherMode||!sceneRoot)return;
+  if(placingLabel)cancelPlacing();
+  paintMode=!paintMode;
+  $('place-hint').textContent=paintMode?'PAINT: Click a bone to color the whole structure. Esc exits Paint mode.':'Click the bone where you want the label to point. Esc cancels.';
+  $('place-hint').hidden=!paintMode;
+  elements.stage.style.cursor=paintMode?'crosshair':'';
+  openDetails(false);updatePaintControls();
+});
+$('paint-selected').addEventListener('click',()=>setBoneColor(selected,paintColor));
+$('erase-selected').addEventListener('click',()=>setBoneColor(selected,null));
+$('erase-all').addEventListener('click',()=>{
+  if(!teacherMode||!bonePaint.size||!confirm(`Reset colors on all ${bonePaint.size} painted bones in this chapter?`))return;
+  restoreBonePaint([]);renderList();queueDraft();showToast('Restored original colors in this chapter.');
+});
+$('scene-title').addEventListener('input',()=>{if(chapters.length){chapters[activeChapter].t=$('scene-title').value||'Untitled chapter';renderChapterUI();}queueDraft();});
+$('project-title').addEventListener('input',queueDraft);
+$('previous-chapter').addEventListener('click',()=>switchChapter(activeChapter-1));
+$('next-chapter').addEventListener('click',()=>switchChapter(activeChapter+1));
+$('add-chapter').addEventListener('click',()=>createChapter(false));
+$('duplicate-chapter').addEventListener('click',()=>createChapter(true));
 $('student-label-mode').addEventListener('change',()=>{labelMode=$('student-label-mode').value;queueDraft();});
 $('student-explore').addEventListener('change',()=>{studentExplore=$('student-explore').checked;queueDraft();});
 $('save-project').addEventListener('click',()=>saveDraft(true));
 $('new-project').addEventListener('click',()=>{
-  if(!confirm('Start a new scene? Your saved draft and current labels will be cleared. Previously shared student links will keep working.'))return;
+  if(!confirm('Start a new lesson? All chapters and labels in your current local draft will be cleared. Existing student links will still work. Export a JSON backup first if needed.'))return;
+  clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
+  restoreBonePaint([]);
+  chapters=[];activeChapter=0;
   labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
-  $('scene-title').value='Skull exploration';elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');renderAnnotations();renderLabelEditor();saveDraft(false);
+  $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
+  elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
+  renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);
 });
 $('export-project').addEventListener('click',()=>{
   try{
-    const project=JSON.stringify(snapshotScene(),null,2);
+    const project=JSON.stringify(snapshotProject(),null,2);
     const blob=new Blob([project],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');a.href=url;
-    a.download=($('scene-title').value.trim().replace(/[^a-z0-9_-]+/gi,'-').slice(0,50)||'anatomy-scene')+'.json';
+    a.download=($('project-title').value.trim().replace(/[^a-z0-9_-]+/gi,'-').slice(0,50)||'anatomy-lesson')+'.json';
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(err){showToast('Export failed: '+err.message);}
 });
@@ -616,8 +839,8 @@ $('import-project').addEventListener('click',()=>$('import-file').click());
 $('import-file').addEventListener('change',async()=>{
   const file=$('import-file').files?.[0];if(!file)return;
   try{
-    if(file.size>40000)throw new Error('JSON project is too large.');
-    await applyScene(JSON.parse(await file.text()));saveDraft(false);showToast('Scene imported.');
+    if(file.size>160000)throw new Error('JSON lesson is too large.');
+    await loadProject(JSON.parse(await file.text()));saveDraft(false);showToast('Lesson imported with all chapters.');
   }catch(err){showToast('Could not import scene: '+err.message);}
   finally{$('import-file').value='';}
 });

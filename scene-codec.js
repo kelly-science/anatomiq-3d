@@ -1,7 +1,8 @@
 /* Versioned, server-free student scene links. No user information is sent to a server. */
 export const SCENE_VERSION = 1;
 const MAX_FRAGMENT = 24000;
-const MAX_JSON_BYTES = 40000;
+const MAX_JSON_BYTES = 160000;
+export const MAX_CHAPTERS = 12;
 const encoder = new TextEncoder();
 const decoder = new TextDecoder('utf-8', {fatal:true});
 
@@ -57,8 +58,41 @@ export function validateScene(scene) {
       throw new Error('A label contains invalid placement or text.');
     }
   }
+  // Optional sparse list of colors, by stable bone index. Absent for older shared links.
+  if (scene.pc !== undefined) {
+    if (!Array.isArray(scene.pc) || scene.pc.length > scene.n) throw new Error('Invalid bone paint list.');
+    const used = new Set();
+    for (const item of scene.pc) {
+      if (!Array.isArray(item) || item.length !== 2 || !Number.isInteger(item[0]) ||
+          item[0] < 0 || item[0] >= scene.n || used.has(item[0]) ||
+          typeof item[1] !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(item[1])) {
+        throw new Error('Invalid bone paint entry.');
+      }
+      used.add(item[0]);
+    }
+  }
   if (encoder.encode(JSON.stringify(scene)).length > MAX_JSON_BYTES) throw new Error('Scene exceeds the size limit.');
   return scene;
+}
+/** Projects contain one or more complete scene snapshots; old v1 single-scene links remain valid. */
+export function validateProject(project) {
+  if (project?.v === 1) return validateScene(project);
+  if (!project || typeof project !== 'object' || Array.isArray(project) || project.v !== 2) throw new Error('This project format is unsupported.');
+  if (!boundedText(project.t, 90)) throw new Error('A project title is required (90 characters maximum).');
+  if (!Array.isArray(project.chapters) || !project.chapters.length || project.chapters.length > MAX_CHAPTERS) throw new Error(`A project must contain 1–${MAX_CHAPTERS} chapters.`);
+  if (!Number.isInteger(project.start) || project.start < 0 || project.start >= project.chapters.length) throw new Error('Invalid starting chapter.');
+  let labels = 0;
+  let fingerprint = '';
+  let count = 0;
+  for (const chapter of project.chapters) {
+    validateScene(chapter);
+    labels += chapter.labels.length;
+    if (labels > 240) throw new Error('Maximum 240 annotations across all chapters.');
+    if (!fingerprint) { fingerprint = chapter.f; count = chapter.n; }
+    if (chapter.f !== fingerprint || chapter.n !== count) throw new Error('Chapters must reference the same 3D model.');
+  }
+  if (encoder.encode(JSON.stringify(project)).length > MAX_JSON_BYTES) throw new Error('Project exceeds the size limit.');
+  return project;
 }
 async function compress(source) {
   if (typeof CompressionStream === 'undefined') return {prefix:'j',bytes:source};
@@ -81,7 +115,7 @@ async function decompress(bytes) {
   return result;
 }
 export async function encodeScene(scene) {
-  validateScene(scene);
+  validateProject(scene);
   const {prefix,bytes} = await compress(encoder.encode(JSON.stringify(scene)));
   const result=prefix+bytesToURL(bytes);
   if (result.length > MAX_FRAGMENT) throw new Error('Scene is too large for a shareable link. Export a JSON backup instead.');
@@ -94,5 +128,5 @@ export async function decodeScene(fragment) {
   if (raw.length > MAX_JSON_BYTES) throw new Error('Scene is too large.');
   let scene;
   try {scene=JSON.parse(decoder.decode(raw));} catch {throw new Error('Could not read scene configuration.');}
-  return validateScene(scene);
+  return validateProject(scene);
 }

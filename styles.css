@@ -61,3 +61,47 @@ body.student-mode .brand-mark{background:linear-gradient(145deg,#447e89,#244f62)
 /* Keep search usable when a Chromebook viewport leaves less height for the explorer. */
 .left-sidebar>.sidebar-top,.left-sidebar>.search-wrap,.left-sidebar>.studio-card,.left-sidebar>.explorer-settings,.left-sidebar>.list-header,.left-sidebar>.sidebar-footer{flex-shrink:0}
 body.student-mode.student-explore-enabled #restore-all,body.student-mode.student-explore-enabled #hide-selected,body.student-mode.student-explore-enabled #isolate-selected{display:inline-flex!important}
+
+/* Studio 0.4: multi-chapter lessons and student chapter navigation */
+.left-sidebar{overflow-y:auto;scrollbar-color:#3c5668 transparent;scrollbar-width:thin}
+.left-sidebar>.sidebar-top,.left-sidebar>.search-wrap,.left-sidebar>.studio-card,.left-sidebar>.chapters-manager,.left-sidebar>.explorer-settings,.left-sidebar>.list-header,.left-sidebar>.sidebar-footer{flex-shrink:0}
+.left-sidebar .bone-list{flex:0 0 auto;max-height:360px;min-height:110px}
+.chapter-title-field{margin-top:12px}
+.chapters-manager{border:1px solid #2d4959;border-radius:11px;margin:0 14px 14px;padding:13px;background:#172834}
+.chapters-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.chapter-count{font-size:10px;color:#98b1be;white-space:nowrap}
+.teacher-chapter-list{display:flex;flex-direction:column;gap:5px;margin-top:12px}
+.teacher-chapter-row{display:flex;align-items:stretch;gap:3px;border-radius:8px;border:1px solid #314553;background:#14222e;padding:3px}
+.teacher-chapter-row.active{background:#24434b;border-color:#509ca6}
+.teacher-chapter-row .chapter-choose{min-width:0;flex:1;text-align:left;color:#d2e5ea;border:0;background:none;padding:7px 6px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.teacher-chapter-row>button:not(.chapter-choose){border:0;border-radius:5px;background:transparent;color:#8fa9b6;font-size:14px;min-width:22px;padding:3px}
+.teacher-chapter-row>button:hover{background:#37515a;color:#fff}
+.teacher-chapter-row>button:disabled{opacity:.25;cursor:default}
+.chapter-create-actions{display:flex;gap:6px;margin-top:10px}
+.chapter-create-actions .button{flex:1;min-width:0}
+.chapter-nav{position:absolute;z-index:3;left:50%;bottom:85px;transform:translateX(-50%);display:flex;align-items:center;gap:5px;min-width:0;max-width:calc(100% - 32px);border:1px solid #456776;border-radius:14px;background:#122530ed;box-shadow:0 14px 30px #071420a9;backdrop-filter:blur(14px);padding:6px}
+.chapter-nav-content{min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+.chapter-progress{font-size:9px;font-weight:800;letter-spacing:.12em;color:#80b6c0;white-space:nowrap}
+.chapter-tabs{display:flex;align-items:center;gap:4px;min-width:0;max-width:min(57vw,610px);overflow-x:auto;scrollbar-width:thin;padding-bottom:1px}
+.chapter-tab{border:1px solid transparent;border-radius:8px;background:transparent;color:#adbdc8;padding:8px 10px;white-space:nowrap;font-size:11px;max-width:190px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.chapter-tab.active{background:#396e78;border-color:#63aeb7;color:#f3feff}
+.chapter-tab:hover{background:#2c4b58;color:#fff}
+.chapter-arrow{border:1px solid #3b5c6b;border-radius:8px;background:#253d4a;color:#deeff2;font-size:24px;min-width:33px;height:35px;line-height:1;flex:none}
+.chapter-arrow:disabled{opacity:.3;cursor:default}
+@media(max-width:850px){.chapter-nav{bottom:75px}.chapter-tabs{max-width:42vw}.chapter-tab{max-width:155px}}
+@media(max-width:630px){.chapter-nav{bottom:68px;max-width:calc(100% - 16px)}.chapter-tabs{max-width:58vw}.chapter-tab{font-size:10px;padding:6px 7px;max-width:120px}.chapter-arrow{min-width:27px;height:33px}.chapter-progress{font-size:8px}.chapter-nav-content{gap:2px}}
+
+/* Studio 0.5 — per-bone teacher paint tool. Styles are intentionally light for Chromebooks. */
+.paint-editor{border-top:1px solid #375362;margin-top:22px;padding-top:24px}
+.paint-color-row{display:flex;align-items:center;gap:12px;margin-bottom:11px}
+#paint-color{width:74px;height:42px;cursor:pointer;background:#112531;border:1px solid #456b77;border-radius:9px;padding:3px;box-sizing:border-box}
+#paint-hex{font:600 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#cfdee6;letter-spacing:.04em}
+.paint-swatches{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-bottom:13px}
+.paint-swatch{aspect-ratio:1;border-radius:7px;border:2px solid transparent;min-width:0;background:var(--swatch);box-shadow:inset 0 0 0 1px #0005;cursor:pointer}
+.paint-swatch.active{outline:2px solid #9af0f4;outline-offset:2px}
+.paint-swatch:focus-visible{outline:2px solid white;outline-offset:2px}
+.paint-action-row{display:flex;gap:7px;margin-top:8px}
+.paint-action-row .button{flex:1;min-width:0}
+.paint-editor>.button{margin-top:8px}
+.paint-editor button:disabled{opacity:.45;cursor:not-allowed}
+.paint-list-dot{flex:none;width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px #0008;margin-left:auto}
