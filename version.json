@@ -1,6 +1,6 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.0",
   "channel": "stable",
   "published": "2026-10-22",
-  "notes": "App Settings, same-site update checks, optional fully local renderer/model assets"
+  "notes": "Schoology iframe-optimized student view and per-publication study/practical-exam permissions"
 }

@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Self-hosted Anatomy PWA</title>
+  <title>Anatomy Studio • Student Publishing & Schoology</title>
   <script type="importmap" id="renderer-importmap">
   {
     "imports": {
@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 0.8</span>
+        <span class="version">STUDIO 0.9</span>
       </div>
       <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
         <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
@@ -254,12 +254,37 @@
   <div class="dialog-backdrop" id="share-dialog" hidden>
     <section role="dialog" aria-modal="true" aria-labelledby="dialog-heading" class="share-dialog">
       <div class="dialog-header"><div><span class="eyebrow">PUBLISH SCENE</span><h2 id="dialog-heading">Student link</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="Close">✕</button></div>
-      <p>Give this URL to your class. It opens the full lesson, including every chapter and its own customized model and labels—no account or database needed.</p>
-      <label class="field-label" for="share-url">Shareable URL</label>
-      <textarea class="share-url" id="share-url" readonly rows="4"></textarea>
-      <div id="share-feedback" class="studio-hint" aria-live="polite"></div>
-      <div class="dialog-buttons"><button id="copy-url" class="button primary">Copy link</button><button id="preview-url" class="button">Open student preview ↗</button></div>
-      <p class="footnote">Anyone with the link can view all chapters. The URL contains your labels and settings; editing this draft later does not update previously shared links.</p>
+      <p>Select which controls students can use. Permissions apply to all chapters in this published link without changing your teacher lesson.</p>
+      <div class="publish-options" aria-labelledby="publish-options-title">
+        <label class="field-label" id="publish-options-title" for="publish-preset">Student viewer preset</label>
+        <select id="publish-preset" class="text-input">
+          <option value="study">Study Mode — full exploration</option>
+          <option value="exam">Practical Exam — rotation and zoom only</option>
+          <option value="custom">Custom permissions</option>
+        </select>
+        <div class="publish-permissions">
+          <label><input type="checkbox" id="publish-search" checked /><span><strong>Search</strong><small>Allow searching by anatomical name</small></span></label>
+          <label><input type="checkbox" id="publish-tree" checked /><span><strong>Structure explorer</strong><small>Show the scrollable list of anatomical structures</small></span></label>
+          <label><input type="checkbox" id="publish-names" checked /><span><strong>Identify by clicking</strong><small>Reveal anatomical names and descriptions on selection</small></span></label>
+          <label><input type="checkbox" id="publish-labels" checked /><span><strong>Teacher annotations</strong><small>Show labels using each chapter’s reveal settings</small></span></label>
+          <label><input type="checkbox" id="publish-explore" checked /><span><strong>Hide and isolate bones</strong><small>Allow changing the displayed structures during viewing</small></span></label>
+        </div>
+      </div>
+      <button id="generate-student-link" class="button primary full" type="button">Generate student links &amp; embed code</button>
+      <div id="publish-results" hidden>
+        <label class="field-label" for="share-url">Direct student link</label>
+        <textarea class="share-url" id="share-url" readonly rows="3"></textarea>
+        <div class="dialog-buttons"><button id="copy-url" class="button">Copy student link</button><button id="preview-url" class="button">Open student preview ↗</button></div>
+        <label class="field-label" for="embed-url">Schoology embedded viewer link</label>
+        <textarea class="share-url" id="embed-url" readonly rows="3"></textarea>
+        <div class="dialog-buttons"><button id="copy-embed-url" class="button">Copy Schoology link</button><button id="preview-embed" class="button">Preview embedded view ↗</button></div>
+        <label class="field-label" for="iframe-code">Optional HTML iframe code</label>
+        <textarea class="share-url" id="iframe-code" readonly rows="3"></textarea>
+        <button id="copy-iframe" class="button" type="button">Copy iframe HTML</button>
+        <p class="footnote">For Schoology, add a <strong>File/Link/External Tool → Link</strong> and choose <strong>Display in Schoology</strong> using the Schoology link above. HTML iframe snippets may be removed by Schoology’s page editor. Test in Student View.</p>
+      </div>
+      <div id="share-feedback" class="studio-hint" aria-live="polite">Choose a preset, then generate the student links.</div>
+      <p class="footnote">These controls hide UI, not source model data. An HTML/URL-only app cannot securely prevent technically skilled students from accessing anatomical names or changing the viewer; don't treat this as a locked-down assessment environment.</p>
     </section>
   </div>
   <div class="dialog-backdrop" id="library-dialog" hidden>
@@ -290,7 +315,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">0.8.0</strong>
+        <span>Installed version</span><strong id="settings-installed">0.9.0</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>

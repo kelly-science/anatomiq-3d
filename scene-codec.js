@@ -74,10 +74,20 @@ export function validateScene(scene) {
   if (encoder.encode(JSON.stringify(scene)).length > MAX_JSON_BYTES) throw new Error('Scene exceeds the size limit.');
   return scene;
 }
+/** Publish permissions on the whole lesson. Omitted for older links (their original behavior is preserved). */
+export const STUDY_PERMISSIONS = Object.freeze({ss:true,st:true,sn:true,sl:true,ex:true});
+export const EXAM_PERMISSIONS = Object.freeze({ss:false,st:false,sn:false,sl:false,ex:false});
+export function validatePermissions(p){
+  if(!p || typeof p!=='object' || Array.isArray(p) ||
+    !['ss','st','sn','sl','ex'].every(key=>typeof p[key]==='boolean'))
+    throw new Error('Invalid student publishing permissions.');
+  return p;
+}
 /** Projects contain one or more complete scene snapshots; old v1 single-scene links remain valid. */
 export function validateProject(project) {
   if (project?.v === 1) return validateScene(project);
   if (!project || typeof project !== 'object' || Array.isArray(project) || project.v !== 2) throw new Error('This project format is unsupported.');
+  if (project.sp !== undefined) validatePermissions(project.sp);
   if (!boundedText(project.t, 90)) throw new Error('A project title is required (90 characters maximum).');
   if (!Array.isArray(project.chapters) || !project.chapters.length || project.chapters.length > MAX_CHAPTERS) throw new Error(`A project must contain 1–${MAX_CHAPTERS} chapters.`);
   if (!Number.isInteger(project.start) || project.start < 0 || project.start >= project.chapters.length) throw new Error('Invalid starting chapter.');

@@ -1,6 +1,6 @@
-/* Anatomy Studio 0.8 — same-origin-first installable PWA.
+/* Anatomy Studio 0.9 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v0.8.0';
+const VERSION='anatomy-v0.9.0';
 const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./library-store.js','./scene-history.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',

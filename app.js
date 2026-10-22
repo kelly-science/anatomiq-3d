@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { encodeScene, decodeScene, validateScene, validateProject, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '0.8.0';
+const APP_VERSION = '0.9.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -36,6 +36,30 @@ let activePreset = 'front';
 let currentModelURL = LOCAL_MODEL;
 let offlineReady = false;
 const teacherMode = !location.hash.startsWith('#scene=');
+const embeddedMode = !teacherMode && new URLSearchParams(location.search).get('embed') === '1';
+document.body.classList.toggle('embed-mode',embeddedMode);
+let publishPermissions = {...STUDY_PERMISSIONS};
+let studentPermissions = {...STUDY_PERMISSIONS};
+function studentAllowed(key){ return teacherMode || studentPermissions[key]; }
+function applyStudentPermissions(){
+  if(teacherMode)return;
+  const b=document.body;
+  b.classList.toggle('student-search',studentPermissions.ss);
+  b.classList.toggle('student-tree',studentPermissions.st);
+  b.classList.toggle('student-names',studentPermissions.sn);
+  b.classList.toggle('student-explore-enabled',studentExplore);
+  elements.search.disabled=!studentPermissions.ss;
+  if(!studentPermissions.ss)elements.search.value='';
+  if(!studentPermissions.sn)setSelection(null);
+  document.querySelector('.viewer-tip').textContent=studentPermissions.sn
+    ? 'Drag to rotate · Scroll to zoom · Click bones to identify'
+    : 'Drag to rotate · Scroll or pinch to zoom';
+  $('details-toggle').hidden=!studentPermissions.sn;
+  // Schoology embeds and assessment views should dedicate the available space to the model.
+  if(!studentPermissions.ss && !studentPermissions.st)elements.sidebar.classList.remove('open');
+  renderList();
+  resize();
+}
 document.body.classList.toggle('student-mode', !teacherMode);
 $('student-badge').hidden = teacherMode;
 let sceneFingerprint = '';
@@ -64,6 +88,7 @@ let applyingHistory = false;
 let openMenuName = null;
 let menuRequestId = 0;
 const round = (n,places=4) => Number(n.toFixed(places));
+const treeExpanded = new Map();
 
 
 const scene = new THREE.Scene();
@@ -314,27 +339,65 @@ function orient(view){
 }
 function focusSelected(){if(selected)fitBox(boxFor([selected]),activePreset,2.15);}
 function renderList(){
-  const text=elements.search.value.trim().toLowerCase();
+  const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
+  document.body.classList.toggle('student-has-query',!teacherMode && Boolean(text));
   const available=currentStructures().filter(s=>tissueVisible(s));
   const found=available.filter(s=>s.name.toLowerCase().includes(text) && (teacherMode || studentExplore || s.mesh.visible));
   elements.count.textContent=found.length;
   elements.clearSearch.hidden=!elements.search.value;
   const frag=document.createDocumentFragment();
-  if(!found.length){const p=document.createElement('p');p.className='empty-list';p.textContent='No matching structures found.';frag.appendChild(p);}
-  for(const s of found){
+  if(!teacherMode && !studentPermissions.st && !text){
+    const p=document.createElement('p');p.className='empty-list';p.textContent='Search for a structure above.';frag.appendChild(p);
+  }else if(!found.length){
+    const p=document.createElement('p');p.className='empty-list';p.textContent='No matching structures found.';frag.appendChild(p);
+  }
+  const createBoneButton=s=>{
     const b=document.createElement('button');b.className='bone-item'+(selected===s?' active':'');
     b.setAttribute('aria-pressed',String(selected===s));
-    const t=document.createElement('span');t.textContent=s.name;b.appendChild(t);
+    const t=document.createElement('span');t.textContent=studentAllowed('sn') ? s.name : `Structure ${s.index+1}`;b.appendChild(t);
     if(bonePaint.has(s.index)){
       const chip=document.createElement('span');chip.className='paint-list-dot';
       chip.style.backgroundColor=bonePaint.get(s.index);chip.setAttribute('aria-label',`Painted ${bonePaint.get(s.index)}`);
       chip.title=`Bone color: ${bonePaint.get(s.index)}`;b.appendChild(chip);
     }
-    b.addEventListener('click',()=>{if(teacherMode||studentExplore)hidden.delete(s.mesh);isolated=false;setSelection(s);focusSelected();if(innerWidth<630)elements.sidebar.classList.remove('open');});
-    frag.appendChild(b);
+    b.addEventListener('click',()=>{
+      if(teacherMode||studentExplore)hidden.delete(s.mesh);
+      isolated=false;
+      if(studentAllowed('sn')){setSelection(s);focusSelected();}
+      else {setSelection(null);fitBox(boxFor([s]),activePreset,2.2);}
+      if(innerWidth<630)elements.sidebar.classList.remove('open');
+    });
+    return b;
+  };
+  if(!teacherMode && studentPermissions.st && !text){
+    // Hierarchical student explorer, grouped by tissue then left/right/midline.
+    // Each anatomical name remains governed by the separate 'identify' permission.
+    const tissueGroups=new Map();
+    for(const s of found){
+      const tissue=s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
+      const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
+      if(!sides.has(side))sides.set(side,[]);
+      sides.get(side).push(s);
+    }
+    for(const [tissue,sides] of tissueGroups){
+      const group=document.createElement('details');group.className='bone-tree-group';group.open=treeExpanded.get(tissue) ?? true;group.addEventListener('toggle',()=>treeExpanded.set(tissue,group.open));
+      const summary=document.createElement('summary');summary.textContent=`${tissue} (${[...sides.values()].reduce((n,a)=>n+a.length,0)})`;group.append(summary);
+      for(const [side,bones] of sides){
+        const inner=document.createElement('details');inner.className='bone-tree-subgroup';const nodeKey=`${tissue}/${side}`;inner.open=treeExpanded.get(nodeKey) ?? true;inner.addEventListener('toggle',()=>treeExpanded.set(nodeKey,inner.open));
+        const label=document.createElement('summary');label.textContent=`${side} (${bones.length})`;inner.append(label);
+        const branch=document.createElement('div');branch.className='bone-tree-items';
+        for(const bone of bones)branch.append(createBoneButton(bone));
+        inner.append(branch);group.append(inner);
+      }
+      frag.append(group);
+    }
+  }else if(teacherMode || studentPermissions.st || text){
+    for(const bone of found)frag.append(createBoneButton(bone));
   }
   elements.boneList.replaceChildren(frag);
 }
+
 let press={x:0,y:0};
 renderer.domElement.addEventListener('pointerdown',event=>{press={x:event.clientX,y:event.clientY};});
 renderer.domElement.addEventListener('pointerup',event=>{
@@ -343,7 +406,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
   raycaster.setFromCamera(pointer,camera);
   const hit=raycaster.intersectObjects(currentlyVisible().map(s=>s.mesh),false)[0];
-  if(!hit)return;
+  if(!hit || (!teacherMode && !studentPermissions.sn))return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
   if(paintMode && teacherMode){
@@ -567,7 +630,7 @@ function snapshotProject(){
   const current = snapshotScene();
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
-  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c))});
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions}});
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
@@ -835,7 +898,7 @@ function renderAnnotations(){
   labels.forEach((label,i)=>{
     const marker=document.createElement('button');
     marker.className='anatomy-label';marker.type='button';
-    marker.setAttribute('aria-label',`Anatomical annotation ${i+1}: ${label.t}`);
+    marker.setAttribute('aria-label',!teacherMode && labelMode==='hidden' ? `Annotation ${i+1} hidden` : `Anatomical annotation ${i+1}: ${label.t}`);
     const number=document.createElement('span');number.className='callout-number';number.textContent=String(i+1);
     const caption=document.createElement('span');caption.className='callout-text';caption.textContent=label.t;
     marker.append(number,caption);labelContainer.appendChild(marker);
@@ -907,7 +970,9 @@ async function applyScene(saved){
     $('scene-title').value=saved.t;
     $('student-label-mode').value=saved.lm;
     $('student-explore').checked=saved.x;
-    labelMode=saved.lm;studentExplore=saved.x;
+    labelMode=saved.lm;
+    studentExplore=teacherMode ? saved.x : (studentPermissions.ex && saved.x || studentPermissions.ex);
+    if(!teacherMode && !studentPermissions.sl)labelMode='hidden';
     document.body.classList.toggle('student-explore-enabled',!teacherMode&&studentExplore);
     isolated=false;
     hidden.clear();
@@ -936,9 +1001,12 @@ async function loadProject(data){
   // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
   chapters=project.v===1?[structuredClone(project)]:project.chapters.map(ch=>structuredClone(ch));
   activeChapter=project.v===1?0:project.start;
+  publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
+  if(!teacherMode)studentPermissions={...publishPermissions};
   $('project-title').value=project.t;
   await applyScene(chapters[activeChapter]);
   renderChapterUI();
+  if(!teacherMode)applyStudentPermissions();
   document.title=project.t+' • Anatomy Studio';
 }
 async function initializeStudioScene(){
@@ -961,35 +1029,70 @@ async function initializeStudioScene(){
     renderChapterUI();renderLabelEditor();resetHistory();
   }
 }
-async function publishScene(){
+// --- Publishing: one link with explicit lesson-wide student permissions. ---
+const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ex:'publish-explore'};
+let embedLink='';
+function showPublishPermissions(permissions){
+  validatePermissions(permissions);
+  for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=permissions[key];
+  const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>permissions[k]===preset[k]);
+  $('publish-preset').value=exact(STUDY_PERMISSIONS)?'study':exact(EXAM_PERMISSIONS)?'exam':'custom';
+}
+function currentPublishPermissions(){
+  return validatePermissions(Object.fromEntries(Object.entries(PUBLISH_KEYS).map(([key,id])=>[key,$(id).checked])));
+}
+$('publish-preset').addEventListener('change',()=>{
+  const choice=$('publish-preset').value;
+  if(choice==='study')showPublishPermissions(STUDY_PERMISSIONS);
+  if(choice==='exam')showPublishPermissions(EXAM_PERMISSIONS);
+  $('publish-results').hidden=true;
+});
+for(const id of Object.values(PUBLISH_KEYS))$(id).addEventListener('change',()=>{
+  $('publish-preset').value='custom';$('publish-results').hidden=true;
+});
+function publishScene(){
   if(!teacherMode || !sceneRoot)return;
-  const button=$('publish-open');button.disabled=true;button.textContent='Preparing link…';
+  showPublishPermissions(publishPermissions);
+  $('publish-results').hidden=true;
+  $('share-feedback').textContent='Choose student controls and click Generate student links.';
+  $('share-dialog').hidden=false;
+  $('publish-preset').focus();
+}
+async function generateStudentLink(){
+  if(!teacherMode || !sceneRoot)return;
+  const button=$('generate-student-link');button.disabled=true;button.textContent='Preparing links…';
   try{
+    publishPermissions={...currentPublishPermissions()};
     const encoded=await encodeScene(snapshotProject());
-    const link=new URL(location.href);link.hash='scene='+encoded;link.search='';
-    sharedLink=link.href;
+    const base=new URL(location.href);base.search='';base.hash='scene='+encoded;
+    sharedLink=base.href;
+    base.searchParams.set('embed','1');embedLink=base.href;
+    const escaped=embedLink.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     $('share-url').value=sharedLink;
-    $('share-feedback').textContent=sharedLink.length > 2000
-      ? `This link is ${sharedLink.length.toLocaleString()} characters long. Test it in Google Classroom; some systems shorten long URLs.`
-      : `Link created with ${chapters.length} chapter${chapters.length===1?'':'s'} (${sharedLink.length} characters). Share it in Google Classroom.`;
-    $('share-dialog').hidden=false;$('copy-url').focus();
+    $('embed-url').value=embedLink;
+    $('iframe-code').value=`<iframe src="${escaped}" title="Anatomy Studio interactive 3D lesson" loading="lazy" style="width:100%;height:640px;border:0;display:block" allowfullscreen></iframe>`;
+    $('publish-results').hidden=false;
+    $('share-feedback').textContent=embedLink.length>2000
+      ? `Links created (${embedLink.length.toLocaleString()} characters). Schoology may reject unusually long links; test the actual Schoology student view.`
+      : 'Student link, Schoology link, and iframe HTML are ready.';
     saveDraft(false);
-  }catch(err){showToast('Could not create link: '+err.message);}
-  finally{button.disabled=false;button.textContent='↗ Share student link…';}
+  }catch(err){$('share-feedback').textContent='Could not generate link: '+err.message;}
+  finally{button.disabled=false;button.textContent='Generate student links & embed code';}
 }
 $('publish-open').addEventListener('click',publishScene);
+$('generate-student-link').addEventListener('click',generateStudentLink);
 $('close-dialog').addEventListener('click',()=>$('share-dialog').hidden=true);
 $('share-dialog').addEventListener('click',ev=>{if(ev.target===$('share-dialog'))$('share-dialog').hidden=true;});
-$('copy-url').addEventListener('click',async()=>{
-  if(!sharedLink)return;
-  try{
-    await navigator.clipboard.writeText(sharedLink);
-    $('share-feedback').textContent='✓ Student link copied. Paste it into Google Classroom.';
-  }catch{
-    $('share-url').select();$('share-feedback').textContent='Select and copy the highlighted link.';
-  }
-});
+async function copyPublishValue(inputId,label){
+  const value=$(inputId).value;if(!value)return;
+  try {await navigator.clipboard.writeText(value);$('share-feedback').textContent=`✓ ${label} copied.`;}
+  catch {$(inputId).focus();$(inputId).select();$('share-feedback').textContent='Select the highlighted text and copy it.';}
+}
+$('copy-url').addEventListener('click',()=>copyPublishValue('share-url','Student link'));
+$('copy-embed-url').addEventListener('click',()=>copyPublishValue('embed-url','Schoology link'));
+$('copy-iframe').addEventListener('click',()=>copyPublishValue('iframe-code','iframe HTML'));
 $('preview-url').addEventListener('click',()=>{if(sharedLink)window.open(sharedLink,'_blank','noopener');});
+$('preview-embed').addEventListener('click',()=>{if(embedLink)window.open(embedLink,'_blank','noopener');});
 $('place-label').addEventListener('click',()=>{
   if(!teacherMode || !sceneRoot)return;
   if(paintMode)cancelPainting();
@@ -1038,7 +1141,7 @@ $('new-project').addEventListener('click',()=>{
   restoreBonePaint([]);
   libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
   chapters=[];activeChapter=0;
-  labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
+  publishPermissions={...STUDY_PERMISSIONS};labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
   renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
