@@ -5,10 +5,11 @@ import { encodeScene, decodeScene, validateScene, validateProject, validatePermi
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
+import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-performance.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -98,11 +99,31 @@ const treeExpanded = new Map();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 0.001, 60);
 camera.position.set(0, 1.7, 0.85);
-const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});
+// Keep quality specific to this device/profile; shared lessons remain visually identical
+// in content but can render at different resolutions on slower Chromebooks.
+const RENDER_MODE_KEY='anatomy-studio-render-quality-v1';
+let savedRenderMode='auto';
+try{savedRenderMode=normalizeMode(localStorage.getItem(RENDER_MODE_KEY));}catch{}
+let renderProfile=resolveRenderProfile(savedRenderMode,navigator);
+const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
 renderer.setClearColor(0x000000,0);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap));
 elements.stage.appendChild(renderer.domElement);
+function setRenderQuality(mode){
+  renderProfile=resolveRenderProfile(mode,navigator);
+  try{localStorage.setItem(RENDER_MODE_KEY,renderProfile.requested);}catch{}
+  $('view-quality').value=renderProfile.requested;
+  $('settings-render-quality').value=renderProfile.requested;
+  $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
+  renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap));
+  // WebGLRenderer.setPixelRatio reconfigures its drawing buffer at the current size.
+  invalidate(2);
+}
+$('view-quality').value=renderProfile.requested;
+$('settings-render-quality').value=renderProfile.requested;
+$('view-quality').addEventListener('change',e=>setRenderQuality(e.target.value));
+$('settings-render-quality').addEventListener('change',e=>setRenderQuality(e.target.value));
 scene.add(new THREE.HemisphereLight(0xe9f5ff, 0x556474, 2.3));
 const keyLight = new THREE.DirectionalLight(0xffffff, 2.5); keyLight.position.set(3, 5, 5); scene.add(keyLight);
 const fillLight = new THREE.DirectionalLight(0xb6d9f5, 1.2); fillLight.position.set(-3, 2, -4); scene.add(fillLight);
@@ -118,10 +139,35 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let drawFrames = 0;
 let frameRequest = 0;
-function invalidate(frames=20){drawFrames=Math.max(drawFrames,frames);if(!frameRequest)frameRequest=requestAnimationFrame(draw);}
-function draw(){frameRequest=0;controls.update();renderer.render(scene,camera);updateAnnotationPositions();if(drawFrames-->0)frameRequest=requestAnimationFrame(draw);}
-controls.addEventListener('change',()=>{invalidate();queueDraft();});
-function resize(){const w=Math.max(1,elements.stage.clientWidth),h=Math.max(1,elements.stage.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);invalidate(2);}
+let updatingControls=false;
+let stageWidth=0,stageHeight=0;
+function invalidate(frames=1){
+  drawFrames=Math.max(drawFrames,frames);
+  if(!document.hidden && !frameRequest)frameRequest=requestAnimationFrame(draw);
+}
+function draw(){
+  frameRequest=0;
+  if(document.hidden)return;
+  updatingControls=true;
+  // OrbitControls.update() reports whether damping actually moved the camera.
+  // A change fired *inside* this update must not restart the render loop.
+  let moved=false;
+  try { moved=controls.update(); } finally {updatingControls=false;}
+  renderer.render(scene,camera);
+  updateAnnotationPositions();
+  drawFrames=Math.max(0,drawFrames-1);
+  if(moved || drawFrames>0)frameRequest=requestAnimationFrame(draw);
+}
+controls.addEventListener('change',()=>{if(!updatingControls)invalidate(2);});
+// Wait for the user to finish orbiting before serializing the scene and undo history.
+controls.addEventListener('end',()=>queueDraft());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)invalidate(2);});
+function resize(){
+  const w=Math.max(1,elements.stage.clientWidth),h=Math.max(1,elements.stage.clientHeight);
+  if(w===stageWidth && h===stageHeight)return;
+  stageWidth=w;stageHeight=h;
+  camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);invalidate(2);
+}
 new ResizeObserver(resize).observe(elements.stage);
 window.addEventListener('resize',resize);
 resize();
@@ -363,7 +409,8 @@ function fitBox(box,view='front',padding=1.35){
   camera.updateProjectionMatrix();
   controls.update();
   setPresetActive(view);
-  invalidate(30);
+  invalidate(2);
+  queueDraft();
 }
 function boxFor(list){
   const box=new THREE.Box3();
@@ -378,7 +425,7 @@ function orient(view){
   const direction={front:[0,0,1],back:[0,0,-1],left:[-1,0,0],right:[1,0,0]}[view];
   if(!direction)return;
   camera.position.copy(controls.target).add(new THREE.Vector3(...direction).multiplyScalar(distance));
-  controls.update();setPresetActive(view);invalidate(30);
+  controls.update();setPresetActive(view);invalidate(2);queueDraft();
 }
 function focusSelected(){if(selected)fitBox(boxFor([selected]),activePreset,2.15);}
 function renderList(){
@@ -557,8 +604,8 @@ $('isolate-selected').addEventListener('click',()=>{if((!teacherMode&&!studentEx
 $('hide-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;hidden.add(selected.mesh);isolated=false;setSelection(null);});
 $('clear-selection').addEventListener('click',()=>{isolated=false;setSelection(null);});
 for(const b of document.querySelectorAll('.preset'))b.addEventListener('click',()=>orient(b.dataset.view));
-$('zoom-in').addEventListener('click',()=>{camera.position.lerp(controls.target,0.18);controls.update();invalidate(30);});
-$('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target).multiplyScalar(1.22).add(controls.target);controls.update();invalidate(30);});
+$('zoom-in').addEventListener('click',()=>{camera.position.lerp(controls.target,0.18);controls.update();invalidate(2);queueDraft();});
+$('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target).multiplyScalar(1.22).add(controls.target);controls.update();invalidate(2);queueDraft();});
 $('menu-toggle').addEventListener('click',()=>{openDetails(false);elements.sidebar.classList.toggle('open');});
 elements.detailsToggle.addEventListener('click',()=>{elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
 elements.retry.addEventListener('click',loadAnatomy);
@@ -995,8 +1042,9 @@ function renderAnnotations(){
 }
 function updateAnnotationPositions(){
   if(!sceneRoot || !labels.length)return;
-  const bounds=elements.stage.getBoundingClientRect();
-  scene.updateMatrixWorld(true);
+  // The scene renderer already updates matrices; avoid a second full traversal
+  // of hundreds of muscle meshes for each annotation refresh.
+  const width=stageWidth,height=stageHeight;
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
     const s=structures[label.s];
@@ -1007,7 +1055,7 @@ function updateAnnotationPositions(){
     if(at.z<-1 || at.z>1 || Math.abs(at.x)>1.15 || Math.abs(at.y)>1.15){
       nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
     }
-    const x=(at.x+1)*bounds.width/2,y=(1-at.y)*bounds.height/2;
+    const x=(at.x+1)*width/2,y=(1-at.y)*height/2;
     const bx=x+label.dx,by=y+label.dy;
     nodes.marker.hidden=false;
     nodes.marker.style.left=bx+'px';nodes.marker.style.top=by+'px';
@@ -1359,6 +1407,9 @@ async function checkLocalAssets(){
 function openAppSettings(){
   $('settings-dialog').hidden=false;
   $('settings-installed').textContent=APP_VERSION;
+  $('settings-render-quality').value=renderProfile.requested;
+  $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
+  $('settings-performance-stats').textContent=sceneRoot ? `${currentlyVisible().length} visible structures · ${renderer.info.render.calls} draw calls in last rendered frame` : 'Model not loaded';
   $('settings-reload').hidden=!updateAvailable;
   checkLocalAssets().catch(e=>{$('settings-assets').textContent='Could not verify local files';console.warn(e);});
   $('settings-close').focus();

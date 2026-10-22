@@ -1,56 +1,38 @@
-# Anatomy Studio 1.0 — Skeletal + Muscular Systems
+# Anatomy Studio 1.1 — Chromebook Performance Pass
 
-Installable Chromebook PWA hosted on GitHub Pages. This release extends the existing 0.9 teacher editor and student publishing system, rather than starting over.
+Version 1.1 is a drop-in performance update to version 1.0. It **does not change** the anatomical model, scene JSON format, structure indices, teacher library schema, share links, practical-exam permissions, chapters, paint, or labels.
 
-## New in 1.0
+## What changed
 
-- **Skull**: the original individual cranial and facial bones.
-- **Skeleton**: original full-skeleton view.
-- **Muscular**: selectable, searchable, paintable and labelable deep and superficial muscles, based on the same Écorché GLB already used in 0.9.
-- **Combined**: skeletal structures and muscle layers in the same 3D view. The left sidebar's **Anatomical Systems** panel controls bones, superficial muscles, and deep muscles independently. Deep muscles default to OFF so they can be exposed by hiding the superficial layer.
-- Each chapter saves its own view mode, 3D camera, visibility, paint, labels and layer settings; share links and Schoology practical permissions still work.
-- **Legacy scenes**: 0.3–0.9 skeletal scenes/links still load against the unchanged model. Teacher-opened older chapters are migrated into the expanded indexing format before they are resaved. **Back up your local library** before making major changes, and keep a copy of the old 0.9 code for rollback.
+- **Demand-driven WebGL rendering**: the 3D canvas renders only when the camera is moving, damping is settling, or something changes in the view. Previously, the OrbitControls `change` handler re-extended a 20-frame draw window every time `controls.update()` ran, potentially generating a long-running loop. Hidden browser tabs stop rendering.
+- **Camera edits are saved when interaction ends**, instead of asking for scene serialization/history updates on every OrbitControls `change` event. Camera preset, Focus, Fit and zoom buttons still save their changed positions. Undo/redo and library saves remain supported.
+- **Per-device quality selection** in the viewer bottom controls and Settings → App Settings. Auto uses Fast for devices reporting up to 4 GB RAM or up to 4 CPU cores, Balanced for others. Fast caps drawing buffer pixel density at 1x; Balanced at 1.25x; Sharp at 2x or device native density, whichever is lower. Earlier releases capped density at 1.5x. Fast at 1x shades approximately 56% fewer pixels than 1.5x, though speedup depends on GPU vs draw-call limitations.
+- Removed a redundant full-scene matrix update for label placement after each WebGL render.
+- Quality is stored in the Chromebook's browser storage only; it is **not** saved in the lesson or student URL. Students can choose Fast even when viewing a teacher's shared assessment.
+- Updated version manifest and service worker cache (1.1.0).
 
-The source GLB has 198 bones, 42 cartilage meshes, 28 teeth, two eyes, 159 deep and 203 superficial muscle meshes, with named structure metadata. Eye meshes are deliberately not included in the selectable structure list.
+## Updating GitHub Pages
 
-## Installer hotfix (Three.js dependency scan)
+1. **Back up your existing Scene Library** using Library → Back up entire library. Keep a copy of the prior 1.0 repository for rollback.
+2. Extract the ZIP. Upload the **contents of `anatomy-pwa-studio/`** to the root of your existing GitHub Pages repo, replacing application files. **New required file:** `render-performance.js`.
+3. **Keep your existing `models/ecorche.glb`, `vendor/three/` directories and attribution files.** They are deliberately not embedded in the release ZIP. The shipped import map in `index.html` points to **your own local Three.js files** so updating will not silently reactivate a CDN.
+4. If you have *not* yet downloaded the local assets, run `bash tools/download-self-hosted-assets.sh` from the project directory on a Mac with internet, then upload the resulting `models/`, `vendor/`, `ASSET_SHA256.txt` and model licenses with the app. This installer includes the repaired `vendor-three.py` that skips comment-only sample URLs.
+5. Allow GitHub Pages to deploy. Reload the installed PWA online (do **not** clear Chrome site data, which would delete locally saved lessons) and check Settings → App Settings. Verify it displays **1.1.0** and all local files present.
+6. In a muscle-heavy lesson, select **Quality → Fast** at the bottom of the 3D viewer, or choose Auto to let the device decide. Try Balanced or Sharp when image detail is more important than responsiveness.
 
-The original `tools/vendor-three.py` mistakenly treated an example URL in a
-`GLTFLoader.js` comment as a third-party package and stopped with
-`Unexpected external package: https://my-cnd-server.com/...`. The included
-fixed scanner checks actual ES module import statements instead.
+## Suggested validation
 
-If the self-hosting command previously failed, just run
-`bash tools/download-self-hosted-assets.sh` again from this project folder.
-It is safe to rerun; the downloader overwrites the generated asset copies,
-then writes the local import map and SHA-256 manifest on success.
+- Compare the same muscle scene on the same Chromebook, with the same visible layers, first at Sharp, then Fast. Rotate and zoom, and check responsiveness after releasing the trackpad. FPS depends on hardware and isn't guaranteed.
+- Open an existing multi-chapter scene with painted bones and anchored labels. Select a muscle, paint it, rotate the camera, switch chapters, Undo, then publish a student link.
+- Open that link in a Chromebook student window or Schoology iframe, check that names/search are still disabled for Practical Exam mode, and test the Quality selector in the student view.
+- Confirm your previously saved Scene Library and offline availability are intact. For offline use, prepare the app using **Save offline** while online; a newly deployed service worker may need to recache assets.
 
-## GitHub Pages installation / upgrade
+## Known limits
 
-1. **Back up your local scenes now**: open the current app on your Chromebook and choose **Library → Back up entire library**. Browser-local data may be lost after Chrome site-data clearing or school device resets.
-2. Extract the release ZIP. Open `anatomy-pwa-studio/`.
-3. Upload/replace its **contents**, not the outer folder, in the root of your existing GitHub Pages repository. The complete application files in the ZIP are designed to be deployed together. The added runtime module is **`structure-layout.js`**. To avoid an older service worker serving stale files, replace `sw.js`, `version.json`, `index.html`, `app.js`, `scene-codec.js`, and `styles.css` together.
-4. **Keep your locally hosted `models/ecorche.glb`, `vendor/three/` and model credit/license files in the repository**. These large binary assets are **not included** in this ZIP. The new muscular viewer uses the very same GLB; no additional model download is needed if 0.9 was already self-hosted.
-5. If you have *not* yet self-hosted them, on a Mac with internet access run `bash tools/download-self-hosted-assets.sh` from this extracted folder and then upload the generated `models/`, `vendor/` and `ASSET_SHA256.txt` to GitHub. That script also switches `index.html` to your own locally hosted Three.js import map. If you already self-host Three.js, ensure the replacement `index.html` points back to the local paths, or rerun the downloader before upload.
-6. Open the deployed site in Chrome (online on first visit), verify the **STUDIO 1.0** label and visit **Settings → App Settings → Check local files**. Avoid clearing site data to force an update, as this will erase locally saved scenes.
+This is a source-level performance pass, **not a verified benchmark on classroom Chromebook hardware**. It reduces redundant rendering and GPU pixel workload but does not yet lower the polygon count of the Écorché muscles or combine meshes. If hundreds of muscle meshes remain slow on lower-end GPUs at Fast quality, the next step is optional reduced-poly geometry / level-of-detail models while preserving structure IDs and label anchors.
 
-## Suggested classroom walkthrough
+The teacher Scene Library remains in browser-local IndexedDB. It does not automatically sync or back up to GitHub.
 
-1. Click **Muscular**. The superficial muscle layer appears by default. Toggle **Deep muscles** on or **Superficial muscles** off to examine deep structures.
-2. Search **deltoid**, select its structure, **Focus**, paint it or place a custom label.
-3. Click **Combined** and leave **Skeletal system** on; hide the superficial muscles to view deep muscle relationships to bones.
-4. Use **Add Chapter** for a second view. Each chapter remembers its own system settings.
-5. Save the scene via **File → Save to Library**, then **File → Share Student Link**. Student pages use the teacher-selected layers and obey Study/Practical Exam naming/search permissions. They cannot edit muscle layers through the teacher controls.
+## Tests
 
-## Reliability and licensing
-
-- Same model source: [Écorché](https://github.com/Charleeh/ecorche), CC BY-SA 4.0. Geometry derived from BodyParts3D and Z-Anatomy. Read source `ATTRIBUTION.md` / `LICENSE.md`, and keep these credits with your hosted assets.
-- Three.js is pinned to 0.169.0 under the MIT license. To fully self-host, use the downloader and upload its files rather than relying on CDN fallbacks.
-- GitHub Pages serves a static site, no database or account. Student scene data is encoded in their URL; the teacher Scene Library uses browser-local IndexedDB.
-- The model includes bones, teeth, cartilage and muscles but **not** organs, nerves, vessels or a skin layer.
-- Muscle geometry belongs to one adult male specimen with fixed pose. Use for gross anatomy classroom demonstrations, not clinical interpretation.
-- The offline service worker must cache the full model and renderer. Use the built-in **Save offline** control and confirm readiness before working without Wi-Fi.
-
-## Validation
-
-Run `npm test` (Node 20+) or `node --test tests/*.test.mjs` to check chapter serialization, new system layer settings, older scene compatibility, library backups, publisher permissions, and update metadata. These are automated logic tests. **An end-to-end Chromebook rendering test with the real GLB and Schoology is still necessary.**
+Run `node --test tests/*.test.mjs` (Node 20+) to validate scene compatibility, chapter serialization, publishing, app update metadata, library backup format, quality policy, and the revised render scheduling. Hardware interaction and complete 3D rendering require a live Chromebook test.

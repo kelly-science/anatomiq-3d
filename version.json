@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "channel": "stable",
   "published": "2026-10-22",
-  "notes": "Muscular and combined systems, layer controls, backward-compatible skeletal lessons"
+  "notes": "Chromebook performance pass: demand-driven rendering, lower GPU pixel ratio, deferred camera history, quality presets"
 }

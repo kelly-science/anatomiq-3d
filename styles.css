@@ -210,3 +210,12 @@ body.embed-mode .viewer-tip{display:none}
 @media(max-width:1180px){.topbar{gap:10px;padding-left:14px;padding-right:14px}.mode-tab{padding:9px 11px}}
 @media(max-width:890px){.brand-label small{display:none}.top-actions{gap:6px}.mode-tabs{flex-shrink:0}.mode-tab{padding:8px;font-size:11px}}
 @media(max-width:630px){.topbar{flex-wrap:wrap;height:auto;min-height:76px;padding:7px 9px}.brand{width:auto}.mode-tabs{order:3;width:100%;justify-content:space-around}.mode-tab{flex:1}.top-actions{margin-left:auto}.app-shell{height:100dvh}}
+
+/* Studio 1.1 — low-overhead per-device rendering quality selector. */
+.viewer-quality-control{pointer-events:auto;display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:10px;font-weight:650;color:#a6c0ce}
+.viewer-quality-control select{font-size:11px;color:#e4f3f5;background:#203641;border:1px solid #476472;border-radius:7px;padding:7px;cursor:pointer;min-width:74px}
+.render-settings-group{margin-top:18px;border-top:1px solid #3a5363;padding-top:15px}
+.render-settings-group label{display:block;font-size:12px;color:#e0eff4;margin-bottom:8px}
+.render-settings-group #settings-render-quality{width:100%}
+.render-settings-group .studio-hint{margin:8px 0 0}
+@media(max-width:760px){.viewer-quality-control{font-size:0;gap:0}.viewer-quality-control select{font-size:10px;padding:6px 4px;min-width:58px}}
