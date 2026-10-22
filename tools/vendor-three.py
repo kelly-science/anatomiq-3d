@@ -13,7 +13,7 @@ jsm_dir = npm_dir / 'examples' / 'jsm'
 shutil.copy2(npm_dir / 'build' / 'three.module.js', output_dir / 'build' / 'three.module.js')
 shutil.copy2(npm_dir / 'LICENSE', output_dir / 'LICENSE')
 
-pending = ['controls/OrbitControls.js', 'loaders/GLTFLoader.js']
+pending = ['controls/OrbitControls.js', 'loaders/GLTFLoader.js', 'loaders/DRACOLoader.js']
 seen = set()
 # Match real top-level ES module import/re-export declarations, not the word
 # 'from' in JavaScript comments or documentation. In GLTFLoader.js there
@@ -57,4 +57,9 @@ while pending:
         else:
             raise SystemExit(f'Unexpected external package: {dependency} in {name}')
 
+draco_src=jsm_dir / 'libs/draco/gltf'
+draco_dest=output_dir / 'examples/jsm/libs/draco/gltf'
+draco_dest.mkdir(parents=True,exist_ok=True)
+for name in ('draco_decoder.js','draco_decoder.wasm','draco_wasm_wrapper.js'):
+    shutil.copy2(draco_src / name, draco_dest / name)
 print('Vendored Three.js and addons:', ', '.join(sorted(seen)))

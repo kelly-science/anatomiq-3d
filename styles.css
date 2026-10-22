@@ -219,3 +219,10 @@ body.embed-mode .viewer-tip{display:none}
 .render-settings-group #settings-render-quality{width:100%}
 .render-settings-group .studio-hint{margin:8px 0 0}
 @media(max-width:760px){.viewer-quality-control{font-size:0;gap:0}.viewer-quality-control select{font-size:10px;padding:6px 4px;min-width:58px}}
+
+/* v1.2: fifth system tab must not crowd Chromebook address/status controls. */
+.mode-tabs{min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.mode-tabs::-webkit-scrollbar{display:none}
+@media(max-width:1350px){.topbar{gap:10px}.mode-tab{padding:10px 11px}.brand{min-width:0}.top-actions{min-width:0}}
+#muscle-layers-group{display:block}
+#digestive-layer-row[hidden],#muscle-layers-group[hidden]{display:none!important}

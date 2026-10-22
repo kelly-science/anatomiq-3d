@@ -1,0 +1,10 @@
+Digestive organ model source:
+BodyParts3D, Database Center for Life Science (DBCLS), Japan — CC BY-SA 2.1 Japan.
+https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html
+https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Derived web-optimized geometry distributed in the human-body-simulator project:
+https://github.com/yamz8/human-body-simulator
+Asset: public/models/anatomy-organs.glb
+Adaptations in Anatomy Studio: filter to liver, stomach, intestines; scale and position the source model at runtime to the Écorché reference anatomy. Retain this credit when distributing.
+
+The rest of the ecorche skeletal model has its own CC BY-SA 4.0 attribution.

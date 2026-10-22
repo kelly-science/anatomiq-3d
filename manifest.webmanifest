@@ -2,7 +2,7 @@
   "id": "./index.html",
   "name": "Anatomy Studio \u2014 Self-hosted 3D Classroom Studio",
   "short_name": "Anatomy Studio",
-  "description": "Use a desktop-style teacher menu; save a local library; paint, edit, label, and share multi-chapter 3D skeletal and muscular lessons as student links on Chromebooks.",
+  "description": "Create and publish annotated multi-chapter 3D skeletal, muscular and digestive anatomy lessons for Chromebooks.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -4,28 +4,23 @@ const sort=(a,b)=>key(a).localeCompare(key(b));
 export function catalogAnatomy(entries){
   const bones=entries.filter(s=>s.system==='skeletal').sort(sort);
   const muscles=entries.filter(s=>s.system==='muscular').sort(sort);
-  const structures=[...bones,...muscles];
-  return {
-    structures,
-    legacyCount:bones.length,
-    legacyFingerprint:hashForStructures(bones.map(key)),
-    fullFingerprint:hashForStructures(structures.map(key))
-  };
+  const digestive=entries.filter(s=>s.system==='digestive').sort(sort);
+  const base=[...bones,...muscles];
+  const structures=[...base,...digestive];
+  return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
+    baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),
+    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length};
 }
-export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint){
-  return !!scene && ((scene.n===currentCount&&scene.f===currentFingerprint)||
-      (scene.n===oldCount&&scene.f===oldFingerprint));
+export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint){
+  return !!scene && [[currentCount,currentFingerprint],[oldCount,oldFingerprint],[baseCount,baseFingerprint]]
+    .some(([count,fingerprint])=>Number.isInteger(count)&&scene.n===count&&scene.f===fingerprint);
 }
-
-// Migrate the saved visibility mask when the user opens a pre-muscular lesson.
-// Original bone indices and label/paint positions are not changed.
 export function upgradeLegacyScene(scene,currentCount,currentFingerprint){
   if(scene.n===currentCount && scene.f===currentFingerprint)return structuredClone(scene);
-  const visible=readVisibilityBits(scene.b,scene.n);
-  const updated=structuredClone(scene);
-  updated.n=currentCount;
-  updated.f=currentFingerprint;
+  if(scene.n>currentCount)throw new Error('Missing digestive 3D asset needed to open this lesson.');
+  const visible=readVisibilityBits(scene.b,scene.n),updated=structuredClone(scene);
+  updated.n=currentCount;updated.f=currentFingerprint;
   updated.b=makeVisibilityBits([...visible,...Array(currentCount-scene.n).fill(false)]);
-  updated.sb=true;updated.dm=false;updated.sm=true;
+  updated.sb ??= true;updated.dm ??= false;updated.sm ??= true;updated.dg ??= false;
   return updated;
 }

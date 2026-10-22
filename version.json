@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "channel": "stable",
+  "version": "1.2.0",
+  "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Chromebook performance pass: demand-driven rendering, lower GPU pixel ratio, deferred camera history, quality presets"
+  "notes": "Digestive system preview: optional self-hosted BodyParts3D organ model, view and combined-layer controls, preserved legacy scenes"
 }

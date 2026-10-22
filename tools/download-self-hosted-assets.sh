@@ -68,7 +68,7 @@ from pathlib import Path
 import hashlib
 files=[Path('models/ecorche.glb'),Path('vendor/three/build/three.module.js'),
        Path('vendor/three/examples/jsm/controls/OrbitControls.js'),
-       Path('vendor/three/examples/jsm/loaders/GLTFLoader.js')]
+       Path('vendor/three/examples/jsm/loaders/GLTFLoader.js'),Path('vendor/three/examples/jsm/loaders/DRACOLoader.js')]
 with Path('ASSET_SHA256.txt').open('w') as out:
   for f in files:
     digest=hashlib.sha256(f.read_bytes()).hexdigest()

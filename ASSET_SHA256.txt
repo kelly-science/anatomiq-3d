@@ -2,3 +2,6 @@
 0a3368c165eea773490aec7b77c22de70e3eac288503409256fdbf4d12578416  vendor/three/build/three.module.js
 80efaadea4f8a636a65fb0bd08bfef62f3d93a0bb94e2e7500f23176c5c07f4e  vendor/three/examples/jsm/controls/OrbitControls.js
 6f1719dcc6a179d30273dfb0de07a8c898a7981f7b08e600b446387f5967371f  vendor/three/examples/jsm/loaders/GLTFLoader.js
+fa0f8a32e6f1fdc8f8c469f81409289b0141cebe5d37e3e0048a134cf8bf6eb6  models/anatomy-organs.glb
+8a90b39b6c0d7faa70410cdd19348029a83a9f2d5f71e11b665a5f48330a4c72  vendor/three/examples/jsm/loaders/DRACOLoader.js
+a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac  vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm

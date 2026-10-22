@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Skeletal & Muscular Anatomy</title>
+  <title>Anatomy Studio • Skeletal, Muscular & Digestive Anatomy</title>
   <script type="importmap" id="renderer-importmap">
   {
     "imports": {
@@ -24,12 +24,13 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.1</span>
+        <span class="version">STUDIO 1.2</span>
       </div>
       <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
         <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
         <button id="mode-skeleton" class="mode-tab" role="tab" aria-selected="false" data-mode="skeleton">Skeleton</button>
         <button id="mode-muscular" class="mode-tab" role="tab" aria-selected="false" data-mode="muscular">Muscular</button>
+        <button id="mode-digestive" class="mode-tab" role="tab" aria-selected="false" data-mode="digestive">Digestive</button>
         <button id="mode-systems" class="mode-tab" role="tab" aria-selected="false" data-mode="systems">Combined</button>
       </nav>
       <div class="top-actions">
@@ -77,6 +78,7 @@
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skull">Skull</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skeleton">Full skeleton</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-muscular">Muscular system</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-digestive">Digestive system</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-systems">Combined systems</button>
           <div class="menu-separator" role="separator"></div>
           <button class="menu-item" role="menuitem" type="button" data-menu-view="front">Front</button>
@@ -149,8 +151,9 @@
         <div id="systems-panel" class="systems-panel teacher-only" hidden>
           <div class="systems-header"><span class="eyebrow">ANATOMICAL SYSTEMS</span><p id="layer-description" class="studio-hint">Choose the layers to show.</p></div>
           <label id="skeletal-layer-row" class="switch-row"><span>Skeletal system <small>Bones, teeth and cartilage</small></span><input id="system-skeletal" type="checkbox" checked /></label>
-          <label class="switch-row"><span>Superficial muscles <small>Outer skeletal muscle layer</small></span><input id="system-superficial" type="checkbox" checked /></label>
-          <label class="switch-row"><span>Deep muscles <small>Rotator cuff, iliacus and deeper muscles</small></span><input id="system-deep" type="checkbox" /></label>
+          <div id="muscle-layers-group"><label class="switch-row"><span>Superficial muscles <small>Outer skeletal muscle layer</small></span><input id="system-superficial" type="checkbox" checked /></label>
+          <label class="switch-row"><span>Deep muscles <small>Rotator cuff, iliacus and deeper muscles</small></span><input id="system-deep" type="checkbox" /></label></div>
+          <label id="digestive-layer-row" class="switch-row"><span>Digestive organs <small id="organ-asset-status">Checking model…</small></span><input id="system-digestive" type="checkbox" /></label>
         </div>
         <div class="explorer-settings">
           <label class="switch-row"><span>Show teeth <small>Skull and dental structures</small></span><input id="toggle-teeth" type="checkbox" checked /></label>
@@ -216,8 +219,8 @@
           <button id="clear-selection" class="text-button">Clear selection</button>
         </div>
         <section class="paint-editor teacher-only" aria-label="Bone color editor">
-          <span class="eyebrow">BONE PAINT</span>
-          <p class="annotation-help">Color whole bones to distinguish anatomical structures. Colors are saved separately for each chapter.</p>
+          <span class="eyebrow">STRUCTURE PAINT</span>
+          <p class="annotation-help">Color whole bones, muscles and organs to distinguish anatomical structures. Colors are saved separately for each chapter.</p>
           <label for="paint-color" class="field-label">Paint color</label>
           <div class="paint-color-row">
             <input id="paint-color" type="color" value="#e45d58" aria-label="Choose structure paint color" />
@@ -330,10 +333,11 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.1.0</strong>
+        <span>Installed version</span><strong id="settings-installed">1.2.0</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
+        <span>Digestive organs</span><strong id="settings-organs">Checking…</strong>
         <span>Self-hosting</span><strong id="settings-assets">Checking local files…</strong>
       </div>
       <div class="render-settings-group">
@@ -350,7 +354,7 @@
       </div>
       <p id="settings-check-result" class="settings-result" role="status" aria-live="polite">Updates are checked against your own GitHub Pages site's version.json file, not an external update service.</p>
       <div class="dialog-buttons"><button type="button" id="settings-check-updates" class="button primary">↻ Check for updates</button><button type="button" id="settings-reload" class="button" hidden>Reload to update</button><button type="button" id="settings-recheck-assets" class="button">Check local files</button></div>
-      <p class="footnote">For independent hosting, include <code>vendor/three/</code> and <code>models/ecorche.glb</code> in this GitHub repository. The app can temporarily use the earlier CDN links when files are missing. For offline access, use <strong>Help → Prepare offline access</strong>. Saved library scenes are local to this Chrome profile; back them up before clearing site data.</p>
+      <p class="footnote">For independent hosting, include <code>vendor/three/</code>, <code>models/ecorche.glb</code>, and <code>models/anatomy-organs.glb</code> in this GitHub repository. The app can temporarily use the earlier CDN links when files are missing. For offline access, use <strong>Help → Prepare offline access</strong>. Saved library scenes are local to this Chrome profile; back them up before clearing site data.</p>
     </section>
   </div>
   <div id="app-toast" class="app-toast" role="status" hidden></div>

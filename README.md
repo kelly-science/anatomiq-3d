@@ -1,38 +1,44 @@
-# Anatomy Studio 1.1 — Chromebook Performance Pass
+# Anatomy Studio 1.2 Beta — Digestive Anatomy
 
-Version 1.1 is a drop-in performance update to version 1.0. It **does not change** the anatomical model, scene JSON format, structure indices, teacher library schema, share links, practical-exam permissions, chapters, paint, or labels.
+This is an upgrade of Anatomy Studio 1.1, preserving the chromosome-friendly performance settings, skeletal and muscular viewer, Teacher Studio chapters, custom paint and labels, local Scene Library, undo, student publishing, and Schoology iframe permissions.
 
-## What changed
+## New
 
-- **Demand-driven WebGL rendering**: the 3D canvas renders only when the camera is moving, damping is settling, or something changes in the view. Previously, the OrbitControls `change` handler re-extended a 20-frame draw window every time `controls.update()` ran, potentially generating a long-running loop. Hidden browser tabs stop rendering.
-- **Camera edits are saved when interaction ends**, instead of asking for scene serialization/history updates on every OrbitControls `change` event. Camera preset, Focus, Fit and zoom buttons still save their changed positions. Undo/redo and library saves remain supported.
-- **Per-device quality selection** in the viewer bottom controls and Settings → App Settings. Auto uses Fast for devices reporting up to 4 GB RAM or up to 4 CPU cores, Balanced for others. Fast caps drawing buffer pixel density at 1x; Balanced at 1.25x; Sharp at 2x or device native density, whichever is lower. Earlier releases capped density at 1.5x. Fast at 1x shades approximately 56% fewer pixels than 1.5x, though speedup depends on GPU vs draw-call limitations.
-- Removed a redundant full-scene matrix update for label placement after each WebGL render.
-- Quality is stored in the Chromebook's browser storage only; it is **not** saved in the lesson or student URL. Students can choose Fast even when viewing a teacher's shared assessment.
-- Updated version manifest and service worker cache (1.1.0).
+- **Digestive** viewer tab: individually selectable **liver, stomach, and intestines**. This first release is a *major-organs preview* — not a full gastrointestinal tract or highly detailed histological atlas. The pancreas, esophagus, gallbladder, subdivision of large/small intestine, and smaller structures are not separate meshes in this particular model.
+- **Combined** now has an optional Digestive organs layer alongside bones, superficial muscles, and deep muscles.
+- Save paint, bone/organ visibility, labels, camera, and layer selection **per chapter** and publish them in the existing student URL.
+- Old skeletal and muscular scene indices are preserved; the digestive entries append after them. The app migrates 0.x bone-only and 1.0/1.1 skeletal/muscular scenes into the extended layout on open.
+- Uses a *separate locally served Draco-compressed GLB*. The existing Écorché model remains untouched. The source is adapted from BodyParts3D 3.0, as redistributed by the open-source `yamz8/human-body-simulator` project.
 
-## Updating GitHub Pages
+## Update GitHub Pages
 
-1. **Back up your existing Scene Library** using Library → Back up entire library. Keep a copy of the prior 1.0 repository for rollback.
-2. Extract the ZIP. Upload the **contents of `anatomy-pwa-studio/`** to the root of your existing GitHub Pages repo, replacing application files. **New required file:** `render-performance.js`.
-3. **Keep your existing `models/ecorche.glb`, `vendor/three/` directories and attribution files.** They are deliberately not embedded in the release ZIP. The shipped import map in `index.html` points to **your own local Three.js files** so updating will not silently reactivate a CDN.
-4. If you have *not* yet downloaded the local assets, run `bash tools/download-self-hosted-assets.sh` from the project directory on a Mac with internet, then upload the resulting `models/`, `vendor/`, `ASSET_SHA256.txt` and model licenses with the app. This installer includes the repaired `vendor-three.py` that skips comment-only sample URLs.
-5. Allow GitHub Pages to deploy. Reload the installed PWA online (do **not** clear Chrome site data, which would delete locally saved lessons) and check Settings → App Settings. Verify it displays **1.1.0** and all local files present.
-6. In a muscle-heavy lesson, select **Quality → Fast** at the bottom of the 3D viewer, or choose Auto to let the device decide. Try Balanced or Sharp when image detail is more important than responsiveness.
+1. **Back up your Scene Library** (Library → Back up entire library). Save a backup of your working 1.1 repo in case you need to revert. Do not clear browser site data.
+2. Extract this ZIP. Copy your existing `models/ecorche.glb`, `models/licenses/`, and `vendor/three/` into the *new* `anatomy-pwa-studio/` folder if you already host them locally.
+3. On your Mac, open Terminal inside the new `anatomy-pwa-studio` folder and run:
 
-## Suggested validation
+   ```bash
+   bash tools/download-digestive-assets.sh
+   ```
 
-- Compare the same muscle scene on the same Chromebook, with the same visible layers, first at Sharp, then Fast. Rotate and zoom, and check responsiveness after releasing the trackpad. FPS depends on hardware and isn't guaranteed.
-- Open an existing multi-chapter scene with painted bones and anchored labels. Select a muscle, paint it, rotate the camera, switch chapters, Undo, then publish a student link.
-- Open that link in a Chromebook student window or Schoology iframe, check that names/search are still disabled for Practical Exam mode, and test the Quality selector in the student view.
-- Confirm your previously saved Scene Library and offline availability are intact. For offline use, prepare the app using **Save offline** while online; a newly deployed service worker may need to recache assets.
+   The script downloads **models/anatomy-organs.glb**, checks that the file contains the named liver/stomach/intestine structures, and installs the Three.js Draco decoding files if needed. The real 3D model and Three.js binaries are **not in this ZIP**. No npm install is required. It may download Three.js and the original Écorché model again if required.
+4. Upload the **contents** of this folder to your existing GitHub Pages repository, replacing the 1.1 app files and adding `digestive-model.js`, `models/anatomy-organs.glb`, and new files under `vendor/three/`.
+5. Open the site online, check Settings → App Settings for 1.2.0 and **Digestive GLB loaded**, then try Digestive → liver, stomach, intestines. Test Combined with Digestive organs on and muscles off.
+6. Publish a test 2-chapter lesson and check the new student link in Schoology. Verify labels, paint, Practical Exam restrictions, and Save offline.
 
-## Known limits
+## Model attribution and long-term hosting
 
-This is a source-level performance pass, **not a verified benchmark on classroom Chromebook hardware**. It reduces redundant rendering and GPU pixel workload but does not yet lower the polygon count of the Écorché muscles or combine meshes. If hundreds of muscle meshes remain slow on lower-end GPUs at Fast quality, the next step is optional reduced-poly geometry / level-of-detail models while preserving structure IDs and label anchors.
+- Écorché skeleton and muscles: <https://github.com/Charleeh/ecorche>, CC BY-SA 4.0; retain original `models/licenses/` attribution.
+- Digestive GLB from <https://github.com/yamz8/human-body-simulator> (file `public/models/anatomy-organs.glb`). Original dataset: **BodyParts3D**, Database Center for Life Science (DBCLS), under **CC BY-SA 2.1 Japan**. See `<models/licenses/DIGESTIVE-ATTRIBUTION.txt>` generated by the installer; preserve credit and share-alike conditions for any redistributed derivatives.
+- Three.js 0.169.0: MIT licensed. The Draco decoder is installed locally, so no Google Draco, npm, or other CDN is needed when hosted.
+- Only file delivery via GitHub Pages is required at runtime. Browser/WebGL compatibility and your local IndexedDB Scene Library still require backups and maintenance.
 
-The teacher Scene Library remains in browser-local IndexedDB. It does not automatically sync or back up to GitHub.
+### Caveats
+
+- The digestive asset is loaded on startup if present (~small compressed asset). It uses **approximate anatomical alignment** based on the original BodyParts3D scan bounds. This release has **not** been calibrated by side-by-side rendering of the live original Écorché GLB and the digestive asset on a Chromebook. Confirm that the relative positions are sensible before publishing graded assessments.
+- If the digestive file or decoder isn't installed, the original skeletal/muscular app should remain usable; **Digestive** shows a missing-model notice. New digestive student links require the exact corresponding model installed at the same GitHub Pages site.
+- Replacing/reordering the organ GLB later can break scene visibility and paint index compatibility. Keep the source asset pinned in your GitHub repo, and export scene backups before changing the geometry.
+- This is a beta release: unit tests and static code checks passed, but browser GPU/render tests and real download of the organ GLB could not be performed in this environment.
 
 ## Tests
 
-Run `node --test tests/*.test.mjs` (Node 20+) to validate scene compatibility, chapter serialization, publishing, app update metadata, library backup format, quality policy, and the revised render scheduling. Hardware interaction and complete 3D rendering require a live Chromebook test.
+Run `node --test tests/*.test.mjs` to check existing lessons, new digestive geometry grouping, scene migration, student links, and app metadata.
