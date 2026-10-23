@@ -1,6 +1,6 @@
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v1.8.4';
+const VERSION='anatomy-v1.8.5';
 const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./system-layers.js','./cardiovascular-model.js','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
@@ -26,11 +26,16 @@ self.addEventListener('fetch',event=>{
   event.respondWith((async()=>{
     const cache=await caches.open(VERSION);
     const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
-    // Updates must be fresh. Navigations use network first so deploying a new release can replace the page.
-    if(request.mode==='navigate'||(url.origin===self.location.origin&&url.pathname.endsWith('/version.json'))){
+    // Model assets and their manifests must revalidate together against the
+    // deployed GitHub Pages files. Old cache-first behaviour could combine a
+    // new manifest with an older GLB, breaking anatomy after deployments.
+    const modelAsset=url.origin===self.location.origin && /\/models\/[^/]+\.(?:glb|json)$/i.test(url.pathname);
+    if(request.mode==='navigate'||modelAsset||(url.origin===self.location.origin&&url.pathname.endsWith('/version.json'))){
       try{
-        const response=await fetch(request);
-        if(response.ok)event.waitUntil(cache.put(request,response.clone()).catch(()=>{}));
+        const response=await fetch(modelAsset?new Request(request,{cache:'no-cache'}):request);
+        if(response.ok&&(response.type==='basic'||response.type==='cors')&&
+          (!modelAsset||!/text\/html/i.test(response.headers.get('content-type')||'')))
+          event.waitUntil(cache.put(request,response.clone()).catch(()=>{}));
         return response;
       }catch(error){if(cached)return cached;throw error;}
     }
@@ -44,7 +49,81 @@ self.addEventListener('fetch',event=>{
     }catch(error){throw error;}
   })());
 });
+const MODEL_REFRESH_SCOPES=Object.freeze({
+  cardiovascular:['models/cardiovascular-structures.json','models/cardiovascular-standard.glb','models/cardiovascular-detailed.glb'],
+  digestive:['models/anatomy-organs.glb','models/digestive-structures.json','models/digestive-standard.glb','models/digestive-detailed.glb'],
+  skeletal:['models/ecorche.glb']
+});
+async function refreshModelAssets(scope,reply){
+  const paths=MODEL_REFRESH_SCOPES[scope];
+  if(!paths)throw new Error('Choose a supported model system.');
+  // Stage all replacements first. A missing file must not partially overwrite
+  // the cache and leave a new JSON manifest paired with an old geometry file.
+  const downloads=[];
+  for(const [index,path] of paths.entries()){
+    const url=new URL('./'+path,self.location.href);
+    url.searchParams.set('anatomy-refresh',String(Date.now()));
+    const response=await fetch(url.href,{cache:'reload'});
+    if(!response.ok)throw new Error(`${path}: GitHub Pages returned HTTP ${response.status}`);
+    if(/text\/html/i.test(response.headers.get('content-type')||''))
+      throw new Error(`${path}: server returned an HTML page instead of a model file`);
+    const bytes=await response.arrayBuffer();
+    let catalogData;
+    if(path.endsWith('.glb')){
+      const header=new Uint8Array(bytes,0,Math.min(bytes.byteLength,4));
+      if(bytes.byteLength<28||String.fromCharCode(...header)!=='glTF')
+        throw new Error(`${path}: downloaded data is not a valid GLB file`);
+      const view=new DataView(bytes);
+      const jsonLength=view.getUint32(12,true);
+      if(view.getUint32(4,true)!==2 || view.getUint32(8,true)!==bytes.byteLength ||
+         view.getUint32(16,true)!==0x4e4f534a || jsonLength<10 || jsonLength>bytes.byteLength-20)
+        throw new Error(`${path}: malformed GLB header or JSON chunk`);
+      if(scope==='cardiovascular'){
+        let sceneData;
+        try{sceneData=JSON.parse(new TextDecoder().decode(new Uint8Array(bytes,20,jsonLength)));}
+        catch{throw new Error(`${path}: GLB scene metadata is unreadable`);}
+        const catalog=downloads.find(entry=>entry.path.endsWith('cardiovascular-structures.json'))?.catalog;
+        const names=new Set((sceneData.nodes||[]).map(node=>node.name).filter(Boolean));
+        if(!catalog || !catalog.structures.every(item=>names.has(item.id)))
+          throw new Error(`${path}: GLB structures do not match cardiovascular-structures.json; upload the complete regenerated model set`);
+      }
+    }else{
+      try{catalogData=JSON.parse(new TextDecoder().decode(bytes));}catch{throw new Error(`${path}: invalid JSON`);}
+      if(!Array.isArray(catalogData.structures)||!catalogData.structures.length)
+        throw new Error(`${path}: no structure catalog found`);
+    }
+    downloads.push({path,bytes,catalog:catalogData});
+    reply({type:'MODEL_REFRESH_PROGRESS',completed:index+1,total:paths.length,path});
+  }
+  const cache=await caches.open(VERSION);
+  const originals=await Promise.all(downloads.map(async ({path})=>{
+    const url=new URL('./'+path,self.location.href).href;
+    return {url,response:await cache.match(url)};
+  }));
+  try{
+    for(const {path,bytes} of downloads){
+      const stableURL=new URL('./'+path,self.location.href).href;
+      await cache.put(stableURL,new Response(bytes,{status:200,headers:{'Content-Type':path.endsWith('.glb')?'model/gltf-binary':'application/json'}}));
+    }
+  }catch(error){
+    // Cache quota failure: restore as much of the original model set as possible.
+    await Promise.all(originals.map(({url,response})=>response?cache.put(url,response):cache.delete(url)));
+    throw new Error('Browser could not save the new models (check device storage): '+String(error?.message||error));
+  }
+  reply({type:'MODEL_REFRESH_RESULT',ok:true,scope,count:downloads.length});
+}
 self.addEventListener('message',event=>{
+  if(event.data?.type==='MODEL_REFRESH_PING'){
+    event.ports?.[0]?.postMessage({type:'MODEL_REFRESH_PONG',version:VERSION});
+    return;
+  }
+  if(event.data?.type==='REFRESH_MODELS'){
+    const port=event.ports?.[0];
+    if(!port)return;
+    event.waitUntil(refreshModelAssets(event.data.scope,msg=>port.postMessage(msg))
+      .catch(error=>port.postMessage({type:'MODEL_REFRESH_RESULT',ok:false,error:String(error?.message||error)})));
+    return;
+  }
   if(!['CACHE_OFFLINE','CHECK_OFFLINE'].includes(event.data?.type))return;
   const source=event.source;
   event.waitUntil((async()=>{

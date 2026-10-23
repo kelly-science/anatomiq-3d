@@ -68,5 +68,5 @@ test('new student boot reads link before geometry and service worker requires ex
   assert.match(sw,/lessonAllow/);
   assert.match(sw,/lessonModels/);
   assert.match(sw,/scene-assets\.js/);
-  assert.equal(JSON.parse(read('version.json')).version,'1.8.4');
+  assert.equal(JSON.parse(read('version.json')).version,'1.8.5');
 });

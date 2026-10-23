@@ -22,7 +22,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.4';
+const APP_VERSION = '1.8.5';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -46,6 +46,7 @@ const CARDIO_QUALITY_KEY='anatomy-studio-cardio-geometry-v1';
 let cardioGeometry='standard';
 try{cardioGeometry=localStorage.getItem(CARDIO_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let cardioRoot=null,cardioEntries=[],cardioAvailable=false;
+let cardioLoadError='';
 let teacherCoreTreeOnly=false;
 let cardioReviews={};try{cardioReviews=loadCardioReview(window.localStorage);}catch{}
 let cardioAuditFilter='action';
@@ -838,12 +839,13 @@ async function loadDetailedDigestive(){
   }
 }
 async function loadCardiovascular(){
-  cardioAvailable=false;cardioEntries=[];
+  cardioAvailable=false;cardioEntries=[];cardioLoadError='';
   if(cardioRoot){scene.remove(cardioRoot);cardioRoot=null;}
   try{
     const response=await fetch(CARDIO_MANIFEST,{cache:'no-cache'});
-    if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))return;
-    const metadata=await response.json();
+    if(!response.ok)throw new Error(`Cardiovascular catalog HTTP ${response.status}`);
+    if(/text\/html/i.test(response.headers.get('content-type')||''))throw new Error('Cardiovascular catalog is HTML, not JSON');
+    const metadata=validateCardiovascularManifest(await response.json());
     const requested=cardioGeometry==='detailed'?CARDIO_DETAILED:CARDIO_STANDARD;
     let gltf;
     try{gltf=await new GLTFLoader().loadAsync(requested);}
@@ -879,6 +881,7 @@ async function loadCardiovascular(){
     cardioEntries=entries;cardioAvailable=true;cardioLoaded=true;
     console.info(`Anatomy Studio: ${entries.length} cardiovascular structures loaded (${cardioGeometry}).`);
   }catch(error){
+    cardioLoaded=false;cardioLoadError=String(error?.message||error);
     console.warn('Self-hosted cardiovascular layer not installed; existing anatomy remains available.',error);
     if(cardioRoot){scene.remove(cardioRoot);cardioRoot=null;}
   }
@@ -1983,7 +1986,7 @@ async function checkLocalAssets(){
     ? (skullDetailStats?.upgraded ? `Experimental: ${skullDetailStats.upgraded} skull bones upgraded; original jaw/teeth retained` : `Experimental not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
     : 'Standard Écorché geometry (recommended)';
   $('settings-skull').title=skullDetailStats?.skipped?.join('; ')||'';
-  $('settings-cardio').textContent=cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry}${!teacherMode&&!cardioLoaded?'; loads when needed':''})`:'Not installed — run cardiovascular installer';
+  $('settings-cardio').textContent=cardioLoadError?`Load failed: ${cardioLoadError}`:cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry}${!teacherMode&&!cardioLoaded?'; loads when needed':''})`:'Not installed — check cardiovascular manifest and model files';
   $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected${!teacherMode&&!detailLoaded?'; loads when needed':''})`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';
 }
 function openAppSettings(){
@@ -2037,6 +2040,65 @@ $('open-app-settings').addEventListener('click',openAppSettings);
 $('menu-check-updates').addEventListener('click',checkAppUpdates);
 $('settings-check-updates').addEventListener('click',checkAppUpdates);
 $('settings-recheck-assets').addEventListener('click',checkLocalAssets);
+// Re-download only the selected anatomical model family. Never clear site data:
+// drafts and the teacher's IndexedDB scene library live on this same origin.
+async function forceRefreshModels(){
+  const button=$('settings-force-models'),result=$('settings-model-refresh-result');
+  const scope=$('settings-model-refresh-scope').value;
+  if(!navigator.onLine){result.textContent='Connect to the internet before refreshing models.';return;}
+  if(!('serviceWorker' in navigator)||!('MessageChannel' in window)){
+    result.textContent='Offline service worker unavailable in this browser.';return;
+  }
+  button.disabled=true;
+  result.textContent='Checking GitHub Pages and downloading '+scope+' model files…';
+  try{
+    const registration=await navigator.serviceWorker.ready;
+    await registration.update();
+    const active=registration.active||registration.waiting;
+    if(!active)throw new Error('Service worker not ready');
+    // A newly deployed app can momentarily have an old service worker active.
+    // Check its protocol first; never hang forever waiting on unsupported code.
+    function workerMessage(payload,{timeout=12000,onProgress=()=>{}}={}){
+      return new Promise((resolve,reject)=>{
+        const channel=new MessageChannel();
+        let timer;
+        const expire=()=>{
+          clearTimeout(timer);
+          timer=setTimeout(()=>{
+            channel.port1.close();reject(new Error('Service worker did not respond. Close other Anatomy Studio tabs and reopen the site to activate the update.'));
+          },timeout);
+        };
+        expire();
+        channel.port1.onmessage=event=>{
+          const msg=event.data||{};
+          if(msg.type==='MODEL_REFRESH_PROGRESS'){onProgress(msg);expire();return;}
+          clearTimeout(timer);channel.port1.close();resolve(msg);
+        };
+        try{active.postMessage(payload,[channel.port2]);}
+        catch(error){clearTimeout(timer);channel.port1.close();reject(error);}
+      });
+    }
+    const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v1.8.5')
+      throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
+    const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
+      result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;
+    }});
+    if(response.type!=='MODEL_REFRESH_RESULT'||!response.ok)
+      throw new Error(response.error||'Model download failed');
+    result.textContent='Model files refreshed and checked. Reloading Anatomy Studio…';
+    if(teacherMode&&sceneRoot)saveDraft(false);
+    // The fresh assets are now in the worker cache; the reload reconstructs
+    // geometry from them without deleting drafts, lessons, or preferences.
+    location.reload();
+  }catch(error){
+    result.textContent=`Could not refresh ${scope}: ${String(error?.message||error)}. Existing local lessons were not touched.`;
+    button.disabled=false;
+    console.warn('Model refresh failed',error);
+  }
+}
+$('settings-force-models').addEventListener('click',forceRefreshModels);
+
 $('settings-reload').addEventListener('click',async()=>{
   try{await (await navigator.serviceWorker?.getRegistration())?.update();}catch(e){console.warn(e);}
   location.reload();

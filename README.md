@@ -1,3 +1,9 @@
+## 1.8.5 — Recovering a cardiovascular model after uploading to GitHub
+
+Go to **App Settings → Force re-download anatomy models**, select **Cardiovascular**, and click the refresh button. The app downloads the `cardiovascular-structures.json`, `cardiovascular-standard.glb` and `cardiovascular-detailed.glb` files directly from this GitHub Pages site, bypassing the older cached copies. The files are checked before the new cache is committed. No IndexedDB lessons, draft scenes or other storage is cleared. If any file is missing or has mismatched IDs, the app reports the exact file and stays on the current page.
+
+The service worker also now revalidates anatomy GLBs and structure manifests on normal online loads. This prevents stale model geometry from being combined with newer manifest data. Offline loads continue to use cached copies. If your site has yet to receive all model files, finish GitHub uploads first; the refresh tool cannot create files that aren't published.
+
 **Latest release:** [Anatomy Studio 1.8.4 — Scene-aware Student Loading](RELEASE-1.8.4.md).
 
 # Anatomy Studio 1.8.3 — Vascular Completeness & Classroom Review

@@ -1,6 +1,6 @@
 {
-  "version": "1.8.4",
+  "version": "1.8.5",
   "channel": "beta",
   "published": "2026-10-23",
-  "notes": "Scene-aware student asset loading; anatomy loads per chapter or on student exploration, with explicit offline lesson preparation."
+  "notes": "Force-refresh selected anatomical models with validation; revalidate deployed GitHub Pages model files without clearing local lessons."
 }

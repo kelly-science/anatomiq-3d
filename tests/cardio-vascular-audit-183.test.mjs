@@ -34,6 +34,6 @@ test('1.8.3 app and service worker install inspector without changing student sc
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
  assert.match(app,/cardioPreviewIDs/);assert.match(app,/refreshVisibility\(true\)/);
  for(const id of ['cardio-audit-panel','cardio-audit-list','cardio-audit-export','cardio-audit-restore'])assert.match(html,new RegExp(id));
- assert.match(sw,/cardio-vascular-audit\.js/);assert.match(sw,/anatomy-v1\.8\.4/);
+ assert.match(sw,/cardio-vascular-audit\.js/);assert.match(sw,/anatomy-v1\.8\.5/);
  const codec=readFileSync(new URL('../scene-codec.js',import.meta.url),'utf8');assert.ok(!codec.includes('cardioReviews'));
 });

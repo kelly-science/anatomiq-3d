@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.8.4</span>
+        <span class="version">STUDIO 1.8.5</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -374,7 +374,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.8.2</strong>
+        <span>Installed version</span><strong id="settings-installed">1.8.5</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
@@ -418,6 +418,16 @@
         <p id="settings-quality-explanation" class="studio-hint" role="status"></p>
         <p id="settings-performance-stats" class="studio-hint"></p>
         <p class="studio-hint">Quality is stored on this device only. It does not change the teacher's lesson or the student's shared scene.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-model-refresh-scope"><strong>Force re-download anatomy models</strong></label>
+        <select id="settings-model-refresh-scope" class="text-input" aria-label="Model system to refresh">
+          <option value="cardiovascular">Cardiovascular — catalog, Standard and Detailed models</option>
+          <option value="digestive">Digestive — organs, catalog, Standard and Detailed models</option>
+          <option value="skeletal">Skeletal / muscular — base model</option>
+        </select>
+        <button id="settings-force-models" type="button" class="button">↻ Force re-download selected models</button>
+        <p class="studio-hint" id="settings-model-refresh-result" role="status" aria-live="polite">Downloads fresh copies from this GitHub Pages site. Verifies each file before replacing the model cache. Does not clear lessons, drafts or settings.</p>
       </div>
       <p id="settings-check-result" class="settings-result" role="status" aria-live="polite">Updates are checked against your own GitHub Pages site's version.json file, not an external update service.</p>
       <div class="dialog-buttons"><button type="button" id="settings-check-updates" class="button primary">↻ Check for updates</button><button type="button" id="settings-reload" class="button" hidden>Reload to update</button><button type="button" id="settings-recheck-assets" class="button">Check local files</button></div>

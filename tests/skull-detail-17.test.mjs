@@ -43,5 +43,5 @@ test('PWA caches skull renderer code and optional geometry only on request',()=>
  assert.match(app,/skullGeometry==='detailed'/);
  assert.match(worker,/skull-geometry\.js/);assert.match(worker,/skull-detailed\.glb/);
  assert.match(html,/id="settings-skull-geometry"/);
- assert.match(app,/const APP_VERSION = '1.8.4'/);
+ assert.match(app,/const APP_VERSION = '1.8.5'/);
 });
