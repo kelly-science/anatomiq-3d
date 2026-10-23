@@ -54,6 +54,14 @@ if subset_ready "$WORK/subsets/blood_vessel" 12; then echo 'Reusing major vessel
  echo 'Downloading major blood vessels (BodyParts3D 4.3)...'
  "$PY" bp3d_subset.py --group blood_vessel --download --chunk-size 20 --out "$WORK/subsets/blood_vessel"
 fi
+# 1.6 extra atlas, selected by anatomical name from the pinned 4.3 manifest.
+# Its downloader uses a content-keyed chunk cache, so reruns can reuse files.
+if subset_ready "$WORK/subsets/expanded" 20; then
+ echo 'Reusing downloaded expanded cardiovascular meshes.'
+else
+ echo 'Downloading expanded heart detail and major vessels (BodyParts3D 4.3)...'
+ "$PY" tools/fetch-cardiovascular-expansion.py --upstream "$WORK/upstream" --out "$WORK/subsets/expanded"
+fi
 if subset_ready "$PREV/subsets/skin" 1; then SKIN_DIR="$PREV/subsets/skin"; else
  if ! subset_ready "$WORK/subsets/skin" 1; then
   echo 'Downloading reference skin for common-system alignment...'
@@ -64,7 +72,7 @@ fi
 SKIN="$(find "$SKIN_DIR/skin" -name '*.obj' -type f | head -1)"
 [[ -s "$SKIN" ]] || { echo 'Skin reference missing. Cannot safely align models.' >&2;exit 1; }
 cd "$ROOT"
-"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --skin "$SKIN" --out models "$@"
+"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --subset "$WORK/subsets/expanded" --skin "$SKIN" --out models "$@"
 mkdir -p models/licenses
 cat > models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt <<'EOF'
 BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
@@ -82,5 +90,5 @@ lines=[line for line in lines if not any(line.endswith('  '+str(f)) for f in fil
 lines += [hashlib.sha256(f.read_bytes()).hexdigest()+'  '+str(f) for f in files]
 p.write_text('\n'.join(lines)+'\n')
 PY_HASH
-echo 'SUCCESS: Upload models/cardiovascular-standard.glb, cardiovascular-detailed.glb, cardiovascular-structures.json, attribution and updated application files to GitHub.'
+echo 'SUCCESS: Expanded cardiovascular layer ready. Upload models/cardiovascular-standard.glb, cardiovascular-detailed.glb, cardiovascular-structures.json, attribution and updated application files to GitHub.'
 echo 'Do NOT upload .cardiovascular-43-work or .digestive-43-work.'

@@ -13,7 +13,7 @@ class CardioSourceIDTests(unittest.TestCase):
  def test_suffixed_meshes_are_retained_without_collision(self):
   with tempfile.TemporaryDirectory() as folder:
    root=Path(folder)
-   ids=['FJ1682M','FJ1725M','FJ1682','FJ1725','FJ999']
+   ids=[*mod.LEGACY_CARDIO_IDS,'FJ1725M','FJ1682','FJ1725','FJ999']
    with (root/'MANIFEST.csv').open('w',newline='') as file:
     writer=csv.DictWriter(file,fieldnames=['fj_id','fma_id','name','obj'])
     writer.writeheader()
@@ -21,7 +21,7 @@ class CardioSourceIDTests(unittest.TestCase):
      f=root/(id+'.obj');f.write_text('x'*400)
      writer.writerow({'fj_id':id,'fma_id':'FMA1','name':id,'obj':f.name})
    rows=mod.read_rows([root])
-   self.assertEqual([r['fj_id'] for r,_ in rows],['FJ999','FJ1682','FJ1682M','FJ1725','FJ1725M'])
+   self.assertEqual([r['fj_id'] for r,_ in rows],mod.LEGACY_CARDIO_IDS+['FJ999','FJ1682','FJ1725','FJ1725M'])
    with (root/'MANIFEST.csv').open('a',newline='') as file:
     csv.writer(file).writerow(['FJ1682MA','FMA1','Invalid','FJ1682.obj'])
    with self.assertRaisesRegex(SystemExit,'Unrecognized FJ identifier'):

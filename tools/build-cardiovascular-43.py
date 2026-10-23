@@ -19,6 +19,7 @@ import trimesh
 SOURCE_Y_MIN = -3.534865
 SOURCE_HEIGHT = 3.183290 - SOURCE_Y_MIN
 SOURCE_Z_CENTER = 0.4
+LEGACY_CARDIO_IDS = [x.strip() for x in (Path(__file__).parent/'cardio-original-ids.txt').read_text().splitlines() if x.strip() and not x.startswith('#')]
 
 
 def read_rows(folders):
@@ -45,7 +46,13 @@ def read_rows(folders):
     def fj_sort_key(fj):
         match = re.fullmatch(r'FJ(\d+)([A-Z]?)', fj)
         return (int(match.group(1)), match.group(2))
-    return [rows[k] for k in sorted(rows, key=fj_sort_key)]
+    # Preserve *exactly* the old 1.5.1 15-mesh order, even when adding
+    # lower-numbered new IDs. Scene labels/colors are indexed by mesh order.
+    legacy = [k for k in LEGACY_CARDIO_IDS if k in rows]
+    if legacy and len(legacy) != len(LEGACY_CARDIO_IDS):
+        raise SystemExit('Cannot safely rebuild old scenes: original cardiovascular subset is incomplete.')
+    extra = sorted((k for k in rows if k not in LEGACY_CARDIO_IDS), key=fj_sort_key)
+    return [rows[k] for k in legacy + extra]
 
 
 def load_mesh(path):
@@ -97,7 +104,7 @@ def glb(scene, target):
     temp.replace(target)
 
 
-def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert):
+def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert, extra_standard_faces=3200, extra_detailed_faces=11000):
     skin = load_mesh(skin_file)
     transform, reg = normalizer(skin, axis=axis, invert=invert)
     rows = read_rows(folders)
@@ -109,8 +116,9 @@ def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert):
         # Discard corrupt/degenerate structures; fail instead of manufacturing geometry.
         if not np.isfinite(source.vertices).all() or len(source.faces) < 5:
             raise SystemExit(f'Invalid anatomical geometry: {path}')
-        standard = reduce(source, standard_faces)
-        detailed = reduce(source, detail_faces)
+        is_legacy = row['fj_id'] in LEGACY_CARDIO_IDS
+        standard = reduce(source, standard_faces if is_legacy else extra_standard_faces)
+        detailed = reduce(source, detail_faces if is_legacy else extra_detailed_faces)
         for mesh in (standard, detailed):
             mesh.remove_unreferenced_vertices()
             # Recompute smooth vertex normals after simplification.
@@ -120,7 +128,8 @@ def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert):
         detailed_scene.add_geometry(detailed, geom_name=node, node_name=node)
         total_standard += len(standard.faces); total_detail += len(detailed.faces)
         manifest.append({'id':node,'fma_id':row['fma_id'],'name':row['name'],
-          'standard_triangles':len(standard.faces),'detailed_triangles':len(detailed.faces)})
+          'standard_triangles':len(standard.faces),'detailed_triangles':len(detailed.faces),
+          'category':row.get('category') or ('heart' if 'wall of' in row['name'].lower() else 'major-vessel')})
         print(f'{node:9} {row["name"][:44]:44} {len(standard.faces):>7,}/{len(detailed.faces):>7,} triangles')
     if len(manifest)<10:
         raise SystemExit('Too few actual structures for the detailed cardiovascular release (minimum 10).')
@@ -151,12 +160,15 @@ def main():
     p.add_argument('--out',default=Path('models'),type=Path)
     p.add_argument('--standard-faces',type=int,default=9000)
     p.add_argument('--detailed-faces',type=int,default=40000)
+    p.add_argument('--extra-standard-faces',type=int,default=3200)
+    p.add_argument('--extra-detailed-faces',type=int,default=11000)
     p.add_argument('--vertical-axis',choices=['auto','x','y','z'],default='auto')
     p.add_argument('--invert-vertical',action='store_true')
     args=p.parse_args()
     if args.standard_faces<500 or args.detailed_faces<args.standard_faces:
         p.error('Require 500 <= standard faces <= detailed faces.')
-    build(args.subset,args.skin,args.out,args.standard_faces,args.detailed_faces,args.vertical_axis,args.invert_vertical)
+    if args.extra_standard_faces<300 or args.extra_detailed_faces<args.extra_standard_faces: p.error('Invalid extra geometry limits.')
+    build(args.subset,args.skin,args.out,args.standard_faces,args.detailed_faces,args.vertical_axis,args.invert_vertical,args.extra_standard_faces,args.extra_detailed_faces)
 
 if __name__=='__main__':
     main()

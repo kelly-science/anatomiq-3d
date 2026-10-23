@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {installSkullGeometry} from './skull-geometry.js';
+import {validateSkullManifest} from './skeletal-detail.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
@@ -13,11 +15,18 @@ import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './syst
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.5.1';
+const APP_VERSION = '1.7.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const LOCAL_MODEL = './models/ecorche.glb';
+const SKULL_MANIFEST='./models/skull-structures.json';
+const SKULL_HIGH='./models/skull-detailed.glb';
+const SKULL_QUALITY_KEY='anatomy-studio-skull-geometry-v1';
+let skullGeometry='standard';
+try{skullGeometry=localStorage.getItem(SKULL_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
+let skullDetailStats=null;
+
 const LOCAL_DIGESTIVE_MODEL='./models/anatomy-organs.glb';
 const DETAIL_MANIFEST='./models/digestive-structures.json';
 const DETAIL_MODEL_STANDARD='./models/digestive-standard.glb';
@@ -30,6 +39,7 @@ let cardioGeometry='standard';
 try{cardioGeometry=localStorage.getItem(CARDIO_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let cardioRoot=null,cardioEntries=[],cardioAvailable=false;
 let preCardioStructureCount=0,preCardioFingerprint='';
+let originalCardioStructureCount=0,originalCardioFingerprint='';
 const DIGESTIVE_QUALITY_KEY='anatomy-studio-digestive-geometry-v1';
 let digestiveGeometry='standard';
 try{digestiveGeometry=localStorage.getItem(DIGESTIVE_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
@@ -304,7 +314,7 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
-  if(s.system==='cardiovascular')return ({heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Large artery supplying oxygenated blood to the systemic circulation, except pulmonary arteries.',vein:'Major vein returning blood toward the heart.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
+  if(s.system==='cardiovascular')return ({'heart-internal':'A named internal heart structure. Hide surrounding heart walls to reveal it.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
   if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.',esophagus:'Transports swallowed food from the pharynx to the stomach.',gallbladder:'Stores and concentrates bile before its release into the small intestine.',pancreas:'Produces digestive enzymes and bicarbonate, as well as hormones.',duodenum:'First part of the small intestine; receives bile and pancreatic enzymes.',jejunum:'Middle portion of the small intestine; absorbs nutrients.',ileum:'Final portion of the small intestine; absorbs bile salts and vitamin B12.',colon:'Absorbs water and electrolytes and moves fecal matter.',cecum:'Blind pouch at the beginning of the large intestine.',appendix:'Small blind-ended tube arising from the cecum.',rectum:'Stores feces prior to elimination.'})[s.organId] || 'An identifiable segment of the digestive tract.';
   if(s.system==='cardiovascular')return layers.cardiovascular && cardioAvailable;
   if(s.system==='muscular')return muscleDescriptions.find(([rx])=>rx.test(s.name))?.[1] || 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.';
@@ -435,7 +445,7 @@ function setMode(newMode){
     skeleton:['Skeletal system','Explore the axial and appendicular skeleton.'],
     muscular:['Muscular system','Explore superficial and deep muscles, independently.'],
     digestive:['Digestive system','Explore individual digestive structures and accessory organs.'],
-    systems:['Combined systems','Combine bones, muscles and digestive organs, layer by layer.']
+    systems:['Combined systems','Combine skeleton, muscles, digestive organs and cardiovascular anatomy layer by layer.']
   }[mode];
   if(!display)throw new Error('Unknown anatomical system.');
   updateLayerHeading();
@@ -519,7 +529,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.system==='cardiovascular'?'Heart and major vessels':s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -592,6 +602,7 @@ function prepareStructures(root){
   previousStructureCount=catalog.previousCount;
   previousFingerprint=catalog.previousFingerprint;
   preCardioStructureCount=catalog.preCardioCount;preCardioFingerprint=catalog.preCardioFingerprint;
+  originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
   console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${structures.filter(x=>x.skull).length} skull structures`);
@@ -709,6 +720,29 @@ async function loadCardiovascular(){
     if(cardioRoot){scene.remove(cardioRoot);cardioRoot=null;}
   }
 }
+async function loadHighResolutionSkull(){
+  skullDetailStats=null;
+  if(skullGeometry!=='detailed')return;
+  try{
+    const response=await fetch(SKULL_MANIFEST,{cache:'no-cache'});
+    if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))throw new Error(`Metadata HTTP ${response.status}`);
+    const metadata=validateSkullManifest(await response.json());
+    const gltf=await new GLTFLoader().loadAsync(SKULL_HIGH);
+    const alignment=sourceRegistration(new THREE.Box3().setFromObject(sceneRoot));
+    const corrected=correctedDetailTransform(alignment);
+    gltf.scene.scale.set(...corrected.scale);gltf.scene.position.set(...corrected.position);
+    sceneRoot.updateWorldMatrix(true,true);
+    gltf.scene.updateWorldMatrix(true,true);
+    const stats=installSkullGeometry(THREE,gltf.scene,metadata,structures);
+    skullDetailStats=stats;
+    console.info(`Anatomy Studio: high-resolution skull upgraded ${stats.upgraded}/${stats.total} bones.`,stats);
+    if(!stats.upgraded)console.warn('No higher-detail skull meshes safely matched the original skeleton. Check source registration.');
+  }catch(error){
+    skullDetailStats={total:0,upgraded:0,error:String(error?.message||error)};
+    console.warn('Optional high-resolution skull unavailable; original bones remain usable.',error);
+  }
+  invalidate(3);
+}
 async function loadAnatomy(){
   elements.loader.hidden=false;elements.retry.hidden=true;elements.loadTitle.textContent='Preparing the anatomy viewer';
   elements.loadDesc.textContent='Loading the 3D skeletal and muscular anatomy model. The first visit needs an internet connection.';
@@ -730,6 +764,7 @@ async function loadAnatomy(){
     await loadDetailedDigestive();
     await loadCardiovascular();
     prepareStructures(sceneRoot);
+    await loadHighResolutionSkull();
     elements.loader.hidden=true;
     await initializeStudioScene();
     setStatus(teacherMode ? 'Studio ready' : 'Student view');
@@ -781,6 +816,13 @@ for(const [id,layer] of [['system-deep','deep'],['system-superficial','superfici
 }
 $('settings-digestive-geometry').value=digestiveGeometry;
 $('settings-cardio-geometry').value=cardioGeometry;
+$('settings-skull-geometry').value=skullGeometry;
+$('settings-skull-geometry').addEventListener('change',()=>{
+  const next=$('settings-skull-geometry').value==='detailed'?'detailed':'standard';
+  if(next===skullGeometry)return;
+  try{localStorage.setItem(SKULL_QUALITY_KEY,next);}catch{}
+  location.reload();
+});
 $('settings-cardio-geometry').addEventListener('change',()=>{
  const next=$('settings-cardio-geometry').value==='detailed'?'detailed':'standard';
  if(next===cardioGeometry)return;
@@ -827,7 +869,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:digestiveAvailable,detail:detailAvailable,detailMode:digestiveGeometry,cardio:cardioAvailable,cardioMode:cardioGeometry});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:digestiveAvailable,detail:detailAvailable,detailMode:digestiveGeometry,cardio:cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded)});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -945,7 +987,7 @@ function snapshotProject(){
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
-  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint))
+  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint))
     throw new Error(sample?.m==='digestive'?'Digestive model unavailable. Upload models/anatomy-organs.glb and the local Draco decoder before opening this lesson.':'This lesson uses an incompatible anatomical model.');
 }
 function renderChapterUI(){
@@ -1272,7 +1314,7 @@ function updateAnnotationPositions(){
 }
 async function applyScene(saved){
   validateScene(saved);
-  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint)){
+  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint)){
     throw new Error(saved?.m==='digestive'?'This digestive scene requires the locally hosted digestive GLB and Draco decoder.':'The anatomical model has changed since this scene was published.');
   }
   restoringScene=true;
@@ -1575,11 +1617,22 @@ $('studio-menubar').addEventListener('click',event=>{
   const targetId=action.dataset.menuClick;
   const view=action.dataset.menuView;
   const anatomyPreset=action.dataset.anatomyPreset;
+  const cardiacPreset=action.dataset.menuCardiac;
   if(targetId){
     const target=$(targetId);
     if(target && !target.disabled)target.click();
   }
   if(view)orient(view);
+  if(cardiacPreset==='interior' && teacherMode && cardioAvailable){
+    // Remove only outer heart-wall meshes to expose separately selectable
+    // valve leaflets, cavity surfaces and papillary muscles. Other systems stay put.
+    systemLayers.cardiovascular=true;
+    if(mode!=='systems')setMode('systems');
+    for(const s of cardioEntries){
+      if(/^wall of (?:ventricle|left atrium|right atrium)$/i.test(s.name))hidden.add(s.mesh);
+    }
+    isolated=false;setSelection(null);refreshVisibility();updateSystemControls();scheduleHistoryCommit();
+  }
   if(anatomyPreset && teacherMode){
     Object.assign(systemLayers,{skeletal:true,superficial:false,deep:false,digestive:false,cardiovascular:false});
     setMode(anatomyPreset);
@@ -1599,6 +1652,7 @@ const LOCAL_ASSETS = [
   ['./vendor/three/examples/jsm/controls/OrbitControls.js','OrbitControls'],
   ['./vendor/three/examples/jsm/loaders/GLTFLoader.js','GLTFLoader'],
   ['./models/ecorche.glb','Écorché model'],
+  // High-resolution skull GLB is optional and checked separately in Settings.
   ['./models/anatomy-organs.glb','Legacy scene compatibility'],
   ['./vendor/three/examples/jsm/loaders/DRACOLoader.js','Draco loader'],
   ['./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','Draco decoder']
@@ -1621,11 +1675,16 @@ async function checkLocalAssets(){
   display.classList.toggle('status-success',missing.length===0);
   $('settings-renderer').textContent=window.__ANATOMY_RENDERER_SOURCE==='local'?'Local Three.js 0.169.0':'CDN fallback (Three.js 0.169.0)';
   $('settings-model').textContent=sceneRoot ? displayLocalAssetName(currentModelURL) : 'Not loaded';
+  $('settings-skull').textContent=skullGeometry==='detailed'
+    ? (skullDetailStats?.upgraded ? `${skullDetailStats.upgraded} bones upgraded (high detail)` : `High detail not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
+    : 'Standard Écorché geometry';
+  $('settings-skull').title=skullDetailStats?.skipped?.join('; ')||'';
   $('settings-cardio').textContent=cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry})`:'Not installed — run cardiovascular installer';
   $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected)`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';
 }
 function openAppSettings(){
   $('settings-dialog').hidden=false;
+  $('settings-skull-geometry').value=skullGeometry;
   $('settings-installed').textContent=APP_VERSION;
   $('settings-render-quality').value=renderProfile.requested;
   $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;

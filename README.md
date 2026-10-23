@@ -1,3 +1,84 @@
+# Anatomy Studio 1.7.0 — High-Resolution Skull (Beta)
+
+**What's new:** Optional high-resolution cranial/facial bone geometry from the verified **BodyParts3D 4.3** mesh set. Anatomy Studio keeps your existing Écorché skull and full skeleton as the fast default. The upgraded skull is enabled per Chromebook/iPad in **Settings → App Settings → Skull geometry → High resolution**. The full-body skeleton is unchanged in this first 1.7 release.
+
+The new models are **not included in the ZIP**. They require a one-time download/conversion on your Mac. The installer selects up to 22 individually named cranial/facial bones (frontal, parietal, temporal, occipital, sphenoid, ethmoid, maxilla, mandible, etc.) and creates locally hosted GLB assets. Source meshes and names are verified against the version-stamped BodyParts3D 4.3 manifest. A structure only uses the replacement when it is **higher-polygon and safely aligned**; otherwise the original bone remains. Teeth, cartilage, and bones outside the skull keep their existing geometry.
+
+## Install 1.7 on your Mac and GitHub Pages
+
+1. Extract this ZIP. **Merge your existing** `models/` and `vendor/three/` directories into `anatomy-pwa-studio/`. Keep your existing Ecorché model, digestive/cardiovascular models and `ASSET_SHA256.txt`.
+2. Reuse `.digestive-43-work/` if you have it: it contains the reference skin OBJ and Python environment and avoids re-downloading. It is optional, and must **not** be uploaded to GitHub. You can also reuse `.cardiovascular-43-work/`.
+3. From the project root, run:
+
+   ```bash
+   bash tools/install-skull-43.sh
+   ```
+
+   The script downloads the verified 4.3 skull meshes and reuses any existing reference skin. It generates:
+
+   ```text
+   models/skull-detailed.glb
+   models/skull-structures.json
+   models/licenses/SKULL-43-ATTRIBUTION.txt
+   ASSET_SHA256.txt
+   ```
+
+4. Upload the **updated application files** (including the new `skeletal-detail.js` and `skull-geometry.js`) and generated skull assets to the same directory that GitHub Pages serves. Preserve all existing `models/`, `vendor/`, icons, Scene Library-compatible scripts, and attribution files.
+5. Open your site's `/version.json` and verify `1.7.0`. Reload the installed PWA online without clearing site data. Go to **Settings → App Settings → Skull geometry** and choose **High resolution**. It reloads the app and displays how many cranial/facial bones actually upgraded.
+6. With Skeletal enabled, use **View → Focus Skull Only**, rotate, and verify registration from front, back, lateral and inferior views. Check existing custom labels and painting before using the high-detail skull for practical exams.
+
+**Important:** The skull is sourced from a different model than Écorché. No real 4.3 skull geometry was available to test in this build environment, so alignment and fine anatomical accuracy **must be checked on your Mac/iPad/Chromebook** after the installer runs. If a bone cannot be matched safely or has fewer triangles, the old bone stays visible. An updated mesh's surface can differ slightly from previous label anchor coordinates; inspect important old callouts.
+
+**Scene compatibility:** No new selectable structures are inserted, no existing structure indices/fingerprints change, and the 1.7 quality setting is stored locally on each device, not embedded in student links. Older skeletal/muscular/digestive/cardiovascular lesson links and library drafts continue to reference the same bones. Your current student scenes therefore keep functioning even when the high-resolution skull assets are absent.
+
+**Offline:** The service worker caches the optional skull model on the device when **Prepare offline access** is used while high-resolution skull is enabled. Do not clear Chrome site data: locally saved Scene Library entries live in IndexedDB and are not hosted on GitHub. Back up the library before upgrading.
+
+**Licensing:** Source anatomy © DBCLS / BodyParts3D, CC BY-SA 2.1 Japan, with attribution in the generated file. Existing Écorché is CC BY-SA 4.0. Keep both license notices with redistributed geometry. Not for clinical diagnosis or navigation.
+
+**Testing:** 63 JavaScript application tests and one synthetic model-selector/converter test passed. Real downloaded skull alignment and full Chromebook performance still need validation.
+
+---
+
+## Previous 1.6 cardiovascular release notes
+
+
+**Goal:** A useful cardiovascular teaching model, not just 3 heart-wall meshes and 12 major vessel fragments. The expanded cast is selected by exact names from the verified BodyParts3D 4.3 source manifest. Its count is determined during installation; no substitute geometry is generated. This release is not yet visually validated on a physical Chromebook/iPad with the real downloaded assets.
+
+## What gets added
+
+- Internal heart geometry: ventricular cavity surfaces, mitral/tricuspid leaflets, aortic/pulmonary cusps, papillary muscles, where actually present in 4.3.
+- Pulmonary artery and vein trunks; more systemic vessel trunks from the neck, chest, abdomen, and limbs; selected coronary components.
+- **View → Expose heart interior (hide walls)** helps reveal internal structures without deleting them.
+- Cardiovascular objects are organized within the student tree into heart walls, heart internals, pulmonary circulation, coronary circulation, and systemic vessels. Teacher paint, labels, visibility, chapter differences and Exam/Study publishing still apply.
+- Standard and Detailed geometry remain **device-specific**, both downloaded from your own GitHub Pages deployment once installed.
+- The original **15 cardiovascular FJ IDs and their exact mesh order stay first**. New entries append afterward. Old labels and painted structures therefore retain their indices; old scenes are automatically migrated to the new total when opened. Back up your Scene Library before changing a published site.
+
+## Upgrade steps on your Mac
+
+1. Extract the ZIP and merge **your existing** `models/`, `vendor/three/`, and any `ASSET_SHA256.txt` into the new `anatomy-pwa-studio` folder. The ZIP does **not** include large anatomical meshes or Three.js binaries.
+2. For the best resumable behavior, preserve `.cardiovascular-43-work/` and `.digestive-43-work/` from your prior install (these are local temporary work folders; do not upload them to GitHub).
+3. From the **updated** project directory, run:
+
+   ```bash
+   bash tools/install-cardiovascular-43.sh
+   ```
+
+   The script reuses the original 15 meshes, downloads only the newly selected structures, and regenerates `models/cardiovascular-standard.glb`, `models/cardiovascular-detailed.glb`, `models/cardiovascular-structures.json` and `ASSET_SHA256.txt`.
+4. Upload the **entire updated application code** to the root of your GitHub Pages deployment, plus the newly generated `models/cardiovascular-*` files and updated `ASSET_SHA256.txt`. Preserve the other anatomical models, vendor libraries and `models/licenses/` directory. Do not upload `.cardiovascular-43-work/` or the project virtual environment.
+5. On your iPad or Chromebook, verify `/version.json` now shows `1.6.0`, reopen the PWA online, and check **Settings → App Settings → Cardiovascular**. It should show **more than 15 meshes** if the expanded data installed. Toggle the cardiovascular system on. Test View → Expose heart interior and select a named valve leaflet.
+6. In **View → Front/Back** with the skeleton enabled, confirm anatomical left/right and depth alignment before publishing practicals. If anything appears reversed, stop and report a screenshot; do not use it for assessment until alignment is corrected.
+
+If the expanded download encounters a network problem, do not upload partial GLB replacements. Re-run the same installer to reuse the cached chunks. If the app reports just **15** cardiovascular structures, it is still reading the older model/metadata; verify the generated three files were actually uploaded to GitHub Pages and reload after the service worker updates. Do not clear site data or you risk losing the local IndexedDB Scene Library.
+
+### Technical and licensing notes
+
+- Source meshes: BodyParts3D 4.3, © DBCLS, **CC BY-SA 2.1 JP**, via the pinned v1.0.0 `olivercase/body_parts_3d_api` selector (MIT tool code). Preserve `models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt` and its references.
+- The exact number and anatomical completeness depend on source geometry; this does not claim all coronary vessels, all heart chambers as separately dissectible walls, or histological detail.
+- The scene/link format is unchanged. The previous 15 cardiovascular structure IDs and mesh indices are frozen; new cardiovascular entries are appended only. Very large custom-label scenes can still reach URL-fragment limits.
+- For low-power Chromebooks choose Settings → Cardiovascular geometry → Standard and rendering Quality → Fast. Only the selected system layers need render, but the cardiovascular GLB currently loads at app startup if installed.
+
+---
+
 # Anatomy Studio 1.3.1 — Digestive visibility fix
 
 This patch addresses the case where the application reports **77 detailed digestive structures loaded**, but the viewer displays only the original three-organs layer.

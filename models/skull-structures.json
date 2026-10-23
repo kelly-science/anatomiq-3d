@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio body frame; depth flipped by viewer",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ6310",
+      "name": "Frontal bone",
+      "target": "frontal bone",
+      "fma_id": "FMA5018",
+      "triangles": 14448
+    },
+    {
+      "id": "FJ6411",
+      "name": "Occipital bone",
+      "target": "occipital bone",
+      "fma_id": "FMA5018",
+      "triangles": 12382
+    },
+    {
+      "id": "FJ6309",
+      "name": "Ethmoid",
+      "target": "ethmoid",
+      "fma_id": "FMA5018",
+      "triangles": 22348
+    },
+    {
+      "id": "FJ6485",
+      "name": "Sphenoid bone",
+      "target": "sphenoid bone",
+      "fma_id": "FMA5018",
+      "triangles": 8034
+    },
+    {
+      "id": "FJ6399",
+      "name": "Mandible",
+      "target": "mandible",
+      "fma_id": "FMA5018",
+      "triangles": 5544
+    },
+    {
+      "id": "FJ6486",
+      "name": "Vomer",
+      "target": "vomer",
+      "fma_id": "FMA5018",
+      "triangles": 7102
+    },
+    {
+      "id": "FJ6385",
+      "name": "Left parietal bone",
+      "target": "left parietal bone",
+      "fma_id": "FMA5018",
+      "triangles": 13152
+    },
+    {
+      "id": "FJ6472",
+      "name": "Right parietal bone",
+      "target": "right parietal bone",
+      "fma_id": "FMA5018",
+      "triangles": 12944
+    },
+    {
+      "id": "FJ6391",
+      "name": "Left temporal bone",
+      "target": "left temporal bone",
+      "fma_id": "FMA5018",
+      "triangles": 4908
+    },
+    {
+      "id": "FJ6478",
+      "name": "Right temporal bone",
+      "target": "right temporal bone",
+      "fma_id": "FMA5018",
+      "triangles": 4904
+    },
+    {
+      "id": "FJ6383",
+      "name": "Left nasal bone",
+      "target": "left nasal bone",
+      "fma_id": "FMA5018",
+      "triangles": 500
+    },
+    {
+      "id": "FJ6470",
+      "name": "Right nasal bone",
+      "target": "right nasal bone",
+      "fma_id": "FMA5018",
+      "triangles": 468
+    },
+    {
+      "id": "FJ6384",
+      "name": "Left palatine bone",
+      "target": "left palatine bone",
+      "fma_id": "FMA5018",
+      "triangles": 1844
+    },
+    {
+      "id": "FJ6471",
+      "name": "Right palatine bone",
+      "target": "right palatine bone",
+      "fma_id": "FMA5018",
+      "triangles": 1868
+    },
+    {
+      "id": "FJ6380",
+      "name": "Left maxilla",
+      "target": "left maxilla",
+      "fma_id": "FMA5018",
+      "triangles": 5086
+    },
+    {
+      "id": "FJ6468",
+      "name": "Right maxilla",
+      "target": "right maxilla",
+      "fma_id": "FMA5018",
+      "triangles": 5358
+    },
+    {
+      "id": "FJ6397",
+      "name": "Left zygomatic bone",
+      "target": "left zygomatic bone",
+      "fma_id": "FMA5018",
+      "triangles": 1610
+    },
+    {
+      "id": "FJ6483",
+      "name": "Right zygomatic bone",
+      "target": "right zygomatic bone",
+      "fma_id": "FMA5018",
+      "triangles": 1508
+    },
+    {
+      "id": "FJ6376",
+      "name": "Left lacrimal bone",
+      "target": "left lacrimal bone",
+      "fma_id": "FMA5018",
+      "triangles": 634
+    },
+    {
+      "id": "FJ6465",
+      "name": "Right lacrimal bone",
+      "target": "right lacrimal bone",
+      "fma_id": "FMA5018",
+      "triangles": 554
+    },
+    {
+      "id": "FJ6374",
+      "name": "Left inferior nasal concha",
+      "target": "left inferior nasal concha",
+      "fma_id": "FMA5018",
+      "triangles": 738
+    },
+    {
+      "id": "FJ6463",
+      "name": "Right inferior nasal concha",
+      "target": "right inferior nasal concha",
+      "fma_id": "FMA5018",
+      "triangles": 714
+    }
+  ]
+}

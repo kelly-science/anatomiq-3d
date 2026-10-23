@@ -1,0 +1,6 @@
+BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
+Anatomical mesh license: Creative Commons Attribution-ShareAlike 2.1 Japan.
+https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Derived self-hosted skull geometry retains the BodyParts3D share-alike license.
+Source and verified downloader: Oliver Case, body_parts_3d_api v1.0.0 (MIT code).
+https://github.com/olivercase/body_parts_3d_api

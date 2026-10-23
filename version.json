@@ -1,6 +1,6 @@
 {
-  "version": "1.5.1",
+  "version": "1.7.0",
   "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Fix BodyParts3D cardiovascular IDs with alphabetic suffixes (e.g., FJ1682M) in both mesh converter and browser manifest loader; no anatomy geometry changed."
+  "notes": "Optional high-resolution skull geometry from self-hosted BodyParts3D 4.3; preserves original anatomy indices and labels."
 }
