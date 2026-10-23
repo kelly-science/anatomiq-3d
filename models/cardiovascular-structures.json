@@ -1280,6 +1280,806 @@
       "standard_triangles": 678,
       "detailed_triangles": 678,
       "category": "pulmonary"
+    },
+    {
+      "id": "FJ1661",
+      "fma_id": "FMA50586",
+      "name": "Anterior temporal branch of right lateral occipital artery",
+      "standard_triangles": 2488,
+      "detailed_triangles": 2488,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1661M",
+      "fma_id": "FMA50586",
+      "name": "Anterior temporal branch of left lateral occipital artery",
+      "standard_triangles": 2488,
+      "detailed_triangles": 2488,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1680",
+      "fma_id": "FMA50586",
+      "name": "Middle temporal branch of right lateral occipital artery",
+      "standard_triangles": 1486,
+      "detailed_triangles": 1486,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1687",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right lateral occipital artery",
+      "standard_triangles": 2204,
+      "detailed_triangles": 2204,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1687M",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left lateral occipital artery",
+      "standard_triangles": 2204,
+      "detailed_triangles": 2204,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1691",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right medial occipital artery",
+      "standard_triangles": 2588,
+      "detailed_triangles": 2588,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1691M",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left medial occipital artery",
+      "standard_triangles": 2588,
+      "detailed_triangles": 2588,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1937",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right internal thoracic artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3546,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1939",
+      "fma_id": "FMA4176",
+      "name": "Right first posterior intercostal artery",
+      "standard_triangles": 1508,
+      "detailed_triangles": 1508,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1950",
+      "fma_id": "FMA3994",
+      "name": "Right second posterior intercostal artery",
+      "standard_triangles": 2656,
+      "detailed_triangles": 2656,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1972",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left internal thoracic artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3642,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1973",
+      "fma_id": "FMA4176",
+      "name": "Left first posterior intercostal artery",
+      "standard_triangles": 1538,
+      "detailed_triangles": 1538,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1974",
+      "fma_id": "FMA3994",
+      "name": "Left second posterior intercostal artery",
+      "standard_triangles": 2724,
+      "detailed_triangles": 2724,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1991",
+      "fma_id": "FMA14294",
+      "name": "Right superior intercostal vein",
+      "standard_triangles": 1094,
+      "detailed_triangles": 1094,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ1993",
+      "fma_id": "FMA4729",
+      "name": "Right internal thoracic vein",
+      "standard_triangles": 3038,
+      "detailed_triangles": 3038,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ2057",
+      "fma_id": "FMA20803",
+      "name": "Descending branch of right lateral circumflex femoral artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5234,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2063",
+      "fma_id": "FMA20803",
+      "name": "Descending branch of left lateral circumflex femoral artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5230,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2065",
+      "fma_id": "FMA20684",
+      "name": "Trunk of left anterior tibial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2087",
+      "fma_id": "FMA20684",
+      "name": "Trunk of left posterior tibial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2093",
+      "fma_id": "FMA43901",
+      "name": "Left peroneal artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2094",
+      "fma_id": "FMA20741",
+      "name": "Left deep femoral artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6138,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2099",
+      "fma_id": "FMA44323",
+      "name": "Left deep femoral vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6338,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2103",
+      "fma_id": "FMA21376",
+      "name": "Left great saphenous vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2121",
+      "fma_id": "FMA44323",
+      "name": "Left small saphenous vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2130",
+      "fma_id": "FMA20684",
+      "name": "Trunk of right anterior tibial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2135",
+      "fma_id": "FMA44323",
+      "name": "Right deep femoral vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6346,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2145",
+      "fma_id": "FMA21376",
+      "name": "Right great saphenous vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2172",
+      "fma_id": "FMA20684",
+      "name": "Trunk of right posterior tibial artery",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2176",
+      "fma_id": "FMA44323",
+      "name": "Right small saphenous vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2197",
+      "fma_id": "FMA43901",
+      "name": "Right peroneal artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2203",
+      "fma_id": "FMA20741",
+      "name": "Right deep femoral artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6132,
+      "category": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2218",
+      "fma_id": "FMA22908",
+      "name": "Left basilic vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2220",
+      "fma_id": "FMA13324",
+      "name": "Left cephalic vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2225",
+      "fma_id": "FMA22693",
+      "name": "Left deep brachial artery",
+      "standard_triangles": 2506,
+      "detailed_triangles": 2506,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2234",
+      "fma_id": "FMA22930",
+      "name": "Left median antebrachial vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5314,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2236",
+      "fma_id": "FMA22799",
+      "name": "Left dorsal carpal branch of ulnar artery",
+      "standard_triangles": 724,
+      "detailed_triangles": 724,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2261",
+      "fma_id": "FMA22693",
+      "name": "Radial collateral branch of left deep brachial artery",
+      "standard_triangles": 1452,
+      "detailed_triangles": 1452,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2262",
+      "fma_id": "FMA22693",
+      "name": "Radial collateral branch of right deep brachial artery",
+      "standard_triangles": 1338,
+      "detailed_triangles": 1338,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2270",
+      "fma_id": "FMA22908",
+      "name": "Right basilic vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10999,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2272",
+      "fma_id": "FMA13324",
+      "name": "Right cephalic vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10999,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2277",
+      "fma_id": "FMA22693",
+      "name": "Right deep brachial artery",
+      "standard_triangles": 2346,
+      "detailed_triangles": 2346,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2286",
+      "fma_id": "FMA22930",
+      "name": "Right median antebrachial vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5386,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2288",
+      "fma_id": "FMA22799",
+      "name": "Right dorsal carpal branch of ulnar artery",
+      "standard_triangles": 730,
+      "detailed_triangles": 730,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2313",
+      "fma_id": "FMA22930",
+      "name": "Left medial brachial vein",
+      "standard_triangles": 2852,
+      "detailed_triangles": 2852,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2331",
+      "fma_id": "FMA22693",
+      "name": "Middle collateral branch of left deep brachial artery",
+      "standard_triangles": 1896,
+      "detailed_triangles": 1896,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2341",
+      "fma_id": "FMA22930",
+      "name": "Right medial brachial vein",
+      "standard_triangles": 2570,
+      "detailed_triangles": 2570,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2362",
+      "fma_id": "FMA22693",
+      "name": "Middle collateral branch of right deep brachial artery",
+      "standard_triangles": 1684,
+      "detailed_triangles": 1684,
+      "category": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2631",
+      "fma_id": "FMA30313",
+      "name": "Trunk of anterior interventricular branch of left coronary artery",
+      "standard_triangles": 3032,
+      "detailed_triangles": 3032,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2633",
+      "fma_id": "FMA13921",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "standard_triangles": 492,
+      "detailed_triangles": 492,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2635",
+      "fma_id": "FMA13921",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "standard_triangles": 766,
+      "detailed_triangles": 766,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2636",
+      "fma_id": "FMA13921",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "standard_triangles": 420,
+      "detailed_triangles": 420,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2641",
+      "fma_id": "FMA13914",
+      "name": "Third right anterior branch of anterior interventricular branch of left coronary artery",
+      "standard_triangles": 442,
+      "detailed_triangles": 442,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2642",
+      "fma_id": "FMA13921",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "standard_triangles": 964,
+      "detailed_triangles": 964,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2643",
+      "fma_id": "FMA13921",
+      "name": "Conus branch of anterior interventricular branch of left coronary artery",
+      "standard_triangles": 478,
+      "detailed_triangles": 478,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2646",
+      "fma_id": "FMA13914",
+      "name": "Second right anterior branch of anterior interventricular branch of left coronary artery",
+      "standard_triangles": 470,
+      "detailed_triangles": 470,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2670",
+      "fma_id": "FMA3807",
+      "name": "Conus branch of right coronary artery",
+      "standard_triangles": 442,
+      "detailed_triangles": 442,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2671",
+      "fma_id": "FMA13912",
+      "name": "First anterior ventricular branch of right coronary artery",
+      "standard_triangles": 478,
+      "detailed_triangles": 478,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2672",
+      "fma_id": "FMA13912",
+      "name": "Marginal branch of right coronary artery",
+      "standard_triangles": 742,
+      "detailed_triangles": 742,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2714",
+      "fma_id": "FMA13912",
+      "name": "First posterior ventricular branch of right coronary artery",
+      "standard_triangles": 794,
+      "detailed_triangles": 794,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2719",
+      "fma_id": "FMA13912",
+      "name": "First posterior ventricular branch of right coronary artery",
+      "standard_triangles": 380,
+      "detailed_triangles": 380,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ2723",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right coronary artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4502,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ3074",
+      "fma_id": "FMA15421",
+      "name": "Anterior inferior segmental branch of right portal vein",
+      "standard_triangles": 2832,
+      "detailed_triangles": 2832,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3111",
+      "fma_id": "FMA15424",
+      "name": "Posterior inferior segmental branch of right portal vein",
+      "standard_triangles": 2194,
+      "detailed_triangles": 2194,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3113",
+      "fma_id": "FMA15423",
+      "name": "Posterior superior segmental branch of right portal vein",
+      "standard_triangles": 1712,
+      "detailed_triangles": 1712,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3118",
+      "fma_id": "FMA15791",
+      "name": "Posterior inferior segmental tributary of right hepatic vein",
+      "standard_triangles": 1402,
+      "detailed_triangles": 1402,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3119",
+      "fma_id": "FMA15791",
+      "name": "Posterior superior segmental tributary of right hepatic vein",
+      "standard_triangles": 2062,
+      "detailed_triangles": 2062,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3120",
+      "fma_id": "FMA15791",
+      "name": "Posterior inferior segmental tributary of right hepatic vein",
+      "standard_triangles": 1418,
+      "detailed_triangles": 1418,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3121",
+      "fma_id": "FMA15791",
+      "name": "Anterior superior segmental tributary of right hepatic vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3722,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3125",
+      "fma_id": "FMA15432",
+      "name": "Lateral inferior segmental branch of left portal vein",
+      "standard_triangles": 2284,
+      "detailed_triangles": 2284,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3126",
+      "fma_id": "FMA15431",
+      "name": "Lateral superior segmental branch of left portal vein",
+      "standard_triangles": 2364,
+      "detailed_triangles": 2364,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3128",
+      "fma_id": "FMA15429",
+      "name": "Medial inferior segmental branch of left portal vein",
+      "standard_triangles": 1660,
+      "detailed_triangles": 1660,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3458",
+      "fma_id": "FMA50720",
+      "name": "Anterior division of left renal artery",
+      "standard_triangles": 1468,
+      "detailed_triangles": 1468,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3461",
+      "fma_id": "FMA50720",
+      "name": "Anterior division of left renal artery",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4366,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3462",
+      "fma_id": "FMA50720",
+      "name": "Anterior division of left renal artery",
+      "standard_triangles": 1510,
+      "detailed_triangles": 1510,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3463",
+      "fma_id": "FMA50720",
+      "name": "Anterior division of left renal artery",
+      "standard_triangles": 2932,
+      "detailed_triangles": 2932,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3466",
+      "fma_id": "FMA50722",
+      "name": "Trunk proper of left external iliac artery",
+      "standard_triangles": 462,
+      "detailed_triangles": 462,
+      "category": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3525",
+      "fma_id": "FMA18889",
+      "name": "Left internal pudendal vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7452,
+      "category": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3563",
+      "fma_id": "FMA50720",
+      "name": "Anterior division of right renal artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4700,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3567",
+      "fma_id": "FMA50722",
+      "name": "Trunk proper of right external iliac artery",
+      "standard_triangles": 396,
+      "detailed_triangles": 396,
+      "category": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3575",
+      "fma_id": "FMA50720",
+      "name": "Posterior division of right renal artery",
+      "standard_triangles": 1850,
+      "detailed_triangles": 1850,
+      "category": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3610",
+      "fma_id": "FMA18889",
+      "name": "Right internal pudendal vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7356,
+      "category": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3954",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left maxillary nerve",
+      "standard_triangles": 1360,
+      "detailed_triangles": 1360,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ3988",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right maxillary nerve",
+      "standard_triangles": 1336,
+      "detailed_triangles": 1336,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ4178",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left second intercostal nerve",
+      "standard_triangles": 1132,
+      "detailed_triangles": 1132,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ5006",
+      "fma_id": "FMA50722",
+      "name": "Trunk proper of right subclavian artery",
+      "standard_triangles": 1304,
+      "detailed_triangles": 1304,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ5025",
+      "fma_id": "FMA13318",
+      "name": "Right anterior jugular vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3902,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5028",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right lateral occipital artery",
+      "standard_triangles": 2320,
+      "detailed_triangles": 2320,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5082",
+      "fma_id": "FMA13110",
+      "name": "Right external jugular vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4348,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5084",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right facial artery",
+      "standard_triangles": 2132,
+      "detailed_triangles": 2132,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5105",
+      "fma_id": "FMA3717",
+      "name": "Right internal jugular vein proper",
+      "standard_triangles": 1550,
+      "detailed_triangles": 1550,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5122",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right maxillary artery",
+      "standard_triangles": 852,
+      "detailed_triangles": 852,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ5123",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right maxillary vein",
+      "standard_triangles": 1398,
+      "detailed_triangles": 1398,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ5139",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right occipital artery",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3718,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5148",
+      "fma_id": "FMA49653",
+      "name": "Parietal branch of right superficial temporal artery",
+      "standard_triangles": 3106,
+      "detailed_triangles": 3106,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5172",
+      "fma_id": "FMA50586",
+      "name": "Occipitotemporal branch of right medial occipital artery",
+      "standard_triangles": 1580,
+      "detailed_triangles": 1580,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5197",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right superficial temporal artery",
+      "standard_triangles": 2056,
+      "detailed_triangles": 2056,
+      "category": "vessel-head-neck"
+    },
+    {
+      "id": "FJ6035",
+      "fma_id": "FMA268161",
+      "name": "Pulmonary arterial trunk",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5450,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ6036",
+      "fma_id": "FMA30313",
+      "name": "Pulmonary arterial trunk",
+      "standard_triangles": 1302,
+      "detailed_triangles": 1302,
+      "category": "vessel-thorax"
+    },
+    {
+      "id": "FJ6164",
+      "fma_id": "FMA30313",
+      "name": "Trunk of anterior interventricular branch of left coronary artery",
+      "standard_triangles": 3032,
+      "detailed_triangles": 3032,
+      "category": "vessel-heart"
+    },
+    {
+      "id": "FJ6182",
+      "fma_id": "FMA30313",
+      "name": "Trunk of circumflex branch of left coronary artery",
+      "standard_triangles": 1380,
+      "detailed_triangles": 1380,
+      "category": "vessel-heart"
     }
   ]
 }
