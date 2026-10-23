@@ -1,6 +1,6 @@
 {
-  "version": "1.5.0",
+  "version": "1.5.1",
   "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Optional self-hosted 15-mesh cardiovascular layer: heart walls, major vessels; independent scene toggle; prior scene compatibility."
+  "notes": "Fix BodyParts3D cardiovascular IDs with alphabetic suffixes (e.g., FJ1682M) in both mesh converter and browser manifest loader; no anatomy geometry changed."
 }

@@ -191,3 +191,26 @@ Older published single-scene and chapter links are intentionally supported.
 
 **Planned digestive additions (not part of 1.5):** tongue, salivary glands,
 pharynx, and any further accessory digestive structures with verifiable meshes.
+
+
+## Anatomy Studio 1.5.1 — Cardiovascular installer ID correction
+
+BodyParts3D uses suffixed FJ identifiers such as `FJ1682M` (a distinct
+left-side arterial structure). Version 1.5.0 incorrectly required numbers-only
+identifiers in the Python converter and truncated the same identifiers in the
+browser. This release preserves the **complete** original ID in both places.
+
+If the installer stopped at `Unrecognized FJ identifier: FJ1682M`, simply
+replace `tools/build-cardiovascular-43.py`, rerun
+`bash tools/install-cardiovascular-43.sh` from the project folder, and keep
+`.cardiovascular-43-work/` intact. The script verifies and reuses the 15
+already-downloaded heart and major-vessel meshes.
+
+**Also update `cardiovascular-model.js`, `app.js`, `index.html`, `sw.js`,
+`version.json`** before publishing to GitHub Pages. The cache is bumped to
+`anatomy-v1.5.1` so ChromeOS installs the corrected mesh-ID parser. Keep your
+existing `models/` and `vendor/three/` assets.
+
+Only the ID handling and app version change: no digestive or skeletal assets
+are modified. The downloaded cardiovascular source meshes are not included
+in this ZIP.

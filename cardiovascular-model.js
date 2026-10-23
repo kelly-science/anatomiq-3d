@@ -1,5 +1,6 @@
 /* BodyParts3D / DBCLS v4.3 heart and major vessel layer. No guessed meshes. */
-const idPattern=/^FJ\d+$/;
+// BodyParts3D may include side-specific IDs such as FJ1682M; suffix is significant.
+const idPattern=/^FJ\d+[A-Z]?$/;
 export function validateCardiovascularManifest(meta){
  if(!meta||meta.version!==1||!Array.isArray(meta.structures)||meta.structures.length<5||meta.structures.length>100)throw new Error('Invalid cardiovascular metadata');
  const seen=new Set();
@@ -23,8 +24,10 @@ export function cardiovascularEntries(root,raw){
  const meta=validateCardiovascularManifest(raw),found=new Map();
  root.traverse(mesh=>{
   if(!mesh.isMesh)return;
-  const match=/(FJ\d+)/.exec(mesh.name||'');
-  if(!match||found.has(match[1]))throw new Error('Unexpected or duplicate cardiovascular mesh: '+mesh.name);
+  // Match the complete source ID. Truncating FJ1682M to FJ1682 would
+  // merge distinct left/right artery meshes and break their stable IDs.
+  const match=/(?:^|[^A-Za-z0-9])(FJ\d+[A-Z]?)(?=$|[^A-Za-z0-9])/.exec(mesh.name||'');
+  if(!match||!idPattern.test(match[1])||found.has(match[1]))throw new Error('Unexpected or duplicate cardiovascular mesh: '+mesh.name);
   found.set(match[1],mesh);
  });
  if(found.size!==meta.structures.length)throw new Error('Cardiovascular GLB/metadata count mismatch');

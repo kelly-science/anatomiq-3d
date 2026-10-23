@@ -57,3 +57,15 @@ test('PWA assets and self-hosting script are bundled',()=>{
  assert.match(read('tools/install-cardiovascular-43.sh'),/--group blood_vessel/);
  assert.match(read('tools/install-cardiovascular-43.sh'),/--group heart/);
 });
+
+test('suffixed left/right vessel identifiers are distinct and round-trip as stable IDs',()=>{
+ const ids=['FJ1682','FJ1682M','FJ1725M','FJ1656M','FJ1725'];
+ const manifest={version:1,structures:ids.map((id,i)=>({id,name:i%2?'Left internal carotid artery':'Right internal carotid artery',fma_id:'FMA1'}))};
+ assert.deepEqual(validateCardiovascularManifest(manifest).structures.map(x=>x.id),ids);
+ const nodes=ids.map(id=>({isMesh:true,name:id}));
+ const entries=cardiovascularEntries({traverse:fn=>nodes.forEach(fn)},manifest);
+ assert.deepEqual(entries.map(x=>x.sourceName),ids);
+ assert.deepEqual(entries.map(x=>x.stableId),ids.map(id=>'bp43:'+id));
+ assert.notEqual(entries[0].mesh,entries[1].mesh);
+ assert.throws(()=>validateCardiovascularManifest({...manifest,structures:[...manifest.structures,{id:'FJ1682MA',name:'Bad'}]}),/identifier/);
+});
