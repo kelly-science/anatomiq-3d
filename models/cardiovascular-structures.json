@@ -2080,6 +2080,326 @@
       "standard_triangles": 1380,
       "detailed_triangles": 1380,
       "category": "vessel-heart"
+    },
+    {
+      "id": "FJ1986",
+      "fma_id": "FMA4797",
+      "name": "Left superior intercostal vein",
+      "standard_triangles": 786,
+      "detailed_triangles": 786,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2055",
+      "fma_id": "FMA268712",
+      "name": "Right dorsalis pedis artery",
+      "standard_triangles": 1102,
+      "detailed_triangles": 1102,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2059",
+      "fma_id": "FMA44356",
+      "name": "Dorsal venous arch of left foot",
+      "standard_triangles": 1890,
+      "detailed_triangles": 1890,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2061",
+      "fma_id": "FMA44356",
+      "name": "Dorsal venous arch of right foot",
+      "standard_triangles": 1890,
+      "detailed_triangles": 1890,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2062",
+      "fma_id": "FMA44356",
+      "name": "Dorsal venous arch of right foot",
+      "standard_triangles": 608,
+      "detailed_triangles": 608,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2073",
+      "fma_id": "FMA268712",
+      "name": "Left dorsalis pedis artery",
+      "standard_triangles": 1148,
+      "detailed_triangles": 1148,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2097",
+      "fma_id": "FMA44323",
+      "name": "Left anterior tibial vein",
+      "standard_triangles": 2840,
+      "detailed_triangles": 2840,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2118",
+      "fma_id": "FMA44323",
+      "name": "Left posterior tibial vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2128",
+      "fma_id": "FMA44489",
+      "name": "Plantar venous arch of left foot",
+      "standard_triangles": 1200,
+      "detailed_triangles": 1200,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2129",
+      "fma_id": "FMA44489",
+      "name": "Plantar venous arch of right foot",
+      "standard_triangles": 1230,
+      "detailed_triangles": 1230,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2160",
+      "fma_id": "FMA44499",
+      "name": "Tributary of plantar venous arch",
+      "standard_triangles": 936,
+      "detailed_triangles": 936,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2173",
+      "fma_id": "FMA44323",
+      "name": "Right posterior tibial vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2183",
+      "fma_id": "FMA44323",
+      "name": "Left anterior tibial vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2187",
+      "fma_id": "FMA44323",
+      "name": "Left fibular vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10618,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2190",
+      "fma_id": "FMA44323",
+      "name": "Right fibular vein",
+      "standard_triangles": 1238,
+      "detailed_triangles": 1238,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2193",
+      "fma_id": "FMA44323",
+      "name": "Right anterior tibial vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10999,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2200",
+      "fma_id": "FMA44323",
+      "name": "Right fibular vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10564,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2231",
+      "fma_id": "FMA22738",
+      "name": "Dorsal carpal branch of left radial artery",
+      "standard_triangles": 320,
+      "detailed_triangles": 320,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2235",
+      "fma_id": "FMA22930",
+      "name": "Left median cubital vein",
+      "standard_triangles": 2502,
+      "detailed_triangles": 2502,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2249",
+      "fma_id": "FMA11337",
+      "name": "Left superficial palmar venous arch",
+      "standard_triangles": 2424,
+      "detailed_triangles": 2424,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2281",
+      "fma_id": "FMA11337",
+      "name": "Right deep palmar venous arch",
+      "standard_triangles": 1942,
+      "detailed_triangles": 1942,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2283",
+      "fma_id": "FMA22738",
+      "name": "Dorsal carpal branch of right radial artery",
+      "standard_triangles": 312,
+      "detailed_triangles": 312,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2287",
+      "fma_id": "FMA22930",
+      "name": "Right median cubital vein",
+      "standard_triangles": 2502,
+      "detailed_triangles": 2502,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2301",
+      "fma_id": "FMA11337",
+      "name": "Right superficial palmar venous arch",
+      "standard_triangles": 2434,
+      "detailed_triangles": 2434,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2319",
+      "fma_id": "FMA22917",
+      "name": "Proper palmar digital vein of left little finger",
+      "standard_triangles": 2070,
+      "detailed_triangles": 2070,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2349",
+      "fma_id": "FMA22917",
+      "name": "Proper palmar digital vein of right little finger",
+      "standard_triangles": 2088,
+      "detailed_triangles": 2088,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2351",
+      "fma_id": "FMA22917",
+      "name": "Proper palmar digital vein of right little finger",
+      "standard_triangles": 886,
+      "detailed_triangles": 886,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2725",
+      "fma_id": "FMA12846",
+      "name": "Anterior cardiac vein",
+      "standard_triangles": 452,
+      "detailed_triangles": 452,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2730",
+      "fma_id": "FMA12846",
+      "name": "Anterior cardiac vein",
+      "standard_triangles": 278,
+      "detailed_triangles": 278,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3083",
+      "fma_id": "FMA15793",
+      "name": "Anterior inferior segmental tributary of middle hepatic vein",
+      "standard_triangles": 2806,
+      "detailed_triangles": 2806,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3084",
+      "fma_id": "FMA15793",
+      "name": "Medial inferior segmental tributary of middle hepatic vein",
+      "standard_triangles": 3026,
+      "detailed_triangles": 3026,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3482",
+      "fma_id": "FMA4723",
+      "name": "Left brachiocephalic vein",
+      "standard_triangles": 748,
+      "detailed_triangles": 748,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3532",
+      "fma_id": "FMA14758",
+      "name": "Left testicular artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3533",
+      "fma_id": "FMA14344",
+      "name": "Left testicular vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3589",
+      "fma_id": "FMA12858",
+      "name": "Right ascending lumbar vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7884,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3617",
+      "fma_id": "FMA14758",
+      "name": "Right testicular artery",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3618",
+      "fma_id": "FMA14341",
+      "name": "Right testicular vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3631",
+      "fma_id": "FMA15370",
+      "name": "Lumbar vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8834,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3635",
+      "fma_id": "FMA15370",
+      "name": "Lumbar vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8920,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3493",
+      "fma_id": "FMA12858",
+      "name": "Left ascending lumbar vein",
+      "standard_triangles": 1772,
+      "detailed_triangles": 1772,
+      "category": "systemic"
     }
   ]
 }
