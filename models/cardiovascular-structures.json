@@ -2400,6 +2400,36 @@
       "standard_triangles": 1772,
       "detailed_triangles": 1772,
       "category": "systemic"
+    },
+    {
+      "id": "FJ5070",
+      "name": "Trunk of clivus branch of right internal carotid artery",
+      "detailed_triangles": 332,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5130",
+      "name": "Trunk of meningeal branch of cavernous part of right internal carotid artery",
+      "detailed_triangles": 308,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5215",
+      "name": "Trunk of tentorial basal branch of right internal carotid artery",
+      "detailed_triangles": 508,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5216",
+      "name": "Trunk of tentorial marginal branch of right internal carotid artery",
+      "detailed_triangles": 538,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ6043",
+      "name": "Pulmonary arterial trunk",
+      "detailed_triangles": 492,
+      "category": "pulmonary"
     }
   ]
 }
