@@ -1,6 +1,6 @@
 {
-  "version": "1.8.0",
+  "version": "1.8.1",
   "channel": "beta",
   "published": "2026-10-23",
-  "notes": "Expanded cardiovascular anatomy with curated heart and vessel subsets, cardiac study views, installer recovery and legacy scene compatibility."
+  "notes": "Transparent chamber-space meshes, an unobstructed Heart Interior view, and optional additional source-backed major vessels with index-safe migration."
 }

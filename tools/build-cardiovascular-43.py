@@ -22,7 +22,7 @@ SOURCE_Z_CENTER = 0.4
 LEGACY_CARDIO_IDS = [x.strip() for x in (Path(__file__).parent/'cardio-original-ids.txt').read_text().splitlines() if x.strip() and not x.startswith('#')]
 
 
-def read_rows(folders):
+def read_rows(folders, prior_manifest=None):
     rows = {}
     for directory in folders:
         manifest = directory / 'MANIFEST.csv'
@@ -51,8 +51,19 @@ def read_rows(folders):
     legacy = [k for k in LEGACY_CARDIO_IDS if k in rows]
     if legacy and len(legacy) != len(LEGACY_CARDIO_IDS):
         raise SystemExit('Cannot safely rebuild old scenes: original cardiovascular subset is incomplete.')
-    extra = sorted((k for k in rows if k not in LEGACY_CARDIO_IDS), key=fj_sort_key)
-    return [rows[k] for k in legacy + extra]
+    if prior_manifest and prior_manifest.is_file():
+        # The teacher's saved lessons use a flat structure index. Previous
+        # 1.8 meshes must retain *all* old indices, not just the first 15.
+        previous = json.loads(prior_manifest.read_text())
+        prior_ids = [v['id'] for v in previous.get('structures',[])]
+        if len(prior_ids)!=len(set(prior_ids)) or any(k not in rows for k in prior_ids):
+            raise SystemExit('Existing cardiovascular model contains IDs missing from the source inputs; refusing incompatible rebuild.')
+        if prior_ids[:len(LEGACY_CARDIO_IDS)] != LEGACY_CARDIO_IDS:
+            raise SystemExit('Existing cardiovascular model has unexpected original mesh order; refusing incompatible rebuild.')
+        extra=sorted((k for k in rows if k not in prior_ids),key=fj_sort_key)
+        return [rows[k] for k in prior_ids+extra]
+    extra=sorted((k for k in rows if k not in LEGACY_CARDIO_IDS),key=fj_sort_key)
+    return [rows[k] for k in legacy+extra]
 
 
 def load_mesh(path):
@@ -104,10 +115,10 @@ def glb(scene, target):
     temp.replace(target)
 
 
-def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert, extra_standard_faces=3200, extra_detailed_faces=11000):
+def build(folders, skin_file, out, standard_faces, detail_faces, axis, invert, extra_standard_faces=3200, extra_detailed_faces=11000, prior_manifest=None):
     skin = load_mesh(skin_file)
     transform, reg = normalizer(skin, axis=axis, invert=invert)
-    rows = read_rows(folders)
+    rows = read_rows(folders, prior_manifest)
     normal_scene = trimesh.Scene(); detailed_scene = trimesh.Scene()
     manifest=[]; total_standard=total_detail=0
     for row, path in rows:
@@ -162,13 +173,14 @@ def main():
     p.add_argument('--detailed-faces',type=int,default=40000)
     p.add_argument('--extra-standard-faces',type=int,default=3200)
     p.add_argument('--extra-detailed-faces',type=int,default=11000)
+    p.add_argument('--prior-manifest',type=Path,default=None,help='Existing model metadata: preserve every prior structure index')
     p.add_argument('--vertical-axis',choices=['auto','x','y','z'],default='auto')
     p.add_argument('--invert-vertical',action='store_true')
     args=p.parse_args()
     if args.standard_faces<500 or args.detailed_faces<args.standard_faces:
         p.error('Require 500 <= standard faces <= detailed faces.')
     if args.extra_standard_faces<300 or args.extra_detailed_faces<args.extra_standard_faces: p.error('Invalid extra geometry limits.')
-    build(args.subset,args.skin,args.out,args.standard_faces,args.detailed_faces,args.vertical_axis,args.invert_vertical,args.extra_standard_faces,args.extra_detailed_faces)
+    build(args.subset,args.skin,args.out,args.standard_faces,args.detailed_faces,args.vertical_axis,args.invert_vertical,args.extra_standard_faces,args.extra_detailed_faces,args.prior_manifest)
 
 if __name__=='__main__':
     main()

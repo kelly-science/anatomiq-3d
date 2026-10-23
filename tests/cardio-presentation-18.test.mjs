@@ -12,7 +12,7 @@ const meshes=[
 test('cardiovascular study views target real structures only',()=>{
  assert.equal(cardiovascularGroup(meshes[1]),'heart-internal');
  assert.equal(cardiovascularGroup(meshes[2]),'coronary');
- assert.deepEqual(cardioPresetCounts(meshes),{all:5,exterior:3,interior:2,coronary:2,pulmonary:2,systemic:1});
+ assert.deepEqual(cardioPresetCounts(meshes),{all:5,exterior:3,interior:2,chambers:0,coronary:2,pulmonary:2,systemic:1});
  assert.equal(cardioVisibleInPreset(meshes[0],'interior'),false);
  assert.equal(cardioVisibleInPreset(meshes[1],'interior'),true);
  assert.throws(()=>cardioVisibleInPreset(meshes[0],'fake'));
@@ -25,5 +25,5 @@ test('interior and coronary require actual downloaded anatomy',()=>{
 test('installer downloads expanded subset using absolute script location',()=>{
  const script=readFileSync(new URL('../tools/install-cardiovascular-43.sh',import.meta.url),'utf8');
  assert.match(script,/"\$PY" "\$ROOT\/tools\/fetch-cardiovascular-expansion\.py"/);
- assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/anatomy-v1\.8\.0/);
+ assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/anatomy-v1\.8\.1/);
 });

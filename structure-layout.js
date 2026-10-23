@@ -14,7 +14,10 @@ export function catalogAnatomy(entries){
   // This preserves older visibility bitmaps, annotation anchors and painted indices.
   const cardioAll=entries.filter(s=>s.system==='cardiovascular');
   const legacyCv=ORIGINAL_CARDIO_IDS.map(id=>cardioAll.find(s=>s.sourceName===id)).filter(Boolean);
-  const additionalCv=cardioAll.filter(s=>!ORIGINAL_CARDIO_IDS.includes(s.sourceName)).sort((a,b)=>a.sourceName.localeCompare(b.sourceName,undefined,{numeric:true}));
+  // The GLB manifest is already ordered by the converter: all earlier mesh
+  // IDs form an unchanged prefix; ONLY new vessel IDs are appended. Sorting
+  // this array again would silently break existing 1.8 scene annotations.
+  const additionalCv=cardioAll.filter(s=>!ORIGINAL_CARDIO_IDS.includes(s.sourceName));
   const cardiovascular=[...legacyCv,...additionalCv];
   const preCardio=[...base,...digestive];
   const structures=[...preCardio,...cardiovascular];
@@ -28,9 +31,15 @@ export function catalogAnatomy(entries){
     originalCardioFingerprint:legacyCv.length===ORIGINAL_CARDIO_IDS.length?hashForStructures(originalCardio.map(key)):undefined,
     fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length};
 }
-export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint,preCardioCount,preCardioFingerprint,originalCardioCount,originalCardioFingerprint){
-  return !!scene && [[currentCount,currentFingerprint],[oldCount,oldFingerprint],[baseCount,baseFingerprint],[previousCount,previousFingerprint],[preCardioCount,preCardioFingerprint],[originalCardioCount,originalCardioFingerprint]]
-    .some(([count,fingerprint])=>Number.isInteger(count)&&scene.n===count&&scene.f===fingerprint);
+export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint,preCardioCount,preCardioFingerprint,originalCardioCount,originalCardioFingerprint,appendStructures=null){
+  if(!scene)return false;
+  const known=[[currentCount,currentFingerprint],[oldCount,oldFingerprint],[baseCount,baseFingerprint],[previousCount,previousFingerprint],[preCardioCount,preCardioFingerprint],[originalCardioCount,originalCardioFingerprint]];
+  if(known.some(([count,fingerprint])=>Number.isInteger(count)&&scene.n===count&&scene.f===fingerprint))return true;
+  // Additional source-backed vessels are appended. Validate the EXACT saved
+  // prefix fingerprint before migrating 1.8 lessons; never accept by count only.
+  return Array.isArray(appendStructures)&&Number.isInteger(scene.n)&&
+    scene.n>=originalCardioCount&&scene.n<appendStructures.length&&
+    scene.f===hashForStructures(appendStructures.slice(0,scene.n).map(key));
 }
 export function upgradeLegacyScene(scene,currentCount,currentFingerprint){
   if(scene.n===currentCount && scene.f===currentFingerprint)return structuredClone(scene);

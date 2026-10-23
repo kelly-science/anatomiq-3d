@@ -62,6 +62,19 @@ else
  echo 'Downloading expanded heart detail and major vessels (BodyParts3D 4.3)...'
  "$PY" "$ROOT/tools/fetch-cardiovascular-expansion.py" --upstream "$WORK/upstream" --out "$WORK/subsets/expanded"
 fi
+# Add only NEW named vessel meshes to the existing atlas. Never overwrite the
+# older expanded subset; older published scenes rely on its structure ordering.
+VESSEL_SUBSET="$WORK/subsets/vessels_181"
+if subset_ready "$VESSEL_SUBSET" 0 && [[ -s "$VESSEL_SUBSET/COVERAGE.json" ]]; then
+ echo 'Reusing verified additional major-vessel subset.'
+else
+ echo 'Selecting additional available arterial and venous trunk meshes...'
+ "${PY}" "${ROOT}/tools/fetch-cardiovascular-vessels.py" --upstream "$WORK/upstream" --out "$VESSEL_SUBSET" \
+   --exclude "$ROOT/models/cardiovascular-structures.json" \
+   --exclude "$WORK/subsets/heart/MANIFEST.csv" \
+   --exclude "$WORK/subsets/blood_vessel/MANIFEST.csv" \
+   --exclude "$WORK/subsets/expanded/MANIFEST.csv"
+fi
 if subset_ready "$PREV/subsets/skin" 1; then SKIN_DIR="$PREV/subsets/skin"; else
  if ! subset_ready "$WORK/subsets/skin" 1; then
   echo 'Downloading reference skin for common-system alignment...'
@@ -72,7 +85,21 @@ fi
 SKIN="$(find "$SKIN_DIR/skin" -name '*.obj' -type f | head -1)"
 [[ -s "$SKIN" ]] || { echo 'Skin reference missing. Cannot safely align models.' >&2;exit 1; }
 cd "$ROOT"
-"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --subset "$WORK/subsets/expanded" --skin "$SKIN" --out models "$@"
+# Stage all new artifacts and verify them before replacing currently working GLBs.
+STAGE="$WORK/release-181"
+mkdir -p "$STAGE"
+"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --subset "$WORK/subsets/expanded" --subset "$VESSEL_SUBSET" --skin "$SKIN" --out "$STAGE" \
+  --prior-manifest "$ROOT/models/cardiovascular-structures.json" "$@"
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+  [[ -s "$STAGE/$name" ]] || { echo "Build did not create $name" >&2; exit 1; }
+done
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+  cp "$STAGE/$name" "$ROOT/models/$name.new"
+done
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+  mv "$ROOT/models/$name.new" "$ROOT/models/$name"
+done
+cp "$VESSEL_SUBSET/COVERAGE.json" "$ROOT/models/cardiovascular-vessel-coverage.json"
 mkdir -p models/licenses
 cat > models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt <<'EOF'
 BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
@@ -84,7 +111,7 @@ EOF
 "$PY" - <<'PY_HASH'
 from pathlib import Path
 import hashlib
-files=[Path('models')/n for n in ['cardiovascular-standard.glb','cardiovascular-detailed.glb','cardiovascular-structures.json']]
+files=[Path('models')/n for n in ['cardiovascular-standard.glb','cardiovascular-detailed.glb','cardiovascular-structures.json','cardiovascular-vessel-coverage.json']]
 p=Path('ASSET_SHA256.txt');lines=p.read_text().splitlines() if p.exists() else []
 lines=[line for line in lines if not any(line.endswith('  '+str(f)) for f in files)]
 lines += [hashlib.sha256(f.read_bytes()).hexdigest()+'  '+str(f) for f in files]

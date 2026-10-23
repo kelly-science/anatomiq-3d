@@ -6,7 +6,7 @@ import {validateSkullManifest} from './skeletal-detail.js';
 import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
-import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply} from './cardio-presentation.js';
+import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
 import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
@@ -17,7 +17,7 @@ import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './syst
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -251,7 +251,7 @@ function updateSystemControls(){
   $('cardio-study-panel').hidden=!teacherMode||!cardioAvailable||!layers.cardiovascular;
   if(cardioAvailable){
     const counts=cardioPresetCounts(cardioEntries);
-    $('cardio-study-count').textContent=`${cardioEntries.length} selectable structures · ${counts.interior} in interior view`+(cardioEntries.length<=15?' · Expanded model not yet installed':'');
+    $('cardio-study-count').textContent=`${cardioEntries.length} selectable structures · ${counts.interior} interior structures · ${counts.chambers} chamber-space volumes · some vessel segments may be absent from the source atlas`+(cardioEntries.length<=15?' · Expanded model not yet installed':'');
     for(const button of document.querySelectorAll('[data-cardio-preset]')){
       const preset=button.dataset.cardioPreset;
       button.disabled=!cardioCanApply(cardioEntries,preset);
@@ -722,7 +722,16 @@ async function loadCardiovascular(){
       const obj=entry.mesh;
       if(obj.geometry?.attributes?.position&&!obj.geometry.attributes.normal)obj.geometry.computeVertexNormals();
       const original=obj.material;
-      obj.material=new THREE.MeshStandardMaterial({color:cardiovascularColor(entry.name),roughness:0.77,metalness:0,side:THREE.DoubleSide});
+      // A chamber *cavity* is empty space, not cardiac tissue. Keep it a
+      // very faint reference volume, so valves and chordae are not occluded.
+      const chamberVolume=cardioIsCavity(entry);
+      obj.material=new THREE.MeshStandardMaterial({
+        color:chamberVolume?'#b5cde4':cardiovascularColor(entry.name),
+        roughness:0.77,metalness:0,
+        transparent:chamberVolume,opacity:chamberVolume?0.12:1,
+        depthWrite:!chamberVolume,side:chamberVolume?THREE.BackSide:THREE.DoubleSide
+      });
+      obj.userData.cardioChamberSpace=chamberVolume;
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(obj,obj.material);obj.visible=false;
     }
@@ -1005,7 +1014,7 @@ function snapshotProject(){
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
-  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint))
+  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures))
     throw new Error(sample?.m==='digestive'?'Digestive model unavailable. Upload models/anatomy-organs.glb and the local Draco decoder before opening this lesson.':'This lesson uses an incompatible anatomical model.');
 }
 function renderChapterUI(){
@@ -1332,7 +1341,7 @@ function updateAnnotationPositions(){
 }
 async function applyScene(saved){
   validateScene(saved);
-  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint)){
+  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
     throw new Error(saved?.m==='digestive'?'This digestive scene requires the locally hosted digestive GLB and Draco decoder.':'The anatomical model has changed since this scene was published.');
   }
   restoringScene=true;
@@ -1632,7 +1641,7 @@ menuGroups.forEach((group,index)=>{
 function applyCardioStudyPreset(preset){
   if(!teacherMode||!sceneRoot||!cardioAvailable)return;
   if(!cardioCanApply(cardioEntries,preset)){
-    showToast('This view requires additional heart or vessel meshes. Run the expanded cardiovascular installer.');
+    showToast('This view requires structures not present in your current cardiovascular dataset.');
     return;
   }
   // Never touch bone, muscle or digestive visibility. Teacher can save this

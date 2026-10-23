@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.8.0</span>
+        <span class="version">STUDIO 1.8.1</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -76,7 +76,8 @@
         <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
           <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skull">Focus Skull Only</button>
           <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skeleton">Show Full Skeleton</button>
-          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="interior">Heart interior (hide outer walls)</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="interior">Heart interior (valves & chordae)</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="chambers">Chamber spaces (ghost view)</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="exterior">Heart exterior</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="coronary">Coronary circulation</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="pulmonary">Pulmonary circulation</button>
@@ -157,10 +158,12 @@
         <section id="cardio-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Cardiovascular study views" hidden>
           <div class="systems-header"><span class="eyebrow">CARDIOVASCULAR STUDY VIEWS</span>
             <p id="cardio-study-count" class="studio-hint" aria-live="polite">Preparing heart and vessel meshes…</p></div>
+          <p class="studio-hint">Chamber cavities are empty spaces, shown as translucent blue volumes in Show all. Use Heart interior to hide these volumes and expose the valves and chordae.</p>
           <div class="cardio-presets" role="group" aria-label="Cardiovascular structure visibility presets">
             <button type="button" class="button small" data-cardio-preset="all">Show all</button>
             <button type="button" class="button small" data-cardio-preset="exterior">Heart exterior</button>
-            <button type="button" class="button small" data-cardio-preset="interior">Heart interior</button>
+            <button type="button" class="button small" data-cardio-preset="interior">Heart interior · valves</button>
+            <button type="button" class="button small" data-cardio-preset="chambers">Chamber spaces</button>
             <button type="button" class="button small" data-cardio-preset="coronary">Coronary</button>
             <button type="button" class="button small" data-cardio-preset="pulmonary">Pulmonary</button>
             <button type="button" class="button small" data-cardio-preset="systemic">Systemic vessels</button>
@@ -345,7 +348,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.8.0</strong>
+        <span>Installed version</span><strong id="settings-installed">1.8.1</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>

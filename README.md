@@ -1,34 +1,48 @@
-# Anatomy Studio 1.8.0 — Expanded Cardiovascular Anatomy
+# Anatomy Studio 1.8.1 — Expanded Cardiovascular Anatomy
 
 **Chromebook PWA · Teacher Studio · Student sharing · GitHub Pages self-hosting**
 
-## What is new in 1.8
+## What's fixed in 1.8.1
 
-- Expanded BodyParts3D 4.3 cardiovascular *installer* selects source-verified valve leaflets and cusps, chamber cavities, papillary muscles, coronary and pulmonary vessels, and recognizable major systemic vessels. The exact structures available depend on the source manifest and must be confirmed in the converter report. The original 15 meshes are preserved in their old order.
-- A new **Cardiovascular Study Views** section appears in Teacher Studio when the cardiovascular layer is on. Choose **Show all**, **Heart exterior**, **Heart interior**, **Coronary**, **Pulmonary**, or **Systemic vessels**. Presets hide/reveal cardiovascular structures only and are saved as chapter visibility, including share links.
-- Views requiring unavailable geometry are disabled. If the model still has only the 15 old structures, rerun the expanded installer below.
-- The 1.6 expansion installer's path handling is corrected so its separate downloader is found, even after changing directories to the upstream download tool folder.
-- Original skeletal/digestive/muscular models, skull Standard preference, scene sharing permissions, local Scene Library and chapter data remain unchanged.
+- **Heart cavities are empty spaces, not solid tissue.** Their meshes render as faint, depth-write-disabled blue reference shells in **Show all**. **Heart interior** hides both the external heart walls and chamber cavity volumes, exposing the actual valve leaflets, chordae and papillary muscle meshes *where supplied by your installed BodyParts3D model*. A new **Chamber spaces** preset lets you inspect chamber volumes separately.
+- **Additional named major arteries and veins.** The updated Mac installer inspects the pinned BodyParts3D 4.3 manifest for source-backed vessel segments across the head/neck, thorax, abdomen, pelvis and limbs. Downloads are bounded to at most 100 new meshes, prioritizing larger named trunks. The exact number is reported by the installer; **gaps may remain because the source doesn't supply a continuous vascular tree**.
+- **Preserved scene IDs.** The original 15 cardiovascular meshes and **all previously installed 1.8 expansion meshes** keep their exact order. Only genuinely new vessels are appended. Existing cardiovascular links and annotations can migrate by verifying the fingerprint of their unchanged mesh prefix.
+- **Safer conversion.** New GLBs are validated in a staging directory before replacing your current working models. It creates `models/cardiovascular-vessel-coverage.json`, listing exactly which additional vessels were obtained.
 
-## Install on your Mac (one-time additional anatomy download)
+## Fast update: cavity fix without more downloads
 
-1. Back up saved lessons: **Library → Back up entire library**. Also retain a local copy of your existing GitHub repository.
-2. Extract this ZIP. In the newly extracted `anatomy-pwa-studio/`, keep your previous `models/`, `vendor/three/`, `.cardiovascular-43-work/`, and `.digestive-43-work/` directories. Hidden work folders need not be uploaded to GitHub; they only allow the Mac script to reuse downloaded meshes.
-3. From Terminal inside this folder run:
+1. Export a backup from **Library → Back up entire library**. Keep a local copy of your deployed project.
+2. Upload the new 1.8.1 application files (`app.js`, `cardio-presentation.js`, `structure-layout.js`, `index.html`, `sw.js`, `version.json`) to the same GitHub Pages directory. **Keep all your current models and renderer files.**
+3. After GitHub Pages deploys, visit `<your Pages URL>/version.json` and confirm `1.8.1`. Open the app online, enable Cardiovascular, and select **Heart interior · valves**. This hides chamber-space volumes and exterior walls without rebuilding a model. Use **Chamber spaces** to view the volumes translucently.
+4. Do **not** clear site data: local Scene Library entries live in IndexedDB.
+
+## Optional: expand the arteries and veins from the source atlas
+
+1. Extract the full ZIP and copy your previous `models/`, `vendor/three/`, `.cardiovascular-43-work/`, and `.digestive-43-work/` into it. The dot-prefixed work directories are local download caches and **must not** be uploaded to GitHub.
+2. From Terminal in the updated `anatomy-pwa-studio` folder, run:
 
    ```bash
    bash tools/install-cardiovascular-43.sh
    ```
 
-4. The installer should reuse the old heart/wall and major-vessel downloads, select extra names from the pinned 4.3 `MANIFEST.csv`, download the new OBJs, and generate new `models/cardiovascular-standard.glb`, `models/cardiovascular-detailed.glb`, and `models/cardiovascular-structures.json`. It validates the exact number of meshes in both GLBs and preserves the 15 original FJ IDs first. **It does not install source 3D model files automatically from this ZIP.**
-5. Upload the updated app files and new generated cardiovascular models, `models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt` and `ASSET_SHA256.txt` to the *GitHub Pages published directory*. Keep original skeletal, muscular, digestive, and renderer assets.
-6. Open `<your Pages URL>/version.json` to confirm `1.8.0`. Reload the PWA online, avoiding **Clear site data** because the local Scene Library is stored in IndexedDB.
-7. In App Settings check cardiovascular count; then enable **Cardiovascular** and inspect the new chapter-study presets. Verify orientation, left/right, chamber anatomy and major vessels with skeletal anatomy before giving practicals.
+3. The installer reuses verified old meshes, fetches selected **additional existing** vessel meshes, then exports and verifies:
+
+   ```text
+   models/cardiovascular-standard.glb
+   models/cardiovascular-detailed.glb
+   models/cardiovascular-structures.json
+   models/cardiovascular-vessel-coverage.json
+   models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt
+   ASSET_SHA256.txt
+   ```
+
+4. Upload those generated files and the updated 1.8.1 application code to GitHub, keeping your original skeletal/digestive models and `vendor/three/` intact. Do not upload `.cardiovascular-43-work/` or `.digestive-43-work/`.
+5. Check the cardiovascular structure count in Settings, use **Systemic vessels** to inspect new named structures and **Heart interior** for the unobstructed internal meshes. Compare vessels with the skeleton and check the left/right orientation before publishing any assessment.
 
 ## Important limitations
 
 - No complete cardiovascular dataset is included in the downloadable project ZIP. Real BodyParts3D mesh download/conversion happens on your Mac and remains an external prerequisite for the *build process*, not for the final self-hosted app.
-- The source provides varying anatomic granularity, and not every valve/chamber is guaranteed to be present as a standalone selectable mesh. It may be difficult to see interior valves inside uncut walls; Heart interior hides heart-wall meshes rather than performing a true geometric cutaway.
+- The source provides varying anatomical granularity; it does not necessarily contain complete continuous vessels or every valve and chordal component. Heart interior hides wall/cavity meshes, but is not a physical cross-section or geometric cutaway.
 - Legacy student links keep their existing anatomy visibility. Updating a previously shared lesson with newly added structures requires you to save and publish an updated link.
 - Live rendering on your Chromebook/iPad and real downloaded 4.3 geometry have not been tested in this environment. Synthetic converter fixtures and automated application tests do not replace anatomical validation.
 
