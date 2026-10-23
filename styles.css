@@ -240,3 +240,29 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 .cardio-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}
 .cardio-presets .button{min-width:0;white-space:normal;text-align:center;line-height:1.2;min-height:34px}
 .cardio-presets .button:disabled{opacity:.4;cursor:not-allowed}
+
+/* 1.8.2 Cardiovascular Class Core */
+.cardio-class-core-button{border-color:var(--accent,#42b6c3)!important;font-weight:700}
+.cardio-core-panel{margin-top:12px;border:1px solid rgba(146,187,210,.22);border-radius:10px;padding:11px}
+.cardio-core-panel>summary{font-size:12px;font-weight:700;cursor:pointer;line-height:1.55}
+.cardio-core-panel[open]>summary{margin-bottom:9px}
+.cardio-core-panel .switch-row{margin:9px 0}
+.cardio-core-gaps{padding-left:18px;margin:8px 0 0;max-height:230px;overflow:auto;font-size:11px;line-height:1.6;color:var(--text-muted,#b7c6d2)}
+.cardio-core-gaps li{margin-bottom:3px}
+
+/* 1.8.3: teacher-only anatomy inspection, stored outside scene/project links. */
+.cardio-audit-list{max-height:410px;overflow-y:auto;display:grid;gap:8px;margin:9px 0}
+.cardio-audit-item{border:1px solid rgba(136,183,205,.22);padding:9px;border-radius:9px;background:rgba(19,37,49,.6)}
+.cardio-audit-head{display:flex;gap:7px;align-items:baseline;justify-content:space-between;font-size:12px}
+.cardio-audit-state{font-size:10px;color:#9bcad1;white-space:nowrap}
+.cardio-audit-item p{font-size:10px;line-height:1.5;margin:5px 0}
+.cardio-audit-actions,.cardio-audit-global-actions{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.cardio-audit-select{max-width:100%;min-height:30px;background:#142530;border:1px solid #496171;border-radius:7px;color:#e1f0f2;font-size:11px;padding:4px}
+.cardio-audit-filter-label{display:block;margin:9px 0 4px;font-size:10px;color:#acc7d3}
+.cardio-audit-meshes{font-size:10px;color:#b3cdd8;overflow-wrap:anywhere;margin:6px 0}
+.cardio-audit-meshes>summary{cursor:pointer}
+.cardio-audit-meshes>div{padding:7px;border-radius:6px;background:rgba(5,16,22,.45);max-height:110px;overflow:auto}
+.cardio-audit-note{box-sizing:border-box;display:block;width:100%;resize:vertical;min-height:48px;border-radius:7px;border:1px solid #496171;background:#13232e;color:#e9f2f5;font-size:11px;padding:7px}
+.cardio-mesh-group{border:1px solid rgba(135,184,201,.2);border-radius:8px;margin:4px 0;padding:5px}
+.cardio-mesh-group>summary{font-size:11px;color:#d0e5ed;cursor:pointer;padding:7px}
+.cardio-mesh-group .bone-item{margin-left:8px;width:calc(100% - 8px)}

@@ -1,0 +1,741 @@
+{
+  "version": 1,
+  "title": "Cardiovascular Class Core",
+  "source": [
+    "Teacher required heart structure table",
+    "Blood Vessels Diagram Key.pdf \u2014 Arteries, p. 1",
+    "Blood Vessels Diagram Key.pdf \u2014 Veins, p. 2"
+  ],
+  "notes": "These are required curriculum targets, not a guarantee that every target has an available mesh. Cavity volumes are not functional chambers. Distinct source IDs are never fused.",
+  "targets": [
+    {
+      "id": "pulmonary-semilunar-valve",
+      "group": "heart",
+      "name": "Pulmonary semilunar valve",
+      "pattern": "(?:cusp of pulmonary valve|pulmonary semilunar valve)",
+      "quality": "components",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "aortic-semilunar-valve",
+      "group": "heart",
+      "name": "Aortic semilunar valve",
+      "pattern": "(?:cusp of aortic valve|aortic semilunar valve)",
+      "quality": "components",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "tricuspid-valve",
+      "group": "heart",
+      "name": "Tricuspid valve",
+      "pattern": "(?:leaflet of tricuspid valve|tricuspid valve)",
+      "quality": "components",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "chordae-tendineae",
+      "group": "heart",
+      "name": "Chordae tendineae",
+      "pattern": "\\bchordae tendineae\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "bicuspid-mitral-valve",
+      "group": "heart",
+      "name": "Bicuspid (mitral) valve",
+      "pattern": "(?:leaflet of mitral valve|mitral valve|bicuspid valve)",
+      "quality": "components",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "right-atrium",
+      "group": "heart",
+      "name": "Right atrium",
+      "pattern": "(?:wall of right atrium|right atrium proper|right atrium)",
+      "quality": "wall-only",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "left-atrium",
+      "group": "heart",
+      "name": "Left atrium",
+      "pattern": "(?:wall of left atrium|left atrium proper|left atrium)",
+      "quality": "wall-only",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "papillary-muscle",
+      "group": "heart",
+      "name": "Papillary muscle",
+      "pattern": "\\bpapillary muscle\\b",
+      "quality": "components",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "right-auricle",
+      "group": "heart",
+      "name": "Right auricle",
+      "pattern": "\\bright (?:atrial )?auricle\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "left-auricle",
+      "group": "heart",
+      "name": "Left auricle",
+      "pattern": "\\bleft (?:atrial )?auricle\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "right-ventricle",
+      "group": "heart",
+      "name": "Right ventricle",
+      "pattern": "(?:wall of right ventricle|wall of ventricle|cavity of right ventricle)",
+      "quality": "wall-only",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "left-ventricle",
+      "group": "heart",
+      "name": "Left ventricle",
+      "pattern": "(?:wall of left ventricle|wall of ventricle|cavity of left ventricle)",
+      "quality": "wall-only",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "right-coronary-artery",
+      "group": "heart",
+      "name": "Right coronary artery",
+      "pattern": "\\b(?:trunk of )?right coronary artery\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "left-coronary-artery",
+      "group": "heart",
+      "name": "Left coronary artery",
+      "pattern": "\\b(?:trunk of )?left coronary artery\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "marginal-branch",
+      "group": "heart",
+      "name": "Marginal branch",
+      "pattern": "\\bmarginal branch\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "anterior-cardiac-veins",
+      "group": "heart",
+      "name": "Anterior cardiac veins",
+      "pattern": "\\banterior cardiac veins?\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": true
+    },
+    {
+      "id": "great-cardiac-vein",
+      "group": "heart",
+      "name": "Great cardiac vein",
+      "pattern": "\\bgreat cardiac vein\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "middle-cardiac-vein",
+      "group": "heart",
+      "name": "Middle cardiac vein",
+      "pattern": "\\bmiddle cardiac vein\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "coronary-sinus",
+      "group": "heart",
+      "name": "Coronary sinus",
+      "pattern": "\\bcoronary sinus\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "ascending-aorta",
+      "group": "great-vessel",
+      "name": "Ascending aorta",
+      "pattern": "\\bascending aorta\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "descending-aorta",
+      "group": "great-vessel",
+      "name": "Descending aorta",
+      "pattern": "\\bdescending aorta\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "thoracic-aorta",
+      "group": "great-vessel",
+      "name": "Thoracic aorta",
+      "pattern": "\\b(?:thoracic aorta|descending aorta)\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "superior-vena-cava",
+      "group": "great-vessel",
+      "name": "Superior vena cava",
+      "pattern": "\\bsuperior vena cava\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "inferior-vena-cava",
+      "group": "great-vessel",
+      "name": "Inferior vena cava",
+      "pattern": "\\binferior vena cava\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "pulmonary-veins",
+      "group": "great-vessel",
+      "name": "Pulmonary veins",
+      "pattern": "\\b(?:left|right)?\\s*(?:superior|inferior)?\\s*pulmonary veins?\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": true
+    },
+    {
+      "id": "brachiocephalic-artery",
+      "group": "great-vessel",
+      "name": "Brachiocephalic artery",
+      "pattern": "\\b(?:brachiocephalic artery|brachiocephalic trunk)\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "left-common-carotid",
+      "group": "great-vessel",
+      "name": "Left common carotid",
+      "pattern": "\\bleft common carotid artery\\b",
+      "quality": "full",
+      "priority": 1,
+      "bilateral": false
+    },
+    {
+      "id": "right-common-carotid-artery",
+      "group": "artery",
+      "name": "Right common carotid artery",
+      "pattern": "\\b(?:trunk (?:proper )?of )?right common carotid artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "left-common-carotid-artery",
+      "group": "artery",
+      "name": "Left common carotid artery",
+      "pattern": "\\b(?:trunk (?:proper )?of )?left common carotid artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "right-subclavian-artery",
+      "group": "artery",
+      "name": "Right subclavian artery",
+      "pattern": "\\b(?:trunk (?:proper )?of )?right subclavian artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "left-subclavian-artery",
+      "group": "artery",
+      "name": "Left subclavian artery",
+      "pattern": "\\b(?:trunk (?:proper )?of )?left subclavian artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "celiac-trunk",
+      "group": "artery",
+      "name": "Celiac trunk",
+      "pattern": "\\bceliac trunk\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "renal-arteries",
+      "group": "artery",
+      "name": "Renal arteries",
+      "pattern": "\\b(?:left|right) (?:renal artery|(?:anterior|posterior) division of (?:left|right) renal artery)\\b|\\b(?:left|right) renal artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "superior-mesenteric-artery",
+      "group": "artery",
+      "name": "Superior mesenteric artery",
+      "pattern": "\\bsuperior mesenteric artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "gonadal-arteries",
+      "group": "artery",
+      "name": "Gonadal arteries",
+      "pattern": "\\b(?:gonadal|testicular|ovarian) arter(?:y|ies)\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "inferior-mesenteric-artery",
+      "group": "artery",
+      "name": "Inferior mesenteric artery",
+      "pattern": "\\binferior mesenteric artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "common-iliac-arteries",
+      "group": "artery",
+      "name": "Common iliac arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) common iliac artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "internal-iliac-arteries",
+      "group": "artery",
+      "name": "Internal iliac arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) internal iliac artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "external-iliac-arteries",
+      "group": "artery",
+      "name": "External iliac arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) external iliac artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "femoral-arteries",
+      "group": "artery",
+      "name": "Femoral arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) (?:deep )?femoral artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "popliteal-arteries",
+      "group": "artery",
+      "name": "Popliteal arteries",
+      "pattern": "\\b(?:left|right) popliteal artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "anterior-tibial-arteries",
+      "group": "artery",
+      "name": "Anterior tibial arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) anterior tibial artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "posterior-tibial-arteries",
+      "group": "artery",
+      "name": "Posterior tibial arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) posterior tibial artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "fibular-arteries",
+      "group": "artery",
+      "name": "Fibular arteries",
+      "pattern": "\\b(?:left|right) (?:fibular|peroneal) artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "dorsalis-pedis-arteries",
+      "group": "artery",
+      "name": "Dorsalis pedis arteries",
+      "pattern": "\\b(?:left|right) dorsalis pedis artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "brachial-arteries",
+      "group": "artery",
+      "name": "Brachial arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) (?:deep )?brachial artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "radial-arteries",
+      "group": "artery",
+      "name": "Radial arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) radial artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "ulnar-arteries",
+      "group": "artery",
+      "name": "Ulnar arteries",
+      "pattern": "\\b(?:trunk (?:proper )?of )?(?:left|right) ulnar artery\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "vertebral-veins",
+      "group": "vein",
+      "name": "Vertebral veins",
+      "pattern": "\\b(?:left|right) vertebral vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "external-jugular-veins",
+      "group": "vein",
+      "name": "External jugular veins",
+      "pattern": "\\b(?:left|right) external jugular vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "internal-jugular-veins",
+      "group": "vein",
+      "name": "Internal jugular veins",
+      "pattern": "\\b(?:left|right) internal jugular vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "subclavian-veins",
+      "group": "vein",
+      "name": "Subclavian veins",
+      "pattern": "\\b(?:left|right) subclavian vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "axillary-veins",
+      "group": "vein",
+      "name": "Axillary veins",
+      "pattern": "\\b(?:left|right) axillary vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "cephalic-veins",
+      "group": "vein",
+      "name": "Cephalic veins",
+      "pattern": "\\b(?:left|right) cephalic vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "basilic-veins",
+      "group": "vein",
+      "name": "Basilic veins",
+      "pattern": "\\b(?:left|right) basilic vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "brachial-veins",
+      "group": "vein",
+      "name": "Brachial veins",
+      "pattern": "\\b(?:left|right) (?:medial )?brachial vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "hepatic-veins",
+      "group": "vein",
+      "name": "Hepatic veins",
+      "pattern": "\\b(?:left|right|middle)?\\s*hepatic vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "median-cubital-veins",
+      "group": "vein",
+      "name": "Median cubital veins",
+      "pattern": "\\b(?:left|right) median cubital vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "radial-veins",
+      "group": "vein",
+      "name": "Radial veins",
+      "pattern": "\\b(?:left|right) radial vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "median-antebrachial-veins",
+      "group": "vein",
+      "name": "Median antebrachial veins",
+      "pattern": "\\b(?:left|right) median antebrachial vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "ulnar-veins",
+      "group": "vein",
+      "name": "Ulnar veins",
+      "pattern": "\\b(?:left|right) ulnar vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "palmar-venous-arches",
+      "group": "vein",
+      "name": "Palmar venous arches",
+      "pattern": "\\bpalmar venous arch\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "digital-veins",
+      "group": "vein",
+      "name": "Digital veins",
+      "pattern": "\\bdigital vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "brachiocephalic-veins",
+      "group": "vein",
+      "name": "Brachiocephalic veins",
+      "pattern": "\\b(?:left|right) brachiocephalic vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "intercostal-veins",
+      "group": "vein",
+      "name": "Intercostal veins",
+      "pattern": "\\bintercostal vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "renal-veins",
+      "group": "vein",
+      "name": "Renal veins",
+      "pattern": "\\b(?:left|right) renal vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "gonadal-veins",
+      "group": "vein",
+      "name": "Gonadal veins",
+      "pattern": "\\b(?:left|right)?\\s*(?:gonadal|testicular|ovarian) vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "lumbar-veins",
+      "group": "vein",
+      "name": "Lumbar veins",
+      "pattern": "\\blumbar vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "common-iliac-veins",
+      "group": "vein",
+      "name": "Common iliac veins",
+      "pattern": "\\b(?:left|right) common iliac vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "external-iliac-veins",
+      "group": "vein",
+      "name": "External iliac veins",
+      "pattern": "\\b(?:left|right) external iliac vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "internal-iliac-veins",
+      "group": "vein",
+      "name": "Internal iliac veins",
+      "pattern": "\\b(?:left|right) internal iliac vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "deep-femoral-veins",
+      "group": "vein",
+      "name": "Deep femoral veins",
+      "pattern": "\\b(?:left|right) deep femoral vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "femoral-veins",
+      "group": "vein",
+      "name": "Femoral veins",
+      "pattern": "\\b(?:left|right) femoral vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "great-saphenous-veins",
+      "group": "vein",
+      "name": "Great saphenous veins",
+      "pattern": "\\b(?:left|right) great saphenous vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "popliteal-veins",
+      "group": "vein",
+      "name": "Popliteal veins",
+      "pattern": "\\b(?:left|right) popliteal vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "small-saphenous-veins",
+      "group": "vein",
+      "name": "Small saphenous veins",
+      "pattern": "\\b(?:left|right) small saphenous vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "fibular-veins",
+      "group": "vein",
+      "name": "Fibular veins",
+      "pattern": "\\b(?:left|right) (?:fibular|peroneal) vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "anterior-tibial-veins",
+      "group": "vein",
+      "name": "Anterior tibial veins",
+      "pattern": "\\b(?:left|right) anterior tibial vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "posterior-tibial-veins",
+      "group": "vein",
+      "name": "Posterior tibial veins",
+      "pattern": "\\b(?:left|right) posterior tibial vein\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": true
+    },
+    {
+      "id": "plantar-venous-arch",
+      "group": "vein",
+      "name": "Plantar venous arch",
+      "pattern": "\\bplantar venous arch\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    },
+    {
+      "id": "dorsal-venous-arch",
+      "group": "vein",
+      "name": "Dorsal venous arch",
+      "pattern": "\\bdorsal venous arch\\b",
+      "quality": "full",
+      "priority": 2,
+      "bilateral": false
+    }
+  ]
+}

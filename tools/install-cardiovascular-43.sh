@@ -75,6 +75,31 @@ else
    --exclude "$WORK/subsets/blood_vessel/MANIFEST.csv" \
    --exclude "$WORK/subsets/expanded/MANIFEST.csv"
 fi
+# 1.8.2: Curriculum-priority vessels and missing required heart features.
+# This supplements the existing model; all older meshes retain their order.
+CORE_SUBSET="$WORK/subsets/class-core-182"
+if subset_ready "$CORE_SUBSET" 0 && [[ -s "$CORE_SUBSET/CURRICULUM_SELECTION.json" ]]; then
+ echo 'Reusing curriculum-priority verified vascular meshes.'
+else
+ echo 'Selecting required vessels from the full BodyParts3D catalog (no fabricated geometry)...'
+ "$PY" "$ROOT/tools/fetch-cardiovascular-class-core.py" --upstream "$WORK/upstream" \
+   --curriculum "$ROOT/data/cardio-class-core.json" --out "$CORE_SUBSET" \
+   --exclude "$ROOT/models/cardiovascular-structures.json" \
+   --exclude "$WORK/subsets/heart/MANIFEST.csv" \
+   --exclude "$WORK/subsets/blood_vessel/MANIFEST.csv" \
+   --exclude "$WORK/subsets/expanded/MANIFEST.csv" \
+   --exclude "$VESSEL_SUBSET/MANIFEST.csv"
+fi
+# 1.8.3: Only named missing primary trunks and paired veins. Reuse previous
+# source downloads. No fabricated bridges or arbitrary extra small branches.
+GAPS_SUBSET="$WORK/subsets/vascular-gaps-183"
+if subset_ready "$GAPS_SUBSET" 0 && [[ -s "$GAPS_SUBSET/GAP_SELECTION.json" ]]; then
+ echo 'Reusing targeted major-vessel gap subset.'
+else
+ echo 'Checking named missing right/left vessels and hepatic trunks...'
+ "$PY" "$ROOT/tools/fetch-cardiovascular-gaps.py" --upstream "$WORK/upstream" \
+   --out "$GAPS_SUBSET" --exclude "$ROOT/models/cardiovascular-structures.json"
+fi
 if subset_ready "$PREV/subsets/skin" 1; then SKIN_DIR="$PREV/subsets/skin"; else
  if ! subset_ready "$WORK/subsets/skin" 1; then
   echo 'Downloading reference skin for common-system alignment...'
@@ -86,20 +111,26 @@ SKIN="$(find "$SKIN_DIR/skin" -name '*.obj' -type f | head -1)"
 [[ -s "$SKIN" ]] || { echo 'Skin reference missing. Cannot safely align models.' >&2;exit 1; }
 cd "$ROOT"
 # Stage all new artifacts and verify them before replacing currently working GLBs.
-STAGE="$WORK/release-181"
+STAGE="$WORK/release-183"
 mkdir -p "$STAGE"
-"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --subset "$WORK/subsets/expanded" --subset "$VESSEL_SUBSET" --skin "$SKIN" --out "$STAGE" \
+CORE_ARGS=()
+if [[ -s "$CORE_SUBSET/MANIFEST.csv" ]] && [[ $(wc -l < "$CORE_SUBSET/MANIFEST.csv") -gt 1 ]]; then
+ CORE_ARGS=(--subset "$CORE_SUBSET")
+fi
+"$PY" tools/build-cardiovascular-43.py --subset "$WORK/subsets/heart" --subset "$WORK/subsets/blood_vessel" --subset "$WORK/subsets/expanded" --subset "$VESSEL_SUBSET" "${CORE_ARGS[@]}" --subset "$GAPS_SUBSET" --skin "$SKIN" --out "$STAGE" \
   --prior-manifest "$ROOT/models/cardiovascular-structures.json" "$@"
-for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+"$PY" tools/report-cardiovascular-class-core.py --curriculum "$ROOT/data/cardio-class-core.json" --manifest "$STAGE/cardiovascular-structures.json" --out "$STAGE/cardiovascular-class-core-coverage.json"
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json cardiovascular-class-core-coverage.json; do
   [[ -s "$STAGE/$name" ]] || { echo "Build did not create $name" >&2; exit 1; }
 done
-for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json cardiovascular-class-core-coverage.json; do
   cp "$STAGE/$name" "$ROOT/models/$name.new"
 done
-for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json; do
+for name in cardiovascular-standard.glb cardiovascular-detailed.glb cardiovascular-structures.json cardiovascular-class-core-coverage.json; do
   mv "$ROOT/models/$name.new" "$ROOT/models/$name"
 done
 cp "$VESSEL_SUBSET/COVERAGE.json" "$ROOT/models/cardiovascular-vessel-coverage.json"
+cp "$GAPS_SUBSET/GAP_SELECTION.json" "$ROOT/models/cardiovascular-gap-selection.json"
 mkdir -p models/licenses
 cat > models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt <<'EOF'
 BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
@@ -111,11 +142,11 @@ EOF
 "$PY" - <<'PY_HASH'
 from pathlib import Path
 import hashlib
-files=[Path('models')/n for n in ['cardiovascular-standard.glb','cardiovascular-detailed.glb','cardiovascular-structures.json','cardiovascular-vessel-coverage.json']]
+files=[Path('models')/n for n in ['cardiovascular-standard.glb','cardiovascular-detailed.glb','cardiovascular-structures.json','cardiovascular-vessel-coverage.json','cardiovascular-class-core-coverage.json','cardiovascular-gap-selection.json']]
 p=Path('ASSET_SHA256.txt');lines=p.read_text().splitlines() if p.exists() else []
 lines=[line for line in lines if not any(line.endswith('  '+str(f)) for f in files)]
 lines += [hashlib.sha256(f.read_bytes()).hexdigest()+'  '+str(f) for f in files]
 p.write_text('\n'.join(lines)+'\n')
 PY_HASH
-echo 'SUCCESS: Expanded cardiovascular layer ready. Upload models/cardiovascular-standard.glb, cardiovascular-detailed.glb, cardiovascular-structures.json, attribution and updated application files to GitHub.'
+echo 'SUCCESS: Cardiovascular 1.8.3 gap audit complete. Upload both cardiovascular GLBs, cardiovascular-structures.json, cardiovascular-class-core-coverage.json, cardiovascular-gap-selection.json, attribution and application files to GitHub.'
 echo 'Do NOT upload .cardiovascular-43-work or .digestive-43-work.'

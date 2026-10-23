@@ -37,9 +37,9 @@ test('new major vessel segments append without renumbering past 1.8 models',()=>
  assert.deepEqual(readVisibilityBits(upgraded.b,upgraded.n).slice(scene.n),[false]);
  assert.equal(sceneModelCompatible({...scene,f:'unrelated'},current.structures.length,current.fullFingerprint,current.legacyCount,current.legacyFingerprint,current.baseCount,current.baseFingerprint,current.previousCount,current.previousFingerprint,current.preCardioCount,current.preCardioFingerprint,current.originalCardioCount,current.originalCardioFingerprint,current.structures),false);
 });
-test('the app and worker use the 1.8.1 version, and the new source-backed installer',()=>{
+test('the app and worker use the 1.8.2 version, and the new source-backed installer',()=>{
  const get=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
- assert.match(get('sw.js'),/anatomy-v1\.8\.1/);
+ assert.match(get('sw.js'),/anatomy-v1\.8\.3/);
  assert.match(get('index.html'),/data-cardio-preset="chambers"/);
  assert.match(get('tools/install-cardiovascular-43.sh'),/fetch-cardiovascular-vessels\.py/);
  assert.match(get('tools/install-cardiovascular-43.sh'),/--prior-manifest/);

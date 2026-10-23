@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.8.1</span>
+        <span class="version">STUDIO 1.8.3</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -158,7 +158,7 @@
         <section id="cardio-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Cardiovascular study views" hidden>
           <div class="systems-header"><span class="eyebrow">CARDIOVASCULAR STUDY VIEWS</span>
             <p id="cardio-study-count" class="studio-hint" aria-live="polite">Preparing heart and vessel meshes…</p></div>
-          <p class="studio-hint">Chamber cavities are empty spaces, shown as translucent blue volumes in Show all. Use Heart interior to hide these volumes and expose the valves and chordae.</p>
+          <p class="studio-hint">Chamber cavities are empty spaces, shown as translucent blue volumes in Show all. Use Heart interior to hide these volumes and expose available valve leaflets and papillary muscles. Chordae tendineae may require another 3D source.</p>
           <div class="cardio-presets" role="group" aria-label="Cardiovascular structure visibility presets">
             <button type="button" class="button small" data-cardio-preset="all">Show all</button>
             <button type="button" class="button small" data-cardio-preset="exterior">Heart exterior</button>
@@ -167,7 +167,33 @@
             <button type="button" class="button small" data-cardio-preset="coronary">Coronary</button>
             <button type="button" class="button small" data-cardio-preset="pulmonary">Pulmonary</button>
             <button type="button" class="button small" data-cardio-preset="systemic">Systemic vessels</button>
+            <button type="button" class="button small cardio-class-core-button" data-cardio-preset="classcore">Class core</button>
+            <button type="button" class="button small" data-cardio-preset="arteries">Required arteries</button>
+            <button type="button" class="button small" data-cardio-preset="veins">Required veins</button>
           </div>
+          <details id="cardio-class-core-panel" class="cardio-core-panel">
+            <summary>Class Core coverage / required structures</summary>
+            <p class="studio-hint" id="cardio-core-summary">Checking available structures…</p>
+            <label class="switch-row"><span>Only show class-core names in teacher explorer <small>Does not change saved lesson visibility</small></span><input id="cardio-core-list-only" type="checkbox" /></label>
+            <button id="cardio-core-export" type="button" class="button small">Export coverage JSON</button>
+            <p class="studio-hint">"Partial" means only valve components, chamber walls, or one side of a paired vessel is identified. Missing anatomy is never synthesized.</p>
+            <ul id="cardio-core-gaps" class="cardio-core-gaps"></ul>
+          </details>
+          <details id="cardio-audit-panel" class="cardio-core-panel">
+            <summary>Vascular completeness inspector (teacher only)</summary>
+            <p id="cardio-audit-summary" class="studio-hint">Checking installed meshes…</p>
+            <p class="studio-hint">Inspect previews are temporary and do not change your saved chapter. Verify names, left/right pairs, and visible vessel continuity before practical exams. Auricles and chordae are label-only targets.</p>
+            <label class="cardio-audit-filter-label" for="cardio-audit-filter">Show requirements</label>
+            <select id="cardio-audit-filter" class="cardio-audit-select">
+              <option value="action">Needs attention</option><option value="paired">Left/right vessel sets</option>
+              <option value="reviewed">Reviewed only</option><option value="all">All requirements</option>
+            </select>
+            <div class="cardio-audit-global-actions">
+              <button type="button" id="cardio-audit-restore" class="button small">Restore full view</button>
+              <button type="button" id="cardio-audit-export" class="button small">Export review JSON</button>
+            </div>
+            <div id="cardio-audit-list" class="cardio-audit-list" aria-live="polite"></div>
+          </details>
           <p class="studio-hint">Presets hide or reveal cardiovascular structures in the current chapter. Other anatomical systems stay unchanged; save the chapter to share this view.</p>
         </section>
         <div class="explorer-settings">
@@ -348,7 +374,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.8.1</strong>
+        <span>Installed version</span><strong id="settings-installed">1.8.2</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>

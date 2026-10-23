@@ -18,7 +18,7 @@ test('renderer stops animating when both input and damping stop',()=>{
   assert.match(app,/if\(moved \|\| drawFrames>0\)frameRequest=requestAnimationFrame\(draw\)/);
   assert.match(app,/if\(!updatingControls\)invalidate\(2\)/);
   assert.doesNotMatch(app,/controls\.addEventListener\('change',\(\)=>\{invalidate\(\);queueDraft\(\)/);
-  assert.match(app,/controls\.addEventListener\('end',\(\)=>queueDraft\(\)\)/);
+  assert.match(app,/controls\.addEventListener\('end',\(\)=>\{if\(!cardioPreviewIDs\)queueDraft\(\);\}\)/);
   assert.doesNotMatch(app,/scene\.updateMatrixWorld\(true\)/);
 });
 test('performance controls work in both teacher and student views and are device-only',()=>{

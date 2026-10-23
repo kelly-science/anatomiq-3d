@@ -39,11 +39,11 @@ test('experimental bone materials use a neutral tone without vertex colors',()=>
 });
 test('1.7.2 app, PWA cache, metadata and UI move together; old lesson format unchanged',()=>{
  const read=(name)=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
- assert.match(read('app.js'),/const APP_VERSION = '1\.8\.1'/);
- assert.match(read('sw.js'),/anatomy-v1\.8\.1/);
+ assert.match(read('app.js'),/const APP_VERSION = '1\.8\.3'/);
+ assert.match(read('sw.js'),/anatomy-v1\.8\.3/);
  assert.match(read('sw.js'),/skull-preferences\.js/);
- assert.equal(JSON.parse(read('version.json')).version,'1.8.1');
- assert.match(read('index.html'),/STUDIO 1\.8\.1/);
+ assert.equal(JSON.parse(read('version.json')).version,'1.8.3');
+ assert.match(read('index.html'),/STUDIO 1\.8\.3/);
  assert.match(read('index.html'),/Experimental — additional cranial bone detail/);
  assert.match(read('app.js'),/await loadHighResolutionSkull\(\)/);
  assert.match(read('app.js'),/getSkullGeometry/);

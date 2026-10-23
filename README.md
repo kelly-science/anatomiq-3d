@@ -1,3 +1,117 @@
+# Anatomy Studio 1.8.3 — Vascular Completeness & Classroom Review
+
+**Teacher-first, Chromebook/iPad PWA · GitHub Pages · No new mandatory anatomy downloads**
+
+## Changes
+
+- **Vascular Completeness Inspector:** Open **Cardiovascular → Vascular completeness inspector (teacher only)**. Filter to needs-attention targets, paired structures, previously reviewed targets, or the whole class list. Click **Inspect in 3D** to temporarily show only the meshes associated with that requirement, while retaining other visible body systems as reference. **Restore full view** returns the original camera and visibility. The preview does *not* modify the lesson's hidden structures or student scene.
+- **Teacher verification notes:** Mark a vessel **Verified / Incomplete / Incorrect** and enter your observations. They are kept in this browser profile's `localStorage`, independently of the Scene Library and student links. **Export review JSON** to back up/share the results. A new model manifest automatically invalidates an old verification whose matched FJ identifiers changed while preserving its note.
+- **More honest coverage:** Wrist branches no longer count as a complete radial/ulnar arterial trunk. Missing contralateral vessels and principal hepatic/vertebral/jugular/lumbar vein components are flagged for inspection. Matches *do not* mean geometry is continuous or clinically accurate.
+- **Label-only exceptions:** Chordae tendineae, right auricle and left auricle stay in the checklist for labels but are excluded from the geometry review backlog; no false meshes are added.
+- **Grouped teacher explorer:** Enable **Only show class-core names** to group repeated meshes with identical anatomical names, while keeping each source FJ identifier selectable and all saved structure indices intact.
+- **Nonvascular cleanup:** A handful of mistakenly included nerve meshes are identified as nonvascular source anatomy and omitted from cardiovascular study presets, but kept in the source atlas for backward compatibility.
+- **Targeted Mac installer:** It checks BodyParts3D 4.3 for a short list of **missing principal vessel segments** (right radial/ulnar trunks, missing jugular/vertebral counterparts, and main hepatic/lumbar veins). It only downloads actual matched meshes. It generates a separate `cardiovascular-gap-selection.json` report with the available and unavailable targets. **It cannot fabricate missing vessel continuations.**
+
+## Safest deployment: app-only update first
+
+1. In the current Anatomy Studio, **Library → Export entire library** as a backup. Do *not* clear browser site data.
+2. Copy the updated app files from this package into the directory served by GitHub Pages. **Add `cardio-vascular-audit.js`**. Replace `app.js`, `cardio-presentation.js`, `cardiovascular-model.js`, `index.html`, `styles.css`, `sw.js`, `version.json`, `manifest.webmanifest`. Include the two new/updated installer scripts under `tools/` on the Mac.
+3. **Keep all existing `models/`, `vendor/three/`, `.cardiovascular-43-work/`, `.digestive-43-work/` and the existing Python environment.** The package intentionally excludes third-party GLB binaries and the Three.js distribution.
+4. Confirm `https://<your GitHub Pages site>/version.json` says `1.8.3`, then reopen the PWA online. Avoid clearing site data because locally saved scenes and verification notes aren't automatically synced to GitHub.
+5. Enable Cardiovascular, open the Inspector, use **Inspect in 3D**, then **Restore full view**. Confirm your old chapters, colors, and published student links remain correct.
+
+## Optional: add any available missing principal vessels
+
+Run from your **existing merged project folder** (not a fresh folder lacking your model assets):
+
+```bash
+bash tools/install-cardiovascular-43.sh
+```
+
+This preserves the existing 298-mesh order via `--prior-manifest` and only appends provider meshes if they exist in the pinned catalog. Check the terminal output and `models/cardiovascular-gap-selection.json` before claiming a vessel is fixed. Upload:
+
+```
+models/cardiovascular-standard.glb
+models/cardiovascular-detailed.glb
+models/cardiovascular-structures.json
+models/cardiovascular-class-core-coverage.json
+models/cardiovascular-gap-selection.json
+models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt
+ASSET_SHA256.txt
+```
+
+Upload GLBs **individually** if the GitHub website rejects a batch. Do not upload `.cardiovascular-43-work/` or `.digestive-43-work/`. The downloader must run on your Mac with internet access; the classroom PWA remains self-hosted.
+
+## Verification and limits
+
+- **86 JavaScript tests and 9 Python tests passed.** The missing-vessel selector is tested using a synthetic BodyParts3D manifest. Browser rendering and final expanded anatomy alignment still need a live Chromebook/iPad check.
+- This release **does not create a fully connected vascular tree**, improve chordae/auricle geometry, or guarantee bilateral completeness just because a structure has a name match. It improves review and targeted selection only.
+- Teacher audit notes remain device-local. Export review JSON to keep them; this release intentionally does not import reviews (to prevent accidental overwrites from another class/device).
+- Existing scene URL formats, bone/material indexing, student permissions and lesson library storage remain unchanged. Published links are not rewritten.
+
+---
+
+# Anatomy Studio 1.8.2 — Cardiovascular Class Core
+
+Chromebook PWA · Teacher Studio · self-hosted anatomy · GitHub Pages
+
+## What changed
+
+- **Class Core** anatomical view based on the teacher's required heart table and the labels on **Blood Vessels Diagram Key.pdf**, pages 1 (arteries) and 2 (veins).
+- **Required arteries** and **Required veins** presets in the Cardiovascular Study Views panel, alongside all the existing heart and vessel views.
+- **Coverage report** with fully represented, partially represented and missing curriculum targets; export the installed model's current JSON from Teacher Studio and share it for further development.
+- **Teacher explorer filter** to show only real cardiovascular meshes matching the curriculum. This does not alter the lesson unless you apply a visibility preset.
+- **Priority source installer** searches the pinned BodyParts3D 4.3 catalog for required but uninstalled meshes, rather than downloading miscellaneous small branches. It reuses source data already downloaded on your Mac.
+- Source mesh IDs stay **append-only**. Existing saved scenes, paint colors, chapters and student links retain their IDs.
+
+### Important limitations
+
+The 81 targets are *curriculum checklist entries*, not 81 guaranteed anatomical meshes. Valve **cusps/leaflets** and chamber **walls** count only as partial representations. Missing chordae tendineae, auricles, or specific vessels are never substituted with fictitious 3D geometry. A modeled vessel segment does not guarantee a continuous vessel connection.
+
+The included `reports/cardiovascular-class-core-baseline.json` was generated from the cardiovascular metadata supplied for 1.8.1. It shows **49 fully represented, 16 partial and 16 missing targets** before running the new installer. Counts may change when your Mac rebuilds the anatomy files. The baseline file is for your records; do not put it in `models/` as though it described newly converted geometry.
+
+## Chromebook / GitHub installation
+
+1. **Back up your Scene Library** through the Library menu before changing app files. Never clear Chrome site data to force a PWA update.
+2. Merge the contents of this archive's `anatomy-pwa-studio/` folder into your GitHub Pages repository. Replace `app.js`, `cardio-presentation.js`, `index.html`, `styles.css`, `sw.js`, `version.json`, `manifest.webmanifest`, and `cardiovascular-model.js`; **add** `cardio-class-core.js` and `data/cardio-class-core.json`, plus updated tools and README.
+3. Keep **all** existing `models/`, `vendor/three/`, and your Mac's local `.cardiovascular-43-work/` and `.digestive-43-work/` directories. The ZIP contains **no large GLB files**.
+4. If you only want the curriculum filters on the models you already uploaded, you may deploy the app now **without running the installer**.
+5. If you want the additional available target vessels, in Terminal, from your locally merged `anatomy-pwa-studio` folder run:
+
+   ```bash
+   bash tools/install-cardiovascular-43.sh
+   ```
+
+   It will reuse your existing downloaded meshes, inspect which curriculum structures are missing, retrieve any verified matching meshes, append them to the current GLB in a staging folder, validate the staged GLBs, and write:
+
+   ```text
+   models/cardiovascular-standard.glb
+   models/cardiovascular-detailed.glb
+   models/cardiovascular-structures.json
+   models/cardiovascular-vessel-coverage.json
+   models/cardiovascular-class-core-coverage.json
+   models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt
+   ASSET_SHA256.txt
+   ```
+
+6. Upload updated files to GitHub Pages. If GitHub's browser upload fails on larger GLBs, upload each GLB individually or push through GitHub Desktop. **Do not upload temporary `.cardiovascular-43-work/` or `.digestive-43-work/` folders.**
+7. Check `/version.json` on your published site: it should say `1.8.2`. Reopen the installed PWA online. App Settings should also report `1.8.2`.
+8. Enable Cardiovascular and open the **Class Core coverage / required structures** panel. Export the report to see exactly what's present on that device. Presets operate on available meshes only.
+
+## No anatomy invented
+
+The `tools/fetch-cardiovascular-class-core.py` selector reads the pinned source `MANIFEST.csv`, matches the exact teacher checklist, skips nonvascular names, and downloads real provider geometry. The script has `--list-only` for auditing without downloading. It does not fabricate missing arteries, veins, chordae or other cardiac tissue. Source geometry must be visually verified for alignment and completeness before an identification practical.
+
+## Compatibility and safety
+
+This is a code and optional model update, not a database migration. Older scene links and lesson drafts retain their visibility bits and stable mesh ordering. The app stores the teacher library in the browser's IndexedDB; periodically export backups. Scene links include their own configurations; publishing a revised chapter creates a revised link.
+
+The bundled JS runs without additional CDN dependencies once your existing `vendor/three/` and `models/` folders are self-hosted. The Mac installer still downloads source data and Python packages only during model generation.
+
+---
+
+## Previous release notes (1.8.1)
+
 # Anatomy Studio 1.8.1 — Expanded Cardiovascular Anatomy
 
 **Chromebook PWA · Teacher Studio · Student sharing · GitHub Pages self-hosting**

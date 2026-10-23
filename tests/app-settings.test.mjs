@@ -7,10 +7,10 @@ const app=read('app.js');
 const sw=read('sw.js');
 const version=JSON.parse(read('version.json'));
 test('app version, UI, update endpoint and worker cache agree',()=>{
- assert.equal(version.version,'1.8.1');
+ assert.equal(version.version,'1.8.3');
  assert.match(index,/STUDIO 1\.8/);
- assert.match(app,/const APP_VERSION = '1\.8\.1'/);
- assert.match(sw,/anatomy-v1\.8\.1/);
+ assert.match(app,/const APP_VERSION = '1\.8\.3'/);
+ assert.match(sw,/anatomy-v1\.8\.3/);
  assert.match(index,/id="settings-dialog"/);
  assert.match(index,/id="settings-check-updates"/);
  assert.match(index,/id="settings-reload"/);

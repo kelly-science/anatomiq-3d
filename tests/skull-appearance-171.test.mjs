@@ -63,8 +63,8 @@ test('version and cache advance together for Chromebook PWA update',()=>{
   const app=readFileSync(new URL('app.js',root),'utf8');
   const sw=readFileSync(new URL('sw.js',root),'utf8');
   const version=JSON.parse(readFileSync(new URL('version.json',root),'utf8'));
-  assert.match(app,/const APP_VERSION = '1\.8\.1'/);
-  assert.match(sw,/anatomy-v1\.8\.1/);
-  assert.equal(version.version,'1.8.1');
+  assert.match(app,/const APP_VERSION = '1\.8\.3'/);
+  assert.match(sw,/anatomy-v1\.8\.3/);
+  assert.equal(version.version,'1.8.3');
   assert.match(app,/materials\.set\(structure\.mesh,newMaterial\)/);
 });

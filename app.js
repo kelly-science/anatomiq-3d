@@ -7,6 +7,8 @@ import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
+import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
+import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
 import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
@@ -17,7 +19,7 @@ import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './syst
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.8.3';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -41,6 +43,11 @@ const CARDIO_QUALITY_KEY='anatomy-studio-cardio-geometry-v1';
 let cardioGeometry='standard';
 try{cardioGeometry=localStorage.getItem(CARDIO_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let cardioRoot=null,cardioEntries=[],cardioAvailable=false;
+let teacherCoreTreeOnly=false;
+let cardioReviews={};try{cardioReviews=loadCardioReview(window.localStorage);}catch{}
+let cardioAuditFilter='action';
+let cardioPreviewIDs=null,cardioPreviewCamera=null; // transient review-only view; never serialized into student scenes.
+
 let preCardioStructureCount=0,preCardioFingerprint='';
 let originalCardioStructureCount=0,originalCardioFingerprint='';
 const DIGESTIVE_QUALITY_KEY='anatomy-studio-digestive-geometry-v1';
@@ -199,7 +206,7 @@ function draw(){
 }
 controls.addEventListener('change',()=>{if(!updatingControls)invalidate(2);});
 // Wait for the user to finish orbiting before serializing the scene and undo history.
-controls.addEventListener('end',()=>queueDraft());
+controls.addEventListener('end',()=>{if(!cardioPreviewIDs)queueDraft();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)invalidate(2);});
 function resize(){
   const w=Math.max(1,elements.stage.clientWidth),h=Math.max(1,elements.stage.clientHeight);
@@ -231,6 +238,96 @@ function layerEnabled(s){
   return false;
 }
 function currentStructures(){return structures.filter(layerEnabled);}
+function persistCardioReviews(){
+  try{cardioReviews=saveCardioReview(cardioReviews,localStorage);}catch(error){showToast('Browser storage unavailable; export your review notes.');}
+}
+function endCardioPreview(restoreCamera=true){
+  if(!cardioPreviewIDs)return;
+  cardioPreviewIDs=null;
+  if(restoreCamera&&cardioPreviewCamera){
+    camera.position.fromArray(cardioPreviewCamera.slice(0,3));
+    controls.target.fromArray(cardioPreviewCamera.slice(3,6));controls.update();invalidate(2);
+  }
+  cardioPreviewCamera=null;
+  refreshVisibility(true);
+  renderCardioInspector();
+}
+function startCardioPreview(targetID){
+  const target=auditCardiovascular(cardioEntries,cardioReviews).targets.find(t=>t.id===targetID);
+  if(!target?.meshes.length){showToast('No selectable mesh for this requirement; use a custom label.');return;}
+  if(!cardioPreviewCamera)cardioPreviewCamera=[...camera.position.toArray(),...controls.target.toArray()];
+  cardioPreviewIDs=new Set(target.meshes.map(m=>m.id));
+  isolated=false;setSelection(null);
+  refreshVisibility(true);
+  const matched=cardioEntries.filter(s=>cardioPreviewIDs.has(s.sourceName));
+  const box=boxFor(matched);
+  if(!box.isEmpty())fitBox(box,activePreset,2.2,true);
+  renderCardioInspector();
+}
+function renderCardioInspector(){
+  if(!teacherMode||!cardioAvailable)return;
+  const report=auditCardiovascular(cardioEntries,cardioReviews);
+  const summary=$('cardio-audit-summary'),rows=$('cardio-audit-list');
+  if(!summary||!rows)return;
+  summary.textContent=`${report.meshCount} meshes · ${report.pending} requirements await review · ${report.labelOnly} label-only targets`;
+  const filter=$('cardio-audit-filter');if(filter)filter.value=cardioAuditFilter;
+  rows.replaceChildren();
+  for(const t of report.targets){
+    if(cardioAuditFilter==='action'&&(t.labelOnly||t.status==='represented'&&t.reviewed==='verified'))continue;
+    if(cardioAuditFilter==='paired'&&(!t.bilateral||t.labelOnly))continue;
+    if(cardioAuditFilter==='reviewed'&&t.reviewed==='unreviewed')continue;
+    const item=document.createElement('div');item.className='cardio-audit-item';item.dataset.targetId=t.id;
+    const header=document.createElement('div');header.className='cardio-audit-head';
+    const name=document.createElement('strong');name.textContent=t.name;header.append(name);
+    const state=document.createElement('span');state.className='cardio-audit-state';
+    state.textContent=t.labelOnly?'Teacher label':t.reviewed==='unreviewed'?t.status:t.reviewed;
+    header.append(state);item.append(header);
+    const context=document.createElement('p');context.className='studio-hint';context.textContent=t.evidence+` · ${t.meshes.length} mesh${t.meshes.length===1?'':'es'}`;item.append(context);
+    const actions=document.createElement('div');actions.className='cardio-audit-actions';
+    const preview=document.createElement('button');preview.type='button';preview.className='button small';
+    preview.dataset.auditAction='preview';preview.textContent=cardioPreviewIDs&&t.meshes.some(m=>cardioPreviewIDs.has(m.id))?'Previewing':'Inspect in 3D';preview.disabled=!t.meshes.length;actions.append(preview);
+    if(!t.labelOnly){
+      const choose=document.createElement('select');choose.className='cardio-audit-select';choose.setAttribute('aria-label','Verification for '+t.name);choose.dataset.auditAction='status';
+      for(const [val,label] of [['unreviewed','Not reviewed'],['verified','Verified'],['incomplete','Incomplete'],['incorrect','Incorrect']]){
+        const option=document.createElement('option');option.value=val;option.textContent=label;choose.append(option);
+      }
+      choose.value=t.reviewed;actions.append(choose);
+    }
+    item.append(actions);
+    const details=document.createElement('details');details.className='cardio-audit-meshes';
+    const title=document.createElement('summary');title.textContent=`${t.meshes.length} exact source IDs`;
+    details.append(title);
+    const ids=document.createElement('div');ids.textContent=t.meshes.map(m=>`${m.id} — ${m.name}`).join('\n')||'No mesh';ids.style.whiteSpace='pre-line';details.append(ids);
+    item.append(details);
+    if(!t.labelOnly){
+      const note=document.createElement('textarea');note.rows=2;note.className='cardio-audit-note';note.placeholder='What is missing, disconnected, or mislabeled?';note.value=t.note;note.dataset.auditAction='note';note.setAttribute('aria-label','Notes for '+t.name);item.append(note);
+    }
+    rows.append(item);
+  }
+}
+if(teacherMode){
+  $('cardio-audit-filter').addEventListener('change',e=>{cardioAuditFilter=e.target.value;renderCardioInspector();});
+  $('cardio-audit-restore').addEventListener('click',()=>endCardioPreview());
+  $('cardio-audit-export').addEventListener('click',()=>{
+    const blob=new Blob([cardioAuditExport(cardioEntries,cardioReviews)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const anchor=document.createElement('a');anchor.href=url;
+    anchor.download='Anatomy-Studio-Cardiovascular-Review.json';document.body.append(anchor);anchor.click();anchor.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+  $('cardio-audit-list').addEventListener('click',e=>{
+    const button=e.target.closest('[data-audit-action="preview"]');
+    if(button)startCardioPreview(button.closest('[data-target-id]').dataset.targetId);
+  });
+  $('cardio-audit-list').addEventListener('change',e=>{
+    const id=e.target.closest('[data-target-id]')?.dataset.targetId;if(!id)return;
+    const target=auditCardiovascular(cardioEntries,cardioReviews).targets.find(t=>t.id===id);
+    if(!target)return;
+    const record={...(cardioReviews[id]||{}),signature:target.signature};
+    if(e.target.dataset.auditAction==='status')record.status=e.target.value;
+    if(e.target.dataset.auditAction==='note')record.note=e.target.value;
+    cardioReviews[id]=record;persistCardioReviews();renderCardioInspector();
+  });
+}
 function updateSystemControls(){
   const layers=effectiveSystemLayers(mode,systemLayers);
   $('system-superficial').checked=layers.superficial;
@@ -250,9 +347,28 @@ function updateSystemControls(){
   // The editor has chapter-specific cardiac study views, not a separate model.
   $('cardio-study-panel').hidden=!teacherMode||!cardioAvailable||!layers.cardiovascular;
   if(cardioAvailable){
+    renderCardioInspector();
+    const core=classCoreCoverage(cardioEntries);
+    $('cardio-core-summary').textContent=`${core.represented} fully represented · ${core.partial} partially represented · ${core.missing} missing out of ${core.required} required curriculum targets (${core.matchedMeshes} matching meshes).`;
+    const missing=core.targets.filter(t=>t.status!=='represented');
+    const list=$('cardio-core-gaps');
+    list.replaceChildren();
+    for(const t of missing){
+      const li=document.createElement('li');
+      li.textContent=`${t.status==='missing'?'Missing':'Partial'}: ${t.name}${t.status==='partial'&&t.bilateral?' (check left/right coverage)':''}`;
+      list.append(li);
+    }
     const counts=cardioPresetCounts(cardioEntries);
     $('cardio-study-count').textContent=`${cardioEntries.length} selectable structures · ${counts.interior} interior structures · ${counts.chambers} chamber-space volumes · some vessel segments may be absent from the source atlas`+(cardioEntries.length<=15?' · Expanded model not yet installed':'');
-    for(const button of document.querySelectorAll('[data-cardio-preset]')){
+    $('cardio-core-list-only').addEventListener('change',event=>{teacherCoreTreeOnly=event.target.checked;renderList();});
+$('cardio-core-export').addEventListener('click',()=>{
+  if(!cardioAvailable)return;
+  const blob=new Blob([classCoreCoverageJSON(cardioEntries)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='Anatomy-Studio-Cardiovascular-Class-Coverage.json';
+  document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+for(const button of document.querySelectorAll('[data-cardio-preset]')){
       const preset=button.dataset.cardioPreset;
       button.disabled=!cardioCanApply(cardioEntries,preset);
       button.title=button.disabled?'Required meshes not included in installed model':`${counts[preset]} cardiovascular structures`;
@@ -260,13 +376,16 @@ function updateSystemControls(){
   }
 }
 function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible);}
-function refreshVisibility(){
+function refreshVisibility(transient=false){
   for(const s of structures){
-    s.mesh.visible = layerEnabled(s) && tissueVisible(s) && !hidden.has(s.mesh) && (!isolated||s===selected);
+    const inspecting=Boolean(cardioPreviewIDs && s.system==='cardiovascular');
+    s.mesh.visible = layerEnabled(s) && tissueVisible(s)
+      && (inspecting ? cardioPreviewIDs.has(s.sourceName) : !hidden.has(s.mesh))
+      && (!isolated||s===selected);
   }
   renderList();
   invalidate(2);
-  queueDraft();
+  if(!transient)queueDraft();
 }
 function setStatus(message,state='ready'){
   elements.connection.className='status '+state;
@@ -441,6 +560,7 @@ function updateLayerHeading(){
   elements.tip.textContent='Toggle systems without changing the camera. Click structures to identify, label or paint.';
 }
 function setMode(newMode){
+  if(cardioPreviewIDs)endCardioPreview();
   if(!sceneRoot)return;
   if(newMode==='digestive' && !digestiveAvailable && !detailAvailable){showToast('Digestive detailed model missing. Upload models/digestive-standard.glb and digestive-structures.json.');return;}
   // A newly selected Digestive view should display the expanded dataset when present.
@@ -468,7 +588,7 @@ function setMode(newMode){
   refreshVisibility();
   frameVisible('front');
 }
-function fitBox(box,view='front',padding=1.35){
+function fitBox(box,view='front',padding=1.35,transient=false){
   if(box.isEmpty())return;
   const center=box.getCenter(new THREE.Vector3());
   const size=box.getSize(new THREE.Vector3());
@@ -488,7 +608,7 @@ function fitBox(box,view='front',padding=1.35){
   controls.update();
   setPresetActive(view);
   invalidate(2);
-  queueDraft();
+  if(!transient)queueDraft();
 }
 function boxFor(list){
   const box=new THREE.Box3();
@@ -509,7 +629,7 @@ function focusSelected(){if(selected)fitBox(boxFor([selected]),activePreset,2.15
 function renderList(){
   const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
   document.body.classList.toggle('student-has-query',!teacherMode && Boolean(text));
-  const available=currentStructures().filter(s=>tissueVisible(s));
+  const available=currentStructures().filter(s=>tissueVisible(s) && (!teacherMode||!teacherCoreTreeOnly||s.system!=='cardiovascular'||classCoreVisible(s)));
   const found=available.filter(s=>s.name.toLowerCase().includes(text) && (teacherMode || studentExplore || s.mesh.visible));
   elements.count.textContent=found.length;
   elements.clearSearch.hidden=!elements.search.value;
@@ -542,7 +662,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -561,7 +681,21 @@ function renderList(){
       frag.append(group);
     }
   }else if(teacherMode || studentPermissions.st || text){
-    for(const bone of found)frag.append(createBoneButton(bone));
+    if(teacherMode&&teacherCoreTreeOnly&&mode==='systems'&&systemLayers.cardiovascular){
+      // Group exact duplicate cardiovascular names without merging mesh IDs.
+      const groups=new Map();
+      for(const bone of found){
+        const key=bone.system==='cardiovascular'?bone.name+' / '+bone.side:'single:'+bone.index;
+        if(!groups.has(key))groups.set(key,[]);
+        groups.get(key).push(bone);
+      }
+      for(const [key,items] of groups){
+        if(items.length===1){frag.append(createBoneButton(items[0]));continue;}
+        const group=document.createElement('details');group.className='cardio-mesh-group';
+        const summary=document.createElement('summary');summary.textContent=items[0].name+' ('+items.length+' separate meshes)';group.append(summary);
+        for(const bone of items)group.append(createBoneButton(bone));frag.append(group);
+      }
+    }else for(const bone of found)frag.append(createBoneButton(bone));
   }
   elements.boneList.replaceChildren(frag);
 }
@@ -956,7 +1090,7 @@ function queueDraft(){
 }
 function snapshotScene(){
   if(!sceneRoot)throw new Error('Model not loaded.');
-  const visible=structures.map(s=>s.mesh.visible);
+  const visible=structures.map(s=>cardioPreviewIDs&&s.system==='cardiovascular' ? layerEnabled(s)&&tissueVisible(s)&&!hidden.has(s.mesh) : s.mesh.visible);
   const pc=[...bonePaint.entries()].sort((a,b)=>a[0]-b[0]);
   return validateScene({
     v:1,m:mode,n:structures.length,f:sceneFingerprint,
@@ -964,7 +1098,7 @@ function snapshotScene(){
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
-    cam:[...camera.position.toArray(),...controls.target.toArray()].map(n=>round(n,5)),
+    cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
   });
@@ -1340,6 +1474,7 @@ function updateAnnotationPositions(){
   }
 }
 async function applyScene(saved){
+  if(cardioPreviewIDs)endCardioPreview();
   validateScene(saved);
   if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
     throw new Error(saved?.m==='digestive'?'This digestive scene requires the locally hosted digestive GLB and Draco decoder.':'The anatomical model has changed since this scene was published.');
@@ -1639,6 +1774,7 @@ menuGroups.forEach((group,index)=>{
   });
 });
 function applyCardioStudyPreset(preset){
+  endCardioPreview(false);
   if(!teacherMode||!sceneRoot||!cardioAvailable)return;
   if(!cardioCanApply(cardioEntries,preset)){
     showToast('This view requires structures not present in your current cardiovascular dataset.');
