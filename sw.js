@@ -1,7 +1,7 @@
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v1.7.1';
-const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./system-layers.js','./cardiovascular-model.js','./skeletal-detail.js','./skull-geometry.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const VERSION='anatomy-v1.8.0';
+const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./system-layers.js','./cardiovascular-model.js','./cardio-presentation.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',

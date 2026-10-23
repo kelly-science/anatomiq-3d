@@ -3,8 +3,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {installSkullGeometry} from './skull-geometry.js';
 import {validateSkullManifest} from './skeletal-detail.js';
+import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
+import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply} from './cardio-presentation.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
 import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
@@ -15,16 +17,17 @@ import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './syst
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.7.1';
+const APP_VERSION = '1.8.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const LOCAL_MODEL = './models/ecorche.glb';
 const SKULL_MANIFEST='./models/skull-structures.json';
 const SKULL_HIGH='./models/skull-detailed.glb';
-const SKULL_QUALITY_KEY='anatomy-studio-skull-geometry-v1';
+// The legacy v1 detailed preference is intentionally not imported: this
+// stabilisation release returns existing devices to the reliable base skull.
 let skullGeometry='standard';
-try{skullGeometry=localStorage.getItem(SKULL_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
+try{skullGeometry=getSkullGeometry(window.localStorage);}catch{}
 let skullDetailStats=null;
 
 const LOCAL_DIGESTIVE_MODEL='./models/anatomy-organs.glb';
@@ -244,6 +247,17 @@ function updateSystemControls(){
   $('mode-digestive').title=detailAvailable?`${detailEntries.length} selectable digestive structures`:'Detailed digestive assets are not installed';
   $('mode-cardiovascular').disabled=!cardioAvailable;
   $('mode-cardiovascular').title=cardioAvailable?`${cardioEntries.length} selectable heart and vessel structures`:'Run tools/install-cardiovascular-43.sh to add cardiovascular anatomy';
+  // The editor has chapter-specific cardiac study views, not a separate model.
+  $('cardio-study-panel').hidden=!teacherMode||!cardioAvailable||!layers.cardiovascular;
+  if(cardioAvailable){
+    const counts=cardioPresetCounts(cardioEntries);
+    $('cardio-study-count').textContent=`${cardioEntries.length} selectable structures · ${counts.interior} in interior view`+(cardioEntries.length<=15?' · Expanded model not yet installed':'');
+    for(const button of document.querySelectorAll('[data-cardio-preset]')){
+      const preset=button.dataset.cardioPreset;
+      button.disabled=!cardioCanApply(cardioEntries,preset);
+      button.title=button.disabled?'Required meshes not included in installed model':`${counts[preset]} cardiovascular structures`;
+    }
+  }
 }
 function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible);}
 function refreshVisibility(){
@@ -314,9 +328,8 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
-  if(s.system==='cardiovascular')return ({'heart-internal':'A named internal heart structure. Hide surrounding heart walls to reveal it.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
+  if(s.system==='cardiovascular')return ({'heart-internal':'A named cardiac structure such as a valve leaflet, chamber cavity or papillary muscle; select Heart interior to hide the exterior walls.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
   if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.',esophagus:'Transports swallowed food from the pharynx to the stomach.',gallbladder:'Stores and concentrates bile before its release into the small intestine.',pancreas:'Produces digestive enzymes and bicarbonate, as well as hormones.',duodenum:'First part of the small intestine; receives bile and pancreatic enzymes.',jejunum:'Middle portion of the small intestine; absorbs nutrients.',ileum:'Final portion of the small intestine; absorbs bile salts and vitamin B12.',colon:'Absorbs water and electrolytes and moves fecal matter.',cecum:'Blind pouch at the beginning of the large intestine.',appendix:'Small blind-ended tube arising from the cecum.',rectum:'Stores feces prior to elimination.'})[s.organId] || 'An identifiable segment of the digestive tract.';
-  if(s.system==='cardiovascular')return layers.cardiovascular && cardioAvailable;
   if(s.system==='muscular')return muscleDescriptions.find(([rx])=>rx.test(s.name))?.[1] || 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.';
   const d=descriptions.find(([rx])=>rx.test(s.name));
   return d ? d[1] : s.system==='muscular' ? 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.' : 'An identifiable structure in the human skeletal system. Rotate the model to examine its shape and anatomical relationships.';
@@ -824,7 +837,8 @@ $('settings-skull-geometry').value=skullGeometry;
 $('settings-skull-geometry').addEventListener('change',()=>{
   const next=$('settings-skull-geometry').value==='detailed'?'detailed':'standard';
   if(next===skullGeometry)return;
-  try{localStorage.setItem(SKULL_QUALITY_KEY,next);}catch{}
+  if(teacherMode)saveDraft(false);
+  try{setSkullGeometry(window.localStorage,next);}catch{}
   location.reload();
 });
 $('settings-cardio-geometry').addEventListener('change',()=>{
@@ -1615,6 +1629,28 @@ menuGroups.forEach((group,index)=>{
     if(event.key==='Escape'){event.preventDefault();event.stopPropagation();closeStudioMenus(true);}
   });
 });
+function applyCardioStudyPreset(preset){
+  if(!teacherMode||!sceneRoot||!cardioAvailable)return;
+  if(!cardioCanApply(cardioEntries,preset)){
+    showToast('This view requires additional heart or vessel meshes. Run the expanded cardiovascular installer.');
+    return;
+  }
+  // Never touch bone, muscle or digestive visibility. Teacher can save this
+  // filtered cardiovascular layer as a chapter and share it with students.
+  systemLayers.cardiovascular=true;
+  if(mode!=='systems')mode='systems';
+  for(const s of cardioEntries){
+    if(cardioVisibleInPreset(s,preset))hidden.delete(s.mesh);
+    else hidden.add(s.mesh);
+  }
+  isolated=false;
+  setSelection(null);
+  updateLayerHeading();updateSystemControls();refreshVisibility();
+  showToast(CARDIO_PRESETS[preset]+' applied to current chapter');
+}
+for(const button of document.querySelectorAll('[data-cardio-preset]')){
+  button.addEventListener('click',()=>applyCardioStudyPreset(button.dataset.cardioPreset));
+}
 $('studio-menubar').addEventListener('click',event=>{
   const action=event.target.closest('.menu-item');
   if(!action)return;
@@ -1627,16 +1663,7 @@ $('studio-menubar').addEventListener('click',event=>{
     if(target && !target.disabled)target.click();
   }
   if(view)orient(view);
-  if(cardiacPreset==='interior' && teacherMode && cardioAvailable){
-    // Remove only outer heart-wall meshes to expose separately selectable
-    // valve leaflets, cavity surfaces and papillary muscles. Other systems stay put.
-    systemLayers.cardiovascular=true;
-    if(mode!=='systems')setMode('systems');
-    for(const s of cardioEntries){
-      if(/^wall of (?:ventricle|left atrium|right atrium)$/i.test(s.name))hidden.add(s.mesh);
-    }
-    isolated=false;setSelection(null);refreshVisibility();updateSystemControls();scheduleHistoryCommit();
-  }
+  if(cardiacPreset && teacherMode)applyCardioStudyPreset(cardiacPreset);
   if(anatomyPreset && teacherMode){
     Object.assign(systemLayers,{skeletal:true,superficial:false,deep:false,digestive:false,cardiovascular:false});
     setMode(anatomyPreset);
@@ -1680,8 +1707,8 @@ async function checkLocalAssets(){
   $('settings-renderer').textContent=window.__ANATOMY_RENDERER_SOURCE==='local'?'Local Three.js 0.169.0':'CDN fallback (Three.js 0.169.0)';
   $('settings-model').textContent=sceneRoot ? displayLocalAssetName(currentModelURL) : 'Not loaded';
   $('settings-skull').textContent=skullGeometry==='detailed'
-    ? (skullDetailStats?.upgraded ? `${skullDetailStats.upgraded} bones upgraded (high detail)` : `High detail not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
-    : 'Standard Écorché geometry';
+    ? (skullDetailStats?.upgraded ? `Experimental: ${skullDetailStats.upgraded} skull bones upgraded; original jaw/teeth retained` : `Experimental not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
+    : 'Standard Écorché geometry (recommended)';
   $('settings-skull').title=skullDetailStats?.skipped?.join('; ')||'';
   $('settings-cardio').textContent=cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry})`:'Not installed — run cardiovascular installer';
   $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected)`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';

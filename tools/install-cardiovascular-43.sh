@@ -60,7 +60,7 @@ if subset_ready "$WORK/subsets/expanded" 20; then
  echo 'Reusing downloaded expanded cardiovascular meshes.'
 else
  echo 'Downloading expanded heart detail and major vessels (BodyParts3D 4.3)...'
- "$PY" tools/fetch-cardiovascular-expansion.py --upstream "$WORK/upstream" --out "$WORK/subsets/expanded"
+ "$PY" "$ROOT/tools/fetch-cardiovascular-expansion.py" --upstream "$WORK/upstream" --out "$WORK/subsets/expanded"
 fi
 if subset_ready "$PREV/subsets/skin" 1; then SKIN_DIR="$PREV/subsets/skin"; else
  if ! subset_ready "$WORK/subsets/skin" 1; then

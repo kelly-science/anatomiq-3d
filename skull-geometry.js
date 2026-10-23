@@ -1,13 +1,13 @@
 import {matchedSkullGeometry,adequateSkullReplacement} from './skeletal-detail.js';
 
-/** Return a clean, untextured surface for the replacement geometry.
- * Écorché materials may use UV textures and vertex colors that aren't present
- * on BodyParts3D meshes. Reusing them makes replaced bones look black.
- * Teacher paint colors are derived from this baseline material by app.js.
+/** Neutral untextured bone material for experimental BodyParts3D geometry.
+ * The cooler, dimmer baseline is closer to the original Écorché bone tone
+ * under the Studio lights than the over-bright ivory material in 1.7.1.
+ * Écorché textures/vertex colors cannot be reused with BodyParts3D geometry.
  */
 export function createDetailedBoneMaterial(THREE){
   return new THREE.MeshStandardMaterial({
-    color:0xe8e2d5,roughness:0.85,metalness:0,
+    color:0xc6c5bf,roughness:0.88,metalness:0,
     side:THREE.DoubleSide,vertexColors:false,
     flatShading:false
   });
@@ -17,6 +17,12 @@ export function createDetailedBoneMaterial(THREE){
  * This leaves scene index, raycasts, paint maps and label local anchor space intact.
  * No additional structure objects are inserted into the scene catalogue.
  */
+/** Avoid mixing the original teeth with differently registered detailed jaw meshes.
+ * A future skull-and-dentition model can replace both jaws and teeth together.
+ */
+export function isDentalBearingBone(name){
+  return /^(?:(?:left|right)\s+)?(?:maxilla|maxillary bone|mandible|mandibular bone)$/i.test(String(name||'').trim());
+}
 export function installSkullGeometry(THREE,skullScene,manifest,structures,onUpgrade=()=>{}){
   const result=matchedSkullGeometry(skullScene,manifest,structures);
   const stats={total:manifest.structures.length,matched:result.matched.length,upgraded:0,
@@ -24,6 +30,10 @@ export function installSkullGeometry(THREE,skullScene,manifest,structures,onUpgr
   skullScene.updateWorldMatrix(true,true);
   for(const item of result.matched){
     const original=item.original.mesh,detail=item.detail;
+    if(isDentalBearingBone(item.metadata.target)){
+      stats.skipped.push(`${item.metadata.target}: original jaw retained to preserve dental alignment`);
+      continue;
+    }
     try{
       const originalFaces=original.geometry.index ? original.geometry.index.count/3 : original.geometry.attributes.position.count/3;
       const detailedFaces=detail.geometry.index ? detail.geometry.index.count/3 : detail.geometry.attributes.position.count/3;

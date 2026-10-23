@@ -14,105 +14,1272 @@
       "fma_id": "FMA30313",
       "name": "Trunk of left common carotid artery",
       "standard_triangles": 1272,
-      "detailed_triangles": 1272
+      "detailed_triangles": 1272,
+      "category": "major-vessel"
     },
     {
       "id": "FJ2428",
       "fma_id": "FMA13256",
       "name": "Wall of ventricle",
       "standard_triangles": 8999,
-      "detailed_triangles": 37442
+      "detailed_triangles": 37442,
+      "category": "heart"
     },
     {
       "id": "FJ2438",
       "fma_id": "FMA13256",
       "name": "Wall of left atrium",
       "standard_triangles": 7544,
-      "detailed_triangles": 7544
+      "detailed_triangles": 7544,
+      "category": "heart"
     },
     {
       "id": "FJ2439",
       "fma_id": "FMA13256",
       "name": "Wall of right atrium",
       "standard_triangles": 9000,
-      "detailed_triangles": 17784
+      "detailed_triangles": 17784,
+      "category": "heart"
     },
     {
       "id": "FJ2966",
       "fma_id": "FMA30313",
       "name": "Pulmonary trunk",
       "standard_triangles": 1302,
-      "detailed_triangles": 1302
+      "detailed_triangles": 1302,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3411",
       "fma_id": "FMA13087",
       "name": "Arch of aorta",
       "standard_triangles": 670,
-      "detailed_triangles": 670
+      "detailed_triangles": 670,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3413",
       "fma_id": "FMA13087",
       "name": "Ascending aorta",
       "standard_triangles": 396,
-      "detailed_triangles": 396
+      "detailed_triangles": 396,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3427",
       "fma_id": "FMA13087",
       "name": "Descending aorta",
       "standard_triangles": 4562,
-      "detailed_triangles": 4562
+      "detailed_triangles": 4562,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3441",
       "fma_id": "FMA10951",
       "name": "Inferior vena cava",
       "standard_triangles": 1410,
-      "detailed_triangles": 1410
+      "detailed_triangles": 1410,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3485",
       "fma_id": "FMA4724",
       "name": "Left internal jugular vein",
       "standard_triangles": 280,
-      "detailed_triangles": 280
+      "detailed_triangles": 280,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3564",
       "fma_id": "FMA30313",
       "name": "Trunk of right common carotid artery",
       "standard_triangles": 884,
-      "detailed_triangles": 884
+      "detailed_triangles": 884,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3585",
       "fma_id": "FMA4724",
       "name": "Right internal jugular vein",
       "standard_triangles": 226,
-      "detailed_triangles": 226
+      "detailed_triangles": 226,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3645",
       "fma_id": "FMA30314",
       "name": "Superior vena cava",
       "standard_triangles": 598,
-      "detailed_triangles": 598
+      "detailed_triangles": 598,
+      "category": "major-vessel"
     },
     {
       "id": "FJ3659",
       "fma_id": "FMA10951",
       "name": "Inferior vena cava",
       "standard_triangles": 1670,
-      "detailed_triangles": 1670
+      "detailed_triangles": 1670,
+      "category": "major-vessel"
     },
     {
       "id": "FJ4986",
       "fma_id": "FMA30313",
       "name": "Trunk of right common carotid artery",
       "standard_triangles": 3506,
-      "detailed_triangles": 3506
+      "detailed_triangles": 3506,
+      "category": "major-vessel"
+    },
+    {
+      "id": "FJ1682",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right internal carotid artery",
+      "standard_triangles": 1272,
+      "detailed_triangles": 1272,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ1725",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right vertebral artery",
+      "standard_triangles": 800,
+      "detailed_triangles": 800,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ1725M",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left vertebral artery",
+      "standard_triangles": 800,
+      "detailed_triangles": 800,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2074",
+      "fma_id": "FMA20730",
+      "name": "Trunk of left femoral artery",
+      "standard_triangles": 740,
+      "detailed_triangles": 740,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2086",
+      "fma_id": "FMA50720",
+      "name": "Left popliteal artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2102",
+      "fma_id": "FMA21185",
+      "name": "Left femoral vein",
+      "standard_triangles": 658,
+      "detailed_triangles": 658,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2117",
+      "fma_id": "FMA44323",
+      "name": "Left popliteal vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2127",
+      "fma_id": "FMA20741",
+      "name": "Trunk of right femoral artery",
+      "standard_triangles": 1242,
+      "detailed_triangles": 1242,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2143",
+      "fma_id": "FMA20730",
+      "name": "Trunk of right femoral artery",
+      "standard_triangles": 752,
+      "detailed_triangles": 752,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2144",
+      "fma_id": "FMA21185",
+      "name": "Right femoral vein",
+      "standard_triangles": 658,
+      "detailed_triangles": 658,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2170",
+      "fma_id": "FMA50720",
+      "name": "Right popliteal artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2171",
+      "fma_id": "FMA44323",
+      "name": "Right popliteal vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2216",
+      "fma_id": "FMA22654",
+      "name": "Left axillary artery",
+      "standard_triangles": 1800,
+      "detailed_triangles": 1800,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2217",
+      "fma_id": "FMA13329",
+      "name": "Left axillary vein",
+      "standard_triangles": 2110,
+      "detailed_triangles": 2110,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2219",
+      "fma_id": "FMA22689",
+      "name": "Left brachial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3470,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2242",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left radial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7764,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2244",
+      "fma_id": "FMA22930",
+      "name": "Left radial vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4932,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2258",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left ulnar artery",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7114,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2260",
+      "fma_id": "FMA22930",
+      "name": "Left ulnar vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5918,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2268",
+      "fma_id": "FMA22654",
+      "name": "Right axillary artery",
+      "standard_triangles": 1826,
+      "detailed_triangles": 1826,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2269",
+      "fma_id": "FMA13329",
+      "name": "Right axillary vein",
+      "standard_triangles": 2146,
+      "detailed_triangles": 2146,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2271",
+      "fma_id": "FMA22689",
+      "name": "Right brachial artery",
+      "standard_triangles": 3112,
+      "detailed_triangles": 3112,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2275",
+      "fma_id": "FMA30313",
+      "name": "Right brachial artery",
+      "standard_triangles": 430,
+      "detailed_triangles": 430,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2294",
+      "fma_id": "FMA30313",
+      "name": "Right brachial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7472,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2296",
+      "fma_id": "FMA22930",
+      "name": "Right radial vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5282,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2310",
+      "fma_id": "FMA30313",
+      "name": "Right brachial artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6876,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2312",
+      "fma_id": "FMA22930",
+      "name": "Right ulnar vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6076,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ2417",
+      "fma_id": "FMA14065",
+      "name": "Left anterior cusp of pulmonary valve",
+      "standard_triangles": 1272,
+      "detailed_triangles": 1272,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2418",
+      "fma_id": "FMA61775",
+      "name": "Anterolateral head of lateral papillary muscle of left ventricle",
+      "standard_triangles": 816,
+      "detailed_triangles": 816,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2419",
+      "fma_id": "FMA268955",
+      "name": "Anterior papillary muscle of right ventricle",
+      "standard_triangles": 882,
+      "detailed_triangles": 882,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2420",
+      "fma_id": "FMA14065",
+      "name": "Anterior leaflet of mitral valve",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7558,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2421",
+      "fma_id": "FMA14065",
+      "name": "Anterior leaflet of tricuspid valve",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8160,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2422",
+      "fma_id": "FMA13238",
+      "name": "Cavity of left ventricle",
+      "standard_triangles": 1722,
+      "detailed_triangles": 1722,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2423",
+      "fma_id": "FMA13238",
+      "name": "Cavity of right ventricle",
+      "standard_triangles": 1918,
+      "detailed_triangles": 1918,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2426",
+      "fma_id": "FMA14065",
+      "name": "Left posterior cusp of aortic valve",
+      "standard_triangles": 914,
+      "detailed_triangles": 914,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2427",
+      "fma_id": "FMA14065",
+      "name": "Posterior cusp of pulmonary valve",
+      "standard_triangles": 996,
+      "detailed_triangles": 996,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2429",
+      "fma_id": "FMA268955",
+      "name": "Posterior papillary muscle of left ventricle",
+      "standard_triangles": 780,
+      "detailed_triangles": 780,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2430",
+      "fma_id": "FMA268955",
+      "name": "Posterior papillary muscle of right ventricle",
+      "standard_triangles": 692,
+      "detailed_triangles": 692,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2431",
+      "fma_id": "FMA14065",
+      "name": "Right posterior cusp of aortic valve",
+      "standard_triangles": 316,
+      "detailed_triangles": 316,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2432",
+      "fma_id": "FMA14065",
+      "name": "Posterior leaflet of mitral valve",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3820,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2433",
+      "fma_id": "FMA14065",
+      "name": "Posterior leaflet of tricuspid valve",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4926,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2434",
+      "fma_id": "FMA14065",
+      "name": "Right anterior cusp of pulmonary valve",
+      "standard_triangles": 1370,
+      "detailed_triangles": 1370,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2435",
+      "fma_id": "FMA14065",
+      "name": "Anterior cusp of aortic valve",
+      "standard_triangles": 920,
+      "detailed_triangles": 920,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2436",
+      "fma_id": "FMA14065",
+      "name": "Septal leaflet of tricuspid valve",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4526,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2437",
+      "fma_id": "FMA268955",
+      "name": "Septal papillary muscle of right ventricle",
+      "standard_triangles": 844,
+      "detailed_triangles": 844,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2649",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 1380,
+      "detailed_triangles": 1380,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2650",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 396,
+      "detailed_triangles": 396,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2651",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 510,
+      "detailed_triangles": 510,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2653",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 252,
+      "detailed_triangles": 252,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2654",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 172,
+      "detailed_triangles": 172,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2655",
+      "fma_id": "FMA30314",
+      "name": "Coronary sinus",
+      "standard_triangles": 624,
+      "detailed_triangles": 624,
+      "category": "heart-internal"
+    },
+    {
+      "id": "FJ2656",
+      "fma_id": "FMA12846",
+      "name": "Great cardiac vein",
+      "standard_triangles": 826,
+      "detailed_triangles": 826,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2678",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 770,
+      "detailed_triangles": 770,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2679",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 252,
+      "detailed_triangles": 252,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2680",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 376,
+      "detailed_triangles": 376,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2681",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 204,
+      "detailed_triangles": 204,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2682",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 360,
+      "detailed_triangles": 360,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2683",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 168,
+      "detailed_triangles": 168,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2684",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 264,
+      "detailed_triangles": 264,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2685",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 236,
+      "detailed_triangles": 236,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2686",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 280,
+      "detailed_triangles": 280,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2687",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 618,
+      "detailed_triangles": 618,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2688",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 306,
+      "detailed_triangles": 306,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2689",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 274,
+      "detailed_triangles": 274,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2690",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 364,
+      "detailed_triangles": 364,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2691",
+      "fma_id": "FMA12846",
+      "name": "Middle cardiac vein",
+      "standard_triangles": 156,
+      "detailed_triangles": 156,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2692",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 930,
+      "detailed_triangles": 930,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2695",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 236,
+      "detailed_triangles": 236,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2696",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 336,
+      "detailed_triangles": 336,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2697",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 220,
+      "detailed_triangles": 220,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2698",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 200,
+      "detailed_triangles": 200,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2699",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 126,
+      "detailed_triangles": 126,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2700",
+      "fma_id": "FMA3840",
+      "name": "Posterior interventricular branch of right coronary artery",
+      "standard_triangles": 280,
+      "detailed_triangles": 280,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ2924",
+      "fma_id": "FMA268161",
+      "name": "Trunk of left pulmonary artery",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5450,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ2925",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left superior pulmonary vein",
+      "standard_triangles": 414,
+      "detailed_triangles": 414,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ2933",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left superior pulmonary vein",
+      "standard_triangles": 472,
+      "detailed_triangles": 472,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ2944",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 310,
+      "detailed_triangles": 310,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ2950",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 326,
+      "detailed_triangles": 326,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ2955",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 556,
+      "detailed_triangles": 556,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ3019",
+      "fma_id": "FMA268161",
+      "name": "Trunk of right pulmonary artery",
+      "standard_triangles": 678,
+      "detailed_triangles": 678,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ3020",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right superior pulmonary vein",
+      "standard_triangles": 324,
+      "detailed_triangles": 324,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ3040",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right inferior pulmonary vein",
+      "standard_triangles": 196,
+      "detailed_triangles": 196,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ3416",
+      "fma_id": "FMA4838",
+      "name": "Azygos vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11000,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3417",
+      "fma_id": "FMA30313",
+      "name": "Trunk of brachiocephalic artery",
+      "standard_triangles": 262,
+      "detailed_triangles": 262,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3420",
+      "fma_id": "FMA14773",
+      "name": "Splenic artery",
+      "standard_triangles": 440,
+      "detailed_triangles": 440,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3421",
+      "fma_id": "FMA14812",
+      "name": "Celiac trunk",
+      "standard_triangles": 238,
+      "detailed_triangles": 238,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3434",
+      "fma_id": "FMA14294",
+      "name": "Hemiazygos vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4266,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3442",
+      "fma_id": "FMA30313",
+      "name": "Trunk of inferior mesenteric artery",
+      "standard_triangles": 546,
+      "detailed_triangles": 546,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3464",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left common iliac artery",
+      "standard_triangles": 248,
+      "detailed_triangles": 248,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3465",
+      "fma_id": "FMA14333",
+      "name": "Left common iliac vein",
+      "standard_triangles": 430,
+      "detailed_triangles": 430,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3468",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left internal iliac artery",
+      "standard_triangles": 270,
+      "detailed_triangles": 270,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3469",
+      "fma_id": "FMA18884",
+      "name": "Left internal iliac vein",
+      "standard_triangles": 208,
+      "detailed_triangles": 208,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3470",
+      "fma_id": "FMA18884",
+      "name": "Left internal iliac vein",
+      "standard_triangles": 176,
+      "detailed_triangles": 176,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3471",
+      "fma_id": "FMA18884",
+      "name": "Left internal iliac vein",
+      "standard_triangles": 180,
+      "detailed_triangles": 180,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3476",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left renal artery",
+      "standard_triangles": 258,
+      "detailed_triangles": 258,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3477",
+      "fma_id": "FMA14334",
+      "name": "Left renal vein",
+      "standard_triangles": 652,
+      "detailed_triangles": 652,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3478",
+      "fma_id": "FMA14334",
+      "name": "Left renal vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4260,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3479",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left subclavian artery",
+      "standard_triangles": 646,
+      "detailed_triangles": 646,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3483",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left internal carotid artery",
+      "standard_triangles": 170,
+      "detailed_triangles": 170,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3484",
+      "fma_id": "FMA18883",
+      "name": "Left external iliac vein",
+      "standard_triangles": 670,
+      "detailed_triangles": 670,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3486",
+      "fma_id": "FMA4725",
+      "name": "Left subclavian vein",
+      "standard_triangles": 434,
+      "detailed_triangles": 434,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3522",
+      "fma_id": "FMA18883",
+      "name": "Left external iliac vein",
+      "standard_triangles": 168,
+      "detailed_triangles": 168,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3523",
+      "fma_id": "FMA18883",
+      "name": "Left external iliac vein",
+      "standard_triangles": 186,
+      "detailed_triangles": 186,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3524",
+      "fma_id": "FMA18883",
+      "name": "Left external iliac vein",
+      "standard_triangles": 112,
+      "detailed_triangles": 112,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3544",
+      "fma_id": "FMA14773",
+      "name": "Splenic artery",
+      "standard_triangles": 2588,
+      "detailed_triangles": 2588,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3565",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right common iliac artery",
+      "standard_triangles": 220,
+      "detailed_triangles": 220,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3566",
+      "fma_id": "FMA14333",
+      "name": "Right common iliac vein",
+      "standard_triangles": 358,
+      "detailed_triangles": 358,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3568",
+      "fma_id": "FMA18883",
+      "name": "Right external iliac vein",
+      "standard_triangles": 724,
+      "detailed_triangles": 724,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3569",
+      "fma_id": "FMA18808",
+      "name": "Right internal iliac artery",
+      "standard_triangles": 276,
+      "detailed_triangles": 276,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3570",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 216,
+      "detailed_triangles": 216,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3571",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 202,
+      "detailed_triangles": 202,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3572",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 192,
+      "detailed_triangles": 192,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3576",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right renal artery",
+      "standard_triangles": 282,
+      "detailed_triangles": 282,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3577",
+      "fma_id": "FMA14334",
+      "name": "Right renal vein",
+      "standard_triangles": 332,
+      "detailed_triangles": 332,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3578",
+      "fma_id": "FMA14334",
+      "name": "Right renal vein",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4682,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3579",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right subclavian artery",
+      "standard_triangles": 452,
+      "detailed_triangles": 452,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3583",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right brachiocephalic vein",
+      "standard_triangles": 546,
+      "detailed_triangles": 546,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3587",
+      "fma_id": "FMA4725",
+      "name": "Right subclavian vein",
+      "standard_triangles": 368,
+      "detailed_triangles": 368,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3607",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 94,
+      "detailed_triangles": 94,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3608",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 202,
+      "detailed_triangles": 202,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3609",
+      "fma_id": "FMA18884",
+      "name": "Right internal iliac vein",
+      "standard_triangles": 74,
+      "detailed_triangles": 74,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3640",
+      "fma_id": "FMA14773",
+      "name": "Splenic artery",
+      "standard_triangles": 1742,
+      "detailed_triangles": 1742,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3644",
+      "fma_id": "FMA30313",
+      "name": "Trunk of superior mesenteric artery",
+      "standard_triangles": 1506,
+      "detailed_triangles": 1506,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ3660",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 484,
+      "detailed_triangles": 484,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3661",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 658,
+      "detailed_triangles": 658,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3662",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 510,
+      "detailed_triangles": 510,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3663",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 308,
+      "detailed_triangles": 308,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3664",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 252,
+      "detailed_triangles": 252,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3665",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 172,
+      "detailed_triangles": 172,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ3666",
+      "fma_id": "FMA3895",
+      "name": "Circumflex branch of left coronary artery",
+      "standard_triangles": 396,
+      "detailed_triangles": 396,
+      "category": "coronary"
+    },
+    {
+      "id": "FJ4715",
+      "fma_id": "FMA30313",
+      "name": "Trunk of brachiocephalic artery",
+      "standard_triangles": 430,
+      "detailed_triangles": 430,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ4984",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right brachiocephalic vein",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8564,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ4989",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right external carotid artery",
+      "standard_triangles": 1282,
+      "detailed_triangles": 1282,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ4993",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right internal carotid artery",
+      "standard_triangles": 792,
+      "detailed_triangles": 792,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5015",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right vertebral artery",
+      "standard_triangles": 1096,
+      "detailed_triangles": 1096,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5016",
+      "fma_id": "FMA4727",
+      "name": "Right vertebral vein",
+      "standard_triangles": 1406,
+      "detailed_triangles": 1406,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5189",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right subclavian vein",
+      "standard_triangles": 576,
+      "detailed_triangles": 576,
+      "category": "systemic"
+    },
+    {
+      "id": "FJ5994",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left superior pulmonary vein",
+      "standard_triangles": 416,
+      "detailed_triangles": 416,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6002",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left superior pulmonary vein",
+      "standard_triangles": 478,
+      "detailed_triangles": 478,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6013",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 314,
+      "detailed_triangles": 314,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6019",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 332,
+      "detailed_triangles": 332,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6024",
+      "fma_id": "FMA30314",
+      "name": "Trunk of left inferior pulmonary vein",
+      "standard_triangles": 564,
+      "detailed_triangles": 564,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6089",
+      "fma_id": "FMA30314",
+      "name": "Trunk of right superior pulmonary vein",
+      "standard_triangles": 348,
+      "detailed_triangles": 348,
+      "category": "pulmonary"
+    },
+    {
+      "id": "FJ6140",
+      "fma_id": "FMA268161",
+      "name": "Trunk of right pulmonary artery",
+      "standard_triangles": 678,
+      "detailed_triangles": 678,
+      "category": "pulmonary"
     }
   ]
 }

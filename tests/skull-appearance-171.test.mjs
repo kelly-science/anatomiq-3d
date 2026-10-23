@@ -34,8 +34,8 @@ test('high-resolution skull materials have no inherited textures or vertex color
   assert.equal(mat.side,'double');
   assert.equal(mat.vertexColors,false);
   assert.equal(mat.map,null);
-  assert.equal(mat.roughness,0.85);
-  assert.equal(mat.color,0xe8e2d5);
+  assert.equal(mat.roughness,0.88);
+  assert.equal(mat.color,0xc6c5bf);
 });
 test('upgraded bone uses clean material while keeping its mesh identity and paint baseline in sync',()=>{
   const names=['Frontal bone','Occipital bone','Mandible','Ethmoid','Sphenoid bone','Vomer','Left parietal bone','Right parietal bone','Left temporal bone','Right temporal bone','Left nasal bone','Right nasal bone','Left zygomatic bone','Right zygomatic bone','Left maxilla','Right maxilla'];
@@ -50,7 +50,8 @@ test('upgraded bone uses clean material while keeping its mesh identity and pain
   const sourceMaterial=bones[0].mesh.material;
   const paintBaseline=new Map();
   const stats=installSkullGeometry(THREE,root,metadata,bones,(s,material)=>paintBaseline.set(s.mesh,material));
-  assert.equal(stats.upgraded,16);
+  assert.equal(stats.upgraded,13);
+  assert.equal(stats.skipped.filter(x=>x.includes('dental alignment')).length,3);
   assert.equal(bones[0].mesh.userData.originalSkullMaterial,sourceMaterial);
   assert.notEqual(bones[0].mesh.material,sourceMaterial);
   assert.equal(paintBaseline.get(bones[0].mesh),bones[0].mesh.material);
@@ -62,8 +63,8 @@ test('version and cache advance together for Chromebook PWA update',()=>{
   const app=readFileSync(new URL('app.js',root),'utf8');
   const sw=readFileSync(new URL('sw.js',root),'utf8');
   const version=JSON.parse(readFileSync(new URL('version.json',root),'utf8'));
-  assert.match(app,/const APP_VERSION = '1\.7\.1'/);
-  assert.match(sw,/anatomy-v1\.7\.1/);
-  assert.equal(version.version,'1.7.1');
+  assert.match(app,/const APP_VERSION = '1\.8\.0'/);
+  assert.match(sw,/anatomy-v1\.8\.0/);
+  assert.equal(version.version,'1.8.0');
   assert.match(app,/materials\.set\(structure\.mesh,newMaterial\)/);
 });

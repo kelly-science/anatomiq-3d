@@ -234,3 +234,9 @@ body.embed-mode .viewer-tip{display:none}
 
 /* Study links may explore systems; practical-exam links never display these buttons. */
 body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
+
+/* 1.8 Cardiovascular chapter visibility presets */
+.cardio-study-panel{border-top:1px solid var(--border,rgba(155,190,205,.18));padding:14px 16px}
+.cardio-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:12px 0}
+.cardio-presets .button{min-width:0;white-space:normal;text-align:center;line-height:1.2;min-height:34px}
+.cardio-presets .button:disabled{opacity:.4;cursor:not-allowed}

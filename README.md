@@ -1,3 +1,79 @@
+# Anatomy Studio 1.8.0 — Expanded Cardiovascular Anatomy
+
+**Chromebook PWA · Teacher Studio · Student sharing · GitHub Pages self-hosting**
+
+## What is new in 1.8
+
+- Expanded BodyParts3D 4.3 cardiovascular *installer* selects source-verified valve leaflets and cusps, chamber cavities, papillary muscles, coronary and pulmonary vessels, and recognizable major systemic vessels. The exact structures available depend on the source manifest and must be confirmed in the converter report. The original 15 meshes are preserved in their old order.
+- A new **Cardiovascular Study Views** section appears in Teacher Studio when the cardiovascular layer is on. Choose **Show all**, **Heart exterior**, **Heart interior**, **Coronary**, **Pulmonary**, or **Systemic vessels**. Presets hide/reveal cardiovascular structures only and are saved as chapter visibility, including share links.
+- Views requiring unavailable geometry are disabled. If the model still has only the 15 old structures, rerun the expanded installer below.
+- The 1.6 expansion installer's path handling is corrected so its separate downloader is found, even after changing directories to the upstream download tool folder.
+- Original skeletal/digestive/muscular models, skull Standard preference, scene sharing permissions, local Scene Library and chapter data remain unchanged.
+
+## Install on your Mac (one-time additional anatomy download)
+
+1. Back up saved lessons: **Library → Back up entire library**. Also retain a local copy of your existing GitHub repository.
+2. Extract this ZIP. In the newly extracted `anatomy-pwa-studio/`, keep your previous `models/`, `vendor/three/`, `.cardiovascular-43-work/`, and `.digestive-43-work/` directories. Hidden work folders need not be uploaded to GitHub; they only allow the Mac script to reuse downloaded meshes.
+3. From Terminal inside this folder run:
+
+   ```bash
+   bash tools/install-cardiovascular-43.sh
+   ```
+
+4. The installer should reuse the old heart/wall and major-vessel downloads, select extra names from the pinned 4.3 `MANIFEST.csv`, download the new OBJs, and generate new `models/cardiovascular-standard.glb`, `models/cardiovascular-detailed.glb`, and `models/cardiovascular-structures.json`. It validates the exact number of meshes in both GLBs and preserves the 15 original FJ IDs first. **It does not install source 3D model files automatically from this ZIP.**
+5. Upload the updated app files and new generated cardiovascular models, `models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt` and `ASSET_SHA256.txt` to the *GitHub Pages published directory*. Keep original skeletal, muscular, digestive, and renderer assets.
+6. Open `<your Pages URL>/version.json` to confirm `1.8.0`. Reload the PWA online, avoiding **Clear site data** because the local Scene Library is stored in IndexedDB.
+7. In App Settings check cardiovascular count; then enable **Cardiovascular** and inspect the new chapter-study presets. Verify orientation, left/right, chamber anatomy and major vessels with skeletal anatomy before giving practicals.
+
+## Important limitations
+
+- No complete cardiovascular dataset is included in the downloadable project ZIP. Real BodyParts3D mesh download/conversion happens on your Mac and remains an external prerequisite for the *build process*, not for the final self-hosted app.
+- The source provides varying anatomic granularity, and not every valve/chamber is guaranteed to be present as a standalone selectable mesh. It may be difficult to see interior valves inside uncut walls; Heart interior hides heart-wall meshes rather than performing a true geometric cutaway.
+- Legacy student links keep their existing anatomy visibility. Updating a previously shared lesson with newly added structures requires you to save and publish an updated link.
+- Live rendering on your Chromebook/iPad and real downloaded 4.3 geometry have not been tested in this environment. Synthetic converter fixtures and automated application tests do not replace anatomical validation.
+
+## Source and licenses
+
+- BodyParts3D / DBCLS 4.3 anatomy: **CC BY-SA 2.1 Japan**; preserve attribution and share-alike requirements for derivative geometry.
+- The source downloader: [`olivercase/body_parts_3d_api`](https://github.com/olivercase/body_parts_3d_api), code licensed MIT.
+- Écorché skeleton: retains its separate licensing and attribution.
+
+---
+
+## Previous release notes
+
+# Anatomy Studio 1.7.2 — Skeletal Stabilization
+
+This is a **maintenance release**, not a new anatomy dataset. It keeps version 1.7.1's scene sharing, chapters, painting, cardiovascular/digestive systems, offline support, and optional skull upgrade.
+
+## Changes
+
+- **Standard Écorché skull is the default again**, including on devices that had enabled the previous 1.7/1.7.1 detailed option. This is a one-time preference reset via a new device-local key. Teachers may explicitly opt back into Experimental from **Settings → App Settings → Skull geometry**; that choice then persists on the device.
+- Experimental skull meshes use a **less bright, neutral bone material** instead of the overly white 1.7.1 material. Exact tonal matching still requires checking in the actual classroom browser.
+- **The maxillae and mandible remain from Écorché even in Experimental mode** to preserve their fit with the existing teeth. Other verified cranial and facial bones may still be upgraded, individually, when alignment and polygon-count checks pass.
+- Geometry quality remains **device-specific**, never stored in the Scene Library or student share links. Original selectable structure IDs, label data, bone paints, and layer state are unchanged.
+- PWA cache identifier, app version, and update manifest advance together to `1.7.2`.
+
+## Upgrade your existing GitHub Pages project
+
+1. **Export a backup** from Library → Back up entire library before deploying.
+2. Extract the ZIP; upload the contents of its `anatomy-pwa-studio/` folder into the **same GitHub Pages directory** as the current release. Overwrite existing app files. **Add `skull-preferences.js`**, which is new.
+3. **Keep** your existing `models/`, `vendor/three/`, license files, and `ASSET_SHA256.txt`. No model conversion or new anatomy download is required for this release.
+4. Check `<your GitHub Pages site>/version.json` shows `1.7.2`. Reload Anatomy Studio online (do not clear Chrome/Chromebook/iPad site data, since your Scene Library is local IndexedDB).
+5. Verify **Settings → App Settings → Skull geometry** shows **Standard**. Test an older painted/annotated skull lesson and an existing student link. You can optionally opt into Experimental on a test device; this reloads the viewer.
+
+### Quick hotfix alternative
+
+The companion hotfix ZIP contains only `app.js`, `skull-geometry.js`, `skull-preferences.js` (NEW), `index.html`, `sw.js`, `version.json`, and `manifest.webmanifest`. Overwrite or add these files in the GitHub Pages root. All other project assets remain unchanged.
+
+**Limits:** The experimental high-resolution model is not yet validated for all foramina, landmarks, mesh registration, or dental accuracy; Standard remains recommended for student practical assessments. This release does not add new skull structures or improve the underlying BodyParts3D anatomical segmentation. There is no guarantee that changing the material alone fully matches the original model color.
+
+**Testing:** Automated JavaScript compatibility and preference tests plus synthetic Python model-conversion tests; physical iPad/Chromebook rendering must still be checked after deployment.
+
+---
+
+## Archived release notes (1.7.1 and earlier)
+
 # Anatomy Studio 1.7.1 – High-resolution skull appearance fix
 
 This release fixes black/dark, patchy high-resolution skull meshes caused by reusing the original Écorché textured/vertex-colored material on BodyParts3D replacement geometry. It assigns a neutral untextured bone material to successfully upgraded bones, keeps smooth normals/double-sided shading, and updates the teacher paint/selection baseline. The existing face-orientation transform is unchanged; the geometry is still unverified on physical Chromebook/iPad with your exact source assets.
