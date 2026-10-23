@@ -21,5 +21,5 @@ test('local model host and version are retained',()=>{
  assert.match(app,/shouldPreferDetailedWhenChoosingDigestive/);
  assert.match(app,/detailLayerExplicitlyChanged=true/);
  assert.match(app,/restoreBonePaint\(saved.pc\|\|\[\]\)/);
- assert.match(app,/const APP_VERSION = '1.7.0'/);
+ assert.match(app,/const APP_VERSION = '1.7.1'/);
 });

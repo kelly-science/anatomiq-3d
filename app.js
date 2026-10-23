@@ -15,7 +15,7 @@ import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './syst
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -733,7 +733,11 @@ async function loadHighResolutionSkull(){
     gltf.scene.scale.set(...corrected.scale);gltf.scene.position.set(...corrected.position);
     sceneRoot.updateWorldMatrix(true,true);
     gltf.scene.updateWorldMatrix(true,true);
-    const stats=installSkullGeometry(THREE,gltf.scene,metadata,structures);
+    const stats=installSkullGeometry(THREE,gltf.scene,metadata,structures,(structure,newMaterial)=>{
+      // The paint/selection system caches source materials separately from the
+      // mesh. Keep that cache in sync when replacing a bone's textured material.
+      materials.set(structure.mesh,newMaterial);
+    });
     skullDetailStats=stats;
     console.info(`Anatomy Studio: high-resolution skull upgraded ${stats.upgraded}/${stats.total} bones.`,stats);
     if(!stats.upgraded)console.warn('No higher-detail skull meshes safely matched the original skeleton. Check source registration.');

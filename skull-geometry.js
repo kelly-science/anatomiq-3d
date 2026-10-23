@@ -1,10 +1,23 @@
 import {matchedSkullGeometry,adequateSkullReplacement} from './skeletal-detail.js';
 
+/** Return a clean, untextured surface for the replacement geometry.
+ * Écorché materials may use UV textures and vertex colors that aren't present
+ * on BodyParts3D meshes. Reusing them makes replaced bones look black.
+ * Teacher paint colors are derived from this baseline material by app.js.
+ */
+export function createDetailedBoneMaterial(THREE){
+  return new THREE.MeshStandardMaterial({
+    color:0xe8e2d5,roughness:0.85,metalness:0,
+    side:THREE.DoubleSide,vertexColors:false,
+    flatShading:false
+  });
+}
+
 /** Install detailed triangles directly into the *existing* skeleton meshes.
  * This leaves scene index, raycasts, paint maps and label local anchor space intact.
  * No additional structure objects are inserted into the scene catalogue.
  */
-export function installSkullGeometry(THREE,skullScene,manifest,structures){
+export function installSkullGeometry(THREE,skullScene,manifest,structures,onUpgrade=()=>{}){
   const result=matchedSkullGeometry(skullScene,manifest,structures);
   const stats={total:manifest.structures.length,matched:result.matched.length,upgraded:0,
                skipped:[],unmatched:result.unmatched};
@@ -50,8 +63,22 @@ export function installSkullGeometry(THREE,skullScene,manifest,structures){
       geometry.computeBoundingBox();geometry.computeBoundingSphere();
       // The old geometry remains available for this browser session, and is not
       // disposed here because existing in-flight operations may still reference it.
-      original.userData.originalSkullGeometry=original.geometry;
+      const originalMaterial=original.material;
+      const originalGeometry=original.geometry;
+      const cleanMaterial=createDetailedBoneMaterial(THREE);
       original.geometry=geometry;
+      original.material=cleanMaterial;
+      try{onUpgrade(item.original,cleanMaterial);}
+      catch(error){
+        original.geometry=originalGeometry;
+        original.material=originalMaterial;
+        cleanMaterial.dispose();geometry.dispose();
+        throw error;
+      }
+      // Keep original assets in memory for compatibility and local fallback.
+      original.userData.originalSkullGeometry=originalGeometry;
+      original.userData.originalSkullMaterial=originalMaterial;
+      original.userData.detailedSkull=true;
       stats.upgraded++;
     }catch(error){stats.skipped.push(`${item.metadata.target}: ${error.message}`);}
   }

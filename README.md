@@ -1,3 +1,17 @@
+# Anatomy Studio 1.7.1 – High-resolution skull appearance fix
+
+This release fixes black/dark, patchy high-resolution skull meshes caused by reusing the original Écorché textured/vertex-colored material on BodyParts3D replacement geometry. It assigns a neutral untextured bone material to successfully upgraded bones, keeps smooth normals/double-sided shading, and updates the teacher paint/selection baseline. The existing face-orientation transform is unchanged; the geometry is still unverified on physical Chromebook/iPad with your exact source assets.
+
+**No re-download or reconversion required.** Upload the changed `app.js`, `skull-geometry.js`, `sw.js`, and `version.json` (plus `index.html` if updating the full distribution). Preserve your existing `models/`, `vendor/three/`, and saved scenes. Clear neither site data nor IndexedDB.
+
+In **Settings → App Settings**, switch Skull Geometry to **Standard** for a guaranteed fallback if the replacement geometry still has an orientation issue. Standard mode requires reloading the app. For high-resolution verification, focus the skull and inspect the frontal, parietal, temporal, and occipital bones from front, side and back. Use a new test scene before publishing anatomical practicals. Teacher-painted bones and labels should still appear.
+
+## Known limit
+
+This fixes material incompatibility; it does not assert that every downloaded skull mesh has anatomically correct normals or matches the Écorché skull millimeter-for-millimeter. If holes or reversed surfaces persist after updating, preserve the affected GLB and report which bones are impacted for a mesh-normal/registration pass.
+
+---
+
 # Anatomy Studio 1.7.0 — High-Resolution Skull (Beta)
 
 **What's new:** Optional high-resolution cranial/facial bone geometry from the verified **BodyParts3D 4.3** mesh set. Anatomy Studio keeps your existing Écorché skull and full skeleton as the fast default. The upgraded skull is enabled per Chromebook/iPad in **Settings → App Settings → Skull geometry → High resolution**. The full-body skeleton is unchanged in this first 1.7 release.
