@@ -1,6 +1,6 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Digestive natural colors, optional BodyParts3D 4.3 per-structure models, local build tooling and stable scene migration"
+  "notes": "Independent Skeletal, Muscular and Digestive layer toggles; detailed digestive anatomy is the only active authoring layer. Skull and full-skeleton presets moved to View."
 }

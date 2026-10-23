@@ -1,3 +1,17 @@
+# Anatomy Studio 1.3.1 — Digestive visibility fix
+
+This patch addresses the case where the application reports **77 detailed digestive structures loaded**, but the viewer displays only the original three-organs layer.
+
+## Usage
+
+1. Update the project in GitHub, keeping `models/` and `vendor/three/` unchanged.
+2. In Teacher Studio, switch from **Skull/Skeleton** to **Digestive**. If the 77-mesh dataset is installed, new views default to it.
+3. For an **existing saved Digestive chapter**, its existing selection is preserved deliberately. Enable **Anatomical Systems → Detailed anatomy** on the left. This replaces the basic layer with the 77 individually selectable structures.
+4. If needed, press **Restore hidden structures**, then save the scene to retain the expanded anatomy.
+5. Refresh the PWA after GitHub Pages has deployed; check Settings for **1.3.1**.
+
+Do not delete Chrome site data: scenes saved to the local library live in IndexedDB. Existing links are left unchanged.
+
 # Anatomy Studio 1.3 — Digestive Anatomy Upgrade (Chromebook PWA)
 
 A drop-in upgrade of Anatomy Studio 1.2, preserving chapters, student links, Schoology embedding, teacher paint, local Scene Library, and the 1.1 on-demand renderer.
@@ -60,7 +74,7 @@ Upload the updated files from `anatomy-pwa-studio/` to your existing repository,
 
 Since some GitHub interfaces restrict large browser uploads, you may need GitHub Desktop / Git for the GLBs. The converter refuses model files over 95 MB to help avoid impractical GitHub Pages assets.
 
-Reload the installed PWA online; confirm **Settings → App Settings** shows version **1.3.0** and detailed digestive structures. Open Digestive mode, enable **Detailed anatomy**, search for the named intestine sections and test paint/label. In Settings, select **Detailed** geometry if you want the higher triangle count (reload required).
+Reload the installed PWA online; confirm **Settings → App Settings** shows version **1.3.1** and detailed digestive structures. Open Digestive mode, enable **Detailed anatomy**, search for the named intestine sections and test paint/label. In Settings, select **Detailed** geometry if you want the higher triangle count (reload required).
 
 To prepare offline use, choose Help → Prepare offline access after the new assets have loaded. Offline geometry caches are device-specific.
 
@@ -91,3 +105,20 @@ node --test tests/*.test.mjs
 ```
 
 39 automated app/format tests pass in this environment. The offline converter successfully produced and validated standard and detailed GLBs from **synthetic** OBJ meshes; actual provider download, renderer visuals, and Chromebook performance remain to be verified.
+
+
+## Version 1.4: Independent anatomical layers
+
+The three top buttons **Skeletal**, **Muscular**, and **Digestive** are now independent on/off switches (with highlighted states). Enabling Digestive while Skeletal is enabled shows both; switching Skeletal off removes the bones but leaves the digestive organs. Camera orientation and zoom remain unchanged when switching layers. The muscle details section appears when muscles are enabled and lets you toggle superficial and deep muscles separately.
+
+**View → Focus Skull Only** and **View → Show Full Skeleton** replace the old Skull / Combined tabs. The View menu retains Front / Back / Left / Right camera options.
+
+**Detailed digestive anatomy is now the only digestive option for new lessons.** The 77 individually selectable BodyParts3D 4.3 structure model is required for new digestive scenes. The 3-organ model is intentionally retained *internally* to open existing 1.2–1.3 published student links and saved lessons without breaking previous teacher annotations. Old scenes keep their authored contents until edited; the legacy option is not shown in the interface. Keep your existing `models/anatomy-organs.glb` to support older links. Do not delete it if you still use old lessons. To switch an old scene to the detailed geometry, use the new Digestive toggle to turn it off and back on, then save and republish. Old basic-organ labels are not automatically reanchored to the new meshes.
+
+**Student interaction:** A published Study link with the *Hide/isolate bones* exploration permission enabled can use the same system-layer toggles. Practical Exam links with exploration disabled never display those toggles. They cannot bypass search/identification restrictions through these controls.
+
+### Updating from 1.3.1
+
+Copy the updated application files into the repository root, and **add `system-layers.js`**. Keep your existing self-hosted `vendor/three/`, `models/ecorche.glb`, `models/digestive-standard.glb`, `models/digestive-detailed.glb`, `models/digestive-structures.json`, and legacy `models/anatomy-organs.glb`. You do not need to rerun the model conversion. The service-worker cache name changes to `anatomy-v1.4.0` to activate the release. Export the Scene Library first as a precaution. Older student URLs remain readable, and IndexedDB records are not intentionally modified by upgrading the PWA files.
+
+Run `node --test tests/*.mjs` to execute the application unit and source integration tests. The full WebGL renderer and Chromebook-specific performance need checking on a deployed site.

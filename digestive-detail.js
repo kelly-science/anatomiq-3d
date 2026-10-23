@@ -29,3 +29,11 @@ export function detailStructureEntries(root,raw){
      tissue:'organ',system:'digestive',layer:'digestive-detail',organId:digestiveOrganFamily(s.name),fma:s.fma_id||''};
  });
 }
+
+/** Default to the expanded organs only when the teacher explicitly switches views.
+ * Opening a saved/shared scene must always honor its existing layer state. */
+export function shouldPreferDetailedWhenChoosingDigestive({teacherMode,restoringScene,detailAvailable,
+  previousMode,nextMode,detailLayerExplicitlyChanged}){
+  return Boolean(teacherMode && !restoringScene && detailAvailable &&
+    !detailLayerExplicitlyChanged && nextMode==='digestive' && previousMode!=='digestive');
+}

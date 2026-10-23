@@ -40,7 +40,7 @@ test('digestive mode needs enabled organs, older combined systems do not',()=>{
 });
 test('HTML, worker and installer include separately hosted digestive assets',()=>{
  const read=n=>readFileSync(new URL('../'+n,import.meta.url),'utf8');
- for(const id of ['mode-digestive','system-digestive','settings-organs'])assert.match(read('index.html'),new RegExp(`id="${id}"`));
+ for(const id of ['mode-digestive','settings-organs'])assert.match(read('index.html'),new RegExp(`id="${id}"`));
  assert.match(read('app.js'),/loadDigestiveModel/);
  assert.match(read('sw.js'),/anatomy-organs.glb/);
  assert.match(read('tools/vendor-three.py'),/DRACOLoader.js/);

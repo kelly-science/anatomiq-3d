@@ -24,14 +24,12 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.3</span>
+        <span class="version">STUDIO 1.4.0</span>
       </div>
-      <nav class="mode-tabs" role="tablist" aria-label="Anatomy mode">
-        <button id="mode-skull" class="mode-tab active" role="tab" aria-selected="true" data-mode="skull">Skull</button>
-        <button id="mode-skeleton" class="mode-tab" role="tab" aria-selected="false" data-mode="skeleton">Skeleton</button>
-        <button id="mode-muscular" class="mode-tab" role="tab" aria-selected="false" data-mode="muscular">Muscular</button>
-        <button id="mode-digestive" class="mode-tab" role="tab" aria-selected="false" data-mode="digestive">Digestive</button>
-        <button id="mode-systems" class="mode-tab" role="tab" aria-selected="false" data-mode="systems">Combined</button>
+      <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
+        <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
+        <button id="mode-muscular" class="mode-tab" type="button" aria-pressed="false" data-system="muscular">Muscular</button>
+        <button id="mode-digestive" class="mode-tab" type="button" aria-pressed="false" data-system="digestive">Digestive</button>
       </nav>
       <div class="top-actions">
         <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
@@ -75,11 +73,8 @@
       <div class="menu-group" data-menu="view">
         <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-view">View</button>
         <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
-          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skull">Skull</button>
-          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-skeleton">Full skeleton</button>
-          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-muscular">Muscular system</button>
-          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-digestive">Digestive system</button>
-          <button class="menu-item" role="menuitem" type="button" data-menu-click="mode-systems">Combined systems</button>
+          <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skull">Focus Skull Only</button>
+          <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skeleton">Show Full Skeleton</button>
           <div class="menu-separator" role="separator"></div>
           <button class="menu-item" role="menuitem" type="button" data-menu-view="front">Front</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-view="back">Back</button>
@@ -150,11 +145,8 @@
         </section>
         <div id="systems-panel" class="systems-panel teacher-only" hidden>
           <div class="systems-header"><span class="eyebrow">ANATOMICAL SYSTEMS</span><p id="layer-description" class="studio-hint">Choose the layers to show.</p></div>
-          <label id="skeletal-layer-row" class="switch-row"><span>Skeletal system <small>Bones, teeth and cartilage</small></span><input id="system-skeletal" type="checkbox" checked /></label>
           <div id="muscle-layers-group"><label class="switch-row"><span>Superficial muscles <small>Outer skeletal muscle layer</small></span><input id="system-superficial" type="checkbox" checked /></label>
           <label class="switch-row"><span>Deep muscles <small>Rotator cuff, iliacus and deeper muscles</small></span><input id="system-deep" type="checkbox" /></label></div>
-          <label id="digestive-layer-row" class="switch-row"><span>Digestive organs <small id="organ-asset-status">Checking model…</small></span><input id="system-digestive" type="checkbox" /></label>
-          <label id="digestive-detail-row" class="switch-row" hidden><span>Detailed anatomy <small>Individually selectable digestive sections</small></span><input id="system-detail" type="checkbox" /></label>
         </div>
         <div class="explorer-settings">
           <label class="switch-row"><span>Show teeth <small>Skull and dental structures</small></span><input id="toggle-teeth" type="checkbox" checked /></label>
@@ -334,7 +326,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.3.0</strong>
+        <span>Installed version</span><strong id="settings-installed">1.3.1</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
@@ -347,7 +339,7 @@
           <option value="standard">Standard — optimized for Chromebooks</option>
           <option value="detailed">Detailed — high-resolution organs (reloads app)</option>
         </select>
-        <p class="studio-hint">The detailed GLB files are optional. This selection is device-specific and does not change students’ published scene contents.</p>
+        <p class="studio-hint">This setting controls mesh resolution only. To display the additional organs, select Digestive and enable <strong>Detailed anatomy</strong> under Anatomical Systems in the left sidebar. The choice here is device-specific and does not change published scenes.</p>
       </div>
       <div class="render-settings-group">
         <label for="settings-render-quality"><strong>3D rendering quality</strong></label>
