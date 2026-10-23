@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Skeletal, Muscular & Digestive Anatomy</title>
+  <title>Anatomy Studio • Skeletal, Muscular, Digestive & Cardiovascular Anatomy</title>
   <script type="importmap" id="renderer-importmap">
   {
     "imports": {
@@ -24,12 +24,13 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.4.0</span>
+        <span class="version">STUDIO 1.5.0</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
         <button id="mode-muscular" class="mode-tab" type="button" aria-pressed="false" data-system="muscular">Muscular</button>
         <button id="mode-digestive" class="mode-tab" type="button" aria-pressed="false" data-system="digestive">Digestive</button>
+        <button id="mode-cardiovascular" class="mode-tab" type="button" aria-pressed="false" data-system="cardiovascular" disabled>Cardiovascular</button>
       </nav>
       <div class="top-actions">
         <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
@@ -326,12 +327,21 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.3.1</strong>
+        <span>Installed version</span><strong id="settings-installed">1.4.1</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
         <span>Digestive organs</span><strong id="settings-organs">Checking…</strong>
+        <span>Cardiovascular</span><strong id="settings-cardio">Checking…</strong>
         <span>Self-hosting</span><strong id="settings-assets">Checking local files…</strong>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-cardio-geometry"><strong>Cardiovascular geometry on this device</strong></label>
+        <select id="settings-cardio-geometry" class="text-input" aria-label="Cardiovascular geometry detail">
+          <option value="standard">Standard — optimized for Chromebooks (reloads app)</option>
+          <option value="detailed">Detailed — higher-resolution vessels (reloads app)</option>
+        </select>
+        <p class="studio-hint">Geometry detail is device-specific. It doesn't change the teacher's shared scene.</p>
       </div>
       <div class="render-settings-group">
         <label for="settings-digestive-geometry"><strong>Digestive geometry on this device</strong></label>

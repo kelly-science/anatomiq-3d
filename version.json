@@ -1,6 +1,6 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Independent Skeletal, Muscular and Digestive layer toggles; detailed digestive anatomy is the only active authoring layer. Skull and full-skeleton presets moved to View."
+  "notes": "Optional self-hosted 15-mesh cardiovascular layer: heart walls, major vessels; independent scene toggle; prior scene compatibility."
 }

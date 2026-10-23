@@ -1,0 +1,5 @@
+BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
+Mesh license: CC BY-SA 2.1 Japan https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Source selector: Oliver Case, body_parts_3d_api v1.0.0 (MIT tool code).
+https://github.com/olivercase/body_parts_3d_api
+The anatomical meshes retain the BodyParts3D share-alike license.

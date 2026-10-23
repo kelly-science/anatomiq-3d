@@ -8,15 +8,20 @@ export function catalogAnatomy(entries){
   const digestiveNew=entries.filter(s=>s.system==='digestive'&&s.layer==='digestive-detail').sort((a,b)=>a.sourceName.localeCompare(b.sourceName,undefined,{numeric:true}));
   const digestive=[...digestiveOld,...digestiveNew];
   const base=[...bones,...muscles];
-  const structures=[...base,...digestive];
+  // Cardiovascular indices are appended AFTER every 1.4.1 structure.
+  // This preserves older visibility bitmaps, annotation anchors and painted indices.
+  const cardiovascular=entries.filter(s=>s.system==='cardiovascular').sort((a,b)=>a.sourceName.localeCompare(b.sourceName,undefined,{numeric:true}));
+  const preCardio=[...base,...digestive];
+  const structures=[...preCardio,...cardiovascular];
   return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
     baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),
     previousCount:base.length+digestiveOld.length,
     previousFingerprint:hashForStructures([...base,...digestiveOld].map(key)),
-    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length};
+    preCardioCount:preCardio.length,preCardioFingerprint:hashForStructures(preCardio.map(key)),
+    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length};
 }
-export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint){
-  return !!scene && [[currentCount,currentFingerprint],[oldCount,oldFingerprint],[baseCount,baseFingerprint],[previousCount,previousFingerprint]]
+export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint,preCardioCount,preCardioFingerprint){
+  return !!scene && [[currentCount,currentFingerprint],[oldCount,oldFingerprint],[baseCount,baseFingerprint],[previousCount,previousFingerprint],[preCardioCount,preCardioFingerprint]]
     .some(([count,fingerprint])=>Number.isInteger(count)&&scene.n===count&&scene.f===fingerprint);
 }
 export function upgradeLegacyScene(scene,currentCount,currentFingerprint){

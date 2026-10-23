@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio 1.2 body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ1682M",
+      "fma_id": "FMA30313",
+      "name": "Trunk of left common carotid artery",
+      "standard_triangles": 1272,
+      "detailed_triangles": 1272
+    },
+    {
+      "id": "FJ2428",
+      "fma_id": "FMA13256",
+      "name": "Wall of ventricle",
+      "standard_triangles": 8999,
+      "detailed_triangles": 37442
+    },
+    {
+      "id": "FJ2438",
+      "fma_id": "FMA13256",
+      "name": "Wall of left atrium",
+      "standard_triangles": 7544,
+      "detailed_triangles": 7544
+    },
+    {
+      "id": "FJ2439",
+      "fma_id": "FMA13256",
+      "name": "Wall of right atrium",
+      "standard_triangles": 9000,
+      "detailed_triangles": 17784
+    },
+    {
+      "id": "FJ2966",
+      "fma_id": "FMA30313",
+      "name": "Pulmonary trunk",
+      "standard_triangles": 1302,
+      "detailed_triangles": 1302
+    },
+    {
+      "id": "FJ3411",
+      "fma_id": "FMA13087",
+      "name": "Arch of aorta",
+      "standard_triangles": 670,
+      "detailed_triangles": 670
+    },
+    {
+      "id": "FJ3413",
+      "fma_id": "FMA13087",
+      "name": "Ascending aorta",
+      "standard_triangles": 396,
+      "detailed_triangles": 396
+    },
+    {
+      "id": "FJ3427",
+      "fma_id": "FMA13087",
+      "name": "Descending aorta",
+      "standard_triangles": 4562,
+      "detailed_triangles": 4562
+    },
+    {
+      "id": "FJ3441",
+      "fma_id": "FMA10951",
+      "name": "Inferior vena cava",
+      "standard_triangles": 1410,
+      "detailed_triangles": 1410
+    },
+    {
+      "id": "FJ3485",
+      "fma_id": "FMA4724",
+      "name": "Left internal jugular vein",
+      "standard_triangles": 280,
+      "detailed_triangles": 280
+    },
+    {
+      "id": "FJ3564",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right common carotid artery",
+      "standard_triangles": 884,
+      "detailed_triangles": 884
+    },
+    {
+      "id": "FJ3585",
+      "fma_id": "FMA4724",
+      "name": "Right internal jugular vein",
+      "standard_triangles": 226,
+      "detailed_triangles": 226
+    },
+    {
+      "id": "FJ3645",
+      "fma_id": "FMA30314",
+      "name": "Superior vena cava",
+      "standard_triangles": 598,
+      "detailed_triangles": 598
+    },
+    {
+      "id": "FJ3659",
+      "fma_id": "FMA10951",
+      "name": "Inferior vena cava",
+      "standard_triangles": 1670,
+      "detailed_triangles": 1670
+    },
+    {
+      "id": "FJ4986",
+      "fma_id": "FMA30313",
+      "name": "Trunk of right common carotid artery",
+      "standard_triangles": 3506,
+      "detailed_triangles": 3506
+    }
+  ]
+}

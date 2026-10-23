@@ -49,7 +49,7 @@ export function validateScene(scene) {
   if (!boundedText(scene.t, 90)) throw new Error('A scene title is required (90 characters maximum).');
   if (!['shown', 'reveal', 'hidden'].includes(scene.lm)) throw new Error('Invalid label visibility.');
   if (typeof scene.x !== 'boolean' || typeof scene.te !== 'boolean' || typeof scene.ca !== 'boolean') throw new Error('Invalid student permissions.');
-  for(const prop of ['sb','dm','sm','dg','hd'])if(scene[prop]!==undefined&&typeof scene[prop]!=='boolean')throw new Error('Invalid anatomical system layer setting.');
+  for(const prop of ['sb','dm','sm','dg','hd','cv'])if(scene[prop]!==undefined&&typeof scene[prop]!=='boolean')throw new Error('Invalid anatomical system layer setting.');
   if((scene.m==='muscular'||scene.m==='systems') && !['sb','dm','sm'].every(k=>typeof scene[k]==='boolean'))throw new Error('Muscle scenes require explicit layer settings.');
   if(scene.m==='digestive' && scene.dg!==true)throw new Error('Digestive scenes require the digestive organ layer.');
   if (!vector(scene.cam, 6)) throw new Error('Invalid saved camera position.');

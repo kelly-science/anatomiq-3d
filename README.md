@@ -122,3 +122,72 @@ The three top buttons **Skeletal**, **Muscular**, and **Digestive** are now inde
 Copy the updated application files into the repository root, and **add `system-layers.js`**. Keep your existing self-hosted `vendor/three/`, `models/ecorche.glb`, `models/digestive-standard.glb`, `models/digestive-detailed.glb`, `models/digestive-structures.json`, and legacy `models/anatomy-organs.glb`. You do not need to rerun the model conversion. The service-worker cache name changes to `anatomy-v1.4.0` to activate the release. Export the Scene Library first as a precaution. Older student URLs remain readable, and IndexedDB records are not intentionally modified by upgrading the PWA files.
 
 Run `node --test tests/*.mjs` to execute the application unit and source integration tests. The full WebGL renderer and Chromebook-specific performance need checking on a deployed site.
+
+## Version 1.4.1: Digestive front/back orientation correction
+
+The BodyParts3D 4.3 converter shipped in 1.3 normalized OBJ geometry from a
+Z-up frame to Y-up using `(x,z,+y)`. That mapping reverses the depth direction
+relative to the expected `(x,z,-y)` right-handed frame. Version 1.4.1 corrects
+**only the detailed 4.3 digestive root** at runtime, reflecting the depth axis
+about the registered mid-plane. Its source meshes keep their original local
+coordinates, so stored paint, visibility, and 3D-anchored labels remain attached
+to the correct mesh. The Écorché skeleton and muscles and the legacy digestive
+asset are not transformed.
+
+**Update GitHub:** Replace `app.js`, `digestive-detail.js`, `index.html`,
+`sw.js`, and `version.json`. No model files need to be replaced or reconverted.
+Once deployed, verify front and back views against the skeleton and anatomical
+landmarks. The specific registration has not yet been visually validated on a
+Chromebook. Do not assume different source anatomy specimens align perfectly.
+
+Future model conversions must be versioned if the converter itself adopts the
+corrected coordinate convention; otherwise applying this runtime correction to
+a newly fixed export would reverse it a second time.
+
+
+## Anatomy Studio 1.5 — Cardiovascular beta (heart and major blood vessels)
+
+Adds **Cardiovascular** as a fourth independent anatomy toggle. BodyParts3D 4.3 supplies
+**3 heart-wall meshes and 12 major-vessel meshes**; it does *not* include all
+four separately isolated chambers, valves, or complete vascular branching in
+this subset. No representative substitute organs are generated.
+
+**One-time Mac installation:** Keep your current `models/`, `vendor/three/`,
+and `.digestive-43-work/` folders. From the updated app folder run:
+
+```bash
+bash tools/install-cardiovascular-43.sh
+```
+
+The script uses the pinned BodyParts3D 4.3 subset utility, reuses the digestive
+reference skin and venv if available, converts the real OBJs to independent
+optimized GLB files, checks the GLBs, and writes SHA-256 hashes. Upload:
+
+```
+models/cardiovascular-standard.glb
+models/cardiovascular-detailed.glb
+models/cardiovascular-structures.json
+models/licenses/CARDIOVASCULAR-43-ATTRIBUTION.txt
+ASSET_SHA256.txt
+```
+
+Also upload all updated 1.5 application files (including new
+`cardiovascular-model.js` and `system-layers.js`). **Do not upload hidden work
+folders.** Until cardiovascular assets are uploaded, its toggle is disabled;
+all existing skeletal, muscular, digestive lessons continue to load.
+
+The heart/vessel layer uses the same skin-based normalization and viewer-level
+front/back correction as the 4.3 digestive layer. Because the provider geometry
+and the Écorché skeleton come from different datasets, verify left/right,
+front/back, scale and overlap on an actual Chromebook before using in exams.
+Standard geometry loads by default; Settings offers higher-detail geometry.
+Both choices are local-device preferences. Student links contain the layer's
+visibility, colors and annotations, not whole GLB binaries.
+
+Saved scenes remain browser-local. Back up your Scene Library before deploying.
+Old scenes' indexed structures are unchanged: cardiovascular indices append
+at the end, and the 1.4.1 model fingerprint is accepted during migration.
+Older published single-scene and chapter links are intentionally supported.
+
+**Planned digestive additions (not part of 1.5):** tongue, salivary glands,
+pharynx, and any further accessory digestive structures with verifiable meshes.

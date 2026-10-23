@@ -30,6 +30,30 @@ export function detailStructureEntries(root,raw){
  });
 }
 
+/**
+ * BodyParts3D 4.3 was converted from Z-up with (x,z,+y).  The Y-to-depth
+ * sign is reversed relative to the right-handed (x,z,-y) coordinate basis
+ * expected by Three.js.  Older 1.3-generated GLBs must have their Z axis
+ * reflected *around the registered body mid-plane*, not the scene origin.
+ *
+ * This correction is deliberately applied only to 4.3 detailed anatomy;
+ * the legacy 1.2 organ asset and the Écorché bones/muscles are unchanged.
+ * Returning the registration separately keeps stored mesh coordinates, local
+ * annotation anchors and old scene URLs stable.  New source GLBs must retain
+ * their current 1.3 coordinate metadata, or introduce a versioned orientation
+ * marker before a future converter also makes this correction.
+ */
+export function correctedDetailTransform(alignment){
+ const depthCenter=0.4; // BodyParts3D source frame in digestive-model.js
+ const scale=alignment?.scale;
+ if(!Number.isFinite(scale)||scale<=0||![alignment.x,alignment.y,alignment.z].every(Number.isFinite))
+   throw new Error('Invalid detailed anatomy registration');
+ return {
+   scale:[scale,scale,-scale],
+   position:[alignment.x,alignment.y,alignment.z+2*depthCenter*scale]
+ };
+}
+
 /** Default to the expanded organs only when the teacher explicitly switches views.
  * Opening a saved/shared scene must always honor its existing layer state. */
 export function shouldPreferDetailedWhenChoosingDigestive({teacherMode,restoringScene,detailAvailable,
