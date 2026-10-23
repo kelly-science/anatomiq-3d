@@ -1,0 +1,552 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio 1.2 body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ1858",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment IX",
+      "standard_triangles": 8999,
+      "detailed_triangles": 9550
+    },
+    {
+      "id": "FJ1895",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of pancreas",
+      "standard_triangles": 4890,
+      "detailed_triangles": 4890
+    },
+    {
+      "id": "FJ1896",
+      "fma_id": "FMA14065",
+      "name": "Pancreatic duct tree",
+      "standard_triangles": 3368,
+      "detailed_triangles": 3368
+    },
+    {
+      "id": "FJ2409",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment VI",
+      "standard_triangles": 8534,
+      "detailed_triangles": 8534
+    },
+    {
+      "id": "FJ2563",
+      "fma_id": "FMA55671",
+      "name": "Esophagus",
+      "standard_triangles": 578,
+      "detailed_triangles": 578
+    },
+    {
+      "id": "FJ2564",
+      "fma_id": "FMA55671",
+      "name": "Stomach",
+      "standard_triangles": 1810,
+      "detailed_triangles": 1810
+    },
+    {
+      "id": "FJ2565",
+      "fma_id": "FMA14542",
+      "name": "Appendix",
+      "standard_triangles": 442,
+      "detailed_triangles": 442
+    },
+    {
+      "id": "FJ2566",
+      "fma_id": "FMA14540",
+      "name": "Ascending colon",
+      "standard_triangles": 3310,
+      "detailed_triangles": 3310
+    },
+    {
+      "id": "FJ2567",
+      "fma_id": "FMA14540",
+      "name": "Descending colon",
+      "standard_triangles": 5588,
+      "detailed_triangles": 5588
+    },
+    {
+      "id": "FJ2571",
+      "fma_id": "FMA14540",
+      "name": "Rectum",
+      "standard_triangles": 2118,
+      "detailed_triangles": 2118
+    },
+    {
+      "id": "FJ2572",
+      "fma_id": "FMA14540",
+      "name": "Transverse colon",
+      "standard_triangles": 3472,
+      "detailed_triangles": 3472
+    },
+    {
+      "id": "FJ2573",
+      "fma_id": "FMA61775",
+      "name": "Duodenum",
+      "standard_triangles": 1860,
+      "detailed_triangles": 1860
+    },
+    {
+      "id": "FJ2574",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 380,
+      "detailed_triangles": 380
+    },
+    {
+      "id": "FJ2575",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 276,
+      "detailed_triangles": 276
+    },
+    {
+      "id": "FJ2576",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 172,
+      "detailed_triangles": 172
+    },
+    {
+      "id": "FJ2577",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 314,
+      "detailed_triangles": 314
+    },
+    {
+      "id": "FJ2578",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 292,
+      "detailed_triangles": 292
+    },
+    {
+      "id": "FJ2579",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 280,
+      "detailed_triangles": 280
+    },
+    {
+      "id": "FJ2580",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 344,
+      "detailed_triangles": 344
+    },
+    {
+      "id": "FJ2581",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 198,
+      "detailed_triangles": 198
+    },
+    {
+      "id": "FJ2582",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 212,
+      "detailed_triangles": 212
+    },
+    {
+      "id": "FJ2583",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 198,
+      "detailed_triangles": 198
+    },
+    {
+      "id": "FJ2584",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 228,
+      "detailed_triangles": 228
+    },
+    {
+      "id": "FJ2585",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 288,
+      "detailed_triangles": 288
+    },
+    {
+      "id": "FJ2586",
+      "fma_id": "FMA14092",
+      "name": "Middle part of ileum",
+      "standard_triangles": 264,
+      "detailed_triangles": 264
+    },
+    {
+      "id": "FJ2587",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 228,
+      "detailed_triangles": 228
+    },
+    {
+      "id": "FJ2588",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 266,
+      "detailed_triangles": 266
+    },
+    {
+      "id": "FJ2589",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 326,
+      "detailed_triangles": 326
+    },
+    {
+      "id": "FJ2590",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 184,
+      "detailed_triangles": 184
+    },
+    {
+      "id": "FJ2591",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 226,
+      "detailed_triangles": 226
+    },
+    {
+      "id": "FJ2592",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 236,
+      "detailed_triangles": 236
+    },
+    {
+      "id": "FJ2593",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 262,
+      "detailed_triangles": 262
+    },
+    {
+      "id": "FJ2594",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 220,
+      "detailed_triangles": 220
+    },
+    {
+      "id": "FJ2595",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 258,
+      "detailed_triangles": 258
+    },
+    {
+      "id": "FJ2596",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 226,
+      "detailed_triangles": 226
+    },
+    {
+      "id": "FJ2597",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 202,
+      "detailed_triangles": 202
+    },
+    {
+      "id": "FJ2598",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 246,
+      "detailed_triangles": 246
+    },
+    {
+      "id": "FJ2599",
+      "fma_id": "FMA14092",
+      "name": "Distal part of ileum",
+      "standard_triangles": 288,
+      "detailed_triangles": 288
+    },
+    {
+      "id": "FJ2600",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 256,
+      "detailed_triangles": 256
+    },
+    {
+      "id": "FJ2601",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 208,
+      "detailed_triangles": 208
+    },
+    {
+      "id": "FJ2602",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 270,
+      "detailed_triangles": 270
+    },
+    {
+      "id": "FJ2603",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 294,
+      "detailed_triangles": 294
+    },
+    {
+      "id": "FJ2604",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 198,
+      "detailed_triangles": 198
+    },
+    {
+      "id": "FJ2605",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of ileum",
+      "standard_triangles": 332,
+      "detailed_triangles": 332
+    },
+    {
+      "id": "FJ2606",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 320,
+      "detailed_triangles": 320
+    },
+    {
+      "id": "FJ2607",
+      "fma_id": "FMA14092",
+      "name": "Middle part of jejunum",
+      "standard_triangles": 240,
+      "detailed_triangles": 240
+    },
+    {
+      "id": "FJ2608",
+      "fma_id": "FMA14092",
+      "name": "Middle part of jejunum",
+      "standard_triangles": 262,
+      "detailed_triangles": 262
+    },
+    {
+      "id": "FJ2609",
+      "fma_id": "FMA14092",
+      "name": "Middle part of jejunum",
+      "standard_triangles": 192,
+      "detailed_triangles": 192
+    },
+    {
+      "id": "FJ2610",
+      "fma_id": "FMA14092",
+      "name": "Middle part of jejunum",
+      "standard_triangles": 296,
+      "detailed_triangles": 296
+    },
+    {
+      "id": "FJ2611",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 226,
+      "detailed_triangles": 226
+    },
+    {
+      "id": "FJ2612",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 248,
+      "detailed_triangles": 248
+    },
+    {
+      "id": "FJ2613",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 176,
+      "detailed_triangles": 176
+    },
+    {
+      "id": "FJ2614",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 232,
+      "detailed_triangles": 232
+    },
+    {
+      "id": "FJ2615",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 264,
+      "detailed_triangles": 264
+    },
+    {
+      "id": "FJ2616",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 444,
+      "detailed_triangles": 444
+    },
+    {
+      "id": "FJ2617",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 234,
+      "detailed_triangles": 234
+    },
+    {
+      "id": "FJ2618",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 222,
+      "detailed_triangles": 222
+    },
+    {
+      "id": "FJ2619",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 260,
+      "detailed_triangles": 260
+    },
+    {
+      "id": "FJ2620",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 284,
+      "detailed_triangles": 284
+    },
+    {
+      "id": "FJ2621",
+      "fma_id": "FMA14092",
+      "name": "Distal part of jejunum",
+      "standard_triangles": 500,
+      "detailed_triangles": 500
+    },
+    {
+      "id": "FJ2622",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 160,
+      "detailed_triangles": 160
+    },
+    {
+      "id": "FJ2623",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 386,
+      "detailed_triangles": 386
+    },
+    {
+      "id": "FJ2624",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 172,
+      "detailed_triangles": 172
+    },
+    {
+      "id": "FJ2625",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 152,
+      "detailed_triangles": 152
+    },
+    {
+      "id": "FJ2626",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 330,
+      "detailed_triangles": 330
+    },
+    {
+      "id": "FJ2627",
+      "fma_id": "FMA14092",
+      "name": "Proximal part of jejunum",
+      "standard_triangles": 190,
+      "detailed_triangles": 190
+    },
+    {
+      "id": "FJ2628",
+      "fma_id": "FMA14092",
+      "name": "Middle part of jejunum",
+      "standard_triangles": 236,
+      "detailed_triangles": 236
+    },
+    {
+      "id": "FJ2629",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of pancreas",
+      "standard_triangles": 4272,
+      "detailed_triangles": 4272
+    },
+    {
+      "id": "FJ2816",
+      "fma_id": "FMA13365",
+      "name": "Caudate lobe of liver",
+      "standard_triangles": 5020,
+      "detailed_triangles": 5020
+    },
+    {
+      "id": "FJ2817",
+      "fma_id": "FMA55671",
+      "name": "Gallbladder",
+      "standard_triangles": 2396,
+      "detailed_triangles": 2396
+    },
+    {
+      "id": "FJ2818",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment II",
+      "standard_triangles": 8999,
+      "detailed_triangles": 14326
+    },
+    {
+      "id": "FJ2819",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment III",
+      "standard_triangles": 8999,
+      "detailed_triangles": 10326
+    },
+    {
+      "id": "FJ2820",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment IV",
+      "standard_triangles": 8999,
+      "detailed_triangles": 17942
+    },
+    {
+      "id": "FJ2821",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment V",
+      "standard_triangles": 8999,
+      "detailed_triangles": 11442
+    },
+    {
+      "id": "FJ2822",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment VI",
+      "standard_triangles": 9000,
+      "detailed_triangles": 19450
+    },
+    {
+      "id": "FJ2823",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment VIII",
+      "standard_triangles": 9000,
+      "detailed_triangles": 19156
+    },
+    {
+      "id": "FJ2824",
+      "fma_id": "FMA15737",
+      "name": "Hepatovenous segment VIII",
+      "standard_triangles": 9000,
+      "detailed_triangles": 21592
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import {digestiveMeshEntries,sourceRegistration} from './digestive-model.js';
+import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
+import {detailStructureEntries} from './digestive-detail.js';
 import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
@@ -10,12 +11,20 @@ import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-pe
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const LOCAL_MODEL = './models/ecorche.glb';
 const LOCAL_DIGESTIVE_MODEL='./models/anatomy-organs.glb';
+const DETAIL_MANIFEST='./models/digestive-structures.json';
+const DETAIL_MODEL_STANDARD='./models/digestive-standard.glb';
+const DETAIL_MODEL_SHARP='./models/digestive-detailed.glb';
+const DIGESTIVE_QUALITY_KEY='anatomy-studio-digestive-geometry-v1';
+let digestiveGeometry='standard';
+try{digestiveGeometry=localStorage.getItem(DIGESTIVE_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
+let detailAvailable=false, detailEnabled=false, detailRoot=null, detailEntries=[];
+let previousStructureCount=0,previousFingerprint='';
 let digestiveAvailable=false;
 let digestiveRoot=null;
 let digestiveSourceEntries=[];
@@ -189,7 +198,8 @@ function openDetails(open) {
 }
 function tissueVisible(s){return s.tissue !== 'eye' && (elements.teeth.checked || s.tissue !== 'tooth') && (elements.cartilage.checked || s.tissue !== 'cartilage');}
 function layerEnabled(s){
-  if(s.system==='digestive')return digestiveAvailable && (mode==='digestive'||mode==='systems'&&systemLayers.digestive);
+  if(s.system==='digestive')return (digestiveAvailable || detailAvailable) && (mode==='digestive'||mode==='systems'&&systemLayers.digestive) &&
+    (s.layer==='digestive-detail' ? detailAvailable && detailEnabled : !detailEnabled);
   if(s.system==='muscular')return (mode==='muscular'||mode==='systems') && (s.layer==='deep muscles'?systemLayers.deep:systemLayers.superficial);
   if(mode==='skull')return s.skull;
   if(mode==='skeleton')return true;
@@ -202,7 +212,9 @@ function updateSystemControls(){
   $('systems-panel').hidden=!(mode==='systems'||mode==='muscular'||mode==='digestive');
   $('digestive-layer-row').hidden=mode==='muscular';
   $('muscle-layers-group').hidden=mode==='digestive';
-  $('organ-asset-status').textContent=digestiveAvailable?'Liver, stomach and intestines ready':'Digestive model not installed';
+  $('organ-asset-status').textContent=detailAvailable?`${detailEntries.length} detailed structures available`:digestiveAvailable?'3 basic organs available':'Digestive model not installed';
+  $('digestive-detail-row').hidden=!detailAvailable || (mode!=='digestive' && mode!=='systems');
+  $('system-detail').checked=detailEnabled;
   $('skeletal-layer-row').hidden=mode==='muscular';
   $('layer-description').textContent=mode==='muscular'?'Choose which muscle layers appear.':mode==='digestive'?'Click an organ to identify, label or paint it.':'Combine bones, muscles, and organs independently.';
 }
@@ -275,7 +287,7 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
-  if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.'})[s.organId] || 'Digestive structure.';
+  if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.',esophagus:'Transports swallowed food from the pharynx to the stomach.',gallbladder:'Stores and concentrates bile before its release into the small intestine.',pancreas:'Produces digestive enzymes and bicarbonate, as well as hormones.',duodenum:'First part of the small intestine; receives bile and pancreatic enzymes.',jejunum:'Middle portion of the small intestine; absorbs nutrients.',ileum:'Final portion of the small intestine; absorbs bile salts and vitamin B12.',colon:'Absorbs water and electrolytes and moves fecal matter.',cecum:'Blind pouch at the beginning of the large intestine.',appendix:'Small blind-ended tube arising from the cecum.',rectum:'Stores feces prior to elimination.'})[s.organId] || 'An identifiable segment of the digestive tract.';
   if(s.system==='muscular')return muscleDescriptions.find(([rx])=>rx.test(s.name))?.[1] || 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.';
   const d=descriptions.find(([rx])=>rx.test(s.name));
   return d ? d[1] : s.system==='muscular' ? 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.' : 'An identifiable structure in the human skeletal system. Rotate the model to examine its shape and anatomical relationships.';
@@ -379,7 +391,7 @@ function setSelection(s){
 }
 function setMode(newMode){
   if(!sceneRoot)return;
-  if(newMode==='digestive' && !digestiveAvailable){showToast('Digestive model missing. Run tools/download-digestive-assets.sh and upload models/ and vendor/.');return;}
+  if(newMode==='digestive' && !digestiveAvailable && !detailAvailable){showToast('Digestive model missing. Run tools/download-digestive-assets.sh and upload models/ and vendor/.');return;}
   if(newMode==='digestive')systemLayers.digestive=true;
   mode=newMode;
   openDetails(false);
@@ -390,7 +402,7 @@ function setMode(newMode){
     skull:['Skull','Explore cranial and facial bones, cartilage, and teeth.'],
     skeleton:['Skeletal system','Explore the axial and appendicular skeleton.'],
     muscular:['Muscular system','Explore superficial and deep muscles, independently.'],
-    digestive:['Digestive system','Study liver, stomach and intestines.'],
+    digestive:['Digestive system','Explore individual digestive structures and accessory organs.'],
     systems:['Combined systems','Combine bones, muscles and digestive organs, layer by layer.']
   }[mode];
   if(!display)throw new Error('Unknown anatomical system.');
@@ -542,12 +554,14 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
   baseStructureCount=catalog.baseCount;
   baseFingerprint=catalog.baseFingerprint;
+  previousStructureCount=catalog.previousCount;
+  previousFingerprint=catalog.previousFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
   console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${structures.filter(x=>x.skull).length} skull structures`);
@@ -579,11 +593,48 @@ async function loadDigestiveModel(){
     scene.add(gltf.scene);
     digestiveRoot=gltf.scene;
     digestiveSourceEntries=entries;
-    for(const entry of entries){materials.set(entry.mesh,entry.mesh.material);entry.mesh.visible=false;}
+    for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
     digestiveAvailable=true;
     console.info(`Anatomy Studio: loaded ${entries.length} digestive structures from self-hosted BodyParts3D asset.`);
   }catch(e){console.warn('Digestive model unavailable; skeletal lessons still work.',e);}
   finally{draco?.dispose();}
+}
+function applyOrganAppearance(entry){
+  const obj=entry.mesh;
+  // Flat gray upstream materials are replaced, but teacher colors still override this material.
+  if(obj.geometry?.attributes?.position && !obj.geometry.attributes.normal){obj.geometry.computeVertexNormals();}
+  const color=digestiveDefaultColor(entry.name);
+  const original=obj.material;
+  obj.material=new THREE.MeshStandardMaterial({color,roughness:0.79,metalness:0,side:THREE.DoubleSide});
+  if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
+  materials.set(obj,obj.material);
+}
+async function loadDetailedDigestive(){
+  detailAvailable=false; detailEntries=[];
+  const preferred=digestiveGeometry==='detailed'?DETAIL_MODEL_SHARP:DETAIL_MODEL_STANDARD;
+  // Data stays optional: no background CDN; older lessons continue to load normally.
+  try{
+    const response=await fetch(DETAIL_MANIFEST);
+    if(!response.ok || /text\/html/i.test(response.headers.get('content-type')||''))return;
+    const metadata=await response.json();
+    let gltf;
+    try{gltf=await new GLTFLoader().loadAsync(preferred);}catch(error){
+      if(preferred===DETAIL_MODEL_STANDARD)throw error;
+      console.warn('High-detail GLB missing, loading Standard geometry.',error);
+      gltf=await new GLTFLoader().loadAsync(DETAIL_MODEL_STANDARD);
+    }
+    const entries=detailStructureEntries(gltf.scene,metadata);
+    const alignment=sourceRegistration(new THREE.Box3().setFromObject(sceneRoot));
+    gltf.scene.scale.setScalar(alignment.scale);
+    gltf.scene.position.set(alignment.x,alignment.y,alignment.z);
+    scene.add(gltf.scene);detailRoot=gltf.scene;
+    for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
+    detailEntries=entries;detailAvailable=true;detailEnabled=true;
+    console.info(`Anatomy Studio: ${entries.length} BodyParts3D 4.3 digestive structures loaded (${digestiveGeometry}).`);
+  }catch(error){
+    console.warn('Detailed digestive model unavailable; basic digestive model remains usable.',error);
+    if(detailRoot){scene.remove(detailRoot);detailRoot=null;}
+  }
 }
 async function loadAnatomy(){
   elements.loader.hidden=false;elements.retry.hidden=true;elements.loadTitle.textContent='Preparing the anatomy viewer';
@@ -603,6 +654,7 @@ async function loadAnatomy(){
     sceneRoot=loaded.scene;
     scene.add(sceneRoot);
     await loadDigestiveModel();
+    await loadDetailedDigestive();
     prepareStructures(sceneRoot);
     elements.loader.hidden=true;
     await initializeStudioScene();
@@ -637,6 +689,21 @@ for(const [id,layer] of [['system-skeletal','skeletal'],['system-deep','deep'],[
     frameVisible(activePreset||'front');
   });
 }
+$('system-detail').addEventListener('change',()=>{
+  if(!teacherMode || !detailAvailable)return;
+  detailEnabled=$('system-detail').checked;
+  hidden.clear();isolated=false;setSelection(null);refreshVisibility();frameVisible(activePreset||'front');
+});
+$('settings-digestive-geometry').value=digestiveGeometry;
+$('settings-digestive-geometry').addEventListener('change',()=>{
+  const next=$('settings-digestive-geometry').value==='detailed'?'detailed':'standard';
+  if(next===digestiveGeometry)return;
+  // Preserve current work before reloading the renderer and its model assets.
+  if(teacherMode)saveDraft(false);
+  digestiveGeometry=next;
+  try{localStorage.setItem(DIGESTIVE_QUALITY_KEY,next);}catch{}
+  location.reload();
+});
 elements.search.addEventListener('input',renderList);
 elements.clearSearch.addEventListener('click',()=>{elements.search.value='';renderList();elements.search.focus();});
 elements.teeth.addEventListener('change',refreshVisibility);
@@ -666,7 +733,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:digestiveAvailable});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:digestiveAvailable,detail:detailAvailable,detailMode:digestiveGeometry});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -733,7 +800,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
-    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:[...camera.position.toArray(),...controls.target.toArray()].map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
@@ -784,7 +851,7 @@ function snapshotProject(){
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
-  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint))
+  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint))
     throw new Error(sample?.m==='digestive'?'Digestive model unavailable. Upload models/anatomy-organs.glb and the local Draco decoder before opening this lesson.':'This lesson uses an incompatible anatomical model.');
 }
 function renderChapterUI(){
@@ -1111,7 +1178,7 @@ function updateAnnotationPositions(){
 }
 async function applyScene(saved){
   validateScene(saved);
-  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint)){
+  if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint)){
     throw new Error(saved?.m==='digestive'?'This digestive scene requires the locally hosted digestive GLB and Draco decoder.':'The anatomical model has changed since this scene was published.');
   }
   restoringScene=true;
@@ -1120,6 +1187,8 @@ async function applyScene(saved){
     systemLayers.deep=saved.dm ?? false;
     systemLayers.superficial=saved.sm ?? true;
     systemLayers.digestive=saved.dg ?? false;
+    detailEnabled=Boolean(saved.hd);
+    if(detailEnabled&&!detailAvailable && (saved.m==='digestive'||saved.m==='systems'&&saved.dg))throw new Error('This lesson requires the detailed digestive assets: models/digestive-standard.glb and digestive-structures.json. Ask the teacher to upload the generated files.');
     setMode(saved.m);
     elements.teeth.checked=saved.te;
     elements.cartilage.checked=saved.ca;
@@ -1451,7 +1520,7 @@ async function checkLocalAssets(){
   display.classList.toggle('status-success',missing.length===0);
   $('settings-renderer').textContent=window.__ANATOMY_RENDERER_SOURCE==='local'?'Local Three.js 0.169.0':'CDN fallback (Three.js 0.169.0)';
   $('settings-model').textContent=sceneRoot ? displayLocalAssetName(currentModelURL) : 'Not loaded';
-  $('settings-organs').textContent=digestiveAvailable?'Digestive GLB loaded':'Optional asset missing or could not decode';
+  $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry})`:digestiveAvailable?'Basic digestive model loaded':'Digestive files missing';
 }
 function openAppSettings(){
   $('settings-dialog').hidden=false;

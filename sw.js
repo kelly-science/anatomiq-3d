@@ -1,7 +1,7 @@
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v1.2.0';
-const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./render-performance.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const VERSION='anatomy-v1.3.0';
+const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',
@@ -56,7 +56,7 @@ self.addEventListener('message',event=>{
     }catch{}
     if(!modelURL){source?.postMessage({type:'OFFLINE_STATUS',complete:false,message:'Model URL unavailable'});return;}
     const renderer=event.data.renderer==='local'?LOCAL_RENDERER:REMOTE_RENDERER;
-    const urls=[...SHELL,...renderer,modelURL,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[])].map(path=>new URL(path,self.location.href).href);
+    const urls=[...SHELL,...renderer,modelURL,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[]),...(event.data.detail?['./models/digestive-structures.json',event.data.detailMode==='detailed'?'./models/digestive-detailed.glb':'./models/digestive-standard.glb']:[])].map(path=>new URL(path,self.location.href).href);
     let done=0;
     for(const url of urls){
       let saved=await cache.match(url);

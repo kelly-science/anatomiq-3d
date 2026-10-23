@@ -1,0 +1,6 @@
+BodyParts3D / Anatomography version 4.3, © Database Center for Life Science (DBCLS).
+License: CC BY-SA 2.1 Japan, https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Full-resolution OBJ mesh retrieval tooling: Oliver Case, body_parts_3d_api v1.0.0,
+MIT source code. https://github.com/olivercase/body_parts_3d_api
+Conversion/decimation and skin-based normalization for Anatomy Studio 1.3.
+Please retain this attribution and applicable share-alike license in distributions.

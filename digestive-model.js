@@ -32,3 +32,30 @@ export function sourceRegistration(bodyBounds) {
     y:bodyBounds.min.y-SOURCE_SKIN.minY*scale,
     z:(bodyBounds.min.z+bodyBounds.max.z)*0.5-SOURCE_SKIN.depth*scale};
 }
+
+// Anatomically recognizable default colors, applied before teacher paint overrides.
+export const DIGESTIVE_COLORS=Object.freeze({
+ liver:'#8d3d35',stomach:'#c98189',intestines:'#dca39b',
+ esophagus:'#c8868c',gallbladder:'#6e906d',pancreas:'#dfa985',
+ duodenum:'#d8988a',jejunum:'#e4a69e',ileum:'#eab2ab',
+ colon:'#bda58b',cecum:'#bfa78f',appendix:'#c6a993',rectum:'#b9978e',
+ other:'#bf9c93'
+});
+export function digestiveOrganFamily(name){
+ const n=String(name).toLowerCase();
+ if(/liver|hepatic|hepatovenous/.test(n))return 'liver';
+ if(/stomach|gastric/.test(n))return 'stomach';
+ if(/gall.?bladder/.test(n))return 'gallbladder';
+ if(/pancreas|pancreatic/.test(n))return 'pancreas';
+ if(/esophag|oesophag/.test(n))return 'esophagus';
+ if(/duodenum/.test(n))return 'duodenum';
+ if(/jejunum/.test(n))return 'jejunum';
+ if(/ileum/.test(n))return 'ileum';
+ if(/appendix/.test(n))return 'appendix';
+ if(/cecum|caecum/.test(n))return 'cecum';
+ if(/colon/.test(n))return 'colon';
+ if(/rectum|anal canal/.test(n))return 'rectum';
+ if(/intestin/.test(n))return 'intestines';
+ return 'other';
+}
+export function digestiveDefaultColor(name){return DIGESTIVE_COLORS[digestiveOrganFamily(name)];}

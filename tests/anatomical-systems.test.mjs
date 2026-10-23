@@ -35,7 +35,7 @@ test('system UI and offline shell include new controls and structure layout modu
  const read=n=>readFileSync(new URL('../'+n,import.meta.url),'utf8');
  const html=read('index.html'),app=read('app.js'),sw=read('sw.js');
  for(const id of ['mode-muscular','mode-systems','system-skeletal','system-deep','system-superficial'])assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(app,/catalogAnatomy\(\[\.\.\.found,\.\.\.digestiveSourceEntries\]\)/);
+ assert.match(app,/catalogAnatomy\(\[\.\.\.found,\.\.\.digestiveSourceEntries,\.\.\.detailEntries\]\)/);
  assert.match(app,/saved\.sb \?\? true/);
  assert.match(sw,/structure-layout\.js/);
 });

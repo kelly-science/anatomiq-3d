@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "channel": "beta",
   "published": "2026-10-22",
-  "notes": "Digestive system preview: optional self-hosted BodyParts3D organ model, view and combined-layer controls, preserved legacy scenes"
+  "notes": "Digestive natural colors, optional BodyParts3D 4.3 per-structure models, local build tooling and stable scene migration"
 }
