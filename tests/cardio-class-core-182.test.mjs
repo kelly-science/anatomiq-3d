@@ -37,7 +37,7 @@ test('new modes are editor-only scene presets, old link data remains unchanged',
  const app=read('app.js'),index=read('index.html'),sw=read('sw.js');
  for(const k of ['classcore','arteries','veins'])assert.match(index,new RegExp('data-cardio-preset="'+k+'"'));
  assert.match(app,/CARDIO_CLASS_CORE|classCoreCoverage/);
- assert.match(sw,/anatomy-v1\.8\.3/);
+ assert.match(sw,/anatomy-v1\.8\.4/);
  assert.match(sw,/cardio-class-core\.js/);
  assert.match(read('tools/install-cardiovascular-43.sh'),/--prior-manifest/);
  assert.match(read('tools/install-cardiovascular-43.sh'),/fetch-cardiovascular-class-core\.py/);

@@ -1,3 +1,5 @@
+**Latest release:** [Anatomy Studio 1.8.4 — Scene-aware Student Loading](RELEASE-1.8.4.md).
+
 # Anatomy Studio 1.8.3 — Vascular Completeness & Classroom Review
 
 **Teacher-first, Chromebook/iPad PWA · GitHub Pages · No new mandatory anatomy downloads**

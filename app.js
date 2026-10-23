@@ -16,10 +16,13 @@ import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
 import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-performance.js';
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
+import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
+import {validateCardiovascularManifest} from './cardiovascular-model.js';
+import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.3';
+const APP_VERSION = '1.8.4';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -58,6 +61,10 @@ let detailLayerExplicitlyChanged=false; // Respect the teacher's deliberate choi
 let previousStructureCount=0,previousFingerprint='';
 let digestiveAvailable=false;
 let digestiveRoot=null;
+let legacyLoaded=false,detailLoaded=false,cardioLoaded=false;
+let studentProjectAtStartup=null;
+let studentAssetBusy=false;
+let digestMetadata=null,cardioMetadata=null,legacyPresent=false;
 let digestiveSourceEntries=[];
 let baseStructureCount=0,baseFingerprint='';
 const $ = id => document.getElementById(id);
@@ -231,8 +238,8 @@ function tissueVisible(s){return s.tissue !== 'eye' && (elements.teeth.checked |
 function layerEnabled(s){
   const layers=effectiveSystemLayers(mode,systemLayers);
   if(s.system==='digestive')return layers.digestive &&
-    (s.layer==='digestive-detail' ? detailAvailable && detailEnabled : digestiveAvailable && !detailEnabled);
-  if(s.system==='cardiovascular')return layers.cardiovascular && cardioAvailable;
+    (s.layer==='digestive-detail' ? detailAvailable && detailEnabled : digestiveAvailable && !detailEnabled) && !s.mesh.userData?.deferredAsset;
+  if(s.system==='cardiovascular')return layers.cardiovascular && cardioAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='muscular')return s.layer==='deep muscles'?layers.deep:layers.superficial;
   if(s.system==='skeletal')return layers.skeletal && (mode!=='skull'||s.skull);
   return false;
@@ -784,7 +791,7 @@ async function loadDigestiveModel(){
     digestiveRoot=gltf.scene;
     digestiveSourceEntries=entries;
     for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
-    digestiveAvailable=true;
+    digestiveAvailable=true;legacyLoaded=true;
     console.info(`Anatomy Studio: loaded ${entries.length} digestive structures from self-hosted BodyParts3D asset.`);
   }catch(e){console.warn('Digestive model unavailable; skeletal lessons still work.',e);}
   finally{draco?.dispose();}
@@ -823,7 +830,7 @@ async function loadDetailedDigestive(){
     gltf.scene.position.set(...corrected.position);
     scene.add(gltf.scene);detailRoot=gltf.scene;
     for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
-    detailEntries=entries;detailAvailable=true;detailEnabled=true;
+    detailEntries=entries;detailAvailable=true;detailLoaded=true;detailEnabled=true;
     console.info(`Anatomy Studio: ${entries.length} BodyParts3D 4.3 digestive structures loaded (${digestiveGeometry}).`);
   }catch(error){
     console.warn('Detailed digestive model unavailable. New digestive scenes require locally hosted detailed assets.',error);
@@ -869,7 +876,7 @@ async function loadCardiovascular(){
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(obj,obj.material);obj.visible=false;
     }
-    cardioEntries=entries;cardioAvailable=true;
+    cardioEntries=entries;cardioAvailable=true;cardioLoaded=true;
     console.info(`Anatomy Studio: ${entries.length} cardiovascular structures loaded (${cardioGeometry}).`);
   }catch(error){
     console.warn('Self-hosted cardiovascular layer not installed; existing anatomy remains available.',error);
@@ -903,12 +910,98 @@ async function loadHighResolutionSkull(){
   }
   invalidate(3);
 }
+// Lightweight metadata keeps published model indices stable while optional GLBs
+// are deferred. No 3D geometry is fetched by this step.
+async function readOptionalManifest(path,validate){
+  try{
+    const response=await fetch(path);
+    if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))return null;
+    return validate(await response.json());
+  }catch(error){console.warn('Optional anatomy manifest unavailable:',path,error);return null;}
+}
+function virtualMesh(name){
+  const mesh=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial());
+  mesh.name=name;mesh.visible=false;mesh.userData.deferredAsset=true;
+  return mesh;
+}
+function asVirtualRoot(names){
+  const nodes=names.map(virtualMesh);
+  return {traverse(visitor){for(const mesh of nodes)visitor(mesh);}};
+}
+async function createDeferredCatalog(){
+  // The 1.2 organ asset is kept only to preserve original scene indices.
+  try{
+    const response=await fetch(LOCAL_DIGESTIVE_MODEL,{method:'HEAD'});
+    legacyPresent=response.ok&&!/text\/html/i.test(response.headers.get('content-type')||'');
+  }catch{legacyPresent=false;}
+  if(legacyPresent){
+    digestiveSourceEntries=digestiveMeshEntries(asVirtualRoot(LEGACY_DIGESTIVE_MESH_NAMES));
+    digestiveAvailable=true;
+  }
+  digestMetadata=await readOptionalManifest(DETAIL_MANIFEST,validateDigestiveManifest);
+  if(digestMetadata){
+    detailEntries=detailStructureEntries(asVirtualRoot(digestMetadata.structures.map(s=>s.id)),digestMetadata);
+    detailAvailable=true;
+  }
+  cardioMetadata=await readOptionalManifest(CARDIO_MANIFEST,validateCardiovascularManifest);
+  if(cardioMetadata){
+    cardioEntries=cardiovascularEntries(asVirtualRoot(cardioMetadata.structures.map(s=>s.id)),cardioMetadata);
+    cardioAvailable=true;
+  }
+}
+function restoreDeferredReferences(system,realEntries){
+  // Do not rebuild or reorder the structures array: indices are used by every
+  // published annotation, visibility bitmap and paint override.
+  const existing=structures.filter(s=>system==='legacy'?s.system==='digestive'&&s.layer!=='digestive-detail':system==='detailed'?s.layer==='digestive-detail':s.system==='cardiovascular');
+  const id=(s)=>s.sourceName;
+  const replacements=new Map(realEntries.map(s=>[id(s),s]));
+  if(existing.length!==realEntries.length||new Set(existing.map(id)).size!==realEntries.length)
+    throw new Error(`The ${system} model does not match this lesson's anatomical catalog.`);
+  for(const old of existing){
+    const fresh=replacements.get(id(old));
+    if(!fresh||fresh.name!==old.name||fresh.mesh.name!==old.mesh.name)
+      throw new Error(`Anatomical structure changed: ${id(old)}. Refresh the lesson catalog.`);
+  }
+  for(const old of existing){
+    const mesh=replacements.get(id(old)).mesh;
+    old.mesh.geometry?.dispose();old.mesh.material?.dispose();
+    old.mesh=mesh;
+  }
+  invalidate(2);
+}
+async function loadNeededAsset(kind){
+  if(kind==='legacyDigestive'){
+    if(legacyLoaded)return;
+    await loadDigestiveModel();
+    if(!legacyLoaded)throw new Error('Unable to load the legacy digestive model required by this chapter.');
+    restoreDeferredReferences('legacy',digestiveSourceEntries);
+  }else if(kind==='detailedDigestive'){
+    if(detailLoaded)return;
+    await loadDetailedDigestive();
+    if(!detailLoaded)throw new Error('Unable to load the detailed digestive model required by this chapter.');
+    restoreDeferredReferences('detailed',detailEntries);
+  }else if(kind==='cardiovascular'){
+    if(cardioLoaded)return;
+    await loadCardiovascular();
+    if(!cardioLoaded)throw new Error('Unable to load the cardiovascular model required by this chapter.');
+    restoreDeferredReferences('cardiovascular',cardioEntries);
+  }
+}
+async function ensureChapterAssets(chapter){
+  if(teacherMode)return;
+  const needed=chapterAssets(chapter);
+  for(const type of ['legacyDigestive','detailedDigestive','cardiovascular'])if(needed[type])await loadNeededAsset(type);
+  if(needed.skull && skullGeometry==='detailed' && !skullDetailStats)await loadHighResolutionSkull();
+}
 async function loadAnatomy(){
   elements.loader.hidden=false;elements.retry.hidden=true;elements.loadTitle.textContent='Preparing the anatomy viewer';
-  elements.loadDesc.textContent='Loading the 3D skeletal and muscular anatomy model. The first visit needs an internet connection.';
+  elements.loadDesc.textContent='Loading anatomy for this lesson. Additional systems load when needed.';
   elements.loadText.textContent='Connecting to model source…';elements.progress.style.width='3%';
   setStatus(navigator.onLine?'Loading model':'Offline',navigator.onLine?'':'error');
   try{
+    // Parse the published lesson before fetching GLBs. A malformed link can
+    // now fail immediately without downloading anatomy assets.
+    if(!teacherMode)studentProjectAtStartup=await decodeScene(location.hash.slice('#scene='.length));
     let localAvailable=false;
     try{const response=await fetch(LOCAL_MODEL,{method:'HEAD'});localAvailable=response.ok && /model|octet-stream|binary|application/i.test(response.headers.get('content-type')||'application/octet-stream');}catch{}
     const urls=localAvailable?[LOCAL_MODEL,REMOTE_MODEL,SECONDARY_MODEL]:[REMOTE_MODEL,SECONDARY_MODEL];
@@ -918,27 +1011,43 @@ async function loadAnatomy(){
     }
     if(!loaded)throw lastError||new Error('The 3D model could not be loaded.');
     if(sceneRoot)scene.remove(sceneRoot);
-    sceneRoot=loaded.scene;
-    scene.add(sceneRoot);
-    await loadDigestiveModel();
-    await loadDetailedDigestive();
-    await loadCardiovascular();
+    sceneRoot=loaded.scene;scene.add(sceneRoot);
+    if(teacherMode){
+      // Teacher editing retains all systems for editing and publishing.
+      await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
+    }else{
+      await createDeferredCatalog();
+      const start=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start];
+      const requirements=chapterAssets(start);
+      if(requirements.legacyDigestive)await loadDigestiveModel();
+      if(requirements.detailedDigestive)await loadDetailedDigestive();
+      if(requirements.cardiovascular)await loadCardiovascular();
+    }
     prepareStructures(sceneRoot);
-    await loadHighResolutionSkull();
+    if(!teacherMode){
+      // The published schema has not changed; metadata-only meshes must
+      // reproduce its exact original fingerprint. Fall back safely on older
+      // atlas variants instead of assigning labels to incorrect structures.
+      const sample=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[0];
+      if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
+        console.warn('Deferred catalog differs from published lesson; verifying real anatomy files for backward compatibility.');
+        await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
+        prepareStructures(sceneRoot);
+      }
+    }
+    if(teacherMode||(skullGeometry==='detailed' && chapterAssets(studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start]).skull))await loadHighResolutionSkull();
     elements.loader.hidden=true;
     await initializeStudioScene();
-    setStatus(teacherMode ? 'Studio ready' : 'Student view');
+    setStatus(teacherMode?'Studio ready':'Student view');
     elements.offlineButton.hidden=false;
-    // The first page load is not necessarily controlled by the new worker.
-    // Messaging its active worker directly also prepares offline use on that first visit.
-    cacheOffline();
+    if(teacherMode)cacheOffline(); // Student offline prep is opt-in, never a hidden whole-lesson download.
+    else elements.offlineButton.textContent='Save lesson offline';
   }catch(err){
     console.error(err);
-    elements.loader.hidden=false;
-    elements.loadTitle.textContent='Unable to open anatomy scene';
-    elements.loadDesc.textContent=(!teacherMode && sceneRoot)
-      ? 'The shared link is invalid or was created for a different version of the anatomy model. Ask your teacher for a new link.'
-      : 'Check your internet connection for the first visit. After successfully loading once, the PWA can use its cached model offline.';
+    elements.loader.hidden=false;elements.loadTitle.textContent='Unable to open anatomy scene';
+    elements.loadDesc.textContent=(!teacherMode&&sceneRoot)
+      ? 'This lesson requires anatomy assets that could not be loaded. Check your connection or ask the teacher to verify their GitHub files.'
+      : 'Check your internet connection for the first visit. The PWA can use its cached model offline afterward.';
     elements.loadText.textContent=String(err?.message||'3D model unavailable');
     elements.progress.style.width='0%';elements.retry.hidden=false;
     setStatus('Model unavailable','error');
@@ -946,8 +1055,20 @@ async function loadAnatomy(){
 }
 
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
-function changeSystemLayer(system){
-  if(!sceneRoot||(!teacherMode&&!studentExplore))return;
+async function changeSystemLayer(system){
+  if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore))return;
+  if(!teacherMode && (system==='digestive' || system==='cardiovascular')){
+    const type=system==='digestive'?'detailedDigestive':'cardiovascular';
+    const active=system==='digestive'?systemLayers.digestive:systemLayers.cardiovascular;
+    if(!active){
+      studentAssetBusy=true;
+      setStatus('Loading '+system+' model');
+      try{await loadNeededAsset(type);}
+      catch(error){showToast(error.message);setStatus('Student view');return;}
+      finally{studentAssetBusy=false;}
+      setStatus('Student view');
+    }
+  }
   let next;
   try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable);}catch(e){showToast(e.message);return;}
   const priorCount=currentlyVisible().length;
@@ -1030,7 +1151,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:digestiveAvailable,detail:detailAvailable,detailMode:digestiveGeometry,cardio:cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded)});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry}):[]});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -1185,13 +1306,20 @@ function renderChapterUI(){
   $('duplicate-chapter').disabled=count>=MAX_CHAPTERS;
 }
 async function switchChapter(index){
-  if(!sceneRoot || index<0 || index>=chapters.length || index===activeChapter)return;
+  if(!sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
   if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
+  if(!teacherMode){
+    studentAssetBusy=true;
+    setStatus(`Loading chapter ${index+1}…`);
+    try{await ensureChapterAssets(chapters[index]);}
+    catch(error){showToast(error.message);setStatus('Student view');return;}
+    finally{studentAssetBusy=false;}
+  }
   activeChapter=index;
   await applyScene(chapters[activeChapter]);
   renderChapterUI();
-  if(teacherMode)queueDraft();
+  if(teacherMode)queueDraft();else setStatus('Student view');
 }
 function createChapter(duplicate){
   if(!teacherMode || !sceneRoot)return;
@@ -1855,8 +1983,8 @@ async function checkLocalAssets(){
     ? (skullDetailStats?.upgraded ? `Experimental: ${skullDetailStats.upgraded} skull bones upgraded; original jaw/teeth retained` : `Experimental not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
     : 'Standard Écorché geometry (recommended)';
   $('settings-skull').title=skullDetailStats?.skipped?.join('; ')||'';
-  $('settings-cardio').textContent=cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry})`:'Not installed — run cardiovascular installer';
-  $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected)`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';
+  $('settings-cardio').textContent=cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry}${!teacherMode&&!cardioLoaded?'; loads when needed':''})`:'Not installed — run cardiovascular installer';
+  $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected${!teacherMode&&!detailLoaded?'; loads when needed':''})`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';
 }
 function openAppSettings(){
   $('settings-dialog').hidden=false;

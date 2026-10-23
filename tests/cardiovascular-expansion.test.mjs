@@ -35,5 +35,5 @@ test('1.6 install and UI expose heart internals with local-only model files',()=
  assert.match(read('tools/install-cardiovascular-43.sh'),/fetch-cardiovascular-expansion\.py/);
  assert.match(read('app.js'),/data\.?menuCardiac|menuCardiac/);
  assert.match(read('index.html'),/data-menu-cardiac="interior"/);
- assert.match(read('sw.js'),/anatomy-v1\.8\.3/);
+ assert.match(read('sw.js'),/anatomy-v1\.8\.4/);
 });

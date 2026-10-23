@@ -39,7 +39,7 @@ test('new major vessel segments append without renumbering past 1.8 models',()=>
 });
 test('the app and worker use the 1.8.2 version, and the new source-backed installer',()=>{
  const get=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
- assert.match(get('sw.js'),/anatomy-v1\.8\.3/);
+ assert.match(get('sw.js'),/anatomy-v1\.8\.4/);
  assert.match(get('index.html'),/data-cardio-preset="chambers"/);
  assert.match(get('tools/install-cardiovascular-43.sh'),/fetch-cardiovascular-vessels\.py/);
  assert.match(get('tools/install-cardiovascular-43.sh'),/--prior-manifest/);

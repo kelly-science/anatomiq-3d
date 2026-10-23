@@ -25,5 +25,5 @@ test('interior and coronary require actual downloaded anatomy',()=>{
 test('installer downloads expanded subset using absolute script location',()=>{
  const script=readFileSync(new URL('../tools/install-cardiovascular-43.sh',import.meta.url),'utf8');
  assert.match(script,/"\$PY" "\$ROOT\/tools\/fetch-cardiovascular-expansion\.py"/);
- assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/anatomy-v1\.8\.3/);
+ assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/anatomy-v1\.8\.4/);
 });
