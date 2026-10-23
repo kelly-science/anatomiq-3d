@@ -1,0 +1,1633 @@
+{
+  "title": "Cardiovascular Class Core",
+  "source_version": "BodyParts3D / DBCLS 4.3",
+  "mesh_count": 299,
+  "required_count": 81,
+  "represented": 64,
+  "partial": 14,
+  "missing": 3,
+  "warning": "Model presence does not prove vessel continuity or realistic internal heart structures. Labels with partial coverage need visual validation.",
+  "targets": [
+    {
+      "id": "pulmonary-semilunar-valve",
+      "name": "Pulmonary semilunar valve",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2417",
+          "name": "Left anterior cusp of pulmonary valve"
+        },
+        {
+          "id": "FJ2427",
+          "name": "Posterior cusp of pulmonary valve"
+        },
+        {
+          "id": "FJ2434",
+          "name": "Right anterior cusp of pulmonary valve"
+        }
+      ]
+    },
+    {
+      "id": "aortic-semilunar-valve",
+      "name": "Aortic semilunar valve",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2426",
+          "name": "Left posterior cusp of aortic valve"
+        },
+        {
+          "id": "FJ2431",
+          "name": "Right posterior cusp of aortic valve"
+        },
+        {
+          "id": "FJ2435",
+          "name": "Anterior cusp of aortic valve"
+        }
+      ]
+    },
+    {
+      "id": "tricuspid-valve",
+      "name": "Tricuspid valve",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2421",
+          "name": "Anterior leaflet of tricuspid valve"
+        },
+        {
+          "id": "FJ2433",
+          "name": "Posterior leaflet of tricuspid valve"
+        },
+        {
+          "id": "FJ2436",
+          "name": "Septal leaflet of tricuspid valve"
+        }
+      ]
+    },
+    {
+      "id": "chordae-tendineae",
+      "name": "Chordae tendineae",
+      "group": "heart",
+      "status": "missing",
+      "source_meshes": []
+    },
+    {
+      "id": "bicuspid-mitral-valve",
+      "name": "Bicuspid (mitral) valve",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2420",
+          "name": "Anterior leaflet of mitral valve"
+        },
+        {
+          "id": "FJ2432",
+          "name": "Posterior leaflet of mitral valve"
+        }
+      ]
+    },
+    {
+      "id": "right-atrium",
+      "name": "Right atrium",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2439",
+          "name": "Wall of right atrium"
+        }
+      ]
+    },
+    {
+      "id": "left-atrium",
+      "name": "Left atrium",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2438",
+          "name": "Wall of left atrium"
+        }
+      ]
+    },
+    {
+      "id": "papillary-muscle",
+      "name": "Papillary muscle",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2418",
+          "name": "Anterolateral head of lateral papillary muscle of left ventricle"
+        },
+        {
+          "id": "FJ2419",
+          "name": "Anterior papillary muscle of right ventricle"
+        },
+        {
+          "id": "FJ2429",
+          "name": "Posterior papillary muscle of left ventricle"
+        },
+        {
+          "id": "FJ2430",
+          "name": "Posterior papillary muscle of right ventricle"
+        },
+        {
+          "id": "FJ2437",
+          "name": "Septal papillary muscle of right ventricle"
+        }
+      ]
+    },
+    {
+      "id": "right-auricle",
+      "name": "Right auricle",
+      "group": "heart",
+      "status": "missing",
+      "source_meshes": []
+    },
+    {
+      "id": "left-auricle",
+      "name": "Left auricle",
+      "group": "heart",
+      "status": "missing",
+      "source_meshes": []
+    },
+    {
+      "id": "right-ventricle",
+      "name": "Right ventricle",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2428",
+          "name": "Wall of ventricle"
+        },
+        {
+          "id": "FJ2423",
+          "name": "Cavity of right ventricle"
+        }
+      ]
+    },
+    {
+      "id": "left-ventricle",
+      "name": "Left ventricle",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2428",
+          "name": "Wall of ventricle"
+        },
+        {
+          "id": "FJ2422",
+          "name": "Cavity of left ventricle"
+        }
+      ]
+    },
+    {
+      "id": "right-coronary-artery",
+      "name": "Right coronary artery",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2692",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2695",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2696",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2697",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2698",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2699",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2700",
+          "name": "Posterior interventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2670",
+          "name": "Conus branch of right coronary artery"
+        },
+        {
+          "id": "FJ2671",
+          "name": "First anterior ventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2672",
+          "name": "Marginal branch of right coronary artery"
+        },
+        {
+          "id": "FJ2714",
+          "name": "First posterior ventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2719",
+          "name": "First posterior ventricular branch of right coronary artery"
+        },
+        {
+          "id": "FJ2723",
+          "name": "Trunk of right coronary artery"
+        }
+      ]
+    },
+    {
+      "id": "left-coronary-artery",
+      "name": "Left coronary artery",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2649",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ2650",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ2651",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ2653",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ2654",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3660",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3661",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3662",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3663",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3664",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3665",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ3666",
+          "name": "Circumflex branch of left coronary artery"
+        },
+        {
+          "id": "FJ2631",
+          "name": "Trunk of anterior interventricular branch of left coronary artery"
+        },
+        {
+          "id": "FJ2633",
+          "name": "Diagonal branch of anterior descending branch of left coronary artery"
+        },
+        {
+          "id": "FJ2635",
+          "name": "Diagonal branch of anterior descending branch of left coronary artery"
+        },
+        {
+          "id": "FJ2636",
+          "name": "Diagonal branch of anterior descending branch of left coronary artery"
+        },
+        {
+          "id": "FJ2641",
+          "name": "Third right anterior branch of anterior interventricular branch of left coronary artery"
+        },
+        {
+          "id": "FJ2642",
+          "name": "Diagonal branch of anterior descending branch of left coronary artery"
+        },
+        {
+          "id": "FJ2643",
+          "name": "Conus branch of anterior interventricular branch of left coronary artery"
+        },
+        {
+          "id": "FJ2646",
+          "name": "Second right anterior branch of anterior interventricular branch of left coronary artery"
+        },
+        {
+          "id": "FJ6164",
+          "name": "Trunk of anterior interventricular branch of left coronary artery"
+        },
+        {
+          "id": "FJ6182",
+          "name": "Trunk of circumflex branch of left coronary artery"
+        }
+      ]
+    },
+    {
+      "id": "marginal-branch",
+      "name": "Marginal branch",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2672",
+          "name": "Marginal branch of right coronary artery"
+        }
+      ]
+    },
+    {
+      "id": "anterior-cardiac-veins",
+      "name": "Anterior cardiac veins",
+      "group": "heart",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2725",
+          "name": "Anterior cardiac vein"
+        },
+        {
+          "id": "FJ2730",
+          "name": "Anterior cardiac vein"
+        }
+      ]
+    },
+    {
+      "id": "great-cardiac-vein",
+      "name": "Great cardiac vein",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2656",
+          "name": "Great cardiac vein"
+        }
+      ]
+    },
+    {
+      "id": "middle-cardiac-vein",
+      "name": "Middle cardiac vein",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2678",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2679",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2680",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2681",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2682",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2683",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2684",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2685",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2686",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2687",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2688",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2689",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2690",
+          "name": "Middle cardiac vein"
+        },
+        {
+          "id": "FJ2691",
+          "name": "Middle cardiac vein"
+        }
+      ]
+    },
+    {
+      "id": "coronary-sinus",
+      "name": "Coronary sinus",
+      "group": "heart",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2655",
+          "name": "Coronary sinus"
+        }
+      ]
+    },
+    {
+      "id": "ascending-aorta",
+      "name": "Ascending aorta",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3413",
+          "name": "Ascending aorta"
+        }
+      ]
+    },
+    {
+      "id": "descending-aorta",
+      "name": "Descending aorta",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3427",
+          "name": "Descending aorta"
+        }
+      ]
+    },
+    {
+      "id": "thoracic-aorta",
+      "name": "Thoracic aorta",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3427",
+          "name": "Descending aorta"
+        }
+      ]
+    },
+    {
+      "id": "superior-vena-cava",
+      "name": "Superior vena cava",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3645",
+          "name": "Superior vena cava"
+        }
+      ]
+    },
+    {
+      "id": "inferior-vena-cava",
+      "name": "Inferior vena cava",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3441",
+          "name": "Inferior vena cava"
+        },
+        {
+          "id": "FJ3659",
+          "name": "Inferior vena cava"
+        }
+      ]
+    },
+    {
+      "id": "pulmonary-veins",
+      "name": "Pulmonary veins",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2925",
+          "name": "Trunk of left superior pulmonary vein"
+        },
+        {
+          "id": "FJ2933",
+          "name": "Trunk of left superior pulmonary vein"
+        },
+        {
+          "id": "FJ2944",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ2950",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ2955",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ3020",
+          "name": "Trunk of right superior pulmonary vein"
+        },
+        {
+          "id": "FJ3040",
+          "name": "Trunk of right inferior pulmonary vein"
+        },
+        {
+          "id": "FJ5994",
+          "name": "Trunk of left superior pulmonary vein"
+        },
+        {
+          "id": "FJ6002",
+          "name": "Trunk of left superior pulmonary vein"
+        },
+        {
+          "id": "FJ6013",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ6019",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ6024",
+          "name": "Trunk of left inferior pulmonary vein"
+        },
+        {
+          "id": "FJ6089",
+          "name": "Trunk of right superior pulmonary vein"
+        }
+      ]
+    },
+    {
+      "id": "brachiocephalic-artery",
+      "name": "Brachiocephalic artery",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3417",
+          "name": "Trunk of brachiocephalic artery"
+        },
+        {
+          "id": "FJ4715",
+          "name": "Trunk of brachiocephalic artery"
+        }
+      ]
+    },
+    {
+      "id": "left-common-carotid",
+      "name": "Left common carotid",
+      "group": "great-vessel",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ1682M",
+          "name": "Trunk of left common carotid artery"
+        }
+      ]
+    },
+    {
+      "id": "right-common-carotid-artery",
+      "name": "Right common carotid artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3564",
+          "name": "Trunk of right common carotid artery"
+        },
+        {
+          "id": "FJ4986",
+          "name": "Trunk of right common carotid artery"
+        }
+      ]
+    },
+    {
+      "id": "left-common-carotid-artery",
+      "name": "Left common carotid artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ1682M",
+          "name": "Trunk of left common carotid artery"
+        }
+      ]
+    },
+    {
+      "id": "right-subclavian-artery",
+      "name": "Right subclavian artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3579",
+          "name": "Trunk of right subclavian artery"
+        },
+        {
+          "id": "FJ5006",
+          "name": "Trunk proper of right subclavian artery"
+        }
+      ]
+    },
+    {
+      "id": "left-subclavian-artery",
+      "name": "Left subclavian artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3479",
+          "name": "Trunk of left subclavian artery"
+        }
+      ]
+    },
+    {
+      "id": "celiac-trunk",
+      "name": "Celiac trunk",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3421",
+          "name": "Celiac trunk"
+        }
+      ]
+    },
+    {
+      "id": "renal-arteries",
+      "name": "Renal arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3476",
+          "name": "Trunk of left renal artery"
+        },
+        {
+          "id": "FJ3576",
+          "name": "Trunk of right renal artery"
+        },
+        {
+          "id": "FJ3458",
+          "name": "Anterior division of left renal artery"
+        },
+        {
+          "id": "FJ3461",
+          "name": "Anterior division of left renal artery"
+        },
+        {
+          "id": "FJ3462",
+          "name": "Anterior division of left renal artery"
+        },
+        {
+          "id": "FJ3463",
+          "name": "Anterior division of left renal artery"
+        },
+        {
+          "id": "FJ3563",
+          "name": "Anterior division of right renal artery"
+        },
+        {
+          "id": "FJ3575",
+          "name": "Posterior division of right renal artery"
+        }
+      ]
+    },
+    {
+      "id": "superior-mesenteric-artery",
+      "name": "Superior mesenteric artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3644",
+          "name": "Trunk of superior mesenteric artery"
+        }
+      ]
+    },
+    {
+      "id": "gonadal-arteries",
+      "name": "Gonadal arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3532",
+          "name": "Left testicular artery"
+        },
+        {
+          "id": "FJ3617",
+          "name": "Right testicular artery"
+        }
+      ]
+    },
+    {
+      "id": "inferior-mesenteric-artery",
+      "name": "Inferior mesenteric artery",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3442",
+          "name": "Trunk of inferior mesenteric artery"
+        }
+      ]
+    },
+    {
+      "id": "common-iliac-arteries",
+      "name": "Common iliac arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3464",
+          "name": "Trunk of left common iliac artery"
+        },
+        {
+          "id": "FJ3565",
+          "name": "Trunk of right common iliac artery"
+        }
+      ]
+    },
+    {
+      "id": "internal-iliac-arteries",
+      "name": "Internal iliac arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3468",
+          "name": "Trunk of left internal iliac artery"
+        },
+        {
+          "id": "FJ3569",
+          "name": "Right internal iliac artery"
+        }
+      ]
+    },
+    {
+      "id": "external-iliac-arteries",
+      "name": "External iliac arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3466",
+          "name": "Trunk proper of left external iliac artery"
+        },
+        {
+          "id": "FJ3567",
+          "name": "Trunk proper of right external iliac artery"
+        }
+      ]
+    },
+    {
+      "id": "femoral-arteries",
+      "name": "Femoral arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2074",
+          "name": "Trunk of left femoral artery"
+        },
+        {
+          "id": "FJ2127",
+          "name": "Trunk of right femoral artery"
+        },
+        {
+          "id": "FJ2143",
+          "name": "Trunk of right femoral artery"
+        },
+        {
+          "id": "FJ2094",
+          "name": "Left deep femoral artery"
+        },
+        {
+          "id": "FJ2203",
+          "name": "Right deep femoral artery"
+        }
+      ]
+    },
+    {
+      "id": "popliteal-arteries",
+      "name": "Popliteal arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2086",
+          "name": "Left popliteal artery"
+        },
+        {
+          "id": "FJ2170",
+          "name": "Right popliteal artery"
+        }
+      ]
+    },
+    {
+      "id": "anterior-tibial-arteries",
+      "name": "Anterior tibial arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2065",
+          "name": "Trunk of left anterior tibial artery"
+        },
+        {
+          "id": "FJ2130",
+          "name": "Trunk of right anterior tibial artery"
+        }
+      ]
+    },
+    {
+      "id": "posterior-tibial-arteries",
+      "name": "Posterior tibial arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2087",
+          "name": "Trunk of left posterior tibial artery"
+        },
+        {
+          "id": "FJ2172",
+          "name": "Trunk of right posterior tibial artery"
+        }
+      ]
+    },
+    {
+      "id": "fibular-arteries",
+      "name": "Fibular arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2093",
+          "name": "Left peroneal artery"
+        },
+        {
+          "id": "FJ2197",
+          "name": "Right peroneal artery"
+        }
+      ]
+    },
+    {
+      "id": "dorsalis-pedis-arteries",
+      "name": "Dorsalis pedis arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2055",
+          "name": "Right dorsalis pedis artery"
+        },
+        {
+          "id": "FJ2073",
+          "name": "Left dorsalis pedis artery"
+        }
+      ]
+    },
+    {
+      "id": "brachial-arteries",
+      "name": "Brachial arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2219",
+          "name": "Left brachial artery"
+        },
+        {
+          "id": "FJ2271",
+          "name": "Right brachial artery"
+        },
+        {
+          "id": "FJ2275",
+          "name": "Right brachial artery"
+        },
+        {
+          "id": "FJ2294",
+          "name": "Right brachial artery"
+        },
+        {
+          "id": "FJ2310",
+          "name": "Right brachial artery"
+        },
+        {
+          "id": "FJ2225",
+          "name": "Left deep brachial artery"
+        },
+        {
+          "id": "FJ2261",
+          "name": "Radial collateral branch of left deep brachial artery"
+        },
+        {
+          "id": "FJ2262",
+          "name": "Radial collateral branch of right deep brachial artery"
+        },
+        {
+          "id": "FJ2277",
+          "name": "Right deep brachial artery"
+        },
+        {
+          "id": "FJ2331",
+          "name": "Middle collateral branch of left deep brachial artery"
+        },
+        {
+          "id": "FJ2362",
+          "name": "Middle collateral branch of right deep brachial artery"
+        }
+      ]
+    },
+    {
+      "id": "radial-arteries",
+      "name": "Radial arteries",
+      "group": "artery",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2242",
+          "name": "Trunk of left radial artery"
+        },
+        {
+          "id": "FJ2231",
+          "name": "Dorsal carpal branch of left radial artery"
+        },
+        {
+          "id": "FJ2283",
+          "name": "Dorsal carpal branch of right radial artery"
+        }
+      ]
+    },
+    {
+      "id": "ulnar-arteries",
+      "name": "Ulnar arteries",
+      "group": "artery",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ2258",
+          "name": "Trunk of left ulnar artery"
+        }
+      ]
+    },
+    {
+      "id": "vertebral-veins",
+      "name": "Vertebral veins",
+      "group": "vein",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ5016",
+          "name": "Right vertebral vein"
+        }
+      ]
+    },
+    {
+      "id": "external-jugular-veins",
+      "name": "External jugular veins",
+      "group": "vein",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ5082",
+          "name": "Right external jugular vein"
+        }
+      ]
+    },
+    {
+      "id": "internal-jugular-veins",
+      "name": "Internal jugular veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3485",
+          "name": "Left internal jugular vein"
+        },
+        {
+          "id": "FJ3585",
+          "name": "Right internal jugular vein"
+        },
+        {
+          "id": "FJ5105",
+          "name": "Right internal jugular vein proper"
+        }
+      ]
+    },
+    {
+      "id": "subclavian-veins",
+      "name": "Subclavian veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3486",
+          "name": "Left subclavian vein"
+        },
+        {
+          "id": "FJ3587",
+          "name": "Right subclavian vein"
+        },
+        {
+          "id": "FJ5189",
+          "name": "Trunk of right subclavian vein"
+        }
+      ]
+    },
+    {
+      "id": "axillary-veins",
+      "name": "Axillary veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2217",
+          "name": "Left axillary vein"
+        },
+        {
+          "id": "FJ2269",
+          "name": "Right axillary vein"
+        }
+      ]
+    },
+    {
+      "id": "cephalic-veins",
+      "name": "Cephalic veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2220",
+          "name": "Left cephalic vein"
+        },
+        {
+          "id": "FJ2272",
+          "name": "Right cephalic vein"
+        }
+      ]
+    },
+    {
+      "id": "basilic-veins",
+      "name": "Basilic veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2218",
+          "name": "Left basilic vein"
+        },
+        {
+          "id": "FJ2270",
+          "name": "Right basilic vein"
+        }
+      ]
+    },
+    {
+      "id": "brachial-veins",
+      "name": "Brachial veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2313",
+          "name": "Left medial brachial vein"
+        },
+        {
+          "id": "FJ2341",
+          "name": "Right medial brachial vein"
+        }
+      ]
+    },
+    {
+      "id": "hepatic-veins",
+      "name": "Hepatic veins",
+      "group": "vein",
+      "status": "partial",
+      "source_meshes": [
+        {
+          "id": "FJ3118",
+          "name": "Posterior inferior segmental tributary of right hepatic vein"
+        },
+        {
+          "id": "FJ3119",
+          "name": "Posterior superior segmental tributary of right hepatic vein"
+        },
+        {
+          "id": "FJ3120",
+          "name": "Posterior inferior segmental tributary of right hepatic vein"
+        },
+        {
+          "id": "FJ3121",
+          "name": "Anterior superior segmental tributary of right hepatic vein"
+        },
+        {
+          "id": "FJ3083",
+          "name": "Anterior inferior segmental tributary of middle hepatic vein"
+        },
+        {
+          "id": "FJ3084",
+          "name": "Medial inferior segmental tributary of middle hepatic vein"
+        }
+      ]
+    },
+    {
+      "id": "median-cubital-veins",
+      "name": "Median cubital veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2235",
+          "name": "Left median cubital vein"
+        },
+        {
+          "id": "FJ2287",
+          "name": "Right median cubital vein"
+        }
+      ]
+    },
+    {
+      "id": "radial-veins",
+      "name": "Radial veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2244",
+          "name": "Left radial vein"
+        },
+        {
+          "id": "FJ2296",
+          "name": "Right radial vein"
+        }
+      ]
+    },
+    {
+      "id": "median-antebrachial-veins",
+      "name": "Median antebrachial veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2234",
+          "name": "Left median antebrachial vein"
+        },
+        {
+          "id": "FJ2286",
+          "name": "Right median antebrachial vein"
+        }
+      ]
+    },
+    {
+      "id": "ulnar-veins",
+      "name": "Ulnar veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2260",
+          "name": "Left ulnar vein"
+        },
+        {
+          "id": "FJ2312",
+          "name": "Right ulnar vein"
+        }
+      ]
+    },
+    {
+      "id": "palmar-venous-arches",
+      "name": "Palmar venous arches",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2249",
+          "name": "Left superficial palmar venous arch"
+        },
+        {
+          "id": "FJ2281",
+          "name": "Right deep palmar venous arch"
+        },
+        {
+          "id": "FJ2301",
+          "name": "Right superficial palmar venous arch"
+        }
+      ]
+    },
+    {
+      "id": "digital-veins",
+      "name": "Digital veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2319",
+          "name": "Proper palmar digital vein of left little finger"
+        },
+        {
+          "id": "FJ2349",
+          "name": "Proper palmar digital vein of right little finger"
+        },
+        {
+          "id": "FJ2351",
+          "name": "Proper palmar digital vein of right little finger"
+        }
+      ]
+    },
+    {
+      "id": "brachiocephalic-veins",
+      "name": "Brachiocephalic veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3583",
+          "name": "Trunk of right brachiocephalic vein"
+        },
+        {
+          "id": "FJ4984",
+          "name": "Trunk of right brachiocephalic vein"
+        },
+        {
+          "id": "FJ3482",
+          "name": "Left brachiocephalic vein"
+        }
+      ]
+    },
+    {
+      "id": "intercostal-veins",
+      "name": "Intercostal veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ1991",
+          "name": "Right superior intercostal vein"
+        },
+        {
+          "id": "FJ1986",
+          "name": "Left superior intercostal vein"
+        }
+      ]
+    },
+    {
+      "id": "renal-veins",
+      "name": "Renal veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3477",
+          "name": "Left renal vein"
+        },
+        {
+          "id": "FJ3478",
+          "name": "Left renal vein"
+        },
+        {
+          "id": "FJ3577",
+          "name": "Right renal vein"
+        },
+        {
+          "id": "FJ3578",
+          "name": "Right renal vein"
+        }
+      ]
+    },
+    {
+      "id": "gonadal-veins",
+      "name": "Gonadal veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3533",
+          "name": "Left testicular vein"
+        },
+        {
+          "id": "FJ3618",
+          "name": "Right testicular vein"
+        }
+      ]
+    },
+    {
+      "id": "lumbar-veins",
+      "name": "Lumbar veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3589",
+          "name": "Right ascending lumbar vein"
+        },
+        {
+          "id": "FJ3631",
+          "name": "Lumbar vein"
+        },
+        {
+          "id": "FJ3635",
+          "name": "Lumbar vein"
+        },
+        {
+          "id": "FJ3493",
+          "name": "Left ascending lumbar vein"
+        }
+      ]
+    },
+    {
+      "id": "common-iliac-veins",
+      "name": "Common iliac veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3465",
+          "name": "Left common iliac vein"
+        },
+        {
+          "id": "FJ3566",
+          "name": "Right common iliac vein"
+        }
+      ]
+    },
+    {
+      "id": "external-iliac-veins",
+      "name": "External iliac veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3484",
+          "name": "Left external iliac vein"
+        },
+        {
+          "id": "FJ3522",
+          "name": "Left external iliac vein"
+        },
+        {
+          "id": "FJ3523",
+          "name": "Left external iliac vein"
+        },
+        {
+          "id": "FJ3524",
+          "name": "Left external iliac vein"
+        },
+        {
+          "id": "FJ3568",
+          "name": "Right external iliac vein"
+        }
+      ]
+    },
+    {
+      "id": "internal-iliac-veins",
+      "name": "Internal iliac veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ3469",
+          "name": "Left internal iliac vein"
+        },
+        {
+          "id": "FJ3470",
+          "name": "Left internal iliac vein"
+        },
+        {
+          "id": "FJ3471",
+          "name": "Left internal iliac vein"
+        },
+        {
+          "id": "FJ3570",
+          "name": "Right internal iliac vein"
+        },
+        {
+          "id": "FJ3571",
+          "name": "Right internal iliac vein"
+        },
+        {
+          "id": "FJ3572",
+          "name": "Right internal iliac vein"
+        },
+        {
+          "id": "FJ3607",
+          "name": "Right internal iliac vein"
+        },
+        {
+          "id": "FJ3608",
+          "name": "Right internal iliac vein"
+        },
+        {
+          "id": "FJ3609",
+          "name": "Right internal iliac vein"
+        }
+      ]
+    },
+    {
+      "id": "deep-femoral-veins",
+      "name": "Deep femoral veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2099",
+          "name": "Left deep femoral vein"
+        },
+        {
+          "id": "FJ2135",
+          "name": "Right deep femoral vein"
+        }
+      ]
+    },
+    {
+      "id": "femoral-veins",
+      "name": "Femoral veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2102",
+          "name": "Left femoral vein"
+        },
+        {
+          "id": "FJ2144",
+          "name": "Right femoral vein"
+        }
+      ]
+    },
+    {
+      "id": "great-saphenous-veins",
+      "name": "Great saphenous veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2103",
+          "name": "Left great saphenous vein"
+        },
+        {
+          "id": "FJ2145",
+          "name": "Right great saphenous vein"
+        }
+      ]
+    },
+    {
+      "id": "popliteal-veins",
+      "name": "Popliteal veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2117",
+          "name": "Left popliteal vein"
+        },
+        {
+          "id": "FJ2171",
+          "name": "Right popliteal vein"
+        }
+      ]
+    },
+    {
+      "id": "small-saphenous-veins",
+      "name": "Small saphenous veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2121",
+          "name": "Left small saphenous vein"
+        },
+        {
+          "id": "FJ2176",
+          "name": "Right small saphenous vein"
+        }
+      ]
+    },
+    {
+      "id": "fibular-veins",
+      "name": "Fibular veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2187",
+          "name": "Left fibular vein"
+        },
+        {
+          "id": "FJ2190",
+          "name": "Right fibular vein"
+        },
+        {
+          "id": "FJ2200",
+          "name": "Right fibular vein"
+        }
+      ]
+    },
+    {
+      "id": "anterior-tibial-veins",
+      "name": "Anterior tibial veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2097",
+          "name": "Left anterior tibial vein"
+        },
+        {
+          "id": "FJ2183",
+          "name": "Left anterior tibial vein"
+        },
+        {
+          "id": "FJ2193",
+          "name": "Right anterior tibial vein"
+        }
+      ]
+    },
+    {
+      "id": "posterior-tibial-veins",
+      "name": "Posterior tibial veins",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2118",
+          "name": "Left posterior tibial vein"
+        },
+        {
+          "id": "FJ2173",
+          "name": "Right posterior tibial vein"
+        }
+      ]
+    },
+    {
+      "id": "plantar-venous-arch",
+      "name": "Plantar venous arch",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2128",
+          "name": "Plantar venous arch of left foot"
+        },
+        {
+          "id": "FJ2129",
+          "name": "Plantar venous arch of right foot"
+        },
+        {
+          "id": "FJ2160",
+          "name": "Tributary of plantar venous arch"
+        }
+      ]
+    },
+    {
+      "id": "dorsal-venous-arch",
+      "name": "Dorsal venous arch",
+      "group": "vein",
+      "status": "represented",
+      "source_meshes": [
+        {
+          "id": "FJ2059",
+          "name": "Dorsal venous arch of left foot"
+        },
+        {
+          "id": "FJ2061",
+          "name": "Dorsal venous arch of right foot"
+        },
+        {
+          "id": "FJ2062",
+          "name": "Dorsal venous arch of right foot"
+        }
+      ]
+    }
+  ]
+}

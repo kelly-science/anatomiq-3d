@@ -1,0 +1,516 @@
+{
+  "source": "BodyParts3D 4.3",
+  "note": "Only selected source meshes, not an anatomically continuous vessel network; gaps may remain.",
+  "new_meshes": 100,
+  "territory_counts": {
+    "vessel-head-neck": 16,
+    "vessel-thorax": 16,
+    "vessel-lower-limb": 16,
+    "vessel-upper-limb": 16,
+    "vessel-heart": 16,
+    "vessel-abdomen": 16,
+    "vessel-pelvis": 4
+  },
+  "names": [
+    {
+      "id": "FJ1661",
+      "name": "Anterior temporal branch of right lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1661M",
+      "name": "Anterior temporal branch of left lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1680",
+      "name": "Middle temporal branch of right lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1687",
+      "name": "Trunk of right lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1687M",
+      "name": "Trunk of left lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1691",
+      "name": "Trunk of right medial occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1691M",
+      "name": "Trunk of left medial occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ1937",
+      "name": "Trunk of right internal thoracic artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1939",
+      "name": "Right first posterior intercostal artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1950",
+      "name": "Right second posterior intercostal artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1972",
+      "name": "Trunk of left internal thoracic artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1973",
+      "name": "Left first posterior intercostal artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1974",
+      "name": "Left second posterior intercostal artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1991",
+      "name": "Right superior intercostal vein",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ1993",
+      "name": "Right internal thoracic vein",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ2057",
+      "name": "Descending branch of right lateral circumflex femoral artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2063",
+      "name": "Descending branch of left lateral circumflex femoral artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2065",
+      "name": "Trunk of left anterior tibial artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2087",
+      "name": "Trunk of left posterior tibial artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2093",
+      "name": "Left peroneal artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2094",
+      "name": "Left deep femoral artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2099",
+      "name": "Left deep femoral vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2103",
+      "name": "Left great saphenous vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2121",
+      "name": "Left small saphenous vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2130",
+      "name": "Trunk of right anterior tibial artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2135",
+      "name": "Right deep femoral vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2145",
+      "name": "Right great saphenous vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2172",
+      "name": "Trunk of right posterior tibial artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2176",
+      "name": "Right small saphenous vein",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2197",
+      "name": "Right peroneal artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2203",
+      "name": "Right deep femoral artery",
+      "territory": "vessel-lower-limb"
+    },
+    {
+      "id": "FJ2218",
+      "name": "Left basilic vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2220",
+      "name": "Left cephalic vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2225",
+      "name": "Left deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2234",
+      "name": "Left median antebrachial vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2236",
+      "name": "Left dorsal carpal branch of ulnar artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2261",
+      "name": "Radial collateral branch of left deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2262",
+      "name": "Radial collateral branch of right deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2270",
+      "name": "Right basilic vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2272",
+      "name": "Right cephalic vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2277",
+      "name": "Right deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2286",
+      "name": "Right median antebrachial vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2288",
+      "name": "Right dorsal carpal branch of ulnar artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2313",
+      "name": "Left medial brachial vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2331",
+      "name": "Middle collateral branch of left deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2341",
+      "name": "Right medial brachial vein",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2362",
+      "name": "Middle collateral branch of right deep brachial artery",
+      "territory": "vessel-upper-limb"
+    },
+    {
+      "id": "FJ2631",
+      "name": "Trunk of anterior interventricular branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2633",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2635",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2636",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2641",
+      "name": "Third right anterior branch of anterior interventricular branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2642",
+      "name": "Diagonal branch of anterior descending branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2643",
+      "name": "Conus branch of anterior interventricular branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2646",
+      "name": "Second right anterior branch of anterior interventricular branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2670",
+      "name": "Conus branch of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2671",
+      "name": "First anterior ventricular branch of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2672",
+      "name": "Marginal branch of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2714",
+      "name": "First posterior ventricular branch of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2719",
+      "name": "First posterior ventricular branch of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ2723",
+      "name": "Trunk of right coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ3074",
+      "name": "Anterior inferior segmental branch of right portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3111",
+      "name": "Posterior inferior segmental branch of right portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3113",
+      "name": "Posterior superior segmental branch of right portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3118",
+      "name": "Posterior inferior segmental tributary of right hepatic vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3119",
+      "name": "Posterior superior segmental tributary of right hepatic vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3120",
+      "name": "Posterior inferior segmental tributary of right hepatic vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3121",
+      "name": "Anterior superior segmental tributary of right hepatic vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3125",
+      "name": "Lateral inferior segmental branch of left portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3126",
+      "name": "Lateral superior segmental branch of left portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3128",
+      "name": "Medial inferior segmental branch of left portal vein",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3458",
+      "name": "Anterior division of left renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3461",
+      "name": "Anterior division of left renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3462",
+      "name": "Anterior division of left renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3463",
+      "name": "Anterior division of left renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3466",
+      "name": "Trunk proper of left external iliac artery",
+      "territory": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3525",
+      "name": "Left internal pudendal vein",
+      "territory": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3563",
+      "name": "Anterior division of right renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3567",
+      "name": "Trunk proper of right external iliac artery",
+      "territory": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3575",
+      "name": "Posterior division of right renal artery",
+      "territory": "vessel-abdomen"
+    },
+    {
+      "id": "FJ3610",
+      "name": "Right internal pudendal vein",
+      "territory": "vessel-pelvis"
+    },
+    {
+      "id": "FJ3954",
+      "name": "Trunk of left maxillary nerve",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ3988",
+      "name": "Trunk of right maxillary nerve",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ4178",
+      "name": "Trunk of left second intercostal nerve",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ5006",
+      "name": "Trunk proper of right subclavian artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ5025",
+      "name": "Right anterior jugular vein",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5028",
+      "name": "Trunk of right lateral occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5082",
+      "name": "Right external jugular vein",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5084",
+      "name": "Trunk of right facial artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5105",
+      "name": "Right internal jugular vein proper",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5122",
+      "name": "Trunk of right maxillary artery",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ5123",
+      "name": "Trunk of right maxillary vein",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ5139",
+      "name": "Trunk of right occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5148",
+      "name": "Parietal branch of right superficial temporal artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5172",
+      "name": "Occipitotemporal branch of right medial occipital artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ5197",
+      "name": "Trunk of right superficial temporal artery",
+      "territory": "vessel-head-neck"
+    },
+    {
+      "id": "FJ6035",
+      "name": "Pulmonary arterial trunk",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ6036",
+      "name": "Pulmonary arterial trunk",
+      "territory": "vessel-thorax"
+    },
+    {
+      "id": "FJ6164",
+      "name": "Trunk of anterior interventricular branch of left coronary artery",
+      "territory": "vessel-heart"
+    },
+    {
+      "id": "FJ6182",
+      "name": "Trunk of circumflex branch of left coronary artery",
+      "territory": "vessel-heart"
+    }
+  ]
+}

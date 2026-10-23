@@ -1,0 +1,82 @@
+{
+  "source": "BodyParts3D 4.3",
+  "targets": [
+    {
+      "target": "right-radial-trunk",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "right-ulnar-trunk",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "left-vertebral-vein",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "left-external-jugular-vein",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "left-hepatic-vein",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "middle-hepatic-vein",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "right-hepatic-vein",
+      "source_count": 0,
+      "installed_ids": [],
+      "added_ids": [],
+      "status": "not-found",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "left-lumbar-vein",
+      "source_count": 1,
+      "installed_ids": [],
+      "added_ids": [
+        "FJ3493"
+      ],
+      "status": "selected",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    },
+    {
+      "target": "right-lumbar-vein",
+      "source_count": 1,
+      "installed_ids": [
+        "FJ3589"
+      ],
+      "added_ids": [],
+      "status": "already-present",
+      "caution": "An available named mesh may still be geometrically disconnected."
+    }
+  ],
+  "added_meshes": 1
+}
