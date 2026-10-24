@@ -147,6 +147,7 @@ sub('index.html',"<section id=\"respiratory-study-panel\"", """<section id="urin
         </section>
         <section id="respiratory-study-panel"""
 )
+content['index.html'] = content['index.html'].replace('<section id="respiratory-study-panel class="', '<section id="respiratory-study-panel" class="')
 sub('index.html',"<div class=\"dialog-backdrop\" id=\"help-dialog\" hidden>", """<div class="dialog-backdrop" id="kidney-interior-dialog" hidden>
     <section class="share-dialog kidney-interior-dialog" role="dialog" aria-modal="true" aria-labelledby="kidney-interior-title">
       <div class="dialog-header"><div><span class="eyebrow">URINARY SYSTEM</span><h2 id="kidney-interior-title">Kidney internal anatomy · schematic</h2></div><button type="button" id="kidney-interior-close" class="icon-button" aria-label="Close kidney schematic">✕</button></div>
