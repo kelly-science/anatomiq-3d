@@ -27,8 +27,41 @@ export function nervousEntries(root,raw){
       side:/\bleft\b/i.test(s.name)?'left':/\bright\b/i.test(s.name)?'right':'midline',fma:s.fma_id||''};
   });
 }
-export const NERVOUS_COLORS=Object.freeze({brain:'#c4a8cf',spinal_cord:'#e0bea8',peripheral:'#e5ce83',meninges:'#c3d9eb'});
-export const nervousColor=s=>s.provenance==='illustrative-reconstruction'?'#cf9856':(NERVOUS_COLORS[s.organId]||NERVOUS_COLORS.peripheral);
+export const NERVOUS_COLORS=Object.freeze({
+  cortex:'#e4b2b7',
+  cerebellum:'#cfaea9',
+  spinal_cord:'#e1c3b2',
+  peripheral:'#dcc379',
+  ventricle:'#7c96a8',
+  thalamus:'#907986',
+  hypothalamus:'#ad8173',
+  basal_ganglia:'#a17670',
+  limbic:'#b59278',
+  dura:'#c6d7df',
+  brainstem:'#c3a29b',
+  brain:'#e4b2b7'
+});
+export function nervousNameGroup(s){
+  const n=(s?.name||'').toLowerCase();
+  if(s?.organId==='meninges'||/dura mater|falx cerebri|tentorium cerebelli/.test(n))return 'dura';
+  if(/third ventricle|fourth ventricle|lateral ventricle|interventricular foramen|cerebral aqueduct/.test(n))return 'ventricle';
+  if(/hypothalam|mammillar/.test(n))return 'hypothalamus';
+  if(/thalam|habenul|geniculate/.test(n))return 'thalamus';
+  if(/caudate|putamen|globus pallidus|substantia nigra|subthalamic nucleus/.test(n))return 'basal_ganglia';
+  if(/amygdala|fornix|hippocamp|corpus callosum|septum pellucidum/.test(n))return 'limbic';
+  if(/cerebell/.test(n))return 'cerebellum';
+  if(/pons|midbrain|medulla oblongata|brainstem/.test(n))return 'brainstem';
+  if(s?.organId==='spinal_cord')return 'spinal_cord';
+  if(s?.organId==='peripheral')return 'peripheral';
+  return 'brain';
+}
+export const nervousColor=s=>s?.provenance==='illustrative-reconstruction'?'#cf9856':NERVOUS_COLORS[nervousNameGroup(s)];
+export function nervousMaterialOverrides(s){
+  const category=nervousNameGroup(s);
+  if(category==='dura')return {transparent:true,opacity:0.3,depthWrite:false,roughness:0.48};
+  if(category==='ventricle')return {transparent:true,opacity:0.9,depthWrite:false,roughness:0.48};
+  return {transparent:false,opacity:1,depthWrite:true,roughness:0.48};
+}
 export function nervousVisibleInPreset(s,preset){
   if(preset==='all')return s.organId!=='meninges'&&s.provenance!=='illustrative-reconstruction';
   if(preset==='cns')return s.organId==='brain'||s.organId==='spinal_cord';

@@ -7,7 +7,7 @@ import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
 import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
-import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset} from './nervous-model.js';
+import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset,nervousMaterialOverrides} from './nervous-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
@@ -26,7 +26,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.0.2';
+const APP_VERSION = '2.0.3';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -515,7 +515,19 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
-  if(s.system==='nervous')return ({brain:'A named brain region; this atlas subdivides the cerebral surface into identifiable regions.',spinal_cord:'The central nervous system pathway between the brainstem and spinal nerves.',peripheral:'A named cranial or peripheral nerve segment carrying sensory, motor, or mixed fibers.'})[s.organId]||'Nervous-system anatomy.';
+  if(s.system==='nervous'){
+    const n=(s.name||'').toLowerCase();
+    if(/dura mater|falx cerebri|tentorium cerebelli/.test(n))return 'A protective fold or covering of the brain’s dura mater.';
+    if(/ventricle|cerebral aqueduct|interventricular foramen/.test(n))return 'Part of the cerebrospinal-fluid ventricular system.';
+    if(/hypothalam/.test(n))return 'Diencephalic region involved in autonomic and endocrine regulation.';
+    if(/thalam/.test(n))return 'Diencephalic region involved in relaying and processing information.';
+    if(/caudate|putamen|globus pallidus/.test(n))return 'A basal ganglia component involved in motor circuits.';
+    if(/amygdala/.test(n))return 'A limbic structure involved in emotion and memory.';
+    if(/fornix/.test(n))return 'A limbic white-matter pathway connecting regions including the hippocampus.';
+    if(s.organId==='spinal_cord')return 'The central nervous system pathway between brainstem and peripheral nerves.';
+    if(s.organId==='peripheral')return 'A named peripheral or cranial nerve carrying sensory, motor or mixed signals.';
+    return 'A named structure of the central nervous system.';
+  }
   if(s.system==='respiratory')return ({lung:'Lung tissue, including bronchopulmonary segments when individually available.',airway:'An air-conducting bronchial structure.',trachea:'Air passage from the larynx toward the two main bronchi.',larynx:'Protects the airway and supports phonation.',upper:'Passage involved in conducting inspired air.',associated:'A neighboring structure involved in ventilation.'})[s.organId]||'Respiratory anatomy.';
   if(s.system==='cardiovascular')return ({'heart-internal':'A named cardiac structure such as a valve leaflet, chamber cavity or papillary muscle; select Heart interior to hide the exterior walls.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
   if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.',esophagus:'Transports swallowed food from the pharynx to the stomach.',gallbladder:'Stores and concentrates bile before its release into the small intestine.',pancreas:'Produces digestive enzymes and bicarbonate, as well as hormones.',duodenum:'First part of the small intestine; receives bile and pancreatic enzymes.',jejunum:'Middle portion of the small intestine; absorbs nutrients.',ileum:'Final portion of the small intestine; absorbs bile salts and vitamin B12.',colon:'Absorbs water and electrolytes and moves fecal matter.',cecum:'Blind pouch at the beginning of the large intestine.',appendix:'Small blind-ended tube arising from the cecum.',rectum:'Stores feces prior to elimination.'})[s.organId] || 'An identifiable segment of the digestive tract.';
@@ -1016,7 +1028,8 @@ async function loadNervous(){
       const mesh=entry.mesh;
       if(mesh.geometry?.attributes?.position&&!mesh.geometry.attributes.normal)mesh.geometry.computeVertexNormals();
       const original=mesh.material;
-      mesh.material=new THREE.MeshStandardMaterial({color:nervousColor(entry),metalness:0,roughness:entry.organId==='meninges'?0.52:0.72,side:THREE.DoubleSide,transparent:entry.organId==='meninges',opacity:entry.organId==='meninges'?0.28:1,depthWrite:entry.organId!=='meninges'});
+      const nervousVisualStyle=nervousMaterialOverrides(entry);
+      mesh.material=new THREE.MeshStandardMaterial({color:nervousColor(entry),metalness:0,roughness:nervousVisualStyle.roughness,side:THREE.DoubleSide,transparent:nervousVisualStyle.transparent,opacity:nervousVisualStyle.opacity,depthWrite:nervousVisualStyle.depthWrite});
       applySurfaceFinish(mesh.material,'nervous',surfaceMode);
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(mesh,mesh.material);mesh.visible=false;
@@ -2322,7 +2335,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.0.2')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.0.3')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;
