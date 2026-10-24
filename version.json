@@ -1,6 +1,6 @@
 {
-  "version": "1.9.0",
+  "version": "2.0.0",
   "channel": "beta",
   "published": "2026-10-23",
-  "notes": "New self-hosted respiratory lung segments and named airways, an Airways + Pulmonary Circulation combined study view reusing existing cardiovascular meshes, lung opacity, scene-aware loading, and safe respiratory model refresh."
+  "notes": "Nervous-system expansion: 125 verified brain, spinal cord and peripheral nerve meshes; independent layer, presets, lazy student loading and scene compatibility."
 }

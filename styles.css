@@ -270,3 +270,6 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 /* 1.9.0: five anatomical systems and lung-transparency control. */
 #respiratory-study-panel input[type="range"]{width:140px;max-width:44%;height:22px;flex:0 0 auto;accent-color:#65bfc8;cursor:pointer}
 @media(max-width:1250px){.mode-tabs{min-width:0;max-width:min(56vw,700px);overflow-x:auto;scrollbar-width:thin}.mode-tab{flex-shrink:0}}
+
+/* 2.0: Six system controls remain reachable on compact Chromebooks and phones. */
+.mode-tabs{min-width:0;flex:0 1 auto;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin}.mode-tab{flex:0 0 auto}

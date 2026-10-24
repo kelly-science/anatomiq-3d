@@ -11,6 +11,7 @@ export const STUDIO_ROUGHNESS=Object.freeze({
   muscular:0.48,    // Preserve the muscle's existing source finish.
   digestive:0.43,   // Moist soft tissue, broader highlights than glass.
   cardiovascular:0.41,
+  nervous:0.48,
   'cardio-cavity':0.77 // Transparent reference volumes must remain subdued.
 });
 
