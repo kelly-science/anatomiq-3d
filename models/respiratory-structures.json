@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio 1.2 body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ2440",
+      "fma_id": "FMA55107",
+      "name": "Cricoid cartilage",
+      "category": "airway",
+      "standard_triangles": 1702,
+      "detailed_triangles": 1702
+    },
+    {
+      "id": "FJ2541",
+      "fma_id": "FMA12224",
+      "name": "Trachea",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4996
+    },
+    {
+      "id": "FJ2769",
+      "fma_id": "FMA55107",
+      "name": "Cricoid cartilage",
+      "category": "airway",
+      "standard_triangles": 1702,
+      "detailed_triangles": 1702
+    },
+    {
+      "id": "FJ2770",
+      "fma_id": "FMA49443",
+      "name": "Epiglottis",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3602
+    },
+    {
+      "id": "FJ2808",
+      "fma_id": "FMA55099",
+      "name": "Thyroid cartilage",
+      "category": "airway",
+      "standard_triangles": 2610,
+      "detailed_triangles": 2610
+    },
+    {
+      "id": "FJ3131",
+      "fma_id": "FMA13295",
+      "name": "Diaphragm",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ6487",
+      "fma_id": "FMA55107",
+      "name": "Cricoid cartilage",
+      "category": "airway",
+      "standard_triangles": 1702,
+      "detailed_triangles": 1702
+    },
+    {
+      "id": "FJ6533",
+      "fma_id": "FMA12224",
+      "name": "Left main bronchus",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4136
+    },
+    {
+      "id": "FJ6583",
+      "fma_id": "FMA12224",
+      "name": "Right main bronchus",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4468
+    },
+    {
+      "id": "FJ6588",
+      "fma_id": "FMA12224",
+      "name": "Trachea",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4996
+    },
+    {
+      "id": "FJ6595",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of apicoposterior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5166
+    },
+    {
+      "id": "FJ6596",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of left posterior basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8202
+    },
+    {
+      "id": "FJ6597",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of apicoposterior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5126
+    },
+    {
+      "id": "FJ6598",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of left anterior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8200
+    },
+    {
+      "id": "FJ6599",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of superior lingular bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7566
+    },
+    {
+      "id": "FJ6600",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of inferior lingular bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5824
+    },
+    {
+      "id": "FJ6601",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of left superior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6168
+    },
+    {
+      "id": "FJ6602",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of left anterior basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11148
+    },
+    {
+      "id": "FJ6603",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of left lateral basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7690
+    },
+    {
+      "id": "FJ6604",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right apical bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7396
+    },
+    {
+      "id": "FJ6605",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right posterior basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6322
+    },
+    {
+      "id": "FJ6606",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right posterior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7300
+    },
+    {
+      "id": "FJ6607",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right anterior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9526
+    },
+    {
+      "id": "FJ6608",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of lateral bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7734
+    },
+    {
+      "id": "FJ6609",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of medial bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7784
+    },
+    {
+      "id": "FJ6610",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right superior bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6602
+    },
+    {
+      "id": "FJ6611",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right anterior basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9116
+    },
+    {
+      "id": "FJ6612",
+      "fma_id": "FMA14065",
+      "name": "Parenchyma of right lateral basal bronchopulmonary segment",
+      "category": "lung",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9506
+    }
+  ]
+}
