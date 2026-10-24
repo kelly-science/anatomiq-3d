@@ -1,0 +1,113 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AnatomIQ · Independent BP3D Source Diagnostic 223d</title>
+<style>
+:root{font-family:system-ui,-apple-system,Helvetica,Arial,sans-serif;color-scheme:dark;background:#081824;color:#e1f0f3}
+*{box-sizing:border-box}body{margin:0;overflow:hidden}aside{position:absolute;left:12px;top:12px;bottom:12px;width:min(370px,calc(100vw - 24px));overflow:auto;z-index:4;border:1px solid #37546b;background:#0e2633ed;padding:18px;border-radius:14px;box-shadow:0 10px 38px #0008}h1{font-size:19px;line-height:1.25;margin:0 0 10px}h2{font-size:14px;margin:18px 0 7px;color:#9dd6ce}p{font-size:12px;line-height:1.5;color:#bfccd6;margin:8px 0}label{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}button,select{border-radius:8px;background:#214b58;border:1px solid #59808a;color:#ebfcfe;padding:9px;font-size:12px;max-width:100%}select{width:100%}button{cursor:pointer;margin:6px 4px 6px 0}.note{padding:10px;background:#163447;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.5}#mode{color:#ffd48a}#error{color:#ffb0a2}small{color:#b1cad4}canvas{display:block}.muted{color:#a2d8e5}@media(max-width:640px){aside{top:auto;bottom:0;max-height:50vh;width:100%;left:0;border-radius:14px 14px 0 0}}
+</style></head><body><aside>
+<h1>Independent BP3D Source Diagnostic 223d</h1>
+<p><strong>New standalone diagnostic:</strong> This page cannot fall back to the previous Z-node viewer. The BP3D aorta (gold) and original UMCG meshes (left) remain visible even if registration fails.</p>
+<div class="note" id="mode">Loading registration status…</div>
+<h2>Visibility</h2>
+<label><input type="checkbox" checked id="bpVisible"> Gold: BodyParts3D aorta</label>
+<label><input type="checkbox" checked id="umcgVisible"> UMCG source meshes</label>
+<label><input type="checkbox" id="zaVisible"> Mint: Z-Anatomy nodes (optional)</label>
+<label><input type="checkbox" id="onlySelected"> Show selected UMCG mesh only</label>
+<h2>Find the UMCG aorta</h2>
+<p>Choose each UMCG mesh in turn. The selection is highlighted red; identify the one containing the aorta. There may not be a separately named aorta.</p>
+<select id="meshName"><option>Loading source mesh list…</option></select>
+<button id="export">Download source diagnostic JSON</button>
+<div class="note" id="names">Preparing models…</div>
+<h2>Registration log</h2>
+<div class="note" id="log">Not loaded</div>
+<div class="note" id="error" hidden></div>
+<p>Diagnostic source preview only. UMCG lymphatics © E-learning UMCG / Anna Sieben, CC BY-NC-SA 4.0. Do not publish geometry before license and anatomical verification.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const $=id=>document.getElementById(id);
+function visibleBounds(root){const box=new THREE.Box3();if(!root)return box;root.updateMatrixWorld(true);for(const m of allMeshes(root)){if(m.visible)box.expandByObject(m)}return box}
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#0d1e2e');scene.add(new THREE.HemisphereLight('#d7f9ff','#425467',2.3));
+const sun=new THREE.DirectionalLight('#ffffff',3);sun.position.set(3,7,8);scene.add(sun);
+const camera=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.0001,1e5);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;
+const load=path=>new GLTFLoader().loadAsync(path).then(v=>v.scene);
+let bpRoot,sourceRoot,zaRoot,sourceItems=[],mode='diagnostic',registration=null,status=null;
+const ids=new Set(['FJ3413','FJ3411','FJ3427','FJ3464','FJ3565']);
+function allMeshes(root){const a=[];root.traverse(x=>{if(x.isMesh)a.push(x)});return a}
+function makeSolid(color){return new THREE.MeshStandardMaterial({color,roughness:.42,metalness:0,side:THREE.DoubleSide})}
+function refit(){let box=new THREE.Box3();let any=false;
+ for(const g of [bpRoot,sourceRoot,zaRoot]){if(g&&g.visible){const b=visibleBounds(g);if(!b.isEmpty()){box.union(b);any=true}}}
+ if(!any||box.isEmpty())return;
+ const c=box.getCenter(new THREE.Vector3()),l=box.getSize(new THREE.Vector3()).length();orbit.target.copy(c);
+ camera.position.copy(c).add(new THREE.Vector3(Math.max(.2,l*.25),Math.max(.2,l*.08),Math.max(.8,l*1.0)));
+ camera.near=Math.max(.00001,l/100000);camera.far=Math.max(100,l*200);camera.updateProjectionMatrix();orbit.update();
+}
+function sourceColor(item,chosen){item.mesh.material=makeSolid(chosen?'#eb5b53':'#77bdd4')}
+function update(){if(!bpRoot||!sourceRoot)return;
+ bpRoot.visible=$('bpVisible').checked;sourceRoot.visible=$('umcgVisible').checked;
+ if(zaRoot)zaRoot.visible=$('zaVisible').checked;
+ const selected=$('meshName').value;
+ for(const item of sourceItems){item.mesh.visible=!$('onlySelected').checked||item.name===selected;sourceColor(item,item.name===selected)}
+}
+async function main(){try{
+ let errorText='';
+ try{const r=await fetch('./models/bp3d-223d-status.json',{cache:'no-store'});if(r.ok)status=await r.json()}catch(e){errorText+='No installer status: '+e+'\n'}
+ try{const r=await fetch('./models/umcg-to-bp3d-registration.json',{cache:'no-store'});if(r.ok)registration=await r.json()}catch(e){errorText+='No registration result: '+e+'\n'}
+ const [bp,src]=await Promise.all([load('./models/cardiovascular-standard.glb'),load('./models/umcg-source.glb')]);
+ bpRoot=bp;sourceRoot=src;
+ let count=0;for(const m of allMeshes(bpRoot)){m.visible=ids.has(m.name);if(m.visible)count++;m.material=makeSolid('#ffcf62')}
+ if(!count)throw Error('BP3D aortic mesh IDs not present: '+[...ids].join(', '));
+ sourceItems=allMeshes(sourceRoot).map(m=>({mesh:m,name:m.name}));
+ const uniqueNames=new Set(sourceItems.map(x=>x.name));
+ if(uniqueNames.size!==sourceItems.length)errorText+='Duplicate mesh names detected; use downloaded JSON for exact inventory.\n';
+ const sel=$('meshName');sel.replaceChildren();for(const item of sourceItems){const o=document.createElement('option');o.value=item.name;o.textContent=item.name;sel.append(o)}
+ const hasFit=!!(status?.fit_attempt_successful&&registration?.status==='REGISTRATION_PREVIEW_REVIEW_REQUIRED'&&registration.matrix_threejs_column_major?.length===16);
+ if(hasFit){
+ mode='registered-preview';sourceRoot.matrixAutoUpdate=false;
+ sourceRoot.matrix.fromArray(registration.matrix_threejs_column_major);
+ sourceRoot.matrixWorldNeedsUpdate=true;
+ $('mode').textContent='PROVISIONAL BP3D AORTA REGISTRATION\nUMCG and BP3D share a candidate coordinate frame. This is NOT yet verified for the whole body.';
+ if(registration.source_aorta_mesh&&uniqueNames.has(registration.source_aorta_mesh))sel.value=registration.source_aorta_mesh;
+ }else{
+ mode='side-by-side';
+ $('mode').textContent='UNREGISTERED — SOURCE INSPECTION ONLY\nLeft: scaled UMCG source for viewing. Right: actual BP3D aortic anchor. Positions are deliberately side by side; do not judge anatomical alignment from this display.';
+ // Normalize only the visual size for a side-by-side diagnostic. This is NOT registration.
+ const bb=visibleBounds(bpRoot),sb=visibleBounds(sourceRoot);
+ const spanB=Math.max(...bb.getSize(new THREE.Vector3()).toArray());
+ const spanS=Math.max(...sb.getSize(new THREE.Vector3()).toArray());
+ if(!(spanB>0&&spanS>0))throw Error('Invalid bounding geometry; cannot arrange diagnostic comparison');
+ const k=spanB/spanS;
+ const bpCenter=bb.getCenter(new THREE.Vector3());
+ bpRoot.position.add(new THREE.Vector3(spanB*.9,0,0).sub(bpCenter));
+ sourceRoot.scale.setScalar(k);
+ const sourceCenter=sb.getCenter(new THREE.Vector3()).multiplyScalar(k);
+ sourceRoot.position.add(new THREE.Vector3(-spanB*.9,0,0).sub(sourceCenter));
+ }
+ scene.add(bpRoot,sourceRoot);
+ try{zaRoot=await load('./models/lymphatic-z-standard.glb');
+ for(const m of allMeshes(zaRoot))m.material=makeSolid('#5ad3a3');
+ if(mode==='side-by-side')zaRoot.visible=false;
+ scene.add(zaRoot);
+ }catch(e){zaRoot=null;$('zaVisible').disabled=true;errorText+='Optional Z node mesh missing; that is fine.\n'}
+ $('names').textContent=`BP3D aortic mesh segments: ${count}\nUMCG source mesh objects: ${sourceItems.length}\nSource mesh names:\n${sourceItems.map(x=>' • '+x.name).join('\n')}`;
+ $('log').textContent=status?.log_tail?.trim()||'No installer log available. Rerun installer and reload this specific page.';
+ if(errorText){$('error').hidden=false;$('error').textContent=errorText}
+ update();refit();
+ }catch(e){$('error').hidden=false;$('error').textContent='Viewer error: '+(e?.stack||e)} }
+for(const id of ['bpVisible','umcgVisible','zaVisible','onlySelected','meshName'])$(id).addEventListener('change',update);
+$('export').onclick=()=>{
+ const result={viewer:'AnatomIQ-223d',mode, registrationValidated:mode==='registered-preview',
+   selectedAortaMesh:$('meshName').value,sourceMeshNames:sourceItems.map(x=>x.name),
+   bp3dAorticMeshIds:[...ids],status,registration,
+   note:'Viewer selection is a hypothesis requiring anatomical inspection; not a production import.'};
+ const blob=new Blob([JSON.stringify(result,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='AnatomIQ-223d-BP3D-Diagnostic.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)}animate();main();
+</script></body></html>

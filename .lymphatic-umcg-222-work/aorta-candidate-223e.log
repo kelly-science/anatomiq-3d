@@ -1,0 +1,20 @@
+AnatomIQ 223e: scoring 8 UMCG meshes against BP3D aortic segments
+[1/8] Extract4_Extract4_0
+    error=0.0114, ratio=0.962, status=numeric candidate only
+[2/8] Extract5_Extract5_0
+    error=0.0229, ratio=0.758, status=numeric candidate only
+[3/8] SubTool_0_8307278_SubTool_0_8307278_0
+    error=0.0465, ratio=0.687, status=numeric candidate only
+[4/8] SubTool_3_8350512_SubTool_3_8350512_0
+    error=0.0267, ratio=0.946, status=numeric candidate only
+[5/8] SubTool_3_8350512_SubTool_3_8350512_0.001
+    error=0.0285, ratio=0.790, status=numeric candidate only
+[6/8] SubTool_3_8350512_SubTool_3_8350512_0.002
+    error=0.0290, ratio=0.824, status=numeric candidate only
+[7/8] SubTool_3_8350512_SubTool_3_8350512_0.003
+    error=0.0280, ratio=0.803, status=numeric candidate only
+[8/8] SubTool_3_8350512_copy1_SubTool_3_8350512_copy1_0
+    error=0.0263, ratio=0.926, status=numeric candidate only
+
+Wrote: /Users/steve/Documents/GitHub/anatomiq-3d/.lymphatic-umcg-222-work/preview/models/umcg-aorta-candidates-223e.json
+IMPORTANT: Best numerical match is not necessarily an anatomical aorta.

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AnatomIQ · Full Lymphatic Overlay 223g</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark;background:#091722;color:#e3f0f3}*{box-sizing:border-box}
+body{margin:0;overflow:hidden}canvas{display:block}
+aside{position:fixed;z-index:10;top:16px;left:16px;bottom:16px;width:min(400px,calc(100vw - 32px));padding:18px;border:1px solid #365564;border-radius:16px;overflow:auto;background:#0d2836f0;box-shadow:0 10px 45px #0008}
+h1{font-size:19px;line-height:1.25;margin:0 0 9px}h2{font-size:13px;color:#a4e0d2;margin:21px 0 8px}p{font-size:12px;line-height:1.6;color:#bbd0d9}label{display:flex;gap:10px;align-items:center;font-size:13px;margin:11px 0;cursor:pointer}input{accent-color:#68d9bb}button{background:#244e5f;border:1px solid #587c8d;color:#ecf7fb;padding:10px 12px;border-radius:9px;font-size:12px;cursor:pointer;margin:5px 3px 3px 0}
+.note{border-radius:9px;background:#163b4a;padding:11px;line-height:1.5;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:#d5e7e9}.error{color:#ffbdaf;background:#4d2d30}
+.swatch{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0;border:1px solid #ffffff80}.meta{color:#8cbbbe;font-size:11px}
+@media(max-width:650px){aside{top:auto;bottom:0;left:0;width:100vw;max-height:48vh;border-radius:16px 16px 0 0}}
+</style>
+</head>
+<body>
+<aside>
+<h1>AnatomIQ · Full Lymphatic Overlay 223g</h1>
+<p>223f overlay with a <strong>local immune-organ correction</strong>. If the spleen loads superior to the thymus, the preview swaps the spleen with the combined thymus-lobe group while preserving the UMCG aorta-derived registration.</p>
+<div class="note" id="status">Loading corrected overlay…</div>
+<h2>Show / hide structures</h2>
+<label><input type="checkbox" checked id="showVessels"><span class="swatch" style="background:#29e184"></span> UMCG candidate lymphatic network</label>
+<label><input type="checkbox" checked id="showNodes"><span class="swatch" style="background:#60bfc3"></span> Z-Anatomy lymph nodes</label>
+<label><input type="checkbox" checked id="showOrgans"><span class="swatch" style="background:#ef9baa"></span> BodyParts3D spleen &amp; thymus</label>
+<label><input type="checkbox" id="showAorta"><span class="swatch" style="background:#ffd376"></span> BodyParts3D aorta — reference</label>
+<label><input type="checkbox" id="showAortaUMCG"><span class="swatch" style="background:#ef6765"></span> UMCG fitted aorta — reference</label>
+<label><input type="checkbox" id="showOther"><span class="swatch" style="background:#687990"></span> UMCG non-green reference anatomy</label>
+<h2>Camera</h2>
+<button id="frameFull">Fit full network</button><button id="frameAorta">Zoom to aorta</button>
+<button id="front">Front</button><button id="side">Side</button><button id="back">Back</button>
+<button id="export">Export 223g review JSON</button>
+<h2>Source inspection</h2>
+<div id="details" class="note">Loading source meshes…</div>
+<h2>Errors</h2>
+<div class="note" id="error">None</div>
+<p class="meta">This is a LOCAL VERIFICATION PREVIEW, not a production import.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=name=>document.getElementById(name);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#0a1c28');
+scene.add(new THREE.HemisphereLight('#e4f6ff','#456073',2));
+const keyLight=new THREE.DirectionalLight('#ffffff',2.8);keyLight.position.set(4,7,8);scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight('#bce9f6',1.2);fillLight.position.set(-6,3,-4);scene.add(fillLight);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.0001,1000);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.07;
+let U=null, B=null, Z=null, O=null, report=null, uParts=[];
+let organFixApplied=false, organFixNote='';
+const AORTA_IDS=new Set(['FJ3413','FJ3411','FJ3427','FJ3464','FJ3565']);
+const load=name=>new GLTFLoader().loadAsync(name).then(g=>g.scene);
+const flatten=name=>(name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function meshes(root){const found=[];root?.traverse(o=>{if(o.isMesh)found.push(o)});return found}
+function material(color){return new THREE.MeshStandardMaterial({color,metalness:0,roughness:.48,side:THREE.DoubleSide,emissive:color,emissiveIntensity:.04})}
+function boundsFor(root){const b=new THREE.Box3();if(!root||!root.visible)return b;root.updateWorldMatrix(true,true);for(const m of meshes(root))if(m.visible)b.expandByObject(m);return b}
+function meshBounds(mesh){const b=new THREE.Box3(); mesh.updateWorldMatrix(true,true); b.expandByObject(mesh); return b;}
+function shownBounds(){const b=new THREE.Box3();for(const r of [U,B,Z,O]){const x=boundsFor(r);if(!x.isEmpty())b.union(x)}return b}
+function pointCamera(box,direction){if(box.isEmpty())return;const center=box.getCenter(new THREE.Vector3());const ext=box.getSize(new THREE.Vector3());const span=Math.max(ext.x,ext.y,ext.z,.1);orbit.target.copy(center);
+const radius=span*2.05;const dirs={front:[0,0,1],back:[0,0,-1],side:[1,0,0]};const vec=dirs[direction]||[.25,.12,1];const n=new THREE.Vector3(...vec).normalize();camera.position.copy(center).addScaledVector(n,radius);camera.near=Math.max(.00001,span/10000);camera.far=Math.max(100,span*300);camera.updateProjectionMatrix();orbit.update()}
+function currentCategory(part){const n=flatten(part.name);if(n===flatten(report.source_aorta_mesh))return 'aorta';if(report.lymphatic_vessel_meshes.some(x=>flatten(x)===n))return 'vessels';return 'other'}
+function update(){if(!U)return;const active={vessels:$('showVessels').checked,aorta:$('showAortaUMCG').checked,other:$('showOther').checked};
+for(const p of uParts)p.mesh.visible=active[p.category];
+if(B)B.visible=$('showAorta').checked;if(Z)Z.visible=$('showNodes').checked;if(O)O.visible=$('showOrgans').checked;}
+function correctOrgans(root){
+  const ms=meshes(root);
+  if(ms.length!==3){organFixNote=`Expected 3 immune-organ meshes, found ${ms.length}; no swap attempted.`; return;}
+  const enriched=ms.map(m=>{const b=meshBounds(m), s=b.getSize(new THREE.Vector3()), c=b.getCenter(new THREE.Vector3()); return {mesh:m,bounds:b,size:s,center:c,volume:Math.max(s.x*s.y*s.z,0)};});
+  enriched.sort((a,b)=>b.volume-a.volume);
+  const spleen=enriched[0];
+  const thymus=enriched.slice(1);
+  const thymusCenter=thymus.reduce((acc,t)=>acc.add(t.center),new THREE.Vector3()).multiplyScalar(1/thymus.length);
+  // In BP3D coordinates, superior structures have larger Y. If the largest organ sits superior to the thymus group, they are swapped.
+  if(spleen.center.y > thymusCenter.y){
+    const delta=new THREE.Vector3().subVectors(thymusCenter,spleen.center);
+    spleen.mesh.position.add(delta);
+    for(const t of thymus)t.mesh.position.sub(delta);
+    organFixApplied=true;
+    organFixNote=`Applied preview-only organ swap correction. Spleen centroid Y ${spleen.center.y.toFixed(1)} was superior to thymus group Y ${thymusCenter.y.toFixed(1)}.`;
+  } else {
+    organFixNote=`No organ swap required. Spleen centroid Y ${spleen.center.y.toFixed(1)} is inferior to thymus group Y ${thymusCenter.y.toFixed(1)}.`;
+  }
+}
+async function main(){try{
+let r=await fetch('./models/umcg-to-bp3d-reviewed-223f.json',{cache:'no-store'});if(!r.ok)throw Error('Registration report missing — install 223f first');report=await r.json();
+if(report.build!=='223f'||report.matrix_threejs_column_major?.length!==16)throw Error('Invalid 223f preview registration');
+[U,B]=await Promise.all([load('./models/umcg-source.glb'),load('./models/cardiovascular-standard.glb')]);
+U.matrixAutoUpdate=false;U.matrix.fromArray(report.matrix_threejs_column_major);U.matrixWorldNeedsUpdate=true;
+uParts=meshes(U).map(mesh=>({mesh,name:mesh.name,category:null}));
+for(const p of uParts){p.category=currentCategory(p);p.mesh.material=material(p.category==='vessels'?'#2de889':p.category==='aorta'?'#ed605b':'#667e91')}
+if(!uParts.some(x=>x.category==='aorta'))throw Error('Required UMCG aorta mesh was not found in 3D GLB');
+if(!uParts.some(x=>x.category==='vessels'))throw Error('No candidate green lymphatic meshes matched the saved source audit');
+let count=0;for(const m of meshes(B)){m.visible=AORTA_IDS.has(m.name);if(m.visible)count++;m.material=material('#ffd077')}
+if(count!==5)throw Error('Missing BP3D aorta reference segments: '+count+' / 5');
+scene.add(U,B);
+try{Z=await load('./models/lymphatic-z-standard.glb');for(const m of meshes(Z))m.material=material('#69bfca');scene.add(Z)}catch(e){$('showNodes').checked=false;$('showNodes').disabled=true;}
+try{O=await load('./models/lymphatic-standard.glb');for(const m of meshes(O))m.material=material('#f0a3b2'); correctOrgans(O); scene.add(O)}catch(e){$('showOrgans').checked=false;$('showOrgans').disabled=true;organFixNote='Immune-organ model unavailable.';}
+update();
+const categories=uParts.reduce((out,p)=>(out[p.category]=(out[p.category]||0)+1,out),{});
+$('details').textContent=`UMCG meshes: ${uParts.length}\nUMCG candidate network pieces: ${categories.vessels||0}\nUMCG aorta: ${categories.aorta||0}\nUMCG other reference meshes: ${categories.other||0}\nZ-Anatomy nodes: ${Z?meshes(Z).length:'missing'}\nBodyParts3D immune organs: ${O?meshes(O).length:'missing'}\nBP3D aorta reference: ${count} segments\nAortic fit normalized error: ${report.aorta_normalized_fit_error}\nFitted length ratio: ${report.aorta_length_ratio}\nOrgan correction: ${organFixApplied?'APPLIED':'not applied'}\n${organFixNote}`;
+$('status').textContent=`AORTIC REGISTRATION APPLIED TO ENTIRE UMCG SOURCE\n${organFixApplied?'IMMUNE-ORGAN PREVIEW CORRECTION APPLIED.':'NO IMMUNE-ORGAN PREVIEW CORRECTION NEEDED.'}\nNext: verify cervical, axillary, abdominal, inguinal, and popliteal placement against Z nodes in front AND side views.`;
+pointCamera(shownBounds(),'front');
+for(const key of ['showVessels','showNodes','showOrgans','showAorta','showAortaUMCG','showOther'])$(key).addEventListener('change',update);
+$('frameFull').onclick=()=>pointCamera(shownBounds(),'front');
+$('frameAorta').onclick=()=>{const b=boundsFor(B);if(!b.isEmpty())pointCamera(b,'front');};
+for(const d of ['front','back','side'])$(d).onclick=()=>pointCamera(shownBounds(),d);
+$('export').onclick=()=>{
+const obj={build:'223g',status:'WHOLE_BODY_HUMAN_REVIEW_PENDING_ORGAN_FIX',source:report.source,source_aorta:report.source_aorta_mesh,
+  aorta_error:report.aorta_normalized_fit_error,source_sha256:report.sha256?.umcg_source,
+  z_nodes_available:!!Z,bp3d_organs_available:!!O,organ_fix_applied:organFixApplied,organ_fix_note:organFixNote,
+  source_meshes:uParts.map(p=>({name:p.name,category:p.category})),
+  note:'223g applies a preview-only spleen/thymus swap when the spleen loads superior to the thymus group.'};
+const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='AnatomIQ-223g-Full-Lymphatic-Overlay-Review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)
+};
+}catch(e){$('status').textContent='FULL-NETWORK PREVIEW ERROR';$('error').className='note error';$('error').textContent=e?.stack||String(e)} }
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)}animate();main();
+</script></body></html>

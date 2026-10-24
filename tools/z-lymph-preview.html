@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AnatomIQ | Z-Anatomy Lymphatic Alignment Preview</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#0e1a25;color:#dfebf0}
+body{margin:0;overflow:hidden}canvas{display:block}aside{position:absolute;left:16px;top:16px;width:min(335px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(19,38,51,.94);border:1px solid #376073;border-radius:16px;padding:18px;box-sizing:border-box;z-index:2;box-shadow:0 12px 32px #0005}
+h1{font-size:19px;margin:0 0 10px}p{color:#b4c8d2;font-size:13px;line-height:1.5;margin:8px 0 15px}label{font-size:13px;display:block;margin:11px 0}input[type=checkbox]{accent-color:#4eabb6}input[type=search]{background:#0b1c28;border:1px solid #3f6575;padding:10px;color:#fff;border-radius:8px;width:100%;box-sizing:border-box}small{color:#a0b5c0}#results{margin-top:10px;max-height:170px;overflow:auto}button{background:#244657;border:1px solid #4b788c;border-radius:8px;color:#e8f8fa;margin:3px;padding:7px;cursor:pointer;text-align:left}button:hover{background:#2b6870}.flag{color:#f4cb83}#hud{font-size:12px;line-height:1.6}#error{color:#f3a9a9;white-space:pre-wrap}
+</style></head><body>
+<aside><h1>AnatomIQ · Z-Anatomy trial</h1><p>Alignment preview only. The existing spleen and thymus are pink; imported Z-Anatomy nodes and lymphatics are green/teal. No published lessons or models are changed.</p>
+<label><input type="checkbox" id="original" checked/> Show BodyParts3D spleen + thymus</label>
+<label><input type="checkbox" id="nodes" checked/> Show Z lymph nodes</label>
+<label><input type="checkbox" id="vessels" checked/> Show Z lymphatic vessels</label>
+<label><input type="checkbox" id="other" checked/> Show other Z lymphatic candidates</label>
+<input type="search" id="search" placeholder="Filter structures by name" aria-label="Filter lymphatic structures"/>
+<div id="hud">Loading geometry and audit…</div><div id="error"></div><div id="results"></div>
+<p class="flag">Experimental: review alignment and labels before merging these models into AnatomIQ.</p></aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const scene=new THREE.Scene();scene.background=new THREE.Color('#0e1a25');
+const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.001,500);camera.position.set(1.8,1.5,2.8);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(2,devicePixelRatio));document.body.append(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xdaf2ff,0x2c3d4c,2.0));const sun=new THREE.DirectionalLight(0xffffff,2.0);sun.position.set(2,4,5);scene.add(sun);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.08;
+const original=$('#original'),nodes=$('#nodes'),vessels=$('#vessels'),other=$('#other'),search=$('#search');
+function $(id){return document.querySelector(id)}
+const hud=$('#hud'),error=$('#error'),results=$('#results');let baseRoot,zaRoot,meta;
+function apply(){
+if(baseRoot)baseRoot.visible=original.checked;
+if(zaRoot)zaRoot.traverse(o=>{if(o.isMesh){const cat=o.userData.category;const visible=cat==='node'?nodes.checked:cat==='vessel'?vessels.checked:other.checked;o.visible=visible&&(!search.value||o.userData.name.toLowerCase().includes(search.value.toLowerCase()));}});
+}
+async function load(){try{
+const loadGlb=url=>new Promise((resolve,reject)=>new GLTFLoader().load(url,g=>resolve(g.scene),undefined,reject));
+const [base,za,manifest]=await Promise.all([loadGlb('./models/lymphatic-standard.glb'),loadGlb('./models/lymphatic-z-standard.glb'),fetch('./models/lymphatic-z-structures.json').then(r=>{if(!r.ok)throw Error('manifest unavailable');return r.json()})]);
+baseRoot=base;zaRoot=za;meta=manifest;scene.add(baseRoot,zaRoot);
+const byId=new Map(meta.structures.map(s=>[s.id,s]));
+baseRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({color:'#bf7d8a',roughness:.5,side:THREE.DoubleSide});});
+zaRoot.traverse(o=>{if(o.isMesh){const m=byId.get(o.name);if(!m)return;o.userData.category=m.category;o.userData.name=m.name;o.material=new THREE.MeshStandardMaterial({color:m.category==='node'?'#68c79c':m.category==='vessel'?'#57bad0':'#b3d68d',roughness:.48,side:THREE.DoubleSide});}});
+const box=new THREE.Box3().setFromObject(zaRoot);box.expandByObject(baseRoot);
+const size=box.getSize(new THREE.Vector3()).length();const center=box.getCenter(new THREE.Vector3());controls.target.copy(center);camera.position.copy(center).add(new THREE.Vector3(size*.7,size*.3,size*.95));camera.near=Math.max(.0001,size/3000);camera.far=Math.max(20,size*20);camera.updateProjectionMatrix();
+const fit=manifest.registration;hud.textContent=`${meta.structures.length} candidate meshes · ${meta.category_counts.node||0} nodes · ${meta.category_counts.vessel||0} vessels · alignment RMS ${fit.rms.toFixed(4)} (body frame)`;
+for(const s of meta.structures.slice(0,250)){const btn=document.createElement('button');btn.textContent=s.name;btn.onclick=()=>{search.value=s.name;apply();};results.append(btn)}
+apply();}catch(e){error.textContent='Preview error: '+String(e);}}
+for(const el of [original,nodes,vessels,other,search])el.addEventListener('input',apply);
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function draw(){requestAnimationFrame(draw);controls.update();renderer.render(scene,camera)}draw();load();
+</script></body></html>

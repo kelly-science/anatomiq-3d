@@ -1,0 +1,11 @@
+Z-Anatomy (The libre 3D atlas of anatomy), Gauthier Kervyn and contributors
+Source: https://github.com/Z-Anatomy/Models-of-human-anatomy
+License: Creative Commons Attribution-ShareAlike 4.0 International
+  https://creativecommons.org/licenses/by-sa/4.0/
+Underlying anatomy adapted in part from BodyParts3D, DBCLS,
+CC BY-SA 2.1 Japan: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/
+
+Any exported derivative models must preserve source attribution and applicable
+ShareAlike terms. The lymphatic-only trial excludes known kidney/inner-ear
+third-party models with noncommercial terms. Verify per-mesh provenance before
+redistributing a new public model bundle. This trial is NOT a production asset.

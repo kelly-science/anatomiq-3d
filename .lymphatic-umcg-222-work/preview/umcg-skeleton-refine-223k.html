@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AnatomIQ · Skeleton Refinement 223k</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#e3f0f3;background:#091722;color-scheme:dark}*{box-sizing:border-box}
+body{margin:0;overflow:hidden}canvas{display:block}
+aside{position:fixed;z-index:10;inset:12px auto 12px 12px;width:min(418px,calc(100vw - 24px));border:1px solid #375967;border-radius:16px;background:#102b39f2;padding:19px;overflow:auto;box-shadow:0 12px 35px #0008}
+h1{font-size:20px;margin:0 0 7px}h2{font-size:13px;color:#99e0d0;margin:18px 0 7px}p,.note{font-size:12px;line-height:1.55}.note{background:#193d4a;padding:11px;border-radius:10px;white-space:pre-wrap;overflow-wrap:anywhere}.warning{border-left:3px solid #e7b86d}
+label{display:flex;gap:10px;align-items:center;font-size:13px;margin:9px 0;cursor:pointer}input{accent-color:#6ad9bd}
+select{width:100%;padding:10px;background:#214b5d;color:#edf8fa;border:1px solid #587888;border-radius:8px}
+button{border:1px solid #5d8292;background:#245062;color:#edf7fa;border-radius:9px;padding:9px 11px;margin:4px 3px 2px 0;cursor:pointer;font-size:12px}
+.dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;border:1px solid #ffffff66}.subtle{color:#afd1d8}
+#labels{pointer-events:none;position:fixed;inset:0;z-index:3;overflow:hidden}.anchor{position:absolute;padding:3px 6px;background:#173644ee;border:1px solid #b9dbef9c;border-radius:5px;color:#e8f7fa;font-size:11px;white-space:nowrap;transform:translate(-50%,-50%)}
+@media(max-width:650px){aside{inset:auto 0 0 0;max-height:47vh;width:100%;border-radius:14px 14px 0 0}}
+</style></head><body>
+<div id="labels"></div>
+<aside>
+<h1>AnatomIQ · Skeleton Refinement 223k</h1>
+<p class="subtle">The corrected BodyParts3D frame is now the <b>baseline</b>. Compare it against a new skeleton-surface fit using the UMCG reference mesh. This fit is <b>a candidate, not anatomical validation</b>; its effect on the aorta is measured separately. No production models change.</p>
+<div id="status" class="note">Loading independent reference models…</div>
+<h2>Coordinate frame</h2>
+<p class="subtle">Default is corrected. Use the older mode only to see why the previous comparison failed.</p>
+<select id="frameMode" aria-label="Alignment frame">
+<option value="anatomiq">Corrected AnatomIQ display frame (new)</option>
+<option value="raw">Previous raw cardiovascular GLB frame (incorrect)</option>
+</select>
+<div id="frameStats" class="note" style="margin-top:10px">Calculating model transforms…</div>
+<h2>Candidate skeleton correction</h2>
+<div id="fitScores" class="note">Loading refinement report…</div>
+<label for="blend">Apply proposed correction: <strong id="blendLabel">0%</strong></label>
+<input type="range" id="blend" min="0" max="100" step="1" value="0" style="width:100%;accent-color:#6ad9bd">
+<button id="baseline">Show original 223j</button><button id="proposed">Show proposed 223k</button>
+<p class="subtle"><strong>Start at 0%.</strong> Toggle to 100% to assess the fitted alignment from anterior, posterior, and both sides. If the aorta moves away or the skeleton mirrors left/right, do not use the candidate.</p>
+<h2>Skeleton overlays</h2>
+<label><input id="bp" type="checkbox" checked><span class="dot" style="background:#5ce3fb"></span> AnatomIQ / BP3D skeleton (cyan)</label>
+<label><input id="um" type="checkbox" checked><span class="dot" style="background:#ffd37a"></span> Selected UMCG reference mesh (gold)</label>
+<label><input id="wire" type="checkbox" checked> UMCG reference as wireframe</label>
+<label><input id="labelsToggle" type="checkbox" checked> Label BP3D left/right landmarks</label>
+<div class="subtle" style="font-size:12px;margin:12px 0 5px">UMCG reference mesh to inspect (candidate only — not verified skeleton)</div>
+<select id="candidate"></select>
+<h2>Optional context</h2>
+<label><input id="vessels" type="checkbox"><span class="dot" style="background:#3ee48d"></span> UMCG lymph vessels</label>
+<label><input id="nodes" type="checkbox"><span class="dot" style="background:#66c3cb"></span> Z-Anatomy lymph nodes</label>
+<label><input id="bpAorta" type="checkbox"><span class="dot" style="background:#f9c45e"></span> BP3D aorta</label>
+<label><input id="umAorta" type="checkbox"><span class="dot" style="background:#f07472"></span> UMCG registered aorta</label>
+<h2>Verified viewing direction</h2>
+<button id="anterior">Anterior</button><button id="posterior">Posterior</button><button id="leftSide">Patient left</button><button id="rightSide">Patient right</button>
+<button id="fit">Fit skeletons</button><button id="zoomHands">Zoom to hands</button>
+<button id="export">Export comparison JSON</button>
+<h2>Landmark measurements</h2><div id="landmarks" class="note">Inspecting BP3D named bones…</div>
+<h2>What to look for</h2><div class="note warning">The new setting applies the SAME sourceRegistration + correctedDetailTransform used by AnatomIQ for detailed organ/cardiovascular GLBs. Inspect BP3D bone labels, skull, ribs, pelvis and hands. If this still fails, the UMCG source itself needs an independently landmark-constrained fit; do not publish it.</div>
+<h2>Errors</h2><div id="error" class="note">None</div>
+<p style="font-size:11px;color:#a9ccd1">LOCAL DIAGNOSTIC ONLY • AnatomIQ BP3D code/models unchanged. UMCG source: E-learning UMCG, CC BY-NC-SA 4.0. Z-Anatomy: CC BY-SA 4.0. BodyParts3D: original attribution terms retained.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=id=>document.getElementById(id), scene=new THREE.Scene(); scene.background=new THREE.Color('#091823');
+scene.add(new THREE.HemisphereLight(0xe7f9ff,0x355667,2));
+for(const [pos,intensity] of [[[5,8,7],3],[[-7,1,-5],1.4]]){const light=new THREE.DirectionalLight(0xffffff,intensity);light.position.set(...pos);scene.add(light)}
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.00001,500);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.08;
+let BP=null,U=null,ZA=null,CV=null,report=null,bones=[],umParts=[],anchors=[],viewDir='anterior';
+let atlasMatrix=null,rawUMCGMatrix=null,registeredUMCGMatrix=null, atlasStats=null;
+let fitReport=null, deltaQ=null, deltaT=null, deltaS=1;
+// Constants from AnatomIQ digestive-model.js: sourceRegistration and digestive-detail.js: correctedDetailTransform.
+const ATLAS_SKIN={minY:-3.534865,maxY:3.183290,depth:.4};
+const GLTF=new GLTFLoader(),AO_IDS=new Set(['FJ3413','FJ3411','FJ3427','FJ3464','FJ3565']);
+const load=p=>GLTF.loadAsync(p).then(g=>g.scene);
+const findMeshes=root=>{const a=[];root?.traverse(o=>{if(o.isMesh)a.push(o)});return a};
+const norm=x=>(x||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const mat=(c,opacity=.55,wireframe=false)=>new THREE.MeshStandardMaterial({color:c,roughness:.53,metalness:0,transparent:opacity<1,opacity,depthWrite:opacity>=1,side:THREE.DoubleSide,wireframe});
+function meshBox(mesh){const b=new THREE.Box3();mesh.updateWorldMatrix(true,true);b.expandByObject(mesh);return b}
+function center(mesh){return meshBox(mesh).getCenter(new THREE.Vector3())}
+function selected(name){return umParts.find(p=>p.name===name)}
+function anatomIQAtlasTransform(skeletonRoot){
+ const body=new THREE.Box3().setFromObject(skeletonRoot);
+ const height=body.max.y-body.min.y;
+ if(!Number.isFinite(height)||height<1||height>3)throw Error('Unexpected AnatomIQ skeleton size: '+height);
+ const scale=height/(ATLAS_SKIN.maxY-ATLAS_SKIN.minY);
+ const x=(body.min.x+body.max.x)*.5;
+ const y=body.min.y-ATLAS_SKIN.minY*scale;
+ const z=(body.min.z+body.max.z)*.5-ATLAS_SKIN.depth*scale+2*ATLAS_SKIN.depth*scale;
+ const matrix=new THREE.Matrix4().makeScale(scale,scale,-scale);
+ matrix.setPosition(x,y,z);
+ return {matrix,height,scale,position:[x,y,z],skinSource:ATLAS_SKIN,bounds:[body.min.toArray(),body.max.toArray()]};
+}
+function positionUMCG(){
+ if(!U||!CV||!registeredUMCGMatrix)return;
+ const corrected=$('frameMode').value==='anatomiq';
+ 
+ const alpha=corrected ? Number($('blend').value)/100 : 0;
+ const correction=new THREE.Matrix4().compose(
+   deltaT.clone().multiplyScalar(alpha),
+   new THREE.Quaternion().slerp(deltaQ,alpha),
+   new THREE.Vector3().setScalar(1+(deltaS-1)*alpha));
+ U.matrix.copy(corrected?correction.multiply(registeredUMCGMatrix):rawUMCGMatrix);
+ U.matrixWorldNeedsUpdate=true;U.updateWorldMatrix(true,true);
+ CV.matrix.copy(corrected?atlasMatrix:new THREE.Matrix4());
+ CV.matrixWorldNeedsUpdate=true;CV.updateWorldMatrix(true,true);
+ // The historical mode leaves both the CV and UMCG in raw cardiovascular coordinates, visibly unlike the BP3D skeleton.
+ const rb=meshBoundsByName(umParts.filter(p=>p.category==='candidate'),$('candidate').value);
+ const bb=new THREE.Box3();for(const m of bones)bb.expandByObject(m);
+ const ratio=!rb.isEmpty()&&!bb.isEmpty()?rb.getSize(new THREE.Vector3()).y/bb.getSize(new THREE.Vector3()).y:null;
+ $('frameStats').textContent=`${corrected?'CORRECTED FINAL ANATOMIQ FRAME':'OLD RAW CARDIO FRAME (INVALID COMPARISON)'}\nAnatomIQ skeleton height: ${atlasStats.height.toFixed(4)} m\nAtlas source-to-display scale: ${atlasStats.scale.toFixed(6)}\nAtlas source Z sign: negative (depth correction)\nUMCG reference/BP skeleton height ratio: ${ratio?.toFixed(3)??'N/A'}\nSkeleton fit candidate: ${Math.round(Number($('blend').value))}% applied.
+Whole-body registration still requires visual validation.`;
+}
+function meshBoundsByName(parts,name){const x=parts.find(p=>p.name===name);return x?meshBox(x.mesh):new THREE.Box3()}
+function currentCameraAxis(){const humL=boneNamed('Left humerus'),humR=boneNamed('Right humerus');const sx=humL&&humR?Math.sign(center(humL).x-center(humR).x):1;
+ const sternum=boneNamed('Body of sternum'),vertebra=boneNamed('Eighth thoracic vertebra');const sz=sternum&&vertebra?Math.sign(center(sternum).z-center(vertebra).z):1;
+ return {patientLeftX:sx||1,anteriorZ:sz||1};}
+function boneNamed(name){return bones.find(b=>(b.userData?.name||b.name).toLowerCase()===name.toLowerCase())}
+function camFrame(direction,customBox){const b=customBox||new THREE.Box3();if(!customBox){for(const m of bones)if(m.visible)b.union(meshBox(m));for(const p of umParts)if(p.mesh.visible)b.union(meshBox(p.mesh));if(CV)for(const m of findMeshes(CV))if(m.visible)b.union(meshBox(m));}if(b.isEmpty())return;
+ const c=b.getCenter(new THREE.Vector3()),span=Math.max(b.getSize(new THREE.Vector3()).length(),.1);const {patientLeftX,anteriorZ}=currentCameraAxis();const xyz={anterior:[0,0,anteriorZ],posterior:[0,0,-anteriorZ],leftSide:[patientLeftX,0,0],rightSide:[-patientLeftX,0,0]}[direction]||[0,0,anteriorZ];
+ camera.position.copy(c).addScaledVector(new THREE.Vector3(...xyz),span*1.36);orbit.target.copy(c);camera.near=Math.max(span/10000,.00001);camera.far=Math.max(span*100,100);camera.updateProjectionMatrix();orbit.update();viewDir=direction;}
+function update(){if(!BP||!U)return;
+ for(const m of bones)m.visible=$('bp').checked;
+ const cho=$('candidate').value;
+ for(const p of umParts){p.mesh.visible=(p.category==='candidate' && $('um').checked && p.name===cho)||(p.category==='vessels'&&$('vessels').checked)||(p.category==='aorta'&&$('umAorta').checked);p.mesh.material.wireframe=p.category==='candidate'&&$('wire').checked}
+ if(ZA)ZA.visible=$('nodes').checked;
+ if(CV)for(const m of findMeshes(CV))m.visible=$('bpAorta').checked&&AO_IDS.has(m.name);
+ $('labels').style.display=$('labelsToggle').checked&&$('bp').checked?'block':'none';}
+function landmarksReport(){let lines=[],data={};for(const n of ['Left humerus','Right humerus','Left femur','Right femur','Distal phalanx of left thumb','Distal phalanx of right thumb','Body of sternum','Eighth thoracic vertebra','Left hip bone','Right hip bone']){
+ const m=boneNamed(n);if(!m)continue;const c=center(m);lines.push(`${n}: (${c.x.toFixed(3)}, ${c.y.toFixed(3)}, ${c.z.toFixed(3)})`);data[n]=c.toArray();}
+ const axes=currentCameraAxis();lines.unshift(`+Y = superior; anatomical left is ${axes.patientLeftX>0?'+X':'-X'}; anterior is ${axes.anteriorZ>0?'+Z':'-Z'}`,'Positions in original AnatomIQ scene coordinates (not UMCG raw coordinates).');
+ $('landmarks').textContent=lines.join('\n');return {anchors:data,axes};}
+function makeMarker(name,mesh,c){const div=document.createElement('div');div.className='anchor';div.textContent=name;div.style.borderColor=c;document.getElementById('labels').append(div);anchors.push({name,mesh,div});}
+function updateMarkers(){if(!$('bp').checked||!$('labelsToggle').checked)return;for(const a of anchors){const v=center(a.mesh);v.project(camera);const behind=v.z>1||v.z< -1;a.div.style.display=behind?'none':'block';a.div.style.left=`${(v.x*.5+.5)*innerWidth}px`;a.div.style.top=`${(-v.y*.5+.5)*innerHeight}px`;}}
+async function main(){try{
+ const resp=await fetch('./models/umcg-to-bp3d-reviewed-223f.json',{cache:'no-store'});if(!resp.ok)throw Error('223f reviewed registration missing. Install 223f before 223i.');report=await resp.json();if(report.build!=='223f'||report.matrix_threejs_column_major?.length!==16)throw Error('Bad reviewed registration');
+ [BP,U,CV]=await Promise.all([load('./models/ecorche.glb'),load('./models/umcg-source.glb'),load('./models/cardiovascular-standard.glb')]);
+ BP.updateWorldMatrix(true,true);
+ const allBP=findMeshes(BP);bones=allBP.filter(m=>m.userData?.layer==='skeleton' && m.userData?.tissue!=='eye');
+ if(bones.length<100)throw Error(`Original BP3D skeletal catalog missing (${bones.length} meshes). Check preview/models/ecorche.glb.`);
+ for(const m of allBP){m.visible=bones.includes(m);if(m.visible)m.material=mat('#52dff7',.47)}scene.add(BP);
+ const fitResp=await fetch('./models/umcg-skeleton-refinement-223k.json',{cache:'no-store'});
+ if(!fitResp.ok)throw Error('223k candidate registration report missing — run the installer');
+ fitReport=await fitResp.json();
+ if(fitReport.build!=='223k'||fitReport.candidate_delta_matrix_threejs_column_major?.length!==16)throw Error('Invalid 223k candidate JSON');
+ const dm=new THREE.Matrix4().fromArray(fitReport.candidate_delta_matrix_threejs_column_major);
+ deltaT=new THREE.Vector3();deltaQ=new THREE.Quaternion();const deltaScale=new THREE.Vector3();
+ dm.decompose(deltaT,deltaQ,deltaScale);deltaS=deltaScale.x;
+ $('fitScores').textContent=`223j skeletal mismatch (p80): ${(100*fitReport.baseline_skeleton_error.p80_m).toFixed(1)} cm
+223k proposed skeletal mismatch (p80): ${(100*fitReport.candidate_skeleton_error.p80_m).toFixed(1)} cm
+Aorta mismatch (p80): ${fitReport.aorta_error ? (100*fitReport.aorta_error.baseline.p80_m).toFixed(1)+' cm → '+(100*fitReport.aorta_error.refined.p80_m).toFixed(1)+' cm':'not available'}
+Delta rotation: ${fitReport.delta_rotation_deg.toFixed(1)}°; translation: ${(100*fitReport.delta_translation_m).toFixed(1)} cm; scale: ${fitReport.delta_scale.toFixed(3)}
+Status: ${fitReport.status}
+${fitReport.issues.join('; ')||'No numerical caution flags. Anatomical review still required.'}`;
+ // Verify the refined matrix was computed against the precise original 223j frame.
+ const bas=new THREE.Matrix4().fromArray(fitReport.baseline_umcg_matrix_threejs_column_major);
+ const rm=report.matrix_threejs_column_major;
+ const sp=(new THREE.Matrix4().fromArray(rm));
+ // The 223j baseline report is a *display* matrix, not the raw aortic frame.
+ if(!fitReport.baseline_umcg_matrix_threejs_column_major.every((x,i)=>Number.isFinite(x)))throw Error('Invalid candidate baseline');
+ rawUMCGMatrix=new THREE.Matrix4().fromArray(report.matrix_threejs_column_major);
+ atlasStats=anatomIQAtlasTransform(BP);
+ atlasMatrix=atlasStats.matrix;
+ registeredUMCGMatrix=atlasMatrix.clone().multiply(rawUMCGMatrix);
+ if(registeredUMCGMatrix.elements.some((v,i)=>Math.abs(v-fitReport.baseline_umcg_matrix_threejs_column_major[i])>1e-7))throw Error('Candidate was generated for a different 223j baseline. Do not display stale geometry.');
+ U.matrixAutoUpdate=false;
+ U.matrix.copy(registeredUMCGMatrix);U.matrixWorldNeedsUpdate=true;scene.add(U);
+ CV.matrixAutoUpdate=false;CV.matrix.copy(atlasMatrix);CV.matrixWorldNeedsUpdate=true;
+ const aortaN=norm(report.source_aorta_mesh),vesselNames=new Set(report.lymphatic_vessel_meshes.map(norm));
+ umParts=findMeshes(U).map(m=>{const n=norm(m.name),category=n===aortaN?'aorta':vesselNames.has(n)?'vessels':'candidate';
+  m.material=mat(category==='aorta'?'#ef6b67':category==='vessels'?'#40e896':'#f8cf78',category==='candidate'?.63:.85);return {mesh:m,name:m.name,category};});
+ if(!umParts.some(x=>x.category==='aorta')||!umParts.some(x=>x.category==='vessels'))throw Error('Source UMCG mesh mapping mismatch');
+ const candidates=umParts.filter(p=>p.category==='candidate');if(!candidates.length)throw Error('UMCG model has no skeleton reference candidate meshes');
+ for(const p of candidates){const op=document.createElement('option');op.value=p.name;op.textContent=p.name; $('candidate').append(op)}
+ const preferred=candidates.find(p=>norm(p.name).startsWith('extract5'));$('candidate').value=(preferred||candidates[0]).name;
+ for(const m of findMeshes(CV)){m.visible=AO_IDS.has(m.name);if(m.visible)m.material=mat('#ffe095',.84)}scene.add(CV);
+ try{ZA=await load('./models/lymphatic-z-standard.glb');for(const m of findMeshes(ZA))m.material=mat('#69bfca',.83);scene.add(ZA)}catch{ $('nodes').disabled=true;}
+ for(const name of ['Left humerus','Right humerus','Distal phalanx of left thumb','Distal phalanx of right thumb','Left hip bone','Right hip bone']){const m=boneNamed(name);if(m)makeMarker(name,m,name.startsWith('Left')||name.includes('left')?'#77cfff':'#f8a5b6')}
+ positionUMCG();const lm=landmarksReport();
+ $('status').textContent=`REFERENCE LOADED — NOT A NEW FIT\nAnatomIQ BP3D skeletal meshes: ${bones.length}\nUMCG source meshes: ${umParts.length}\nUMCG possible skeleton/reference meshes: ${candidates.length}\nUMCG registration: 223f raw aorta fit COMPOSED WITH AnatomIQ sourceRegistration and correctedDetailTransform\nAnatomIQ anatomical axes: anterior ${lm.axes.anteriorZ>0?'+Z':'-Z'}, patient left ${lm.axes.patientLeftX>0?'+X':'-X'}`;
+ for(const id of ['bp','um','wire','labelsToggle','vessels','nodes','bpAorta','umAorta'])$(id).addEventListener('change',update);
+ $('frameMode').addEventListener('change',()=>{positionUMCG();update();camFrame(viewDir);});
+ $('blend').addEventListener('input',()=>{$('blendLabel').textContent=$('blend').value+'%';positionUMCG();update();});
+ $('baseline').onclick=()=>{$('frameMode').value='anatomiq';$('blend').value='0';$('blendLabel').textContent='0%';positionUMCG();update();};
+ $('proposed').onclick=()=>{$('frameMode').value='anatomiq';$('blend').value='100';$('blendLabel').textContent='100%';positionUMCG();update();};
+ $('candidate').addEventListener('change',()=>{update();positionUMCG()});
+ for(const name of ['anterior','posterior','leftSide','rightSide'])$(name).onclick=()=>camFrame(name);
+ $('fit').onclick=()=>camFrame(viewDir);
+ $('zoomHands').onclick=()=>{const b=new THREE.Box3();for(const n of ['Left radius','Right radius','Left ulna','Right ulna','Distal phalanx of left thumb','Distal phalanx of right thumb']){const m=boneNamed(n);if(m)b.union(meshBox(m));}camFrame(viewDir,b)};
+ $('export').onclick=()=>{const obj={build:'223k',status:'COORDINATE_FRAME_REPAIR_HUMAN_REVIEW_PENDING',source_registration_build:report.build,source_aorta:report.source_aorta_mesh,raw_umcg_matrix_threejs_column_major:rawUMCGMatrix.toArray(),
+ anatom_iq_atlas_registration_matrix_threejs_column_major:atlasMatrix.toArray(),registered_umcg_matrix_threejs_column_major:registeredUMCGMatrix.toArray(),atlas_source_registration:atlasStats, frame_mode:$('frameMode').value, refined_strength_pct:Number($('blend').value), fit_reference:fitReport,
+ bp3d_skeletal_mesh_count:bones.length,umcg_mesh_count:umParts.length,selected_umcg_reference_mesh:$('candidate').value,umcg_reference_candidates:candidates.map(p=>p.name),
+ anatomy:landmarksReport(),view_direction:viewDir,visibility:{bp:$('bp').checked,umcg:$('um').checked,vessels:$('vessels').checked,nodes:$('nodes').checked},note:'This is a constrained skeleton ICP candidate in AnatomIQ display coordinates, not an accepted registration. Skeleton identity, aorta fit and anatomical left/right must be reviewed.'};
+ const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AnatomIQ-223k-Coordinate-Frame-Review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ update();camFrame('anterior');
+ }catch(e){$('status').textContent='COMPARISON ERROR';$('error').textContent=e.stack||String(e);$('error').style.color='#ffc1b6';}}
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera);updateMarkers()}animate();main();
+</script></body></html>

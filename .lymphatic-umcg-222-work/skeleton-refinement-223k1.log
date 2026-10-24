@@ -1,0 +1,9 @@
+BodyParts3D: 272 labeled skeletal nodes
+UMCG: testing Extract5_Extract5_0; faces=57923
+Baseline skeleton symmetric p80: 0.0872 m
+Refined skeleton symmetric p80:  0.0797 m
+Aorta p80: 0.0074m -> 0.0215m
+Delta: scale 1.011; rotation 10.6 deg; translation 0.019 m; safe fraction 0.55
+Status: CANDIDATE_CAUTION_REVIEW_REQUIRED
+CAUTIONS: Aortic constraint limits proposed correction to 55% of unconstrained ICP
+Report: /Users/steve/Documents/GitHub/anatomiq-3d/.lymphatic-umcg-222-work/preview/models/umcg-skeleton-refinement-223k.json

@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AnatomIQ · UMCG Vessel Trial</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#0d1721;color:#ecf3f7}*{box-sizing:border-box}body{margin:0;overflow:hidden}canvas{display:block}aside{position:absolute;z-index:2;top:12px;left:12px;bottom:12px;width:min(360px,calc(100vw - 24px));overflow:auto;padding:18px;border:1px solid #425968;border-radius:18px;background:#172733f1;box-shadow:0 22px 50px #0008}h1{font-size:19px;margin:0 0 6px}h2{font-size:13px;margin:18px 0 9px;color:#b7d9df;text-transform:uppercase;letter-spacing:.08em}p{font-size:12px;color:#b7cdd8;line-height:1.55;margin:6px 0 11px}.warning{color:#f6c990}label{font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0}.check{justify-content:flex-start}input[type=range]{width:172px;accent-color:#64c9c2}input[type=checkbox]{accent-color:#64c9c2}button{background:#294a57;color:#e7f5f6;border:1px solid #537987;border-radius:8px;padding:8px 10px;cursor:pointer}button:hover{background:#3b6874}button.primary{background:#1c6f71;border-color:#3caba6}.actions{display:flex;gap:6px;flex-wrap:wrap}select{color:inherit;background:#213743;padding:6px;border:1px solid #45606b;border-radius:7px}#materials{max-height:220px;overflow:auto;border:1px solid #415965;border-radius:10px;padding:9px}#materials label{margin:6px 0;justify-content:flex-start;word-break:break-word}small,output{color:#aac3cc;font-size:11px}#status{font-size:12px;line-height:1.5;white-space:pre-wrap;padding:10px;background:#10222d;border-radius:10px;color:#c7e8e2}#error{white-space:pre-wrap;color:#ffb0a8;font-size:12px}input[type=search]{background:#0d202c;border:1px solid #496877;color:#fff;border-radius:8px;padding:8px;max-width:100%;width:100%}@media(max-width:650px){aside{top:auto;height:52vh;bottom:8px;width:calc(100vw - 16px);left:8px}canvas{height:100vh}}</style></head>
+<body><aside>
+<h1>AnatomIQ · UMCG vessel alignment</h1><p class="warning"><strong>Local preview only.</strong> UMCG lymphatic-vessel anatomy is not yet verified or registered. Do not upload this preview to GitHub.</p>
+<h2>Source comparison</h2>
+<label class="check"><input id="showBase" type="checkbox" checked> BodyParts3D spleen &amp; thymus (pink)</label>
+<label class="check"><input id="showNodes" type="checkbox" checked> Z-Anatomy nodes (green, when available)</label>
+<label class="check"><input id="showSource" type="checkbox" checked> UMCG imported model</label>
+<label class="check"><input id="greenOnly" type="checkbox"> Show green source materials only (candidate lymphatics)</label>
+<label class="check"><input id="showBounds" type="checkbox"> Show source and node alignment boxes</label>
+<label>UMCG opacity <span><input type="range" id="opacity" min="0.2" max="1" step="0.05" value="0.9"><output id="opacityOut">90%</output></span></label>
+<h2>Coordinate alignment</h2>
+<p>The model now overlays the Z-Anatomy node distribution using its height and center. This is an <strong>approximate starting point, not a verified anatomical registration</strong>. Compare cervical, axillary, inguinal, and abdominal regions from front and side.</p>
+<label>Scale <span><input id="scale" type="range" min="0.1" max="3" step="0.01" value="1"><output id="scaleOut">1×</output></span></label>
+<label>Pitch (X) <span><input id="rx" type="range" min="-180" max="180" step="1" value="0"><output id="rxOut">0°</output></span></label>
+<label>Yaw (Y) <span><input id="ry" type="range" min="-180" max="180" step="1" value="0"><output id="ryOut">0°</output></span></label>
+<label>Roll (Z) <span><input id="rz" type="range" min="-180" max="180" step="1" value="0"><output id="rzOut">0°</output></span></label>
+<label>Left/right offset <span><input id="tx" type="range" min="-5" max="5" step="0.01" value="0"><output id="txOut">0</output></span></label>
+<label>Up/down offset <span><input id="ty" type="range" min="-5" max="5" step="0.01" value="0"><output id="tyOut">0</output></span></label>
+<label>Front/back offset <span><input id="tz" type="range" min="-5" max="5" step="0.01" value="0"><output id="tzOut">0</output></span></label>
+<div class="actions"><button class="primary" id="autoNodes">Fit to Z nodes</button><button id="autoOrgans">Fit to immune organs</button><button id="rotateX">+90° X</button><button id="rotateY">+90° Y</button><button id="rotateZ">+90° Z</button><button id="reset">Reset placement</button></div>
+<h2>Original material groups</h2>
+<p>Materials are listed with their actual display colors. Use the optional green-material filter to hide many non-lymphatic structures. <strong>Color alone is not proof of anatomical identity</strong>; inspect each group before publication.</p>
+<input type="search" id="materialSearch" placeholder="Filter material names" aria-label="Filter source materials"><div id="materials">Loading…</div>
+<h2>Audit</h2><div id="status">Loading geometry…</div><div id="error"></div>
+<div class="actions" style="margin:12px 0"><button class="primary" id="export">Download alignment review JSON</button><label class="check" style="margin:0"><input type="file" id="importReport" accept="application/json,.json" style="width:160px;font-size:11px"> Load previous review JSON</label></div>
+<p>© E-learning UMCG and Anna Sieben, University of Dundee. Original model: CC BY-NC-SA 4.0. Preview is not a license change or permission to commercially redistribute.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#101a25');
+const camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,0.0001,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);document.body.append(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe8f5ff,0x314459,2.2));const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(2,3,4);scene.add(key);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;
+const group=new THREE.Group();scene.add(group);
+let source,base,nodes,previewCenter=new THREE.Vector3(),nominalScale=1,sourceOffset=new THREE.Vector3(),sourceOriginalBounds,sourcePivot,fitTo='nodes',greenCandidates=[];
+const mats=new Map(),materialDisabled=new Set(),matColors=new Map();let audit={};
+const boundSource=new THREE.Box3Helper(new THREE.Box3(),0x44c4fe), boundTarget=new THREE.Box3Helper(new THREE.Box3(),0xffba72);
+scene.add(boundSource,boundTarget);
+function hasGreenHue(mat){
+  // The UMCG overview uses green lymphatics, blue blood vessels, red arteries and pale skeleton.
+  // This is a *visual shortcut*, not verified anatomical labeling.
+  if(!mat.color)return false;
+  const c=mat.color;
+  return c.g>Math.max(.13,c.r*1.20,c.b*1.12)&&c.g-c.r>.075;
+}
+function targetBox(){return new THREE.Box3().setFromObject(fitTo==='nodes'&&nodes?nodes:base)}
+function autoFit(mode='nodes'){
+ fitTo=mode==='nodes'&&nodes?'nodes':'organs';
+ const ref=targetBox(), src=sourceOriginalBounds;
+ if(ref.isEmpty()||src.isEmpty())throw Error('Missing reference or source bounds');
+ const sourceHeight=src.getSize(new THREE.Vector3()).y, targetHeight=ref.getSize(new THREE.Vector3()).y;
+ if(sourceHeight<=0||targetHeight<=0)throw Error('Invalid model heights');
+ nominalScale=targetHeight/sourceHeight;
+ sourceOffset=src.getCenter(new THREE.Vector3()); previewCenter=ref.getCenter(new THREE.Vector3());
+ // Critically, don't replace source.position: GLTF scenes can carry their own transforms.
+ sourcePivot.position.copy(sourceOffset).multiplyScalar(-1);
+ for(const id of ids)$(id).value=id==='scale'?'1':'0';
+ paint();frameBounds();updateStatus();
+}
+function frameBounds(){
+ if(!source||!nodes&&!base)return;
+ boundSource.box.setFromObject(group);boundTarget.box.copy(targetBox());
+ boundSource.visible=boundTarget.visible=$('showBounds').checked;
+}
+function updateStatus(){
+ const ref=targetBox(),model=new THREE.Box3().setFromObject(group);
+ const sep=ref.getCenter(new THREE.Vector3()).distanceTo(model.getCenter(new THREE.Vector3()));
+ const ratio=model.getSize(new THREE.Vector3()).y/Math.max(1e-9,ref.getSize(new THREE.Vector3()).y);
+ $('status').textContent=`${audit.mesh_node_count} UMCG source meshes · ${audit.triangle_sum.toLocaleString()} triangles · ${mats.size} material groups
+${nodes?'Z-Anatomy nodes loaded':'Z-Anatomy model missing, using immune organs'}
+Reference: ${fitTo==='nodes'?'Z node body extent':'immune organs only (not full-body)'} · centered distance ${sep.toFixed(3)} units · height ratio ${ratio.toFixed(2)}×
+${greenCandidates.length} green-colored material group(s) recognized
+UNVERIFIED: bounding-box overlay is a starting point; do not publish until landmarks and mesh identities are checked.`;
+}
+const ids=['scale','rx','ry','rz','tx','ty','tz'];
+function paint(){if(!source)return;group.position.set(previewCenter.x+Number($('tx').value),previewCenter.y+Number($('ty').value),previewCenter.z+Number($('tz').value));group.scale.setScalar(nominalScale*Number($('scale').value));for(const axis of ['x','y','z'])group.rotation[axis]=Number($('r'+axis).value)*Math.PI/180;
+for(const k of ids){$(k+'Out').textContent=k==='scale'?Number($(k).value).toFixed(2)+'×':k.startsWith('r')?$(k).value+'°':Number($(k).value).toFixed(3)}
+ frameBounds(); updateStatus();
+}
+function visibility(){if(base)base.visible=$('showBase').checked;if(nodes)nodes.visible=$('showNodes').checked;if(source){source.visible=$('showSource').checked;for(const [name,set] of mats){for(const mat of set){mat.visible=!materialDisabled.has(name)&&(!$('greenOnly').checked||greenCandidates.includes(name));mat.transparent=true;mat.opacity=Number($('opacity').value);mat.depthWrite=Number($('opacity').value)>.98;mat.needsUpdate=true}}}$('opacityOut').textContent=Math.round(Number($('opacity').value)*100)+'%'}
+function materialsUI(){const container=$('materials');container.replaceChildren();for(const [name] of mats){if($('materialSearch').value&&!name.toLowerCase().includes($('materialSearch').value.toLowerCase()))continue;const label=document.createElement('label');const ck=document.createElement('input');ck.type='checkbox';ck.checked=!materialDisabled.has(name);ck.addEventListener('change',()=>{ck.checked?materialDisabled.delete(name):materialDisabled.add(name);visibility()});const color=document.createElement('span');color.style.cssText='display:inline-block;width:13px;height:13px;min-width:13px;border:1px solid #777;border-radius:3px;margin-right:4px';color.style.background='#'+(matColors.get(name)||'888888');label.append(ck,color,document.createTextNode(name+(greenCandidates.includes(name)?' · green candidate':'')));container.append(label)}if(!container.children.length)container.textContent='No matching groups';}
+const loader=new GLTFLoader();const readGLB=url=>new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),undefined,reject));
+const optional=async url=>{try{return await readGLB(url)}catch{return null}};
+async function init(){try{
+[audit,base,source,nodes]=await Promise.all([
+fetch('./models/umcg-source-audit.json').then(x=>{if(!x.ok)throw Error('Source audit not found');return x.json()}),
+readGLB('./models/lymphatic-standard.glb'),readGLB('./models/umcg-source.glb'),optional('./models/lymphatic-z-standard.glb')]);
+if(!source)throw Error('No UMCG model loaded');
+scene.add(base);base.traverse(x=>{if(x.isMesh)x.material=new THREE.MeshStandardMaterial({color:0xd18591,roughness:.55,side:THREE.DoubleSide})});
+if(nodes){scene.add(nodes);nodes.traverse(x=>{if(x.isMesh)x.material=new THREE.MeshStandardMaterial({color:0x68d5a0,roughness:.55,side:THREE.DoubleSide})})}
+const originalBounds=new THREE.Box3().setFromObject(source);
+if(originalBounds.isEmpty())throw Error('Source bounds empty');
+sourceOriginalBounds=originalBounds.clone();
+sourcePivot=new THREE.Group(); group.add(sourcePivot);sourcePivot.add(source); // preserve the GLTF scene transform
+source.traverse(obj=>{if(!obj.isMesh)return;const materials=Array.isArray(obj.material)?obj.material:[obj.material];for(const m of materials){if(!m)continue;const name=m.name||'(unnamed source material)';if(!mats.has(name))mats.set(name,new Set());mats.get(name).add(m);matColors.set(name,m.color?.getHexString()||'888888');m.side=THREE.DoubleSide;}});
+greenCandidates=[...mats].filter(([name,set])=>[...set].some(hasGreenHue)).map(([name])=>name);
+if(greenCandidates.length)$('greenOnly').checked=true;
+// Default to full-body nodes; immune organs only are much too short for height registration.
+autoFit('nodes');
+const size=Math.max(targetBox().getSize(new THREE.Vector3()).length(),.1);
+orbit.target.copy(previewCenter);camera.position.copy(previewCenter).add(new THREE.Vector3(size*.64,size*.35,size*1.05));camera.near=Math.max(.00001,size/10000);camera.far=Math.max(50,size*100);camera.updateProjectionMatrix();
+materialsUI();visibility();paint();
+}catch(e){$('error').textContent='Preview failed: '+String(e);}}
+for(const id of ids)$(id).addEventListener('input',paint);
+for(const id of ['showBase','showNodes','showSource','opacity','greenOnly'])$(id).addEventListener('input',visibility);
+$('materialSearch').addEventListener('input',materialsUI);
+$('showBounds').addEventListener('change',frameBounds);
+$('autoNodes').onclick=()=>autoFit('nodes');
+$('autoOrgans').onclick=()=>autoFit('organs');
+for(const axis of ['X','Y','Z'])$('rotate'+axis).onclick=()=>{const el=$('r'+axis.toLowerCase());el.value=(Number(el.value)+90)%360>180?(Number(el.value)+90)%360-360:(Number(el.value)+90)%360;paint()};
+$('reset').onclick=()=>autoFit('nodes');
+$('export').onclick=()=>{const report={status:'LOCAL_OVERLAY_UNVERIFIED',source:'UMCG overview CC BY-NC-SA 4.0',sourceMeshCount:audit.mesh_node_count,referenceMode:fitTo,sourceMaterialGroups:[...mats.keys()],greenCandidateMaterials:greenCandidates,greenOnly:$('greenOnly').checked,hiddenMaterialGroups:[...materialDisabled],initialAutoScale:nominalScale,sourceCenter:sourceOffset.toArray(),referenceCenter:previewCenter.toArray(),transformControls:Object.fromEntries(ids.map(k=>[k,Number($(k).value)])),note:'Bounding-box overlay only. Not anatomically registered. Geometry identities and landmarks require independent review.'};const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='AnatomIQ-UMCG-Alignment-Review.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1500)};
+$('importReport').addEventListener('change',async()=>{try{const file=$('importReport').files[0];if(!file)return;const data=JSON.parse(await file.text());if(data.source!=='UMCG overview CC BY-NC-SA 4.0'||!data.transformControls)throw Error('Not an UMCG alignment review JSON');autoFit(data.referenceMode||'nodes');for(const id of ids){if(Number.isFinite(data.transformControls[id]))$(id).value=String(data.transformControls[id]);}materialDisabled.clear();for(const name of (data.hiddenMaterialGroups||[]))if(mats.has(name))materialDisabled.add(name);$('greenOnly').checked=Boolean(data.greenOnly);materialsUI();paint();visibility();$('error').textContent='Loaded review settings; registration still requires visual verification.';}catch(e){$('error').textContent='Could not import review: '+String(e)}});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function frame(){requestAnimationFrame(frame);orbit.update();renderer.render(scene,camera)}frame();init();
+</script></body></html>

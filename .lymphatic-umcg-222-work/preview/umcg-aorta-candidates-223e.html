@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AnatomIQ · Aortic Candidate Review 223e</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#0d1e2e;color:#f0f6f9}*{box-sizing:border-box}body{margin:0;overflow:hidden}aside{position:absolute;top:12px;left:12px;bottom:12px;z-index:5;width:min(390px,calc(100vw - 24px));overflow:auto;background:#0b2230ee;border:1px solid #395463;padding:18px;border-radius:13px}h1{font-size:19px;margin:0 0 8px}h2{font-size:13px;color:#b6ecdf;margin:20px 0 8px}p,li{font-size:12px;line-height:1.6;color:#c2d2dc}select,button{background:#254554;color:white;border:1px solid #68828e;padding:10px;border-radius:8px;font-size:12px}select{width:100%}button{cursor:pointer}label{display:block;padding:6px 0;font-size:12px}.note{background:#173142;padding:10px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.5;margin:10px 0}#warning{color:#ffe0ae}canvas{display:block}@media(max-width:600px){aside{top:auto;bottom:0;max-height:50vh;width:100%;left:0;border-radius:14px 14px 0 0}}
+</style></head><body>
+<aside>
+<h1>UMCG Aorta Candidate Review · 223e</h1>
+<p>This is a <strong>geometry diagnosis</strong>, not an accepted registration. The earlier color detector rejected all eight source meshes because none had a reliable red material.</p>
+<div class="note" id="mode">Loading models and candidate audit…</div>
+<h2>Candidate (sorted by numerical fit)</h2>
+<select id="pick"><option>Loading…</option></select>
+<div class="note" id="metrics">No results</div>
+<label><input type="checkbox" id="overlay"> Apply this candidate's <strong>unverified</strong> fit transform</label>
+<label><input type="checkbox" checked id="bpVisible"> Show actual BodyParts3D aorta (gold)</label>
+<label><input type="checkbox" checked id="sourceVisible"> Show UMCG anatomy</label>
+<label><input type="checkbox" id="onlySelected"> Show selected UMCG mesh only (red)</label>
+<button id="refit">Frame displayed anatomy</button>
+<button id="download">Download selection and fit audit JSON</button>
+<div class="note" id="warning">Even a low error can identify the wrong anatomy. Check the candidate mesh shape before treating it as the aorta. Source geometry is kept out of the production app.</div>
+<h2>Source mesh names</h2><div class="note" id="names">Loading…</div>
+<h2>Errors</h2><div class="note" id="errors">None</div>
+<p>UMCG overview © E-learning UMCG / Anna Sieben, CC BY-NC-SA 4.0. This preview does not grant permission to redistribute adapted models under another license.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#0b1a27');
+scene.add(new THREE.HemisphereLight('#edfaff','#4e6371',2));
+const light=new THREE.DirectionalLight('#ffffff',2.4);light.position.set(5,7,9);scene.add(light);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);document.body.appendChild(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.0001,1e6);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;
+const loader=new GLTFLoader();const load=p=>loader.loadAsync(p).then(v=>v.scene);
+const IDS=new Set(['FJ3413','FJ3411','FJ3427','FJ3464','FJ3565']);
+let bp,source,meshObjects=[],report=null,chosen=null;
+function flatName(s){return (s||'').toLowerCase().replace(/[^a-z0-9]/g,'')}
+function meshes(root){const a=[];root.traverse(m=>{if(m.isMesh)a.push(m)});return a}
+function mat(c){return new THREE.MeshStandardMaterial({color:c,roughness:.5,side:THREE.DoubleSide})}
+function vBounds(root){const b=new THREE.Box3();root.updateMatrixWorld(true);for(const m of meshes(root)){if(m.visible)b.expandByObject(m)}return b}
+function frame(){if(!bp||!source)return;const b=new THREE.Box3();if(bp.visible)b.union(vBounds(bp));if(source.visible)b.union(vBounds(source));if(b.isEmpty())return;const c=b.getCenter(new THREE.Vector3()),len=b.getSize(new THREE.Vector3()).length();orbit.target.copy(c);camera.position.copy(c).add(new THREE.Vector3(Math.max(len*.25,.02),len*.1,Math.max(len*1.0,.5)));camera.near=Math.max(.000001,len/100000);camera.far=Math.max(100,len*100);camera.updateProjectionMatrix();orbit.update()}
+function current(){return report?.candidates?.find(x=>x.node===$('pick').value)}
+function select(){if(!report||!bp||!source)return;
+ const entry=current();chosen=entry;
+ bp.visible=$('bpVisible').checked;source.visible=$('sourceVisible').checked;
+ const picked=flatName(entry?.node);
+ for(const m of meshObjects){const selected=flatName(m.name)===picked;m.visible=!$('onlySelected').checked||selected;m.material.color.set(selected?'#f44b48':'#58aa91')}
+ const fitted=$('overlay').checked&&entry?.matrix_threejs_column_major?.length===16;
+ source.matrixAutoUpdate=false;source.matrix.identity();
+ if(fitted){source.matrix.fromArray(entry.matrix_threejs_column_major);source.matrixWorldNeedsUpdate=true;}
+ else{const bb=vBounds(bp),sb=vBounds(source);if(!bb.isEmpty()&&!sb.isEmpty()){
+ const bh=Math.max(...bb.getSize(new THREE.Vector3()).toArray());const sh=Math.max(...sb.getSize(new THREE.Vector3()).toArray());
+ const factor=bh/sh;const bc=bb.getCenter(new THREE.Vector3());const sc=sb.getCenter(new THREE.Vector3());
+ // Side-by-side is diagnostic display placement ONLY.
+ const M=new THREE.Matrix4().makeScale(factor,factor,factor);
+ M.setPosition(new THREE.Vector3(-bh*.9,0,0).sub(sc.multiplyScalar(factor)).add(bc));source.matrix.copy(M);source.matrixWorldNeedsUpdate=true;
+ }}
+ $('mode').textContent=fitted?'CANDIDATE TRANSFORM APPLIED — NOT ANATOMICAL VERIFICATION':'SIDE-BY-SIDE DIAGNOSTIC ONLY — models are not registered';
+ $('metrics').textContent=entry ? `Mesh: ${entry.node}\nFaces: ${entry.faces}\nMedian RGB: ${entry.rgb}\nFit score: ${entry.fit_error??'unavailable'}\nAorta length ratio: ${entry.height_ratio??'unavailable'}\nStatus: ${entry.fit_status}\nIMPORTANT: A low score alone does not prove this is the aorta.` : 'No candidate selected';
+ frame();
+}
+async function main(){try{
+ const r=await fetch('./models/umcg-aorta-candidates-223e.json',{cache:'no-store'});if(!r.ok)throw Error(`Candidate audit unavailable (HTTP ${r.status}). Run the 223e installer.`);report=await r.json();
+ if(report.build!=='223e'||!Array.isArray(report.candidates))throw Error('Invalid candidate audit');
+ [bp,source]=await Promise.all([load('./models/cardiovascular-standard.glb'),load('./models/umcg-source.glb')]);
+ let n=0;for(const m of meshes(bp)){m.visible=IDS.has(m.name);if(m.visible)n++;m.material=mat('#ffd36c');}
+ if(!n)throw Error('No BP3D aortic meshes found in cardiovascular-standard.glb');
+ meshObjects=meshes(source);for(const m of meshObjects)m.material=mat('#58aa91');
+ scene.add(bp,source);
+ const pick=$('pick');pick.replaceChildren();for(const x of report.candidates){const o=document.createElement('option');o.value=x.node;o.textContent=`${x.fit_error===null?'—':x.fit_error.toFixed(4)} · ${x.node}`;pick.append(o)}
+ $('names').textContent=`BP3D aortic reference: ${n} segments\nSource meshes (${meshObjects.length}):\n`+meshObjects.map(x=>'• '+x.name).join('\n');
+ if(report.candidates.length)pick.value=report.candidates[0].node;
+ for(const id of ['pick','bpVisible','sourceVisible','onlySelected','overlay'])$(id).addEventListener('change',select);
+ $('refit').onclick=frame;
+ $('download').onclick=()=>{const obj={build:'223e',status:'HUMAN_REVIEW_PENDING',selectedMesh:pick.value,selectedCandidate:current(),candidateAudit:report,warning:'No anatomical identity or overlay verified.'};const url=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='AnatomIQ-223e-UMCG-Aorta-Candidate-Review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)};
+ select();
+ }catch(e){$('errors').textContent=e?.stack||String(e);$('mode').textContent='ERROR: candidate viewer unavailable';}}
+window.addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera)}animate();main();
+</script></body></html>

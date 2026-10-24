@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AnatomIQ · Immune Organ Identity Check 223h</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color-scheme:dark;background:#091722;color:#e3f0f3}*{box-sizing:border-box}
+body{margin:0;overflow:hidden}canvas{display:block}
+aside{position:fixed;z-index:10;top:16px;left:16px;bottom:16px;width:min(380px,calc(100vw - 32px));padding:18px;border:1px solid #365564;border-radius:16px;overflow:auto;background:#0d2836f0;box-shadow:0 10px 45px #0008}
+h1{font-size:19px;line-height:1.25;margin:0 0 9px}h2{font-size:13px;color:#a4e0d2;margin:21px 0 8px}p{font-size:12px;line-height:1.6;color:#bbd0d9}label{display:flex;gap:10px;align-items:center;font-size:13px;margin:11px 0;cursor:pointer}input{accent-color:#68d9bb}button{background:#244e5f;border:1px solid #587c8d;color:#ecf7fb;padding:10px 12px;border-radius:9px;font-size:12px;cursor:pointer;margin:5px 3px 3px 0}
+.note{border-radius:9px;background:#163b4a;padding:11px;line-height:1.5;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;color:#d5e7e9}.error{color:#ffbdaf;background:#4d2d30}
+.organ-tag{position:fixed;z-index:3;pointer-events:none;transform:translate(-50%,-130%);background:#351822e8;color:#fff;border:1px solid #f3a3b1;border-radius:7px;padding:5px 8px;white-space:nowrap;font-size:11px;font-weight:700;box-shadow:0 2px 8px #0008;}
+.swatch{width:11px;height:11px;border-radius:50%;display:inline-block;flex-shrink:0;border:1px solid #ffffff80}.meta{color:#8cbbbe;font-size:11px}
+@media(max-width:650px){aside{top:auto;bottom:0;left:0;width:100vw;max-height:48vh;border-radius:16px 16px 0 0}}
+</style>
+</head>
+<body>
+<aside>
+<h1>AnatomIQ · Immune Organ Identity Check 223h</h1>
+<p>The 223f vessel/aorta registration is unchanged. This diagnostic identifies the <strong>actual BodyParts3D spleen and thymus IDs</strong>. Switch between original coordinates and an explicit location exchange to identify the problem before changing the real anatomy models.</p>
+<div class="note" id="status">Loading verified registration and 3D anatomy…</div>
+<h2>Show / hide structures</h2>
+<label><input type="checkbox" checked id="showVessels"><span class="swatch" style="background:#29e184"></span> UMCG candidate lymphatic network</label>
+<label><input type="checkbox" checked id="showNodes"><span class="swatch" style="background:#60bfc3"></span> Z-Anatomy lymph nodes</label>
+<label><input type="checkbox" checked id="showOrgans"><span class="swatch" style="background:#ef9baa"></span> BodyParts3D spleen &amp; thymus</label>
+<label><input type="checkbox" id="showAorta"><span class="swatch" style="background:#ffd376"></span> BodyParts3D aorta — reference</label>
+<label><input type="checkbox" id="showAortaUMCG"><span class="swatch" style="background:#ef6765"></span> UMCG fitted aorta — reference</label>
+<label><input type="checkbox" id="showOther"><span class="swatch" style="background:#687990"></span> UMCG non-green reference anatomy</label>
+<h2>Immune organ identity</h2>
+<label><input type="checkbox" checked id="showOrganLabels"> Label each source organ by FJ identifier</label>
+<label><input type="checkbox" id="forceExchange"> <strong>Exchange spleen/thymus positions (PREVIEW ONLY)</strong></label>
+<div class="note" id="organAudit">Locating FJ2561, FJ3150 and FJ3151…</div>
+<p class="meta">The source locations are used by default. Toggle exchange above to visibly compare the opposite placement. This does not change the GLBs.</p>
+<h2>Camera</h2>
+<button id="frameFull">Fit full network</button><button id="frameAorta">Zoom to aorta</button>
+<button id="front">Front</button><button id="side">Side</button><button id="back">Back</button>
+<button id="export">Export 223h review JSON</button>
+<h2>Source inspection</h2>
+<div id="details" class="note">Loading source meshes…</div>
+<h2>Errors</h2>
+<div class="note" id="error">None</div>
+<p class="meta">This is a LOCAL VERIFICATION PREVIEW, not a production import. The aortic match is visually supported but whole-body anatomical correspondence and source mesh labels require review.</p>
+<p class="meta">UMCG: E-learning UMCG, Anna Sieben and contributors, CC BY-NC-SA 4.0. Z-Anatomy: Gauthier Kervyn and contributors, CC BY-SA 4.0. BodyParts3D: DBCLS, CC BY-SA 2.1 JP.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=name=>document.getElementById(name);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#0a1c28');
+scene.add(new THREE.HemisphereLight('#e4f6ff','#456073',2));
+const keyLight=new THREE.DirectionalLight('#ffffff',2.8);keyLight.position.set(4,7,8);scene.add(keyLight);
+const fillLight=new THREE.DirectionalLight('#bce9f6',1.2);fillLight.position.set(-6,3,-4);scene.add(fillLight);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;document.body.append(renderer.domElement);
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.0001,1000);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.dampingFactor=.07;
+let U=null, B=null, Z=null, O=null, report=null, uParts=[], fullLength=1;
+let spleenMesh=null, thymusMeshes=[], exchangePositions=null, currentExchange=false, organBefore={}, organAfter={}, sourcePositionCheck='unverified';
+const organLabelElements=[];
+const makeLabel=(mesh,caption)=>{const e=document.createElement('div');e.className='organ-tag';e.textContent=caption;document.body.append(e);organLabelElements.push({mesh,element:e});};
+const exactFJ=(name,id)=>new RegExp('(?:^|[^A-Za-z0-9])'+id+'(?=$|[^A-Za-z0-9])').test(name||'');
+function organCenter(mesh){mesh.updateWorldMatrix(true,true);return new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3());}
+function localDisplacementForWorld(mesh,delta){const parent=mesh.parent;parent.updateWorldMatrix(true,false);const inverse=parent.matrixWorld.clone().invert();const origin=new THREE.Vector3().applyMatrix4(inverse);return delta.clone().applyMatrix4(inverse).sub(origin);}
+function translateWorld(mesh,delta){const local=localDisplacementForWorld(mesh,delta); // support GLB meshes with matrixAutoUpdate=false
+  mesh.matrix.decompose(mesh.position,mesh.quaternion,mesh.scale);mesh.position.add(local);mesh.updateMatrix();
+  mesh.matrixAutoUpdate=false;mesh.matrixWorldNeedsUpdate=true; mesh.updateWorldMatrix(true,true);
+}
+function fvec(v){return v.toArray().map(x=>Number(x.toFixed(5)));}
+function updateOrganAudit(){
+ if(!spleenMesh||thymusMeshes.length!==2)return;
+ const spleen=organCenter(spleenMesh),thymus=thymusMeshes.map(organCenter);
+ const tymid=thymus[0].clone().add(thymus[1]).multiplyScalar(0.5);
+ const verticalOrder=(spleen.y<tymid.y)?'Spleen inferior to thymus (EXPECTED)': 'Spleen superior to thymus (INVERTED)';
+ $('organAudit').textContent=`Source ID mapping (verified from GLB nodes):
+FJ2561 = SPLEEN
+FJ3150 = LEFT THYMUS
+FJ3151 = RIGHT THYMUS
+
+Current vertical order: ${verticalOrder}
+Location exchange: ${currentExchange?'ON — comparison only':'OFF — original GLB'}
+
+Spleen world center: ${fvec(spleen).join(', ')}
+Thymus group center: ${fvec(tymid).join(', ')}`;
+}
+function setupOrgans(){
+ const all=meshes(O);
+ spleenMesh=all.find(m=>exactFJ(m.name,'FJ2561'));
+ thymusMeshes=['FJ3150','FJ3151'].map(id=>all.find(m=>exactFJ(m.name,id)));
+ if(!spleenMesh||thymusMeshes.some(m=>!m))throw Error('Could not match expected immune-organ FJ mesh identities. Found: '+all.map(m=>m.name).join(', '));
+ if(new Set([spleenMesh,...thymusMeshes]).size!==3)throw Error('Duplicate organ identity mapping');
+ const spleenCenter=organCenter(spleenMesh);
+ const thymusCenter=thymusMeshes.map(organCenter).reduce((v,p)=>v.add(p),new THREE.Vector3()).multiplyScalar(.5);
+ const delta=new THREE.Vector3().subVectors(thymusCenter,spleenCenter);
+ exchangePositions=()=>{
+  const factor=currentExchange?-1:1;
+  translateWorld(spleenMesh,delta.clone().multiplyScalar(factor));
+  for(const mesh of thymusMeshes)translateWorld(mesh,delta.clone().multiplyScalar(-factor));
+  currentExchange=!currentExchange;updateOrganAudit();
+ };
+ organBefore={spleen:fvec(spleenCenter),thymus:fvec(thymusCenter)};
+ sourcePositionCheck=spleenCenter.y<thymusCenter.y?'spleen_inferior_to_thymus':'spleen_superior_to_thymus';
+ makeLabel(spleenMesh,'FJ2561 · SPLEEN');makeLabel(thymusMeshes[0],'FJ3150 · LEFT THYMUS');makeLabel(thymusMeshes[1],'FJ3151 · RIGHT THYMUS');
+ updateOrganAudit();
+ $('forceExchange').onchange=(e)=>{if(e.target.checked!==currentExchange)exchangePositions();};
+ $('showOrganLabels').onchange=()=>{for(const l of organLabelElements)l.element.hidden=!$('showOrganLabels').checked;};
+}
+function paintLabels(){
+ if(!O||!O.visible||!$('showOrganLabels').checked){for(const l of organLabelElements)l.element.style.display='none';return;}
+ for(const l of organLabelElements){const p=organCenter(l.mesh);p.project(camera);if(p.z>1||p.z< -1){l.element.style.display='none';continue;}
+ l.element.style.display='block';l.element.style.left=((p.x+1)*.5*innerWidth)+'px';l.element.style.top=((-p.y+1)*.5*innerHeight)+'px';}
+}
+const AORTA_IDS=new Set(['FJ3413','FJ3411','FJ3427','FJ3464','FJ3565']);
+const load=name=>new GLTFLoader().loadAsync(name).then(g=>g.scene);
+const flatten=name=>(name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function meshes(root){const found=[];root?.traverse(o=>{if(o.isMesh)found.push(o)});return found}
+function material(color){return new THREE.MeshStandardMaterial({color,metalness:0,roughness:.48,side:THREE.DoubleSide,emissive:color,emissiveIntensity:.04})}
+function boundsFor(root){const b=new THREE.Box3();if(!root||!root.visible)return b;root.updateWorldMatrix(true,true);for(const m of meshes(root))if(m.visible)b.expandByObject(m);return b}
+function shownBounds(){const b=new THREE.Box3();for(const r of [U,B,Z,O]){const x=boundsFor(r);if(!x.isEmpty())b.union(x)}return b}
+function pointCamera(box,direction){if(box.isEmpty())return;const center=box.getCenter(new THREE.Vector3());const ext=box.getSize(new THREE.Vector3());const span=Math.max(ext.x,ext.y,ext.z,.1);fullLength=span;orbit.target.copy(center);
+const radius=span*2.05;const dirs={front:[0,0,1],back:[0,0,-1],side:[1,0,0]};const vec=dirs[direction]||[.25,.12,1];const n=new THREE.Vector3(...vec).normalize();camera.position.copy(center).addScaledVector(n,radius);camera.near=Math.max(.00001,span/10000);camera.far=Math.max(100,span*300);camera.updateProjectionMatrix();orbit.update()}
+function currentCategory(part){const n=flatten(part.name);if(n===flatten(report.source_aorta_mesh))return 'aorta';if(report.lymphatic_vessel_meshes.some(x=>flatten(x)===n))return 'vessels';return 'other'}
+function update(){if(!U)return;const active={vessels:$('showVessels').checked,aorta:$('showAortaUMCG').checked,other:$('showOther').checked};
+for(const p of uParts)p.mesh.visible=active[p.category];
+if(B)B.visible=$('showAorta').checked;if(Z)Z.visible=$('showNodes').checked;if(O)O.visible=$('showOrgans').checked;
+}
+async function main(){try{
+let r=await fetch('./models/umcg-to-bp3d-reviewed-223f.json',{cache:'no-store'});if(!r.ok)throw Error('Registration report missing — run the 223f installer');report=await r.json();
+if(report.build!=='223f'||report.status!=='AORTA_MATCH_VISUALLY_REVIEWED_WHOLE_BODY_PENDING'||report.matrix_threejs_column_major?.length!==16)throw Error('Invalid 223f preview registration');
+[U,B]=await Promise.all([load('./models/umcg-source.glb'),load('./models/cardiovascular-standard.glb')]);
+// Apply the single approved aorta candidate transform to the entire UMCG source GLB, not individual pieces.
+U.matrixAutoUpdate=false;U.matrix.fromArray(report.matrix_threejs_column_major);U.matrixWorldNeedsUpdate=true;
+uParts=meshes(U).map(mesh=>({mesh,name:mesh.name,category:null}));
+for(const p of uParts){p.category=currentCategory(p);p.mesh.material=material(p.category==='vessels'?'#2de889':p.category==='aorta'?'#ed605b':'#667e91')}
+if(!uParts.some(x=>x.category==='aorta'))throw Error('Required UMCG aorta mesh was not found in 3D GLB');
+if(!uParts.some(x=>x.category==='vessels'))throw Error('No candidate green lymphatic meshes matched the saved source audit');
+let count=0;for(const m of meshes(B)){m.visible=AORTA_IDS.has(m.name);if(m.visible)count++;m.material=material('#ffd077')}
+if(count!==5)throw Error('Missing BP3D aorta reference segments: '+count+' / 5');
+scene.add(U,B);
+try{Z=await load('./models/lymphatic-z-standard.glb');for(const m of meshes(Z))m.material=material('#69bfca');scene.add(Z)}catch(e){$('showNodes').checked=false;$('showNodes').disabled=true;}
+try{O=await load('./models/lymphatic-standard.glb');for(const m of meshes(O))m.material=material('#f0a3b2');scene.add(O);setupOrgans()}catch(e){$('showOrgans').checked=false;$('showOrgans').disabled=true;$('forceExchange').disabled=true;$('showOrganLabels').disabled=true;$('organAudit').textContent='Immune organ audit error: '+String(e);$('error').textContent=String(e);}
+update();
+const categories=uParts.reduce((out,p)=>(out[p.category]=(out[p.category]||0)+1,out),{});
+$('details').textContent=`UMCG meshes: ${uParts.length}\nUMCG candidate network pieces: ${categories.vessels||0}\nUMCG aorta: ${categories.aorta||0}\nUMCG other reference meshes: ${categories.other||0}\nZ-Anatomy nodes: ${Z?meshes(Z).length:'missing'}\nBodyParts3D immune organs: ${O?meshes(O).length:'missing'}\nBP3D aorta reference: ${count} segments\nAortic fit normalized error: ${report.aorta_normalized_fit_error}\nFitted length ratio: ${report.aorta_length_ratio}`;
+$('status').textContent='AORTIC REGISTRATION APPLIED TO ENTIRE UMCG SOURCE\nNext: verify cervical, axillary, abdominal, inguinal, and popliteal placement against Z nodes in front AND side views. NOT production-ready.';
+const full=shownBounds();pointCamera(full,'front');
+for(const key of ['showVessels','showNodes','showOrgans','showAorta','showAortaUMCG','showOther'])$(key).addEventListener('change',update);
+$('frameFull').onclick=()=>pointCamera(shownBounds(),'front');
+$('frameAorta').onclick=()=>{
+const ba=new THREE.Box3();B.visible=true;const b=boundsFor(B);B.visible=$('showAorta').checked;if(!b.isEmpty())pointCamera(b,'front');
+};
+for(const d of ['front','back','side'])$(d).onclick=()=>pointCamera(shownBounds(),d);
+$('export').onclick=()=>{
+const obj={build:'223h',status:'ORGAN_IDENTITY_REVIEW_PENDING',source:report.source,source_aorta:report.source_aorta_mesh,
+  aorta_error:report.aorta_normalized_fit_error,source_sha256:report.sha256?.umcg_source,
+  z_nodes_available:!!Z,bp3d_organs_available:!!O,organ_identity_names:O?meshes(O).map(x=>x.name):[],source_position_check:sourcePositionCheck,exchange_active:currentExchange,original_organ_centers:organBefore,current_organ_centers:(spleenMesh&&thymusMeshes.length===2)?{spleen:fvec(organCenter(spleenMesh)),thymus:thymusMeshes.map(m=>fvec(organCenter(m)))}:null,source_meshes:uParts.map(p=>({name:p.name,category:p.category})),
+  note:'This is an ID-verified organ position comparison. Any forced exchange is preview-only; no GLBs were changed.'};
+const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='AnatomIQ-223h-Organ-Identity-Review.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)
+};
+}catch(e){$('status').textContent='FULL-NETWORK PREVIEW ERROR';$('error').className='note error';$('error').textContent=e?.stack||String(e)} }
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+function animate(){requestAnimationFrame(animate);orbit.update();renderer.render(scene,camera);paintLabels()}animate();main();
+</script></body></html>

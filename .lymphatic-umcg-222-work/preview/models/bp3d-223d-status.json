@@ -1,0 +1,7 @@
+{
+  "build": "223d",
+  "fit_attempt_successful": false,
+  "exit_code": 2,
+  "log_tail": "ERROR: Could not select one unambiguous red UMCG aorta mesh.\nIdentify the aorta in the original preview and rerun with --source-aorta \"EXACT_NODE_NAME\".\nUMCG source meshes:\n  Extract4_Extract4_0: 26066 faces, color=(np.float64(0.647), np.float64(0.647), np.float64(0.647)), red=False\n  Extract5_Extract5_0: 57923 faces, color=None, red=False\n  SubTool_0_8307278_SubTool_0_8307278_0: 4460 faces, color=(np.float64(0.769), np.float64(0.769), np.float64(0.769)), red=False\n  SubTool_3_8350512_SubTool_3_8350512_0: 63897 faces, color=(np.float64(0.027), np.float64(0.376), np.float64(0.106)), red=False\n  SubTool_3_8350512_SubTool_3_8350512_0.001: 48549 faces, color=(np.float64(0.027), np.float64(0.376), np.float64(0.106)), red=False\n  SubTool_3_8350512_SubTool_3_8350512_0.002: 36088 faces, color=(np.float64(0.027), np.float64(0.376), np.float64(0.106)), red=False\n  SubTool_3_8350512_SubTool_3_8350512_0.003: 5804 faces, color=(np.float64(0.027), np.float64(0.376), np.float64(0.106)), red=False\n  SubTool_3_8350512_copy1_SubTool_3_8350512_copy1_0: 26386 faces, color=(np.float64(0.635), np.float64(0.753), np.float64(0.784)), red=False",
+  "review_required": true
+}

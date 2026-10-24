@@ -1,0 +1,103 @@
+{
+  "build": "223k",
+  "status": "CANDIDATE_CAUTION_REVIEW_REQUIRED",
+  "source_mesh": "Extract5_Extract5_0",
+  "source_aorta_mesh": "Extract4_Extract4_0",
+  "skeleton_meshes": 272,
+  "source_skeleton_faces": 57923,
+  "baseline_umcg_matrix_threejs_column_major": [
+    -0.0008482216190320994,
+    4.8517342411366794e-05,
+    -0.0003136273140767444,
+    0.0,
+    5.120066728944696e-05,
+    0.0009041971386238528,
+    1.4020758348403159e-06,
+    0.0,
+    -0.0003132004411216069,
+    1.641772313292763e-05,
+    0.0008496068983309008,
+    0.0,
+    0.33443750073200873,
+    1.1920436544935116,
+    -0.8247118838874976,
+    1.0
+  ],
+  "candidate_delta_matrix_threejs_column_major": [
+    0.9936190908511705,
+    0.01656885578968931,
+    -0.1832012680752382,
+    0.0,
+    -0.020981742310373606,
+    1.010035607473509,
+    -0.022449219044368782,
+    0.0,
+    0.1827484557969667,
+    0.025878059508035966,
+    0.9935036271953839,
+    0.0,
+    0.013088397748358736,
+    -0.007201715246929389,
+    0.01218979853226927,
+    1.0
+  ],
+  "candidate_umcg_matrix_threejs_column_major": [
+    -0.0009011420796623173,
+    2.6834115435001985e-05,
+    -0.00015728377435452265,
+    0.0,
+    3.215855631645803e-05,
+    0.0009141559256602953,
+    -2.828557937046656e-05,
+    0.0,
+    -0.00015628206129311213,
+    3.337928988913237e-05,
+    0.0009010976880943511,
+    0.0,
+    0.16966590713308852,
+    1.181004124966434,
+    -0.8951942728372899,
+    1.0
+  ],
+  "baseline_skeleton_error": {
+    "median_m": 0.04901332466606166,
+    "p80_m": 0.08723805188292467,
+    "source_p80_m": 0.05210787775340798,
+    "target_p80_m": 0.10471500838433213
+  },
+  "candidate_skeleton_error": {
+    "median_m": 0.03771091733725641,
+    "p80_m": 0.0797344989059266,
+    "source_p80_m": 0.040786947593240905,
+    "target_p80_m": 0.10290835205633841
+  },
+  "aorta_error": {
+    "baseline": {
+      "median_m": 0.00276470077983007,
+      "p80_m": 0.0074382217768159745,
+      "source_p80_m": 0.006295589116146075,
+      "target_p80_m": 0.008316347429478869
+    },
+    "refined": {
+      "median_m": 0.013105433550830912,
+      "p80_m": 0.02150550422418296,
+      "source_p80_m": 0.020906751250747726,
+      "target_p80_m": 0.021907237034756374
+    }
+  },
+  "delta_scale": 1.0105029091053928,
+  "delta_rotation_deg": 10.578809959562594,
+  "delta_translation_m": 0.019281131874825486,
+  "selected_initialization": "baseline yaw +0\u00b0",
+  "aorta_safety_fraction": 0.55,
+  "unconstrained_skeleton_error": {
+    "median_m": 0.029851620738379867,
+    "p80_m": 0.07980646917846555,
+    "source_p80_m": 0.0350730562029988,
+    "target_p80_m": 0.10514150512292658
+  },
+  "issues": [
+    "Aortic constraint limits proposed correction to 55% of unconstrained ICP"
+  ],
+  "report_note": "Preview only. Aortic and skeleton geometry fits cannot establish anatomical laterality alone. Inspect anterior/posterior and patient-left/right views; do not auto-deploy."
+}

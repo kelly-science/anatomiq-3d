@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>AnatomIQ · UMCG Vessel Trial</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#0d1721;color:#ecf3f7}*{box-sizing:border-box}body{margin:0;overflow:hidden}canvas{display:block}aside{position:absolute;z-index:2;top:12px;left:12px;bottom:12px;width:min(360px,calc(100vw - 24px));overflow:auto;padding:18px;border:1px solid #425968;border-radius:18px;background:#172733f1;box-shadow:0 22px 50px #0008}h1{font-size:19px;margin:0 0 6px}h2{font-size:13px;margin:18px 0 9px;color:#b7d9df;text-transform:uppercase;letter-spacing:.08em}p{font-size:12px;color:#b7cdd8;line-height:1.55;margin:6px 0 11px}.warning{color:#f6c990}label{font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0}.check{justify-content:flex-start}input[type=range]{width:172px;accent-color:#64c9c2}input[type=checkbox]{accent-color:#64c9c2}button{background:#294a57;color:#e7f5f6;border:1px solid #537987;border-radius:8px;padding:8px 10px;cursor:pointer}button:hover{background:#3b6874}button.primary{background:#1c6f71;border-color:#3caba6}.actions{display:flex;gap:6px;flex-wrap:wrap}select{color:inherit;background:#213743;padding:6px;border:1px solid #45606b;border-radius:7px}#materials{max-height:220px;overflow:auto;border:1px solid #415965;border-radius:10px;padding:9px}#materials label{margin:6px 0;justify-content:flex-start;word-break:break-word}small,output{color:#aac3cc;font-size:11px}#status{font-size:12px;line-height:1.5;white-space:pre-wrap;padding:10px;background:#10222d;border-radius:10px;color:#c7e8e2}#error{white-space:pre-wrap;color:#ffb0a8;font-size:12px}input[type=search]{background:#0d202c;border:1px solid #496877;color:#fff;border-radius:8px;padding:8px;max-width:100%;width:100%}@media(max-width:650px){aside{top:auto;height:52vh;bottom:8px;width:calc(100vw - 16px);left:8px}canvas{height:100vh}}</style></head>
+<body><aside>
+<h1>AnatomIQ · UMCG vessel trial</h1><p class="warning"><strong>Local preview only.</strong> UMCG lymphatic-vessel anatomy is not yet verified or registered. Do not upload this preview to GitHub.</p>
+<h2>Source comparison</h2>
+<label class="check"><input id="showBase" type="checkbox" checked> BodyParts3D spleen &amp; thymus (pink)</label>
+<label class="check"><input id="showNodes" type="checkbox" checked> Z-Anatomy nodes (green, when available)</label>
+<label class="check"><input id="showSource" type="checkbox" checked> UMCG imported model (original colors)</label>
+<label>UMCG opacity <span><input type="range" id="opacity" min="0.2" max="1" step="0.05" value="0.9"><output id="opacityOut">90%</output></span></label>
+<h2>Coordinate alignment</h2>
+<p>The model is initially auto-centered and scaled for viewing, <strong>not</strong> anatomically registered. Match the trachea, thorax and lymph-node regions visually before treating positions as valid.</p>
+<label>Scale <span><input id="scale" type="range" min="0.1" max="3" step="0.01" value="1"><output id="scaleOut">1×</output></span></label>
+<label>Pitch (X) <span><input id="rx" type="range" min="-180" max="180" step="1" value="0"><output id="rxOut">0°</output></span></label>
+<label>Yaw (Y) <span><input id="ry" type="range" min="-180" max="180" step="1" value="0"><output id="ryOut">0°</output></span></label>
+<label>Roll (Z) <span><input id="rz" type="range" min="-180" max="180" step="1" value="0"><output id="rzOut">0°</output></span></label>
+<label>Left/right offset <span><input id="tx" type="range" min="-1" max="1" step="0.005" value="0"><output id="txOut">0</output></span></label>
+<label>Up/down offset <span><input id="ty" type="range" min="-1" max="1" step="0.005" value="0"><output id="tyOut">0</output></span></label>
+<label>Front/back offset <span><input id="tz" type="range" min="-1" max="1" step="0.005" value="0"><output id="tzOut">0</output></span></label>
+<div class="actions"><button id="rotateX">+90° X</button><button id="rotateY">+90° Y</button><button id="rotateZ">+90° Z</button><button id="reset">Reset placement</button></div>
+<h2>Original material groups</h2>
+<p>Turn off skeleton, blood vessels, trachea, etc. as identifiable by <em>source material</em>. These names are not proof of lymphatic identity.</p>
+<input type="search" id="materialSearch" placeholder="Filter material names" aria-label="Filter source materials"><div id="materials">Loading…</div>
+<h2>Audit</h2><div id="status">Loading geometry…</div><div id="error"></div>
+<div class="actions" style="margin:12px 0"><button class="primary" id="export">Download alignment review JSON</button></div>
+<p>© E-learning UMCG and Anna Sieben, University of Dundee. Original model: CC BY-NC-SA 4.0. Preview is not a license change or permission to commercially redistribute.</p>
+</aside>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#101a25');
+const camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,0.0001,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);document.body.append(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe8f5ff,0x314459,2.2));const key=new THREE.DirectionalLight(0xffffff,2.4);key.position.set(2,3,4);scene.add(key);
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;
+const group=new THREE.Group();scene.add(group);let source,base,nodes,previewCenter=new THREE.Vector3(),nominalScale=1,sourceOffset=new THREE.Vector3();const mats=new Map(),materialDisabled=new Set();let audit={};
+const ids=['scale','rx','ry','rz','tx','ty','tz'];
+function paint(){if(!source)return;group.position.set(previewCenter.x+Number($('tx').value),previewCenter.y+Number($('ty').value),previewCenter.z+Number($('tz').value));group.scale.setScalar(nominalScale*Number($('scale').value));for(const axis of ['x','y','z'])group.rotation[axis]=Number($('r'+axis).value)*Math.PI/180;
+for(const k of ids){$(k+'Out').textContent=k==='scale'?Number($(k).value).toFixed(2)+'×':k.startsWith('r')?$(k).value+'°':Number($(k).value).toFixed(3)}
+}
+function visibility(){if(base)base.visible=$('showBase').checked;if(nodes)nodes.visible=$('showNodes').checked;if(source){source.visible=$('showSource').checked;for(const [name,set] of mats){for(const mat of set){mat.visible=!materialDisabled.has(name);mat.transparent=true;mat.opacity=Number($('opacity').value);mat.depthWrite=Number($('opacity').value)>.98;mat.needsUpdate=true}}}$('opacityOut').textContent=Math.round(Number($('opacity').value)*100)+'%'}
+function materialsUI(){const container=$('materials');container.replaceChildren();for(const [name] of mats){if($('materialSearch').value&&!name.toLowerCase().includes($('materialSearch').value.toLowerCase()))continue;const label=document.createElement('label');const ck=document.createElement('input');ck.type='checkbox';ck.checked=!materialDisabled.has(name);ck.addEventListener('change',()=>{ck.checked?materialDisabled.delete(name):materialDisabled.add(name);visibility()});label.append(ck,document.createTextNode(name));container.append(label)}if(!container.children.length)container.textContent='No matching groups';}
+const loader=new GLTFLoader();const readGLB=url=>new Promise((resolve,reject)=>loader.load(url,g=>resolve(g.scene),undefined,reject));
+const optional=async url=>{try{return await readGLB(url)}catch{return null}};
+async function init(){try{
+[audit,base,source,nodes]=await Promise.all([
+fetch('./models/umcg-source-audit.json').then(x=>{if(!x.ok)throw Error('Source audit not found');return x.json()}),
+readGLB('./models/lymphatic-standard.glb'),readGLB('./models/umcg-source.glb'),optional('./models/lymphatic-z-standard.glb')]);
+if(!source)throw Error('No UMCG model loaded');
+scene.add(base);base.traverse(x=>{if(x.isMesh)x.material=new THREE.MeshStandardMaterial({color:0xd18591,roughness:.55,side:THREE.DoubleSide})});
+if(nodes){scene.add(nodes);nodes.traverse(x=>{if(x.isMesh)x.material=new THREE.MeshStandardMaterial({color:0x68d5a0,roughness:.55,side:THREE.DoubleSide})})}
+const ref=new THREE.Box3().setFromObject(base);if(nodes)ref.expandByObject(nodes);
+const originalBounds=new THREE.Box3().setFromObject(source);
+if(ref.isEmpty()||originalBounds.isEmpty())throw Error('Source or reference bounds empty');
+const modelExtent=originalBounds.getSize(new THREE.Vector3()).length();const referenceExtent=ref.getSize(new THREE.Vector3()).length();
+nominalScale=referenceExtent/modelExtent;sourceOffset=originalBounds.getCenter(new THREE.Vector3());previewCenter=ref.getCenter(new THREE.Vector3());source.position.copy(sourceOffset).multiplyScalar(-1);group.add(source);
+source.traverse(obj=>{if(!obj.isMesh)return;const materials=Array.isArray(obj.material)?obj.material:[obj.material];for(const m of materials){if(!m)continue;const name=m.name||'(unnamed source material)';if(!mats.has(name))mats.set(name,new Set());mats.get(name).add(m);m.side=THREE.DoubleSide;}});
+const size=referenceExtent;orbit.target.copy(previewCenter);camera.position.copy(previewCenter).add(new THREE.Vector3(size*.75,size*.55,size*1.2));camera.near=Math.max(.00001,size/10000);camera.far=Math.max(50,size*100);camera.updateProjectionMatrix();
+$('status').textContent=`${audit.mesh_node_count} UMCG source mesh nodes · ${audit.triangle_sum.toLocaleString()} triangles · ${mats.size} material groups\n${nodes?'Z lymph-node reference loaded':'Z node preview not found; only spleen/thymus reference shown'}\nALIGNMENT: unverified — visual review required`;
+materialsUI();visibility();paint();
+}catch(e){$('error').textContent='Preview failed: '+String(e);}}
+for(const id of ids)$(id).addEventListener('input',paint);
+for(const id of ['showBase','showNodes','showSource','opacity'])$(id).addEventListener('input',visibility);
+$('materialSearch').addEventListener('input',materialsUI);
+for(const axis of ['X','Y','Z'])$('rotate'+axis).onclick=()=>{const el=$('r'+axis.toLowerCase());el.value=(Number(el.value)+90)%360>180?(Number(el.value)+90)%360-360:(Number(el.value)+90)%360;paint()};
+$('reset').onclick=()=>{for(const id of ids)$(id).value=id==='scale'?'1':'0';paint()};
+$('export').onclick=()=>{const report={status:'LOCAL_TRIAL_NOT_REGISTERED',source:'UMCG overview CC BY-NC-SA 4.0',sourceMeshCount:audit.mesh_node_count,sourceMaterialGroups:[...mats.keys()],hiddenMaterialGroups:[...materialDisabled],initialAutoScale:nominalScale,sourceCenter:sourceOffset.toArray(),referenceCenter:previewCenter.toArray(),transformControls:Object.fromEntries(ids.map(k=>[k,Number($(k).value)])),note:'Manual preview alignment only. Geometry identities and anatomical fit require independent review.'};const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='AnatomIQ-UMCG-Alignment-Review.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1500)};
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function frame(){requestAnimationFrame(frame);orbit.update();renderer.render(scene,camera)}frame();init();
+</script></body></html>

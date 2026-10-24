@@ -1,0 +1,15 @@
+{
+  "source_mesh_object_count": 8,
+  "source_mesh_object_names": [
+    "SubTool_0_8307278_SubTool_0_8307278_0",
+    "Extract4_Extract4_0",
+    "Extract5_Extract5_0",
+    "SubTool_3_8350512_SubTool_3_8350512_0",
+    "SubTool_3_8350512_SubTool_3_8350512_0.001",
+    "SubTool_3_8350512_SubTool_3_8350512_0.002",
+    "SubTool_3_8350512_SubTool_3_8350512_0.003",
+    "SubTool_3_8350512_copy1_SubTool_3_8350512_copy1_0"
+  ],
+  "preview_glb": "/Users/steve/Documents/GitHub/anatomiq-3d/.lymphatic-umcg-222-work/preview/models/umcg-source.glb",
+  "source_scene": "/Users/steve/Documents/GitHub/anatomiq-3d/.lymphatic-umcg-222-work/source/imported/scene.gltf"
+}

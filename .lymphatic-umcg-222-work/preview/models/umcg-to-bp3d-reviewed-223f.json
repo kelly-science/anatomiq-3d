@@ -1,0 +1,42 @@
+{
+  "build": "223f",
+  "status": "AORTA_MATCH_VISUALLY_REVIEWED_WHOLE_BODY_PENDING",
+  "registration_mode": "Use 223e aorta-derived uniform similarity transform on ENTIRE UMCG source root",
+  "source": "E-learning UMCG Lymphatic System: an overview",
+  "source_license": "CC BY-NC-SA 4.0",
+  "source_mesh_count": 8,
+  "source_aorta_mesh": "Extract4_Extract4_0",
+  "aorta_normalized_fit_error": 0.011379,
+  "aorta_length_ratio": 0.962436,
+  "matrix_threejs_column_major": [
+    -0.003331862428233989,
+    0.00019057886131534574,
+    0.001231945803777846,
+    0,
+    0.00020111911299417322,
+    0.003551737430761579,
+    -5.507433070345343e-06,
+    0,
+    -0.0012302690226997184,
+    6.448974376079834e-05,
+    -0.0033373038835620835,
+    0,
+    1.3136893923465167,
+    1.131444771475095,
+    3.7406927633108267,
+    1
+  ],
+  "sha256": {
+    "umcg_source": "a11d85433875ba1e06002e72c9e1a5b89de5001de47a586ac448c215fdd6590a",
+    "bodyparts3d_aorta": "b294b281b1192689a80416e535c679074e0390eb5e66cb200b18496598114932"
+  },
+  "lymphatic_vessel_meshes": [
+    "SubTool_3_8350512_SubTool_3_8350512_0",
+    "SubTool_3_8350512_SubTool_3_8350512_0.003",
+    "SubTool_3_8350512_SubTool_3_8350512_0.001",
+    "SubTool_3_8350512_SubTool_3_8350512_0.002"
+  ],
+  "report_note": "Aortic alignment reviewed from screenshot by visual inspection; full-body and Z-Anatomy node alignment NOT YET VERIFIED. Preview only.",
+  "za_model_available": true,
+  "bp3d_immune_organs_available": true
+}
