@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.1.0</span>
+        <span class="version">STUDIO 2.2.0</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -32,6 +32,7 @@
         <button id="mode-digestive" class="mode-tab" type="button" aria-pressed="false" data-system="digestive">Digestive</button>
         <button id="mode-cardiovascular" class="mode-tab" type="button" aria-pressed="false" data-system="cardiovascular" disabled>Cardiovascular</button>
         <button id="mode-respiratory" class="mode-tab" type="button" aria-pressed="false" data-system="respiratory" disabled>Respiratory</button>
+        <button id="mode-lymphatic" class="mode-tab" type="button" aria-pressed="false" data-system="lymphatic" disabled>Lymphatic</button>
         <button id="mode-urinary" class="mode-tab" type="button" aria-pressed="false" data-system="urinary" disabled>Urinary</button>
         <button id="mode-nervous" class="mode-tab" type="button" aria-pressed="false" data-system="nervous" disabled>Nervous</button>
       </nav>
@@ -173,6 +174,16 @@
             <button class="button small" type="button" data-nervous-preset="plexus">Brachial plexus &amp; arm</button>
             <button class="button small" type="button" data-nervous-preset="verified">Verified source only</button>
             <button id="nervous-focus" class="button small primary" type="button">Focus nervous system</button>
+          </div>
+        </section>
+        <section id="lymphatic-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Lymphatic and immune organs" hidden>
+          <div class="systems-header"><span class="eyebrow">LYMPHATIC / IMMUNE ORGAN STUDY</span><p id="lymphatic-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Verified BodyParts3D spleen and thymus only. The atlas has no lymph node, duct, vessel or tonsil geometry. Use the separately labeled regional drainage teaching diagram.</p>
+          <div class="cardio-presets" role="group" aria-label="Lymphatic organ presets">
+            <button class="button small" type="button" data-lymphatic-preset="all">Immune organs</button>
+            <button class="button small" type="button" data-lymphatic-preset="spleen">Spleen only</button>
+            <button class="button small" type="button" data-lymphatic-preset="thymus">Thymus only</button>
+            <button id="lymphatic-diagram-open" class="button small primary" type="button">Lymph drainage (diagram)</button>
           </div>
         </section>
         <section id="urinary-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Urinary system study views" hidden>
@@ -407,6 +418,13 @@
       <p class="footnote">Important: the library does not sync across Chromebooks. Chrome site-data clearing or school device resets can erase it. Use <strong>Back up library</strong> to keep a copy in Google Drive or another safe location. Importing a backup adds lessons without overwriting existing ones.</p>
     </section>
   </div>
+  <div class="dialog-backdrop" id="lymphatic-diagram-dialog" hidden>
+    <section class="share-dialog lymphatic-diagram-dialog" role="dialog" aria-modal="true" aria-labelledby="lymphatic-diagram-title">
+      <div class="dialog-header"><div><span class="eyebrow">LYMPHATIC SYSTEM · TEACHING DIAGRAM</span><h2 id="lymphatic-diagram-title">Major drainage regions (schematic)</h2></div><button type="button" id="lymphatic-diagram-close" class="icon-button" aria-label="Close lymphatic diagram">✕</button></div>
+      <p class="studio-hint">These simplified regional pathways are not anatomical meshes or patient-specific geometry. The spleen and thymus remain selectable in the 3D atlas.</p>
+      <img class="lymphatic-diagram-image" src="./lymphatic-drainage.svg" alt="Schematic major lymphatic nodes, thoracic duct, spleen and thymus" />
+    </section>
+  </div>
   <div class="dialog-backdrop" id="kidney-interior-dialog" hidden>
     <section class="share-dialog kidney-interior-dialog" role="dialog" aria-modal="true" aria-labelledby="kidney-interior-title">
       <div class="dialog-header"><div><span class="eyebrow">URINARY SYSTEM</span><h2 id="kidney-interior-title">Kidney internal anatomy · schematic</h2></div><button type="button" id="kidney-interior-close" class="icon-button" aria-label="Close kidney schematic">✕</button></div>
@@ -444,6 +462,8 @@
         <p class="studio-hint">Standard is recommended for accurate dental alignment and predictable performance. In Experimental mode, only safely matched skull surfaces are upgraded; the original maxillae, mandible and teeth remain together. The replacement uses a neutral bone material. Existing 1.7.1 devices have been reset to Standard once. The experiment requires <code>models/skull-detailed.glb</code> and <code>models/skull-structures.json</code>. The setting is device-specific and never changes saved lessons or student links.</p>
       </div>
       <div class="render-settings-group">
+        <label for="settings-lymphatic-geometry"><strong>Lymphatic geometry</strong></label>
+        <select id="settings-lymphatic-geometry" class="text-input" aria-label="Lymphatic geometry quality"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — smoother spleen and thymus</option></select>
         <label for="settings-urinary-geometry"><strong>Urinary system geometry</strong></label>
         <select id="settings-urinary-geometry" class="text-input" aria-label="Urinary geometry quality"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — refined kidney and urinary tract surfaces</option></select>
         <label for="settings-nervous-geometry"><strong>Nervous system geometry</strong></label>
@@ -504,6 +524,7 @@
           <option value="respiratory">Respiratory — catalog, Standard and Detailed models</option>
           <option value="nervous">Nervous — catalog, Standard and Detailed models</option>
           <option value="urinary">Urinary — catalog, Standard and Detailed models</option>
+          <option value="lymphatic">Lymphatic — catalog, Standard and Detailed models</option>
           <option value="digestive">Digestive — organs, catalog, Standard and Detailed models</option>
           <option value="skeletal">Skeletal / muscular — base model</option>
         </select>

@@ -1,0 +1,4 @@
+group,fj_id,bp_id,fma_id,name,obj,bytes
+lymphatic,FJ2561,BP21570,FMA55661,Spleen,lymphatic/FJ2561_BP21570_FMA7196_Spleen.obj,79066
+lymphatic,FJ3150,BP21581,FMA14065,Left lobe of thymus,lymphatic/FJ3150_BP22421_FMA71195_Left lobe of thymus.obj,65990
+lymphatic,FJ3151,BP23141,FMA14065,Right lobe of thymus,lymphatic/FJ3151_BP23141_FMA71194_Right lobe of thymus.obj,65432

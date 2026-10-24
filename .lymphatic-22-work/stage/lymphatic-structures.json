@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "system": "lymphatic",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ2561",
+      "fma_id": "FMA55661",
+      "name": "Spleen",
+      "category": "spleen",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ3150",
+      "fma_id": "FMA14065",
+      "name": "Left lobe of thymus",
+      "category": "thymus",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ3151",
+      "fma_id": "FMA14065",
+      "name": "Right lobe of thymus",
+      "category": "thymus",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    }
+  ],
+  "coverage_note": "Only spleen and thymus lobes. Lymph nodes, ducts and vessels unavailable in this provider source."
+}

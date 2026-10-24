@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 610" role="img" aria-labelledby="t d">
+<title id="t">Major lymphatic drainage, simplified teaching diagram</title>
+<desc id="d">Schematic front view showing major lymph node regions and lymphatic trunk drainage. Not reconstructed patient anatomy, not 3D source geometry.</desc>
+<rect width="940" height="610" rx="24" fill="#132532"/>
+<g font-family="Arial, sans-serif" fill="#e6f0f3">
+<text x="34" y="43" font-size="25" font-weight="700">Lymphatic drainage pathways</text>
+<text x="34" y="70" font-size="15" fill="#afc3ce">Teaching schematic • regional pathways, not source-backed 3D geometry</text>
+</g>
+<g stroke="#708995" fill="none" stroke-width="3" opacity="0.7">
+<circle cx="475" cy="131" r="36"/>
+<path d="M458 166Q435 177 409 202L351 236 325 342M493 168Q518 181 540 207L589 237 612 343M418 199Q433 238 430 286L421 413Q407 448 394 515M523 199Q507 240 513 283L520 413Q541 458 561 518M433 196Q469 184 520 196"/>
+</g>
+<g fill="none" stroke="#5ec2ad" stroke-linecap="round" stroke-linejoin="round">
+<path d="M469 499L467 422L467 358L468 285L469 211L467 172" stroke-width="7" stroke-dasharray="3 15"/>
+<path d="M396 512Q423 454 465 421M558 509Q528 455 472 420" stroke-width="5"/>
+<path d="M339 339Q371 252 462 221M601 338Q560 255 479 218" stroke-width="5"/>
+<path d="M466 175Q470 190 478 202" stroke-width="4"/>
+<path d="M467 211L426 210" stroke-width="4"/>
+</g>
+<g fill="#9ee0bc" stroke="#225c52" stroke-width="2">
+<ellipse cx="455" cy="184" rx="8" ry="13"/><ellipse cx="482" cy="184" rx="8" ry="13"/>
+<ellipse cx="402" cy="232" rx="10" ry="8"/><ellipse cx="539" cy="231" rx="10" ry="8"/>
+<ellipse cx="352" cy="276" rx="10" ry="8"/><ellipse cx="583" cy="273" rx="10" ry="8"/>
+<ellipse cx="413" cy="435" rx="10" ry="8"/><ellipse cx="529" cy="437" rx="10" ry="8"/>
+<ellipse cx="396" cy="500" rx="11" ry="9"/><ellipse cx="561" cy="498" rx="11" ry="9"/>
+</g>
+<g fill="#e6b3c0" stroke="#a45b72" stroke-width="2">
+<ellipse cx="478" cy="237" rx="15" ry="24"/><ellipse cx="449" cy="237" rx="13" ry="24"/>
+<ellipse cx="521" cy="307" rx="30" ry="18" transform="rotate(18 521 307)"/>
+</g>
+<g fill="none" stroke="#93b6c5" stroke-width="1.7" opacity="0.9">
+<path d="M470 187L601 133H727"/><path d="M539 231L650 192H727"/><path d="M529 437L649 410H727"/>
+<path d="M396 500L285 524H217"/><path d="M451 239L273 228H217"/><path d="M520 307L651 315H727"/>
+</g>
+<g font-family="Arial, sans-serif" font-size="17" fill="#eaf5f6">
+<text x="734" y="137">Cervical nodes</text><text x="734" y="198">Axillary nodes</text><text x="734" y="320">Spleen</text><text x="734" y="415">Abdominal / iliac</text>
+<text x="43" y="232">Thymus</text><text x="43" y="529">Inguinal nodes</text>
+<text x="493" y="378" fill="#9ee0bc" font-size="14">Thoracic duct</text>
+</g>
+<text x="34" y="583" font-family="Arial, sans-serif" font-size="14" fill="#adc5cd">Node groups and drainage paths are illustrative. Use the interactive 3D source atlas for spleen and thymus.</text>
+</svg>

@@ -9,6 +9,7 @@ import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.
 import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
 import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset,nervousMaterialOverrides} from './nervous-model.js';
 import {urinaryEntries,validateUrinaryManifest,urinaryColor,URINARY_PRESETS,urinaryVisibleInPreset,isRenalVessel} from './urinary-model.js';
+import {lymphaticEntries,validateLymphaticManifest,lymphaticColor,LYMPHATIC_PRESETS,lymphaticVisibleInPreset} from './lymphatic-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
@@ -27,7 +28,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.2.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -50,6 +51,9 @@ const CARDIO_DETAILED='./models/cardiovascular-detailed.glb';
 const RESP_MANIFEST='./models/respiratory-structures.json';
 const RESP_STANDARD='./models/respiratory-standard.glb';
 const RESP_DETAILED='./models/respiratory-detailed.glb';
+const LYMPHATIC_MANIFEST='./models/lymphatic-structures.json';
+const LYMPHATIC_STANDARD='./models/lymphatic-standard.glb';
+const LYMPHATIC_DETAILED='./models/lymphatic-detailed.glb';
 const URINARY_MANIFEST='./models/urinary-structures.json';
 const URINARY_STANDARD='./models/urinary-standard.glb';
 const URINARY_DETAILED='./models/urinary-detailed.glb';
@@ -64,6 +68,10 @@ const URINARY_QUALITY_KEY='anatomiq-urinary-geometry-v1';
 let urinaryGeometry='standard';
 try{urinaryGeometry=localStorage.getItem(URINARY_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let urinaryRoot=null,urinaryEntriesList=[],urinaryAvailable=false,urinaryLoaded=false,urinaryMetadata=null;
+const LYMPHATIC_QUALITY_KEY='anatomiq-lymphatic-geometry-v1';
+let lymphaticGeometry='standard';
+try{lymphaticGeometry=localStorage.getItem(LYMPHATIC_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
+let lymphaticRoot=null,lymphaticEntriesList=[],lymphaticAvailable=false,lymphaticLoaded=false,lymphaticMetadata=null;
 const RESP_QUALITY_KEY='anatomiq-respiratory-geometry-v1';
 let respiratoryGeometry='standard';
 try{respiratoryGeometry=localStorage.getItem(RESP_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
@@ -111,7 +119,7 @@ const hidden = new Set();
 let structures = [];
 let legacyStructureCount = 0;
 let legacyFingerprint = '';
-const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false};
+const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false};
 const materials = new Map(); // Model-authored original material(s) for each anatomical structure.
 const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
 const bonePaint = new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
@@ -298,6 +306,7 @@ function layerEnabled(s){
   if(s.system==='respiratory')return layers.respiratory && respiratoryAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='nervous')return layers.nervous && nervousAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='urinary')return layers.urinary && urinaryAvailable && !s.mesh.userData?.deferredAsset;
+  if(s.system==='lymphatic')return layers.lymphatic && lymphaticAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='muscular')return s.layer==='deep muscles'?layers.deep:layers.superficial;
   if(s.system==='skeletal')return layers.skeletal && (mode!=='skull'||s.skull);
   return false;
@@ -412,6 +421,10 @@ function updateSystemControls(){
   $('mode-respiratory').disabled=!respiratoryAvailable;
   $('mode-respiratory').title=respiratoryAvailable?`${respiratoryEntriesList.length} lung and airway structures`:'Run tools/install-respiratory-43.sh';
   $('mode-nervous').disabled=!nervousAvailable;
+  $('mode-lymphatic').disabled=!lymphaticAvailable;
+  $('mode-lymphatic').title=lymphaticAvailable?'Verified spleen and thymus models':'Publish lymphatic GLBs and manifest to activate this layer';
+  $('lymphatic-study-panel').hidden=!teacherMode||!lymphaticAvailable||!layers.lymphatic;
+  if(lymphaticAvailable)$('lymphatic-study-count').textContent=`${lymphaticEntriesList.length} verified source meshes · 1 spleen, 2 thymus lobes`;
   $('mode-urinary').disabled=!urinaryAvailable;
   $('mode-urinary').title=urinaryAvailable?`${urinaryEntriesList.length} kidney and urinary-tract structures`:'Generate and upload the source-backed urinary models';
   $('urinary-study-panel').hidden=!teacherMode||!urinaryAvailable||!layers.urinary;
@@ -541,6 +554,7 @@ function descriptionFor(s){
     if(s.organId==='peripheral')return 'A named peripheral or cranial nerve carrying sensory, motor or mixed signals.';
     return 'A named structure of the central nervous system.';
   }
+  if(s.system==='lymphatic')return s.organId==='spleen'?'Filters blood, removes aging red blood cells and supports immune surveillance.':'Primary lymphoid organ where T lymphocytes mature.';
   if(s.system==='urinary')return ({kidney:'Filters blood and regulates water, electrolytes and acid-base balance.',ureter:'Carries urine from renal pelvis toward the bladder.',bladder:'Stores urine until micturition.',urethra:'Carries urine from the bladder to the exterior.'})[s.organId]||'Urinary system anatomy.';
   if(s.system==='respiratory')return ({lung:'Lung tissue, including bronchopulmonary segments when individually available.',airway:'An air-conducting bronchial structure.',trachea:'Air passage from the larynx toward the two main bronchi.',larynx:'Protects the airway and supports phonation.',upper:'Passage involved in conducting inspired air.',associated:'A neighboring structure involved in ventilation.'})[s.organId]||'Respiratory anatomy.';
   if(s.system==='cardiovascular')return ({'heart-internal':'A named cardiac structure such as a valve leaflet, chamber cavity or papillary muscle; select Heart interior to hide the exterior walls.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
@@ -648,7 +662,7 @@ function setSelection(s){
 }
 function updateLayerHeading(){
   const layers=effectiveSystemLayers(mode,systemLayers);
-  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null,layers.nervous?'Nervous':null,layers.urinary?'Urinary':null].filter(Boolean);
+  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null,layers.nervous?'Nervous':null,layers.urinary?'Urinary':null,layers.lymphatic?'Lymphatic':null].filter(Boolean);
   const name=mode==='skull'?'Skull':mode==='skeleton'?'Skeletal system':enabled.length?enabled.join(' + '):'No layers selected';
   elements.title.textContent=name;
   elements.subtitle.textContent=mode==='skull'?'Cranial and facial structures':mode==='skeleton'?'Full skeletal system':'Click system buttons to show or hide layers independently.';
@@ -758,7 +772,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='urinary'?({'kidney':'Kidneys','ureter':'Ureters','bladder':'Urinary bladder','urethra':'Urethra'}[s.organId]||'Urinary structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves','meninges':'Meninges / dural folds'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='lymphatic'?({'spleen':'Spleen','thymus':'Thymus'}[s.organId]||'Lymphatic structures'):s.system==='urinary'?({'kidney':'Kidneys','ureter':'Ureters','bladder':'Urinary bladder','urethra':'Urethra'}[s.organId]||'Urinary structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves','meninges':'Meninges / dural folds'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -836,7 +850,7 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
@@ -848,7 +862,7 @@ function prepareStructures(root){
   originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
-  console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${catalog.respiratoryCount} respiratory meshes; ${catalog.nervousCount} nervous meshes; ${catalog.urinaryCount} urinary meshes; ${structures.filter(x=>x.skull).length} skull structures`);
+  console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${catalog.respiratoryCount} respiratory meshes; ${catalog.nervousCount} nervous meshes; ${catalog.urinaryCount} urinary meshes; ${catalog.lymphaticCount} lymphatic meshes; ${structures.filter(x=>x.skull).length} skull structures`);
   if(legacyStructureCount<100 || structures.filter(x=>x.skull).length<12 || baseStructureCount-legacyStructureCount<250)
     throw new Error('The model did not contain the expected separate bones and muscle meshes.');
 }
@@ -1088,6 +1102,34 @@ async function loadUrinary(){
     if(urinaryRoot){scene.remove(urinaryRoot);urinaryRoot=null;}
   }
 }
+async function loadLymphatic(){
+  lymphaticLoaded=false;lymphaticAvailable=false;lymphaticEntriesList=[];
+  if(lymphaticRoot){scene.remove(lymphaticRoot);lymphaticRoot=null;}
+  try{
+    const response=await fetch(LYMPHATIC_MANIFEST,{cache:'no-cache'});
+    if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))return;
+    const manifest=validateLymphaticManifest(await response.json());
+    const requested=lymphaticGeometry==='detailed'?LYMPHATIC_DETAILED:LYMPHATIC_STANDARD;
+    let gltf;
+    try{gltf=await new GLTFLoader().loadAsync(requested);}
+    catch(error){if(requested===LYMPHATIC_STANDARD)throw error;console.warn('Lymphatic Detailed unavailable, using Standard',error);gltf=await new GLTFLoader().loadAsync(LYMPHATIC_STANDARD);}
+    const entries=lymphaticEntries(gltf.scene,manifest);
+    const alignment=correctedDetailTransform(sourceRegistration(new THREE.Box3().setFromObject(sceneRoot)));
+    gltf.scene.scale.set(...alignment.scale);gltf.scene.position.set(...alignment.position);
+    scene.add(gltf.scene);lymphaticRoot=gltf.scene;
+    for(const entry of entries){
+      const mesh=entry.mesh;
+      if(mesh.geometry?.attributes?.position&&!mesh.geometry.attributes.normal)mesh.geometry.computeVertexNormals();
+      const original=mesh.material;
+      mesh.material=new THREE.MeshStandardMaterial({color:lymphaticColor(entry),metalness:0,roughness:entry.organId==='spleen'?0.46:0.59,side:THREE.DoubleSide});
+      applySurfaceFinish(mesh.material,'lymphatic',surfaceMode);
+      if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
+      materials.set(mesh,mesh.material);mesh.visible=false;
+    }
+    lymphaticEntriesList=entries;lymphaticAvailable=true;lymphaticLoaded=true;
+    configureAnatomyShadows(lymphaticRoot,shadows.profile.enabled);
+  }catch(error){console.warn('Lymphatic atlas missing or inconsistent',error);if(lymphaticRoot){scene.remove(lymphaticRoot);lymphaticRoot=null;}}
+}
 async function loadHighResolutionSkull(){
   skullDetailStats=null;
   if(skullGeometry!=='detailed')return;
@@ -1159,6 +1201,8 @@ async function createDeferredCatalog(){
     respiratoryEntriesList=respiratoryEntries(asVirtualRoot(respMetadata.structures.map(s=>s.id)),respMetadata);
     respiratoryAvailable=true;
   }
+  lymphaticMetadata=await readOptionalManifest(LYMPHATIC_MANIFEST,validateLymphaticManifest);
+  if(lymphaticMetadata){lymphaticEntriesList=lymphaticEntries(asVirtualRoot(lymphaticMetadata.structures.map(s=>s.id)),lymphaticMetadata);lymphaticAvailable=true;}
   urinaryMetadata=await readOptionalManifest(URINARY_MANIFEST,validateUrinaryManifest);
   if(urinaryMetadata){urinaryEntriesList=urinaryEntries(asVirtualRoot(urinaryMetadata.structures.map(s=>s.id)),urinaryMetadata);urinaryAvailable=true;}
   nervMetadata=await readOptionalManifest(NERVOUS_MANIFEST,validateNervousManifest);
@@ -1170,7 +1214,7 @@ async function createDeferredCatalog(){
 function restoreDeferredReferences(system,realEntries){
   // Do not rebuild or reorder the structures array: indices are used by every
   // published annotation, visibility bitmap and paint override.
-  const existing=structures.filter(s=>system==='legacy'?s.system==='digestive'&&s.layer!=='digestive-detail':system==='detailed'?s.layer==='digestive-detail':system==='cardiovascular'?s.system==='cardiovascular':system==='respiratory'?s.system==='respiratory':system==='nervous'?s.system==='nervous':s.system==='urinary');
+  const existing=structures.filter(s=>system==='legacy'?s.system==='digestive'&&s.layer!=='digestive-detail':system==='detailed'?s.layer==='digestive-detail':system==='cardiovascular'?s.system==='cardiovascular':system==='respiratory'?s.system==='respiratory':system==='nervous'?s.system==='nervous':system==='lymphatic'?s.system==='lymphatic':s.system==='urinary');
   const id=(s)=>s.sourceName;
   const replacements=new Map(realEntries.map(s=>[id(s),s]));
   if(existing.length!==realEntries.length||new Set(existing.map(id)).size!==realEntries.length)
@@ -1208,6 +1252,11 @@ async function loadNeededAsset(kind){
     await loadNervous();
     if(!nervousLoaded)throw new Error('Unable to load nervous-standard.glb and nervous-structures.json for this chapter.');
     restoreDeferredReferences('nervous',nervousEntriesList);
+  }else if(kind==='lymphatic'){
+    if(lymphaticLoaded)return;
+    await loadLymphatic();
+    if(!lymphaticLoaded)throw new Error('Missing lymphatic models; publish matching GLBs and JSON.');
+    restoreDeferredReferences('lymphatic',lymphaticEntriesList);
   }else if(kind==='urinary'){
     if(urinaryLoaded)return;
     await loadUrinary();
@@ -1223,7 +1272,7 @@ async function loadNeededAsset(kind){
 async function ensureChapterAssets(chapter){
   if(teacherMode)return;
   const needed=chapterAssets(chapter);
-  for(const type of ['legacyDigestive','detailedDigestive','cardiovascular','respiratory','nervous','urinary'])if(needed[type])await loadNeededAsset(type);
+  for(const type of ['legacyDigestive','detailedDigestive','cardiovascular','respiratory','nervous','urinary','lymphatic'])if(needed[type])await loadNeededAsset(type);
   if(needed.skull && skullGeometry==='detailed' && !skullDetailStats)await loadHighResolutionSkull();
 }
 async function loadAnatomy(){
@@ -1251,7 +1300,7 @@ async function loadAnatomy(){
     configureAnatomyShadows(sceneRoot,shadows.profile.enabled);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.
-      await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();await loadNervous();await loadUrinary();
+      await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();await loadNervous();await loadUrinary();await loadLymphatic();
     }else{
       await createDeferredCatalog();
       const start=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start];
@@ -1262,6 +1311,7 @@ async function loadAnatomy(){
       if(requirements.respiratory)await loadRespiratory();
       if(requirements.nervous)await loadNervous();
       if(requirements.urinary)await loadUrinary();
+      if(requirements.lymphatic)await loadLymphatic();
     }
     prepareStructures(sceneRoot);
     if(!teacherMode){
@@ -1271,7 +1321,7 @@ async function loadAnatomy(){
       const sample=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[0];
       if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
         console.warn('Deferred catalog differs from published lesson; verifying real anatomy files for backward compatibility.');
-        await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();await loadNervous();await loadUrinary();
+        await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();await loadNervous();await loadUrinary();await loadLymphatic();
         prepareStructures(sceneRoot);
       }
     }
@@ -1297,9 +1347,9 @@ async function loadAnatomy(){
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
 async function changeSystemLayer(system){
   if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore))return;
-  if(!teacherMode && (system==='digestive' || system==='cardiovascular'||system==='respiratory'||system==='nervous'||system==='urinary')){
-    const type=system==='digestive'?'detailedDigestive':system==='respiratory'?'respiratory':system==='nervous'?'nervous':system==='urinary'?'urinary':'cardiovascular';
-    const active=system==='digestive'?systemLayers.digestive:system==='respiratory'?systemLayers.respiratory:system==='nervous'?systemLayers.nervous:system==='urinary'?systemLayers.urinary:systemLayers.cardiovascular;
+  if(!teacherMode && (system==='digestive' || system==='cardiovascular'||system==='respiratory'||system==='nervous'||system==='urinary'||system==='lymphatic')){
+    const type=system==='digestive'?'detailedDigestive':system==='respiratory'?'respiratory':system==='nervous'?'nervous':system==='urinary'?'urinary':system==='lymphatic'?'lymphatic':'cardiovascular';
+    const active=system==='digestive'?systemLayers.digestive:system==='respiratory'?systemLayers.respiratory:system==='nervous'?systemLayers.nervous:system==='urinary'?systemLayers.urinary:system==='lymphatic'?systemLayers.lymphatic:systemLayers.cardiovascular;
     if(!active){
       studentAssetBusy=true;
       setStatus('Loading '+system+' model');
@@ -1310,7 +1360,7 @@ async function changeSystemLayer(system){
     }
   }
   let next;
-  try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable,respiratoryAvailable,nervousAvailable,urinaryAvailable);}catch(e){showToast(e.message);return;}
+  try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable,respiratoryAvailable,nervousAvailable,urinaryAvailable,lymphaticAvailable);}catch(e){showToast(e.message);return;}
   const priorCount=currentlyVisible().length;
   Object.assign(systemLayers,next);
   mode='systems'; // New scenes use independent layers; legacy presets are read-only compatibility modes.
@@ -1323,7 +1373,7 @@ async function changeSystemLayer(system){
   // Frame the scene only when turning on the first system; otherwise don't move the camera.
   if(priorCount===0&&currentlyVisible().length)frameVisible(activePreset||'front');
 }
-for(const system of ['skeletal','muscular','digestive','cardiovascular','respiratory','nervous','urinary']){
+for(const system of ['skeletal','muscular','digestive','cardiovascular','respiratory','nervous','urinary','lymphatic']){
   $('mode-'+system).addEventListener('click',()=>changeSystemLayer(system));
 }
 for(const [id,layer] of [['system-deep','deep'],['system-superficial','superficial']]){
@@ -1339,6 +1389,8 @@ $('settings-digestive-geometry').value=digestiveGeometry;
 $('settings-cardio-geometry').value=cardioGeometry;
 $('settings-respiratory-geometry').value=respiratoryGeometry;
 $('settings-nervous-geometry').value=nervousGeometry;
+$('settings-lymphatic-geometry').value=lymphaticGeometry;
+$('settings-lymphatic-geometry').addEventListener('change',()=>{const next=$('settings-lymphatic-geometry').value==='detailed'?'detailed':'standard';if(next===lymphaticGeometry)return;if(teacherMode)saveDraft(false);try{localStorage.setItem(LYMPHATIC_QUALITY_KEY,next);}catch{}location.reload();});
 $('settings-urinary-geometry').value=urinaryGeometry;
 $('settings-urinary-geometry').addEventListener('change',()=>{const next=$('settings-urinary-geometry').value==='detailed'?'detailed':'standard';if(next===urinaryGeometry)return;if(teacherMode)saveDraft(false);try{localStorage.setItem(URINARY_QUALITY_KEY,next);}catch{}location.reload();});
 $('settings-nervous-geometry').addEventListener('change',()=>{
@@ -1409,7 +1461,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),respiratory:teacherMode&&respiratoryAvailable,respiratoryMode:respiratoryGeometry,nervous:teacherMode&&nervousAvailable,nervousMode:nervousGeometry,urinary:teacherMode&&urinaryAvailable,urinaryMode:urinaryGeometry,lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry,respiratoryGeometry,nervousGeometry,urinaryGeometry}):[]});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),respiratory:teacherMode&&respiratoryAvailable,respiratoryMode:respiratoryGeometry,nervous:teacherMode&&nervousAvailable,nervousMode:nervousGeometry,urinary:teacherMode&&urinaryAvailable,urinaryMode:urinaryGeometry,lymphatic:teacherMode&&lymphaticAvailable,lymphaticMode:lymphaticGeometry,lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry,respiratoryGeometry,nervousGeometry,urinaryGeometry,lymphaticGeometry}):[]});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -1476,7 +1528,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
-    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
@@ -1875,9 +1927,11 @@ async function applyScene(saved){
     systemLayers.respiratory=saved.rs ?? false;
     systemLayers.nervous=saved.nv ?? false;
     systemLayers.urinary=saved.ur ?? false;
+    systemLayers.lymphatic=saved.ly ?? false;
     respiratoryOpacity=saved.ro ?? 1;
     applyRespiratoryOpacity();
     if(systemLayers.respiratory&&!respiratoryAvailable)throw new Error('This lesson requires respiratory-standard.glb and respiratory-structures.json.');
+    if(systemLayers.lymphatic&&!lymphaticAvailable)throw new Error('This lesson requires lymphatic-standard.glb and lymphatic-structures.json.');
     if(systemLayers.urinary&&!urinaryAvailable)throw new Error('This lesson requires urinary-standard.glb and urinary-structures.json.');
     if(systemLayers.nervous&&!nervousAvailable)throw new Error('This lesson requires nervous-standard.glb and nervous-structures.json.');
     if(systemLayers.cardiovascular&&!cardioAvailable)throw new Error('This lesson needs the locally hosted cardiovascular GLB and metadata.');
@@ -2066,7 +2120,7 @@ $('new-project').addEventListener('click',()=>{
   chapters=[];activeChapter=0;
   publishPermissions={...STUDY_PERMISSIONS};labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
-  Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false});
+  Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false});
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
   renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
 });
@@ -2190,6 +2244,16 @@ function applyCardioStudyPreset(preset){
 for(const button of document.querySelectorAll('[data-cardio-preset]')){
   button.addEventListener('click',()=>applyCardioStudyPreset(button.dataset.cardioPreset));
 }
+function applyLymphaticPreset(preset){
+  if(!teacherMode||!lymphaticAvailable||!Object.hasOwn(LYMPHATIC_PRESETS,preset))return;
+  mode='systems';Object.assign(systemLayers,{skeletal:false,superficial:false,deep:false,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:true});
+  for(const s of lymphaticEntriesList){if(lymphaticVisibleInPreset(s,preset))hidden.delete(s.mesh);else hidden.add(s.mesh);}
+  isolated=false;setSelection(null);updateLayerHeading();updateSystemControls();refreshVisibility();frameVisible('front');queueDraft();showToast(LYMPHATIC_PRESETS[preset]+' applied');
+}
+for(const b of document.querySelectorAll('[data-lymphatic-preset]'))b.addEventListener('click',()=>applyLymphaticPreset(b.dataset.lymphaticPreset));
+$('lymphatic-diagram-open').addEventListener('click',()=>{$('lymphatic-diagram-dialog').hidden=false;});
+$('lymphatic-diagram-close').addEventListener('click',()=>{$('lymphatic-diagram-dialog').hidden=true;});
+$('lymphatic-diagram-dialog').addEventListener('click',e=>{if(e.target===$('lymphatic-diagram-dialog'))e.currentTarget.hidden=true;});
 function applyUrinaryPreset(preset){
   if(!teacherMode||!urinaryAvailable||!Object.hasOwn(URINARY_PRESETS,preset))return;
   if(preset==='vessels'&&!cardioAvailable){showToast('Cardiovascular source meshes are required for renal vessels.');return;}
@@ -2314,6 +2378,7 @@ function openAppSettings(){
   $('settings-dialog').hidden=false;
   $('settings-skull-geometry').value=skullGeometry;
   $('settings-nervous-geometry').value=nervousGeometry;
+  $('settings-lymphatic-geometry').value=lymphaticGeometry;
   $('settings-urinary-geometry').value=urinaryGeometry;
   $('settings-installed').textContent=APP_VERSION;
   $('settings-render-quality').value=renderProfile.requested;
@@ -2405,7 +2470,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.1.0')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.2.0')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;
@@ -2440,6 +2505,7 @@ window.addEventListener('keydown',event=>{
     if(openMenuName)closeStudioMenus(true);
     if(!$('help-dialog').hidden)$('help-dialog').hidden=true;
     if(!$('kidney-interior-dialog').hidden)$('kidney-interior-dialog').hidden=true;
+    if(!$('lymphatic-diagram-dialog').hidden)$('lymphatic-diagram-dialog').hidden=true;
     if(!$('settings-dialog').hidden)closeAppSettings();
     return;
   }

@@ -1,0 +1,75 @@
+{
+  "source": "BodyParts3D 4.3",
+  "meshes": [
+    {
+      "id": "FJ2561",
+      "name": "Spleen",
+      "source_sha256": "1c23d098fb67b5175b81aa899e46d7ef5721a511dc60efd64f194fce591db38b",
+      "source_triangles": 1330,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999,
+      "refinement": {
+        "source_triangles": 1330,
+        "refined_triangles": 21280,
+        "subdivisions": 2,
+        "method": "midpoint-fallback",
+        "shape_metrics": {
+          "bound_shift_fraction_of_diagonal": 0.32222,
+          "center_shift_fraction_of_diagonal": 0.162044,
+          "surface_area_change_fraction": 0.094217,
+          "closed_volume_change_fraction": null
+        },
+        "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+      }
+    },
+    {
+      "id": "FJ3150",
+      "name": "Left lobe of thymus",
+      "source_sha256": "12f2530f399897766f9d917c213eb638acc888b3558c30fe76dd65f912cb4707",
+      "source_triangles": 1050,
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000,
+      "refinement": {
+        "source_triangles": 1050,
+        "refined_triangles": 16800,
+        "subdivisions": 2,
+        "method": "midpoint-fallback",
+        "shape_metrics": {
+          "bound_shift_fraction_of_diagonal": 2.496634,
+          "center_shift_fraction_of_diagonal": 1.257462,
+          "surface_area_change_fraction": 3.188569,
+          "closed_volume_change_fraction": null
+        },
+        "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+      }
+    },
+    {
+      "id": "FJ3151",
+      "name": "Right lobe of thymus",
+      "source_sha256": "a258bf4c8f724d268d16e41d611e97c7ba5eead2dcbeba5366efef540c34b57c",
+      "source_triangles": 1030,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999,
+      "refinement": {
+        "source_triangles": 1030,
+        "refined_triangles": 16480,
+        "subdivisions": 2,
+        "method": "midpoint-fallback",
+        "shape_metrics": {
+          "bound_shift_fraction_of_diagonal": 3.541934,
+          "center_shift_fraction_of_diagonal": 1.786748,
+          "surface_area_change_fraction": 3.405988,
+          "closed_volume_change_fraction": null
+        },
+        "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+      }
+    }
+  ],
+  "missing": [
+    "lymph nodes",
+    "thoracic duct",
+    "right lymphatic duct",
+    "lymph vessels",
+    "tonsils"
+  ]
+}

@@ -1,0 +1,5 @@
+Spleen and both lobes of thymus: BodyParts3D / Anatomography 4.3.
+© Database Center for Life Science (DBCLS), CC BY-SA 2.1 Japan.
+Downloaded using the version-pinned BodyParts3D 4.3 mesh utility.
+The separately labeled educational lymph drainage diagram is an illustration;
+it is not the three-dimensional source geometry or a clinical reference.

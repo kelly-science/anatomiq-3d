@@ -277,3 +277,7 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 /* AnatomIQ 2.1 urinary schematic; separate educational illustration, not source 3D geometry. */
 .kidney-interior-dialog{width:min(780px,96vw);max-height:90vh;overflow:auto}
 .kidney-interior-image{display:block;width:100%;height:auto;border-radius:12px}
+
+/* AnatomIQ 2.2 labeled educational schematic, not 3D anatomy. */
+.lymphatic-diagram-dialog{width:min(980px,96vw);max-height:90vh;overflow:auto}
+.lymphatic-diagram-image{display:block;width:100%;height:auto;border-radius:12px}
