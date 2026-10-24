@@ -1,0 +1,5 @@
+Anatomical mesh source: BodyParts3D / Anatomography 4.3
+Copyright (c) Database Center for Life Science (DBCLS)
+License: Creative Commons Attribution-ShareAlike 2.1 Japan (CC BY-SA 2.1 JP)
+Mesh selection/downloader tooling: olivercase/body_parts_3d_api v1.0.0 (MIT-licensed code)
+Preserve attribution and share-alike requirements when publishing meshes.

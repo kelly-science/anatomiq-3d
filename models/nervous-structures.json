@@ -1,0 +1,1014 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio 1.2 body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "system": "nervous",
+  "structures": [
+    {
+      "id": "FJ1293",
+      "fma_id": "FMA11195",
+      "name": "Inferior branch of left oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 1654,
+      "detailed_triangles": 1654
+    },
+    {
+      "id": "FJ1321",
+      "fma_id": "FMA11195",
+      "name": "Superior branch of left oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 810,
+      "detailed_triangles": 810
+    },
+    {
+      "id": "FJ1344",
+      "fma_id": "FMA11195",
+      "name": "Inferior branch of right oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 1570,
+      "detailed_triangles": 1570
+    },
+    {
+      "id": "FJ1372",
+      "fma_id": "FMA11195",
+      "name": "Superior branch of right oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 848,
+      "detailed_triangles": 848
+    },
+    {
+      "id": "FJ1381",
+      "fma_id": "FMA50865",
+      "name": "Right trochlear nerve",
+      "category": "peripheral",
+      "standard_triangles": 2758,
+      "detailed_triangles": 2758
+    },
+    {
+      "id": "FJ1732",
+      "fma_id": "FMA256237",
+      "name": "Left angular gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3588
+    },
+    {
+      "id": "FJ1733",
+      "fma_id": "FMA256237",
+      "name": "Right angular gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3554
+    },
+    {
+      "id": "FJ1744",
+      "fma_id": "FMA256237",
+      "name": "Left inferior frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3290
+    },
+    {
+      "id": "FJ1745",
+      "fma_id": "FMA256237",
+      "name": "Right inferior frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3292
+    },
+    {
+      "id": "FJ1746",
+      "fma_id": "FMA256237",
+      "name": "Left inferior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2732,
+      "detailed_triangles": 2732
+    },
+    {
+      "id": "FJ1747",
+      "fma_id": "FMA256237",
+      "name": "Right inferior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2768,
+      "detailed_triangles": 2768
+    },
+    {
+      "id": "FJ1748",
+      "fma_id": "FMA256237",
+      "name": "Left insula",
+      "category": "brain",
+      "standard_triangles": 2448,
+      "detailed_triangles": 2448
+    },
+    {
+      "id": "FJ1749",
+      "fma_id": "FMA256237",
+      "name": "Right insula",
+      "category": "brain",
+      "standard_triangles": 2448,
+      "detailed_triangles": 2448
+    },
+    {
+      "id": "FJ1769",
+      "fma_id": "FMA256237",
+      "name": "Medulla oblongata",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 6036
+    },
+    {
+      "id": "FJ1775",
+      "fma_id": "FMA49443",
+      "name": "Pons",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10304
+    },
+    {
+      "id": "FJ1781",
+      "fma_id": "FMA256237",
+      "name": "Cerebellum",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1782",
+      "fma_id": "FMA14065",
+      "name": "Left thalamus",
+      "category": "brain",
+      "standard_triangles": 1702,
+      "detailed_triangles": 1702
+    },
+    {
+      "id": "FJ1787",
+      "fma_id": "FMA256237",
+      "name": "Left middle frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3416
+    },
+    {
+      "id": "FJ1788",
+      "fma_id": "FMA256237",
+      "name": "Right middle frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3326
+    },
+    {
+      "id": "FJ1789",
+      "fma_id": "FMA256237",
+      "name": "Left middle temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2710,
+      "detailed_triangles": 2710
+    },
+    {
+      "id": "FJ1790",
+      "fma_id": "FMA256237",
+      "name": "Right middle temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2754,
+      "detailed_triangles": 2754
+    },
+    {
+      "id": "FJ1797",
+      "fma_id": "FMA256237",
+      "name": "Left postcentral gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3604
+    },
+    {
+      "id": "FJ1798",
+      "fma_id": "FMA256237",
+      "name": "Right postcentral gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3604
+    },
+    {
+      "id": "FJ1800",
+      "fma_id": "FMA256237",
+      "name": "Left precentral gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4042
+    },
+    {
+      "id": "FJ1801",
+      "fma_id": "FMA256237",
+      "name": "Right precentral gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4042
+    },
+    {
+      "id": "FJ1822",
+      "fma_id": "FMA49443",
+      "name": "Pons",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10346
+    },
+    {
+      "id": "FJ1827",
+      "fma_id": "FMA14065",
+      "name": "Right thalamus",
+      "category": "brain",
+      "standard_triangles": 758,
+      "detailed_triangles": 758
+    },
+    {
+      "id": "FJ1830",
+      "fma_id": "FMA256237",
+      "name": "Cerebellum",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1831",
+      "fma_id": "FMA256237",
+      "name": "Medulla oblongata",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 6060
+    },
+    {
+      "id": "FJ1833",
+      "fma_id": "FMA256237",
+      "name": "Left superior frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 6452
+    },
+    {
+      "id": "FJ1834",
+      "fma_id": "FMA256237",
+      "name": "Right superior frontal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 6450
+    },
+    {
+      "id": "FJ1837",
+      "fma_id": "FMA256237",
+      "name": "Anterior part of left superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 1804,
+      "detailed_triangles": 1804
+    },
+    {
+      "id": "FJ1838",
+      "fma_id": "FMA256237",
+      "name": "Anterior part of right superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 1892,
+      "detailed_triangles": 1892
+    },
+    {
+      "id": "FJ1839",
+      "fma_id": "FMA256237",
+      "name": "Posterior part of left superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2264,
+      "detailed_triangles": 2264
+    },
+    {
+      "id": "FJ1840",
+      "fma_id": "FMA256237",
+      "name": "Posterior part of right superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 2264,
+      "detailed_triangles": 2264
+    },
+    {
+      "id": "FJ1841",
+      "fma_id": "FMA256237",
+      "name": "Left supramarginal gyrus",
+      "category": "brain",
+      "standard_triangles": 2344,
+      "detailed_triangles": 2344
+    },
+    {
+      "id": "FJ1842",
+      "fma_id": "FMA256237",
+      "name": "Right supramarginal gyrus",
+      "category": "brain",
+      "standard_triangles": 2314,
+      "detailed_triangles": 2314
+    },
+    {
+      "id": "FJ3891",
+      "fma_id": "FMA50867",
+      "name": "Right abducens nerve",
+      "category": "peripheral",
+      "standard_triangles": 1090,
+      "detailed_triangles": 1090
+    },
+    {
+      "id": "FJ3894",
+      "fma_id": "FMA50869",
+      "name": "Right vestibulocochlear nerve",
+      "category": "peripheral",
+      "standard_triangles": 1672,
+      "detailed_triangles": 1672
+    },
+    {
+      "id": "FJ3896",
+      "fma_id": "FMA11195",
+      "name": "Buccal branch of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4180
+    },
+    {
+      "id": "FJ3898",
+      "fma_id": "FMA11195",
+      "name": "Cervical branch of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 2840,
+      "detailed_triangles": 2840
+    },
+    {
+      "id": "FJ3899",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4672
+    },
+    {
+      "id": "FJ3901",
+      "fma_id": "FMA50870",
+      "name": "Left glossopharyngeal nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6926
+    },
+    {
+      "id": "FJ3926",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left vagus nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ3927",
+      "fma_id": "FMA50867",
+      "name": "Left abducens nerve",
+      "category": "peripheral",
+      "standard_triangles": 1146,
+      "detailed_triangles": 1146
+    },
+    {
+      "id": "FJ3932",
+      "fma_id": "FMA50869",
+      "name": "Left vestibulocochlear nerve",
+      "category": "peripheral",
+      "standard_triangles": 1714,
+      "detailed_triangles": 1714
+    },
+    {
+      "id": "FJ3934",
+      "fma_id": "FMA11195",
+      "name": "Buccal branch of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4284
+    },
+    {
+      "id": "FJ3936",
+      "fma_id": "FMA11195",
+      "name": "Cervical branch of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 2912,
+      "detailed_triangles": 2912
+    },
+    {
+      "id": "FJ3938",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4790
+    },
+    {
+      "id": "FJ3939",
+      "fma_id": "FMA50870",
+      "name": "Left glossopharyngeal nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7100
+    },
+    {
+      "id": "FJ3941",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left hypoglossal nerve",
+      "category": "peripheral",
+      "standard_triangles": 1682,
+      "detailed_triangles": 1682
+    },
+    {
+      "id": "FJ3952",
+      "fma_id": "FMA11195",
+      "name": "Marginal mandibular branch of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4052
+    },
+    {
+      "id": "FJ3968",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 648,
+      "detailed_triangles": 648
+    },
+    {
+      "id": "FJ3979",
+      "fma_id": "FMA11195",
+      "name": "Trunk of temporal branch of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5466
+    },
+    {
+      "id": "FJ3980",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left trigeminal nerve",
+      "category": "peripheral",
+      "standard_triangles": 246,
+      "detailed_triangles": 246
+    },
+    {
+      "id": "FJ3981",
+      "fma_id": "FMA50865",
+      "name": "Left trochlear nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4856
+    },
+    {
+      "id": "FJ3982",
+      "fma_id": "FMA11195",
+      "name": "Trunk of zygomatic branch of left facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4126
+    },
+    {
+      "id": "FJ3986",
+      "fma_id": "FMA11195",
+      "name": "Marginal mandibular branch of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3952
+    },
+    {
+      "id": "FJ4024",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right vagus nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ4027",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right hypoglossal nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4878
+    },
+    {
+      "id": "FJ4033",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 648,
+      "detailed_triangles": 648
+    },
+    {
+      "id": "FJ4034",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right oculomotor nerve",
+      "category": "peripheral",
+      "standard_triangles": 876,
+      "detailed_triangles": 876
+    },
+    {
+      "id": "FJ4038",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right trigeminal nerve",
+      "category": "peripheral",
+      "standard_triangles": 244,
+      "detailed_triangles": 244
+    },
+    {
+      "id": "FJ4039",
+      "fma_id": "FMA50865",
+      "name": "Right trochlear nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4826
+    },
+    {
+      "id": "FJ4040",
+      "fma_id": "FMA11195",
+      "name": "Trunk of temporal branch of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5332
+    },
+    {
+      "id": "FJ4041",
+      "fma_id": "FMA11195",
+      "name": "Trunk of zygomatic branch of right facial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4026
+    },
+    {
+      "id": "FJ4156",
+      "fma_id": "FMA11195",
+      "name": "Pericardial branch of phrenic nerve",
+      "category": "peripheral",
+      "standard_triangles": 442,
+      "detailed_triangles": 442
+    },
+    {
+      "id": "FJ4157",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left phrenic nerve",
+      "category": "peripheral",
+      "standard_triangles": 1106,
+      "detailed_triangles": 1106
+    },
+    {
+      "id": "FJ4171",
+      "fma_id": "FMA37072",
+      "name": "Left axillary nerve",
+      "category": "peripheral",
+      "standard_triangles": 654,
+      "detailed_triangles": 654
+    },
+    {
+      "id": "FJ4172",
+      "fma_id": "FMA37069",
+      "name": "Left radial nerve",
+      "category": "peripheral",
+      "standard_triangles": 576,
+      "detailed_triangles": 576
+    },
+    {
+      "id": "FJ4224",
+      "fma_id": "FMA14385",
+      "name": "Left median nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4372
+    },
+    {
+      "id": "FJ4225",
+      "fma_id": "FMA37064",
+      "name": "Left musculocutaneous nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3264
+    },
+    {
+      "id": "FJ4226",
+      "fma_id": "FMA11195",
+      "name": "Pericardial branch of phrenic nerve",
+      "category": "peripheral",
+      "standard_triangles": 408,
+      "detailed_triangles": 408
+    },
+    {
+      "id": "FJ4240",
+      "fma_id": "FMA37069",
+      "name": "Left radial nerve",
+      "category": "peripheral",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4474
+    },
+    {
+      "id": "FJ4243",
+      "fma_id": "FMA37072",
+      "name": "Left axillary nerve",
+      "category": "peripheral",
+      "standard_triangles": 360,
+      "detailed_triangles": 360
+    },
+    {
+      "id": "FJ4258",
+      "fma_id": "FMA37319",
+      "name": "Left ulnar nerve",
+      "category": "peripheral",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4406
+    },
+    {
+      "id": "FJ4268",
+      "fma_id": "FMA11195",
+      "name": "Medial dorsal digital branch of left radial nerve to left middle finger",
+      "category": "peripheral",
+      "standard_triangles": 782,
+      "detailed_triangles": 782
+    },
+    {
+      "id": "FJ4269",
+      "fma_id": "FMA11195",
+      "name": "First dorsal digital branch of radial nerve",
+      "category": "peripheral",
+      "standard_triangles": 644,
+      "detailed_triangles": 644
+    },
+    {
+      "id": "FJ4270",
+      "fma_id": "FMA11195",
+      "name": "First dorsal digital branch of left radial nerve",
+      "category": "peripheral",
+      "standard_triangles": 1314,
+      "detailed_triangles": 1314
+    },
+    {
+      "id": "FJ4271",
+      "fma_id": "FMA11195",
+      "name": "Dorsal digital branch of left radial nerve to medial side of left index finger",
+      "category": "peripheral",
+      "standard_triangles": 466,
+      "detailed_triangles": 466
+    },
+    {
+      "id": "FJ4278",
+      "fma_id": "FMA11195",
+      "name": "Lateral dorsal digital branch of radial nerve to index finger",
+      "category": "peripheral",
+      "standard_triangles": 604,
+      "detailed_triangles": 604
+    },
+    {
+      "id": "FJ4279",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left phrenic nerve",
+      "category": "peripheral",
+      "standard_triangles": 716,
+      "detailed_triangles": 716
+    },
+    {
+      "id": "FJ4281",
+      "fma_id": "FMA11195",
+      "name": "Lateral proper palmar digital branch of left median nerve to left thumb",
+      "category": "peripheral",
+      "standard_triangles": 670,
+      "detailed_triangles": 670
+    },
+    {
+      "id": "FJ4282",
+      "fma_id": "FMA11195",
+      "name": "Medial proper palmar digital branch of left median nerve to left index finger",
+      "category": "peripheral",
+      "standard_triangles": 762,
+      "detailed_triangles": 762
+    },
+    {
+      "id": "FJ4283",
+      "fma_id": "FMA11195",
+      "name": "Medial proper palmar digital branch of left median nerve to left middle finger",
+      "category": "peripheral",
+      "standard_triangles": 668,
+      "detailed_triangles": 668
+    },
+    {
+      "id": "FJ4284",
+      "fma_id": "FMA11195",
+      "name": "Lateral proper palmar digital branch of left median nerve to left index finger",
+      "category": "peripheral",
+      "standard_triangles": 640,
+      "detailed_triangles": 640
+    },
+    {
+      "id": "FJ4285",
+      "fma_id": "FMA11195",
+      "name": "Lateral proper palmar digital branch of median nerve to middle finger",
+      "category": "peripheral",
+      "standard_triangles": 516,
+      "detailed_triangles": 516
+    },
+    {
+      "id": "FJ4286",
+      "fma_id": "FMA11195",
+      "name": "Lateral proper palmar digital branch of left median nerve to left ring finger",
+      "category": "peripheral",
+      "standard_triangles": 694,
+      "detailed_triangles": 694
+    },
+    {
+      "id": "FJ4287",
+      "fma_id": "FMA11195",
+      "name": "Medial proper palmar digital branch of left median nerve to left thumb",
+      "category": "peripheral",
+      "standard_triangles": 366,
+      "detailed_triangles": 366
+    },
+    {
+      "id": "FJ4291",
+      "fma_id": "FMA228667",
+      "name": "Set of phrenico-abdominal branches of phrenic nerve",
+      "category": "peripheral",
+      "standard_triangles": 632,
+      "detailed_triangles": 632
+    },
+    {
+      "id": "FJ4426",
+      "fma_id": "FMA242005",
+      "name": "Neural tissue of spinal cord",
+      "category": "spinal_cord",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9952
+    },
+    {
+      "id": "FJ7462",
+      "fma_id": "FMA256237",
+      "name": "Left precuneus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8632
+    },
+    {
+      "id": "FJ7462M",
+      "fma_id": "FMA256237",
+      "name": "Right precuneus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8632
+    },
+    {
+      "id": "FJ7465",
+      "fma_id": "FMA256194",
+      "name": "Left anterior orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10090
+    },
+    {
+      "id": "FJ7465M",
+      "fma_id": "FMA256194",
+      "name": "Right anterior orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10090
+    },
+    {
+      "id": "FJ7466",
+      "fma_id": "FMA256194",
+      "name": "Left lateral orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8840
+    },
+    {
+      "id": "FJ7466M",
+      "fma_id": "FMA256194",
+      "name": "Right lateral orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8840
+    },
+    {
+      "id": "FJ7467",
+      "fma_id": "FMA256194",
+      "name": "Left medial orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9508
+    },
+    {
+      "id": "FJ7467M",
+      "fma_id": "FMA256194",
+      "name": "Right medial orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9508
+    },
+    {
+      "id": "FJ7468",
+      "fma_id": "FMA256194",
+      "name": "Left posterior orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8566
+    },
+    {
+      "id": "FJ7468M",
+      "fma_id": "FMA256194",
+      "name": "Right posterior orbital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8566
+    },
+    {
+      "id": "FJ7469",
+      "fma_id": "FMA256237",
+      "name": "Left straight gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 12802
+    },
+    {
+      "id": "FJ7469M",
+      "fma_id": "FMA256237",
+      "name": "Right straight gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 12802
+    },
+    {
+      "id": "FJ7470",
+      "fma_id": "FMA256237",
+      "name": "Left cingulate gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7470M",
+      "fma_id": "FMA256237",
+      "name": "Right cingulate gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7471",
+      "fma_id": "FMA256237",
+      "name": "Left cuneus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 13372
+    },
+    {
+      "id": "FJ7471M",
+      "fma_id": "FMA256237",
+      "name": "Right cuneus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 13372
+    },
+    {
+      "id": "FJ7472",
+      "fma_id": "FMA256237",
+      "name": "Left fusiform gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7472M",
+      "fma_id": "FMA256237",
+      "name": "Right fusiform gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7473",
+      "fma_id": "FMA256237",
+      "name": "Left inferior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7473M",
+      "fma_id": "FMA256237",
+      "name": "Right inferior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7474",
+      "fma_id": "FMA256237",
+      "name": "Left lateral occipital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7474M",
+      "fma_id": "FMA256237",
+      "name": "Right lateral occipital gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7475",
+      "fma_id": "FMA256237",
+      "name": "Left lingual gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9370
+    },
+    {
+      "id": "FJ7475M",
+      "fma_id": "FMA256237",
+      "name": "Right lingual gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 9370
+    },
+    {
+      "id": "FJ7476",
+      "fma_id": "FMA256237",
+      "name": "Left parahippocampal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8324
+    },
+    {
+      "id": "FJ7476M",
+      "fma_id": "FMA256237",
+      "name": "Right parahippocampal gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 8324
+    },
+    {
+      "id": "FJ7478",
+      "fma_id": "FMA256237",
+      "name": "Left superior occipital gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 12714
+    },
+    {
+      "id": "FJ7478M",
+      "fma_id": "FMA256237",
+      "name": "Right superior occipital gyrus",
+      "category": "brain",
+      "standard_triangles": 3199,
+      "detailed_triangles": 12714
+    },
+    {
+      "id": "FJ7479",
+      "fma_id": "FMA256237",
+      "name": "Left superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 13278
+    },
+    {
+      "id": "FJ7479M",
+      "fma_id": "FMA256237",
+      "name": "Right superior temporal gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 13278
+    },
+    {
+      "id": "FJ7500",
+      "fma_id": "FMA256237",
+      "name": "Left lingual gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3366
+    },
+    {
+      "id": "FJ7500M",
+      "fma_id": "FMA256237",
+      "name": "Right lingual gyrus",
+      "category": "brain",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3366
+    },
+    {
+      "id": "FJ7501",
+      "fma_id": "FMA11195",
+      "name": "Right optic nerve",
+      "category": "peripheral",
+      "standard_triangles": 1506,
+      "detailed_triangles": 1506
+    },
+    {
+      "id": "FJ7501M",
+      "fma_id": "FMA11195",
+      "name": "Left optic nerve",
+      "category": "peripheral",
+      "standard_triangles": 1506,
+      "detailed_triangles": 1506
+    }
+  ]
+}
