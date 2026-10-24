@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.8.7</span>
+        <span class="version">STUDIO 1.8.8</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -376,7 +376,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.8.7</strong>
+        <span>Installed version</span><strong id="settings-installed">1.8.8</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
@@ -416,6 +416,16 @@
           <option value="classic">Classic — previous matte appearance</option>
         </select>
         <p class="studio-hint">Studio uses shared directional lighting and physically based surface finishes to add realistic depth to bones, muscles, vessels and organs. Changing this option reloads the viewer. This choice is saved only on this device and never changes saved lessons or student links.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-shadow-mode"><strong>Dynamic anatomical shadows</strong></label>
+        <select id="settings-shadow-mode" class="text-input" aria-label="Dynamic anatomical shadows">
+          <option value="auto">Auto — dynamic shadows on Balanced/Sharp, off on Fast (recommended)</option>
+          <option value="on">On — cast and receive shadows, including in Fast mode</option>
+          <option value="off">Off — no shadow-map pass</option>
+        </select>
+        <p id="settings-shadow-explanation" class="studio-hint" role="status"></p>
+        <p class="studio-hint">A single camera-aware key light casts real-time shadows where anatomical surfaces overlap. Shadows update when you rotate, zoom, hide or reveal structures. Faster Chromebooks can use Auto or Off. Transparent heart cavity volumes never cast opaque shadows. This setting is saved only on this device; changing it reloads the viewer.</p>
       </div>
       <div class="render-settings-group">
         <label for="settings-render-quality"><strong>3D rendering quality</strong></label>

@@ -16,6 +16,7 @@ import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
 import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-performance.js';
 import {normalizeSurfaceMode, applySurfaceFinish, finishSourceAnatomy, installSurfaceLighting} from './surface-lighting.js';
+import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from './dynamic-shadows.js';
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
@@ -23,7 +24,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.7';
+const APP_VERSION = '1.8.8';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -158,6 +159,9 @@ camera.position.set(0, 1.7, 0.85);
 // in content but can render at different resolutions on slower Chromebooks.
 const RENDER_MODE_KEY='anatomy-studio-render-quality-v1';
 const SURFACE_MODE_KEY='anatomiq-surface-lighting-v1';
+const SHADOW_MODE_KEY='anatomiq-dynamic-shadows-v1';
+let shadowMode='auto';
+try{shadowMode=normalizeShadowMode(localStorage.getItem(SHADOW_MODE_KEY));}catch{}
 let surfaceMode='studio';
 try{surfaceMode=normalizeSurfaceMode(localStorage.getItem(SURFACE_MODE_KEY));}catch{}
 let savedRenderMode='auto';
@@ -175,6 +179,8 @@ function setRenderQuality(mode){
   $('settings-render-quality').value=renderProfile.requested;
   $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
   renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap));
+  shadows.setQuality(shadowMode,renderProfile.effective);
+  for(const root of [sceneRoot,digestiveRoot,detailRoot,cardioRoot])configureAnatomyShadows(root,shadows.profile.enabled);
   // WebGLRenderer.setPixelRatio reconfigures its drawing buffer at the current size.
   invalidate(2);
 }
@@ -184,13 +190,22 @@ $('view-quality').addEventListener('change',e=>setRenderQuality(e.target.value))
 $('settings-render-quality').addEventListener('change',e=>setRenderQuality(e.target.value));
 // One consistent light rig for every anatomical system. Lighting is a per-device
 // appearance choice and is deliberately never embedded in shared lessons.
-installSurfaceLighting(THREE,scene,renderer,surfaceMode);
+const studioLighting=installSurfaceLighting(THREE,scene,renderer,surfaceMode);
+const shadows=createDynamicShadows(THREE,renderer,studioLighting.key,{mode:shadowMode,quality:renderProfile.effective});
 $('settings-surface-lighting').value=surfaceMode;
+$('settings-shadow-mode').value=shadowMode;
 $('settings-surface-lighting').addEventListener('change',()=>{
   const next=normalizeSurfaceMode($('settings-surface-lighting').value);
   if(next===surfaceMode)return;
   if(teacherMode&&sceneRoot)saveDraft(false);
   try{localStorage.setItem(SURFACE_MODE_KEY,next);}catch{}
+  location.reload();
+});
+$('settings-shadow-mode').addEventListener('change',()=>{
+  const next=normalizeShadowMode($('settings-shadow-mode').value);
+  if(next===shadowMode)return;
+  if(teacherMode&&sceneRoot)saveDraft(false);
+  try{localStorage.setItem(SHADOW_MODE_KEY,next);}catch{}
   location.reload();
 });
 const controls = new OrbitControls(camera,renderer.domElement);
@@ -208,6 +223,7 @@ let frameRequest = 0;
 let updatingControls=false;
 let stageWidth=0,stageHeight=0;
 function invalidate(frames=1){
+  shadows.markDirty();
   drawFrames=Math.max(drawFrames,frames);
   if(!document.hidden && !frameRequest)frameRequest=requestAnimationFrame(draw);
 }
@@ -219,6 +235,7 @@ function draw(){
   // A change fired *inside* this update must not restart the render loop.
   let moved=false;
   try { moved=controls.update(); } finally {updatingControls=false;}
+  shadows.update(camera,controls.target,moved);
   renderer.render(scene,camera);
   updateAnnotationPositions();
   drawFrames=Math.max(0,drawFrames-1);
@@ -804,6 +821,7 @@ async function loadDigestiveModel(){
     digestiveRoot=gltf.scene;
     digestiveSourceEntries=entries;
     for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
+    configureAnatomyShadows(digestiveRoot,shadows.profile.enabled);
     digestiveAvailable=true;legacyLoaded=true;
     console.info(`Anatomy Studio: loaded ${entries.length} digestive structures from self-hosted BodyParts3D asset.`);
   }catch(e){console.warn('Digestive model unavailable; skeletal lessons still work.',e);}
@@ -844,6 +862,7 @@ async function loadDetailedDigestive(){
     gltf.scene.position.set(...corrected.position);
     scene.add(gltf.scene);detailRoot=gltf.scene;
     for(const entry of entries){applyOrganAppearance(entry);entry.mesh.visible=false;}
+    configureAnatomyShadows(detailRoot,shadows.profile.enabled);
     detailEntries=entries;detailAvailable=true;detailLoaded=true;detailEnabled=true;
     console.info(`Anatomy Studio: ${entries.length} BodyParts3D 4.3 digestive structures loaded (${digestiveGeometry}).`);
   }catch(error){
@@ -892,6 +911,7 @@ async function loadCardiovascular(){
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(obj,obj.material);obj.visible=false;
     }
+    configureAnatomyShadows(cardioRoot,shadows.profile.enabled);
     cardioEntries=entries;cardioAvailable=true;cardioLoaded=true;
     console.info(`Anatomy Studio: ${entries.length} cardiovascular structures loaded (${cardioGeometry}).`);
   }catch(error){
@@ -1033,6 +1053,7 @@ async function loadAnatomy(){
     // Adjust the original GLB's shared bone material without generating a
     // unique material for every anatomical mesh or altering paint overrides.
     finishSourceAnatomy(sceneRoot,surfaceMode);
+    configureAnatomyShadows(sceneRoot,shadows.profile.enabled);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.
       await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
@@ -2013,6 +2034,8 @@ function openAppSettings(){
   $('settings-installed').textContent=APP_VERSION;
   $('settings-render-quality').value=renderProfile.requested;
   $('settings-surface-lighting').value=surfaceMode;
+  $('settings-shadow-mode').value=shadowMode;
+  $('settings-shadow-explanation').textContent=shadows.profile.enabled?`Active — ${shadows.profile.description}`:'Off — no extra shadow-map rendering';
   $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
   $('settings-performance-stats').textContent=sceneRoot ? `${currentlyVisible().length} visible structures · ${renderer.info.render.calls} draw calls in last rendered frame` : 'Model not loaded';
   $('settings-reload').hidden=!updateAvailable;

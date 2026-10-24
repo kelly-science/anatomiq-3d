@@ -52,7 +52,8 @@ export function finishSourceAnatomy(root,mode='studio'){
 
 // Real-time, shared studio light rig; not a screen-space filter or emissive
 // material. Lights affect skeletal, muscular, digestive, and cardio equally.
-// No shadows, environment downloads, or new render loop: Chromebook-friendly.
+// No environment downloads or new render loop: Chromebook-friendly; optional
+// shadow maps are configured separately in dynamic-shadows.js.
 export function installSurfaceLighting(THREE,scene,renderer,mode='studio'){
   const studio=normalizeSurfaceMode(mode)==='studio';
   // Filmic tone mapping keeps lit pale bone from clipping to solid white.
@@ -68,7 +69,8 @@ export function installSurfaceLighting(THREE,scene,renderer,mode='studio'){
     scene.add(light);
     return light;
   }
-  directional(studio?0xfff4e8:0xffffff,studio?3.15:2.5,3,5,5);
+  const key=directional(studio?0xfff4e8:0xffffff,studio?3.15:2.5,3,5,5);
   directional(studio?0xc7e1fa:0xb6d9f5,studio?0.9:1.2,-3,2,-4);
   if(studio)directional(0xffffff,1.35,-2.5,4.2,-3.6);
+  return {key};
 }
