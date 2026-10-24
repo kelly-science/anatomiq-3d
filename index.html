@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 1.8.5</span>
+        <span class="version">STUDIO 1.8.7</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -165,7 +165,9 @@
             <button type="button" class="button small" data-cardio-preset="interior">Heart interior · valves</button>
             <button type="button" class="button small" data-cardio-preset="chambers">Chamber spaces</button>
             <button type="button" class="button small" data-cardio-preset="coronary">Coronary</button>
-            <button type="button" class="button small" data-cardio-preset="pulmonary">Pulmonary</button>
+            <button type="button" class="button small" data-cardio-preset="pulmonary">Pulmonary circulation</button>
+            <button type="button" class="button small" data-cardio-preset="greatvessels">Great vessels</button>
+            <button type="button" class="button small" data-cardio-preset="carotid">Carotid focus</button>
             <button type="button" class="button small" data-cardio-preset="systemic">Systemic vessels</button>
             <button type="button" class="button small cardio-class-core-button" data-cardio-preset="classcore">Class core</button>
             <button type="button" class="button small" data-cardio-preset="arteries">Required arteries</button>
@@ -374,7 +376,7 @@
     <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
       <div class="settings-grid">
-        <span>Installed version</span><strong id="settings-installed">1.8.5</strong>
+        <span>Installed version</span><strong id="settings-installed">1.8.7</strong>
         <span>Published version</span><strong id="settings-published">Not checked</strong>
         <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
         <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
@@ -406,6 +408,14 @@
           <option value="detailed">Detailed — high-resolution organs (reloads app)</option>
         </select>
         <p class="studio-hint">This setting controls mesh resolution only. To display the additional organs, select Digestive and enable <strong>Detailed anatomy</strong> under Anatomical Systems in the left sidebar. The choice here is device-specific and does not change published scenes.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-surface-lighting"><strong>Anatomical surface lighting</strong></label>
+        <select id="settings-surface-lighting" class="text-input" aria-label="Anatomical surface lighting">
+          <option value="studio">Studio — balanced highlights across all systems (recommended)</option>
+          <option value="classic">Classic — previous matte appearance</option>
+        </select>
+        <p class="studio-hint">Studio uses shared directional lighting and physically based surface finishes to add realistic depth to bones, muscles, vessels and organs. Changing this option reloads the viewer. This choice is saved only on this device and never changes saved lessons or student links.</p>
       </div>
       <div class="render-settings-group">
         <label for="settings-render-quality"><strong>3D rendering quality</strong></label>

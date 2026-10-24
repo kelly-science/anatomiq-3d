@@ -15,6 +15,7 @@ import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBa
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
 import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-performance.js';
+import {normalizeSurfaceMode, applySurfaceFinish, finishSourceAnatomy, installSurfaceLighting} from './surface-lighting.js';
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
@@ -22,7 +23,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.5';
+const APP_VERSION = '1.8.7';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -156,6 +157,9 @@ camera.position.set(0, 1.7, 0.85);
 // Keep quality specific to this device/profile; shared lessons remain visually identical
 // in content but can render at different resolutions on slower Chromebooks.
 const RENDER_MODE_KEY='anatomy-studio-render-quality-v1';
+const SURFACE_MODE_KEY='anatomiq-surface-lighting-v1';
+let surfaceMode='studio';
+try{surfaceMode=normalizeSurfaceMode(localStorage.getItem(SURFACE_MODE_KEY));}catch{}
 let savedRenderMode='auto';
 try{savedRenderMode=normalizeMode(localStorage.getItem(RENDER_MODE_KEY));}catch{}
 let renderProfile=resolveRenderProfile(savedRenderMode,navigator);
@@ -178,9 +182,17 @@ $('view-quality').value=renderProfile.requested;
 $('settings-render-quality').value=renderProfile.requested;
 $('view-quality').addEventListener('change',e=>setRenderQuality(e.target.value));
 $('settings-render-quality').addEventListener('change',e=>setRenderQuality(e.target.value));
-scene.add(new THREE.HemisphereLight(0xe9f5ff, 0x556474, 2.3));
-const keyLight = new THREE.DirectionalLight(0xffffff, 2.5); keyLight.position.set(3, 5, 5); scene.add(keyLight);
-const fillLight = new THREE.DirectionalLight(0xb6d9f5, 1.2); fillLight.position.set(-3, 2, -4); scene.add(fillLight);
+// One consistent light rig for every anatomical system. Lighting is a per-device
+// appearance choice and is deliberately never embedded in shared lessons.
+installSurfaceLighting(THREE,scene,renderer,surfaceMode);
+$('settings-surface-lighting').value=surfaceMode;
+$('settings-surface-lighting').addEventListener('change',()=>{
+  const next=normalizeSurfaceMode($('settings-surface-lighting').value);
+  if(next===surfaceMode)return;
+  if(teacherMode&&sceneRoot)saveDraft(false);
+  try{localStorage.setItem(SURFACE_MODE_KEY,next);}catch{}
+  location.reload();
+});
 const controls = new OrbitControls(camera,renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.12;
@@ -804,6 +816,7 @@ function applyOrganAppearance(entry){
   const color=digestiveDefaultColor(entry.name);
   const original=obj.material;
   obj.material=new THREE.MeshStandardMaterial({color,roughness:0.79,metalness:0,side:THREE.DoubleSide});
+  applySurfaceFinish(obj.material,'digestive',surfaceMode);
   if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
   materials.set(obj,obj.material);
 }
@@ -874,6 +887,7 @@ async function loadCardiovascular(){
         transparent:chamberVolume,opacity:chamberVolume?0.12:1,
         depthWrite:!chamberVolume,side:chamberVolume?THREE.BackSide:THREE.DoubleSide
       });
+      applySurfaceFinish(obj.material,chamberVolume?'cardio-cavity':'cardiovascular',surfaceMode);
       obj.userData.cardioChamberSpace=chamberVolume;
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(obj,obj.material);obj.visible=false;
@@ -902,6 +916,7 @@ async function loadHighResolutionSkull(){
     const stats=installSkullGeometry(THREE,gltf.scene,metadata,structures,(structure,newMaterial)=>{
       // The paint/selection system caches source materials separately from the
       // mesh. Keep that cache in sync when replacing a bone's textured material.
+      applySurfaceFinish(newMaterial,'skeletal',surfaceMode);
       materials.set(structure.mesh,newMaterial);
     });
     skullDetailStats=stats;
@@ -1015,6 +1030,9 @@ async function loadAnatomy(){
     if(!loaded)throw lastError||new Error('The 3D model could not be loaded.');
     if(sceneRoot)scene.remove(sceneRoot);
     sceneRoot=loaded.scene;scene.add(sceneRoot);
+    // Adjust the original GLB's shared bone material without generating a
+    // unique material for every anatomical mesh or altering paint overrides.
+    finishSourceAnatomy(sceneRoot,surfaceMode);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.
       await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
@@ -1994,6 +2012,7 @@ function openAppSettings(){
   $('settings-skull-geometry').value=skullGeometry;
   $('settings-installed').textContent=APP_VERSION;
   $('settings-render-quality').value=renderProfile.requested;
+  $('settings-surface-lighting').value=surfaceMode;
   $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
   $('settings-performance-stats').textContent=sceneRoot ? `${currentlyVisible().length} visible structures · ${renderer.info.render.calls} draw calls in last rendered frame` : 'Model not loaded';
   $('settings-reload').hidden=!updateAvailable;
@@ -2079,7 +2098,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v1.8.5')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v1.8.6')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;
