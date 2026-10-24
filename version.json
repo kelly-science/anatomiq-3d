@@ -1,6 +1,6 @@
 {
-  "version": "2.2.0",
+  "version": "2.2.4",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "New BodyParts3D verified spleen and thymus layer; schematic lymphatic drainage diagram; exact GLB validation; append-only scene indices."
+  "notes": "AnatomIQ Studio polish: smooth camera, chapter crossfade, label study notes/photos, student label explorer/toggle, shortcuts, persistent cached models."
 }

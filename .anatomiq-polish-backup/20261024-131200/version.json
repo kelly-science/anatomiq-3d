@@ -1,0 +1,6 @@
+{
+  "version": "2.2.0",
+  "channel": "beta",
+  "published": "2026-10-24",
+  "notes": "New BodyParts3D verified spleen and thymus layer; schematic lymphatic drainage diagram; exact GLB validation; append-only scene indices."
+}

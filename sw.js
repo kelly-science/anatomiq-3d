@@ -1,7 +1,8 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.0';
+const VERSION='anatomy-v2.2.4-polish';
+const POLISH_MODELS='anatomiq-models-persistent-v1';
 const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
@@ -16,7 +17,21 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
   await self.skipWaiting();
 })()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
-  await Promise.all((await caches.keys()).filter(key=>key.startsWith('anatomy-')&&key!==VERSION).map(key=>caches.delete(key)));
+  // Migrate previously downloaded models before removing an old shell cache.
+  const oldKeys=(await caches.keys()).filter(key=>key.startsWith('anatomy-')&&key!==VERSION);
+  const forever=await caches.open(POLISH_MODELS);
+  for(const key of oldKeys){
+    const previous=await caches.open(key);
+    for(const request of await previous.keys()){
+      if(!/\/models\/[^/]+\.(?:glb|json)$/i.test(new URL(request.url).pathname))continue;
+      try{
+        if(await forever.match(request))continue;
+        const value=await previous.match(request);
+        if(value)await forever.put(request,value);
+      }catch(error){console.warn('Model preservation skipped:',error);}
+    }
+  }
+  await Promise.all(oldKeys.map(key=>caches.delete(key)));
   await self.clients.claim();
 })()));
 self.addEventListener('fetch',event=>{
@@ -26,7 +41,7 @@ self.addEventListener('fetch',event=>{
   if(!ALLOWED_ORIGINS.has(url.origin))return;
   event.respondWith((async()=>{
     const cache=await caches.open(VERSION);
-    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'});
+    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'}) || await (await caches.open(POLISH_MODELS)).match(request);
     // Model assets and their manifests must revalidate together against the
     // deployed GitHub Pages files. Old cache-first behaviour could combine a
     // new manifest with an older GLB, breaking anatomy after deployments.
@@ -36,7 +51,7 @@ self.addEventListener('fetch',event=>{
         const response=await fetch(modelAsset?new Request(request,{cache:'no-cache'}):request);
         if(response.ok&&(response.type==='basic'||response.type==='cors')&&
           (!modelAsset||!/text\/html/i.test(response.headers.get('content-type')||'')))
-          event.waitUntil(cache.put(request,response.clone()).catch(()=>{}));
+          event.waitUntil((async()=>{await cache.put(request,response.clone());if(modelAsset)await (await caches.open(POLISH_MODELS)).put(request,response.clone());})().catch(()=>{}));
         return response;
       }catch(error){if(cached)return cached;throw error;}
     }
@@ -149,11 +164,11 @@ self.addEventListener('message',event=>{
     const urls=[...SHELL,...renderer,modelURL,...lessonModels,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[]),...(event.data.detail?['./models/digestive-structures.json',event.data.detailMode==='detailed'?'./models/digestive-detailed.glb':'./models/digestive-standard.glb']:[]),...(event.data.cardio?['./models/cardiovascular-structures.json',event.data.cardioMode==='detailed'?'./models/cardiovascular-detailed.glb':'./models/cardiovascular-standard.glb']:[]),...(event.data.respiratory?['./models/respiratory-structures.json',event.data.respiratoryMode==='detailed'?'./models/respiratory-detailed.glb':'./models/respiratory-standard.glb']:[]),...(event.data.nervous?['./models/nervous-structures.json',event.data.nervousMode==='detailed'?'./models/nervous-detailed.glb':'./models/nervous-standard.glb']:[]),...(event.data.lymphatic?['./models/lymphatic-structures.json',event.data.lymphaticMode==='detailed'?'./models/lymphatic-detailed.glb':'./models/lymphatic-standard.glb']:[]),...(event.data.urinary?['./models/urinary-structures.json',event.data.urinaryMode==='detailed'?'./models/urinary-detailed.glb':'./models/urinary-standard.glb']:[]),...(event.data.skullDetail?['./models/skull-structures.json','./models/skull-detailed.glb']:[])].map(path=>new URL(path,self.location.href).href);
     let done=0;
     for(const url of urls){
-      let saved=await cache.match(url);
+      let saved=await cache.match(url)||await (await caches.open(POLISH_MODELS)).match(url);
       if(!saved&&event.data.type==='CACHE_OFFLINE'){
         try{
           const response=await fetch(url,{cache:'no-cache'});
-          if(response.ok&&(response.type==='basic'||response.type==='cors')){await cache.put(url,response.clone());saved=response;}
+          if(response.ok&&(response.type==='basic'||response.type==='cors')){await cache.put(url,response.clone());if(/\/models\/[^/]+\.(?:glb|json)$/i.test(new URL(url).pathname)){try{await (await caches.open(POLISH_MODELS)).put(url,response.clone());}catch(error){console.warn('Model pinning limited by storage:',error);}}saved=response;}
         }catch(e){console.warn('Offline asset missing',url,e);}
       }
       if(saved)done++;

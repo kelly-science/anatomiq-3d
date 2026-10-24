@@ -62,6 +62,16 @@ export function validateScene(scene) {
       throw new Error('A label contains invalid placement or text.');
     }
   }
+  // Optional label study notes/photos and per-chapter faded structure IDs.
+  for(const label of scene.labels){
+    if(label.d!==undefined && (typeof label.d!=='string'||label.d.length>1200))throw new Error('Label description is too long.');
+    if(label.u!==undefined && (typeof label.u!=='string'||label.u.length>500||
+      (label.u && !/^(https:\/\/|\.\/|media\/|images\/)/i.test(label.u))))
+      throw new Error('Photo must be an HTTPS URL or repository image path.');
+  }
+  if(scene.fa!==undefined && (!Array.isArray(scene.fa)||scene.fa.length>scene.n||
+     scene.fa.some(i=>!Number.isInteger(i)||i<0||i>=scene.n)||
+     new Set(scene.fa).size!==scene.fa.length))throw new Error('Invalid faded structure list.');
   // Optional sparse list of colors, by stable bone index. Absent for older shared links.
   if (scene.pc !== undefined) {
     if (!Array.isArray(scene.pc) || scene.pc.length > scene.n) throw new Error('Invalid bone paint list.');

@@ -28,7 +28,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.2.4';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -122,7 +122,9 @@ let legacyFingerprint = '';
 const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false};
 const materials = new Map(); // Model-authored original material(s) for each anatomical structure.
 const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
-const bonePaint = new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
+const bonePaint = new Map();
+const polishFadedIndices=new Set();
+const polishFadedMaterials=new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
 let paintMode = false;
 let paintColor = '#e45d58';
 let selectedHighlight = null;
@@ -152,6 +154,7 @@ function applyStudentPermissions(){
   // Schoology embeds and assessment views should dedicate the available space to the model.
   if(!studentPermissions.ss && !studentPermissions.st)elements.sidebar.classList.remove('open');
   renderList();
+  if(typeof polishRenderStudentLabels==='function')polishRenderStudentLabels();
   resize();
 }
 document.body.classList.toggle('student-mode', !teacherMode);
@@ -567,7 +570,31 @@ function disposeMaterial(material){
   if(Array.isArray(material))material.forEach(m=>m?.dispose());
   else material?.dispose();
 }
-function displayMaterial(s){return paintedMaterials.get(s.mesh)||materials.get(s.mesh);}
+function displayMaterial(s){return polishFadedMaterials.get(s.mesh)||paintedMaterials.get(s.mesh)||materials.get(s.mesh);}
+function polishRefreshFade(s){
+  const old=polishFadedMaterials.get(s.mesh);
+  polishFadedMaterials.delete(s.mesh);
+  if(old)disposeMaterial(old);
+  const base=paintedMaterials.get(s.mesh)||materials.get(s.mesh);
+  if(polishFadedIndices.has(s.index) && base){
+    const dim=m=>{const copy=m.clone();copy.transparent=true;copy.opacity=Math.min(Number(m.opacity??1),0.26);copy.depthWrite=false;copy.needsUpdate=true;return copy;};
+    polishFadedMaterials.set(s.mesh,Array.isArray(base)?base.map(dim):dim(base));
+  }
+}
+function polishRestoreFade(indices=[]){
+  const changed=new Set([...polishFadedIndices,...indices]);
+  polishFadedIndices.clear();
+  for(const i of indices)if(Number.isInteger(i)&&structures[i])polishFadedIndices.add(i);
+  for(const i of changed)if(structures[i])updateBoneMaterial(structures[i]);
+}
+function polishToggleSelectedFade(){
+  if(!teacherMode || !selected)return;
+  if(polishFadedIndices.has(selected.index))polishFadedIndices.delete(selected.index);
+  else polishFadedIndices.add(selected.index);
+  updateBoneMaterial(selected);queueDraft();
+  showToast(polishFadedIndices.has(selected.index)?'Structure faded to 26%.':'Structure opacity restored.');
+}
+
 function makePaintedMaterial(original,hex){
   const paintOne=m=>{
     const copy=m.clone();
@@ -592,6 +619,7 @@ function updateBoneMaterial(s){
     paintedMaterials.set(s.mesh,makePaintedMaterial(materials.get(s.mesh),bonePaint.get(s.index)));
   }else paintedMaterials.delete(s.mesh);
   if(old)disposeMaterial(old);
+  polishRefreshFade(s);
   s.mesh.material=displayMaterial(s);
   if(selected===s)highlightSelection(s);
   invalidate(3);
@@ -698,6 +726,43 @@ function setMode(newMode){
   refreshVisibility();
   frameVisible('front');
 }
+// ANATOMIQ_STUDIO_POLISH_20261024: cancellable, reduced-motion-aware camera transitions.
+let polishCameraToken=0;
+function polishCancelCamera(){polishCameraToken++;}
+renderer.domElement.addEventListener('pointerdown',polishCancelCamera,{passive:true});
+renderer.domElement.addEventListener('wheel',polishCancelCamera,{passive:true});
+function polishMoveCamera(destination,target,{duration=700,save=true}={}){
+  const id=++polishCameraToken;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches || !sceneRoot){
+    camera.position.copy(destination);controls.target.copy(target);controls.update();invalidate(3);
+    if(save)queueDraft();return;
+  }
+  const p0=camera.position.clone(),t0=controls.target.clone();
+  const p1=destination.clone(),t1=target.clone();
+  const v0=p0.sub(t0),v1=p1.sub(t1);
+  const r0=Math.max(0.001,v0.length()),r1=Math.max(0.001,v1.length());
+  const startDir=v0.normalize(),endDir=v1.normalize();
+  const turn=new THREE.Quaternion();
+  if(startDir.dot(endDir)<-0.999)turn.setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
+  else turn.setFromUnitVectors(startDir,endDir);
+  const began=performance.now();
+  const tick=now=>{
+    if(id!==polishCameraToken || document.hidden)return;
+    const k=Math.min(1,(now-began)/duration);
+    const ease=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    const aim=t0.clone().lerp(t1,ease);
+    const q=new THREE.Quaternion().slerp(turn,ease);
+    const direction=startDir.clone().applyQuaternion(q);
+    const radius=r0+(r1-r0)*ease;
+    controls.target.copy(aim);
+    camera.position.copy(aim).addScaledVector(direction,radius);
+    camera.updateProjectionMatrix();controls.update();invalidate(2);
+    if(k<1)requestAnimationFrame(tick);
+    else if(save)queueDraft();
+  };
+  requestAnimationFrame(tick);
+}
+
 function fitBox(box,view='front',padding=1.35,transient=false){
   if(box.isEmpty())return;
   const center=box.getCenter(new THREE.Vector3());
@@ -710,15 +775,12 @@ function fitBox(box,view='front',padding=1.35,transient=false){
   if(view==='back')direction.set(0,0,-1);
   if(view==='left')direction.set(-1,0,0);
   if(view==='right')direction.set(1,0,0);
-  controls.target.copy(center);
-  camera.position.copy(center).addScaledVector(direction,d);
+  const destination=center.clone().addScaledVector(direction,d);
   camera.near=Math.max(0.002,d/300);
   camera.far=Math.max(12,d*60);
-  camera.updateProjectionMatrix();
-  controls.update();
+  if(restoringScene){polishCancelCamera();controls.target.copy(center);camera.position.copy(destination);controls.update();invalidate(2);}
+  else polishMoveCamera(destination,center,{save:!transient});
   setPresetActive(view);
-  invalidate(2);
-  if(!transient)queueDraft();
 }
 function boxFor(list){
   const box=new THREE.Box3();
@@ -732,8 +794,8 @@ function orient(view){
   const distance=camera.position.distanceTo(controls.target);
   const direction={front:[0,0,1],back:[0,0,-1],left:[-1,0,0],right:[1,0,0]}[view];
   if(!direction)return;
-  camera.position.copy(controls.target).add(new THREE.Vector3(...direction).multiplyScalar(distance));
-  controls.update();setPresetActive(view);invalidate(2);queueDraft();
+  const destination=controls.target.clone().add(new THREE.Vector3(...direction).multiplyScalar(distance));
+  polishMoveCamera(destination,controls.target.clone());setPresetActive(view);
 }
 function focusSelected(){if(selected)fitBox(boxFor([selected]),activePreset,2.15);}
 function renderList(){
@@ -1448,7 +1510,7 @@ $('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target)
 $('menu-toggle').addEventListener('click',()=>{openDetails(false);elements.sidebar.classList.toggle('open');});
 elements.detailsToggle.addEventListener('click',()=>{elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
 elements.retry.addEventListener('click',loadAnatomy);
-window.addEventListener('keydown',event=>{if(event.key==='Escape'&&(placingLabel||paintMode)){if(placingLabel)cancelPlacing();if(paintMode)cancelPainting();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(event.key.toLowerCase()==='f')orient('front');if(event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
+window.addEventListener('keydown',event=>{if(event.key==='Escape'&&(placingLabel||paintMode)){if(placingLabel)cancelPlacing();if(paintMode)cancelPainting();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='f')orient('front');if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
 
 let installPrompt=null;
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;elements.install.hidden=false;});
@@ -1494,6 +1556,25 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 
+window.addEventListener('keydown',event=>{
+  const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable;
+  const dialogOpen=[...document.querySelectorAll('.dialog-backdrop:not([hidden])')].some(el=>!el.hidden);
+  if(typing||dialogOpen)return;
+  if((event.metaKey||event.ctrlKey)&&!event.altKey&&event.key.toLowerCase()==='f'){
+    if(!teacherMode && !studentPermissions.ss)return;
+    event.preventDefault();elements.sidebar.classList.add('open');elements.search.focus();elements.search.select();
+  }else if(teacherMode && !event.metaKey && !event.ctrlKey && !event.altKey &&
+           (event.key==='Backspace'||event.key==='Delete') && selected){
+    event.preventDefault();hidden.add(selected.mesh);isolated=false;setSelection(null);queueDraft();
+  }else if(teacherMode && (event.metaKey||event.ctrlKey) && !event.altKey &&
+           event.key.toLowerCase()==='i' && selected){
+    event.preventDefault();$('isolate-selected').click();
+  }else if(teacherMode && (event.metaKey||event.ctrlKey) && !event.altKey &&
+           (event.key==='-'||event.key==='_') && selected){
+    event.preventDefault();polishToggleSelectedFade();
+  }
+},true);
+
 // Added editor and share-link workflow below.
 loadAnatomy();
 
@@ -1530,7 +1611,8 @@ function snapshotScene(){
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
-    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
+    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} )})),
+    ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
     ...(pc.length?{pc}:{})
   });
 }
@@ -1575,6 +1657,7 @@ function snapshotProject(){
   const current = snapshotScene();
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
+  if(teacherMode)publishPermissions={...currentPublishPermissions()};
   return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions}});
 }
 function verifyProjectModel(project){
@@ -1615,6 +1698,28 @@ function renderChapterUI(){
   $('add-chapter').disabled=count>=MAX_CHAPTERS;
   $('duplicate-chapter').disabled=count>=MAX_CHAPTERS;
 }
+function polishCaptureChapter(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return null;
+  const stage=elements.stage;
+  const width=Math.min(1100,stageWidth),height=Math.min(1100,stageHeight);
+  if(!width||!height)return null;
+  try{
+    renderer.render(scene,camera);
+    const image=document.createElement('canvas');image.width=width;image.height=height;
+    image.getContext('2d').drawImage(renderer.domElement,0,0,width,height);
+    const layer=document.createElement('div');layer.className='polish-chapter-snapshot';
+    layer.style.backgroundImage=`url("${image.toDataURL('image/jpeg',0.73)}")`;
+    stage.appendChild(layer);
+    return layer;
+  }catch(error){console.warn('Chapter snapshot unavailable:',error);return null;}
+}
+function polishRevealChapter(layer){
+  if(!layer)return;
+  renderer.render(scene,camera);invalidate(3);
+  requestAnimationFrame(()=>{layer.classList.add('is-fading');});
+  setTimeout(()=>layer.remove(),580);
+}
+
 async function switchChapter(index){
   if(!sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
   if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
@@ -1626,9 +1731,13 @@ async function switchChapter(index){
     catch(error){showToast(error.message);setStatus('Student view');return;}
     finally{studentAssetBusy=false;}
   }
-  activeChapter=index;
-  await applyScene(chapters[activeChapter]);
-  renderChapterUI();
+  const polishSnapshot=polishCaptureChapter();
+  try{
+    polishCancelCamera();
+    activeChapter=index;
+    await applyScene(chapters[activeChapter]);
+    renderChapterUI();
+  }finally{polishRevealChapter(polishSnapshot);}
   if(teacherMode)queueDraft();else setStatus('Student view');
 }
 function createChapter(duplicate){
@@ -1833,6 +1942,56 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape' && !$('library-dialog').hidden){e.stopPropagation();closeLibrary();}
 });
 
+// ANATOMIQ_STUDIO_POLISH_20261024: per-chapter labels + student inspector.
+let polishStudentLabelsVisible=true;
+const polishOcclusionRay=new THREE.Raycaster();
+let polishOcclusionAt=0,polishOccluders=[];
+function polishShowLabelDetails(label){
+  if(!label?.d && !label?.u)return;
+  const dialog=$('polish-label-dialog');if(!dialog)return;
+  $('polish-label-title').textContent=label.t;
+  $('polish-label-description').textContent=label.d||'';
+  $('polish-label-description').hidden=!label.d;
+  const photo=$('polish-label-image');photo.hidden=!label.u;
+  if(label.u){photo.src=label.u;photo.alt='Reference image: '+label.t;}
+  dialog.hidden=false;
+}
+function polishFocusLabel(label,index){
+  const s=structures[label.s];
+  if(!s || !s.mesh.visible){showToast('This label’s structure is not visible in the current chapter.');return;}
+  if(studentPermissions.sn)setSelection(s);
+  fitBox(boxFor([s]),activePreset||'front',2.25);
+  const marker=markers.get(label.id)?.marker;
+  marker?.classList.add('revealed');
+  polishShowLabelDetails(label);
+}
+function polishRenderStudentLabels(){
+  const panel=$('polish-student-labels'),list=$('polish-student-label-list'),toggle=$('polish-label-toggle');
+  if(!panel||!list||!toggle)return;
+  const allowed=!teacherMode && studentPermissions.sl && labelMode!=='hidden' && labels.length>0;
+  panel.hidden=!allowed;
+  toggle.hidden=!allowed;
+  toggle.textContent=polishStudentLabelsVisible?'Labels: On':'Labels: Off';
+  toggle.setAttribute('aria-pressed',String(polishStudentLabelsVisible));
+  list.replaceChildren();
+  if(!allowed || !polishStudentLabelsVisible)return;
+  labels.forEach((label,i)=>{
+    const item=document.createElement('button');item.type='button';item.className='polish-student-label-item';
+    item.textContent=`${i+1}. ${labelMode==='reveal'?'Label '+(i+1):label.t}${label.d||label.u?'  ⓘ':''}`;
+    item.title='Focus this label'+(label.d||label.u?' and open its details':'');
+    item.addEventListener('click',()=>polishFocusLabel(label,i));
+    list.appendChild(item);
+  });
+}
+$('polish-label-toggle')?.addEventListener('click',()=>{
+  polishStudentLabelsVisible=!polishStudentLabelsVisible;
+  renderAnnotations();
+});
+$('polish-label-close')?.addEventListener('click',()=>{$('polish-label-dialog').hidden=true;});
+$('polish-label-dialog')?.addEventListener('click',event=>{
+  if(event.target===$('polish-label-dialog'))event.currentTarget.hidden=true;
+});
+
 function renderLabelEditor(){
   const list=$('label-list');list.replaceChildren();
   if(!labels.length){const p=document.createElement('p');p.className='studio-hint';p.textContent='No labels yet. Add your first callout above.';list.appendChild(p);return;}
@@ -1843,7 +2002,23 @@ function renderLabelEditor(){
     input.addEventListener('input',()=>{label.t=input.value;renderAnnotations();queueDraft();});
     const remove=document.createElement('button');remove.textContent='×';remove.className='icon-button';remove.title='Remove label';remove.setAttribute('aria-label',`Remove label ${i+1}`);
     remove.addEventListener('click',()=>{labels=labels.filter(l=>l.id!==label.id);renderAnnotations();renderLabelEditor();queueDraft();});
-    row.append(number,input,remove);list.appendChild(row);
+    const more=document.createElement('div');more.className='polish-label-fields';
+    const desc=document.createElement('textarea');desc.rows=2;desc.maxLength=1200;
+    desc.placeholder='Optional description for students';desc.value=label.d||'';
+    desc.setAttribute('aria-label',`Description for label ${i+1}`);
+    desc.addEventListener('input',()=>{label.d=desc.value;queueDraft();});
+    const photo=document.createElement('input');photo.type='text';photo.maxLength=500;
+    photo.placeholder='Photo URL or ./media/photo.jpg';photo.value=label.u||'';
+    photo.setAttribute('aria-label',`Photo URL for label ${i+1}`);
+    photo.addEventListener('change',()=>{
+      const value=photo.value.trim();
+      if(value && !/^(https:\/\/|\.\/|media\/|images\/)/i.test(value)){
+        showToast('Use an HTTPS photo URL or a path such as ./media/image.jpg.');photo.value=label.u||'';return;
+      }
+      label.u=value;queueDraft();
+    });
+    more.append(desc,photo);
+    row.append(number,input,remove,more);list.appendChild(row);
   });
 }
 function renderAnnotations(){
@@ -1864,6 +2039,12 @@ function renderAnnotations(){
       marker.addEventListener('click',()=>{marker.classList.toggle('revealed');});
     }
     if(visibility==='hidden')marker.hidden=true;
+    if(!teacherMode){
+      marker.addEventListener('click',()=>{
+        if(labelMode==='reveal' && !marker.classList.contains('revealed'))return;
+        polishFocusLabel(label,i);
+      });
+    }
     if(teacherMode){
       marker.title='Drag to reposition this label';
       let dragging=null;
@@ -1884,6 +2065,7 @@ function renderAnnotations(){
     }
     markers.set(label.id,{marker,line,dot});
   });
+  polishRenderStudentLabels();
   invalidate(2);
 }
 function updateAnnotationPositions(){
@@ -1891,19 +2073,38 @@ function updateAnnotationPositions(){
   // The scene renderer already updates matrices; avoid a second full traversal
   // of hundreds of muscle meshes for each annotation refresh.
   const width=stageWidth,height=stageHeight;
+  const refreshOcclusion=performance.now()>polishOcclusionAt;
+  if(refreshOcclusion){
+    polishOcclusionAt=performance.now()+110;
+    polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index)).map(s=>s.mesh);
+  }
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
     const s=structures[label.s];
-    if(!s || !s.mesh.visible || (!teacherMode && labelMode==='hidden')){
+    if(!s || !s.mesh.visible || (!teacherMode && (labelMode==='hidden'||!polishStudentLabelsVisible))){
       nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
     }
-    const at=s.mesh.localToWorld(new THREE.Vector3(...label.p)).project(camera);
+    const world=s.mesh.localToWorld(new THREE.Vector3(...label.p));
+    const at=world.clone().project(camera);
     if(at.z<-1 || at.z>1 || Math.abs(at.x)>1.15 || Math.abs(at.y)>1.15){
       nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
     }
     const x=(at.x+1)*width/2,y=(1-at.y)*height/2;
     const bx=x+label.dx,by=y+label.dy;
     nodes.marker.hidden=false;
+    if(refreshOcclusion){
+      const delta=world.clone().sub(camera.position),distance=delta.length();
+      polishOcclusionRay.set(camera.position,delta.normalize());
+      polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
+      // Only a closer, visible mesh can occlude a label; the label's own surface
+      // can be encountered at the anchor without counting as an occluder.
+      const hits=polishOcclusionRay.intersectObjects(polishOccluders,false);
+      nodes.marker.dataset.occluded=hits.length?'1':'0';
+    }
+    const isOccluded=nodes.marker.dataset.occluded==='1';
+    nodes.marker.classList.toggle('polish-occluded',isOccluded);
+    nodes.line.style.opacity=isOccluded?'0':'1';
+    nodes.dot.style.opacity=isOccluded?'0':'1';
     nodes.marker.style.left=bx+'px';nodes.marker.style.top=by+'px';
     nodes.line.setAttribute('visibility','visible');nodes.dot.setAttribute('visibility','visible');
     nodes.line.setAttribute('x1',String(x));nodes.line.setAttribute('y1',String(y));
@@ -1950,6 +2151,7 @@ async function applyScene(saved){
     isolated=false;
     hidden.clear();
     restoreBonePaint(saved.pc||[]);
+    polishRestoreFade(saved.fa||[]);
     const visible=readVisibilityBits(saved.b,saved.n);
     structures.forEach((s,i)=>{
       // Older scenes may lack muscles or organs; new indices stay hidden unless enabled.
@@ -1977,14 +2179,15 @@ async function loadProject(data){
   verifyProjectModel(project);
   // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
   chapters=(project.v===1?[project]:project.chapters).map(ch=>upgradeLegacyScene(ch,structures.length,sceneFingerprint));
-  activeChapter=project.v===1?0:project.start;
+  activeChapter=!teacherMode?0:(project.v===1?0:project.start);
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode)studentPermissions={...publishPermissions};
+  else showPublishPermissions(publishPermissions);
   $('project-title').value=project.t;
   await applyScene(chapters[activeChapter]);
   renderChapterUI();
   if(!teacherMode)applyStudentPermissions();
-  document.title=project.t+' • Anatomy Studio';
+  document.title=project.t+' • AnatomIQ Studio';
 }
 async function initializeStudioScene(){
   if(!teacherMode){
@@ -2029,7 +2232,7 @@ for(const id of Object.values(PUBLISH_KEYS))$(id).addEventListener('change',()=>
 });
 function publishScene(){
   if(!teacherMode || !sceneRoot)return;
-  showPublishPermissions(publishPermissions);
+  publishPermissions={...currentPublishPermissions()};
   $('publish-results').hidden=true;
   $('share-feedback').textContent='Choose student controls and click Generate student links.';
   $('share-dialog').hidden=false;
@@ -2047,7 +2250,7 @@ async function generateStudentLink(){
     const escaped=embedLink.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     $('share-url').value=sharedLink;
     $('embed-url').value=embedLink;
-    $('iframe-code').value=`<iframe src="${escaped}" title="Anatomy Studio interactive 3D lesson" loading="lazy" style="width:100%;height:640px;border:0;display:block" allowfullscreen></iframe>`;
+    $('iframe-code').value=`<iframe src="${escaped}" title="AnatomIQ Studio interactive 3D lesson" loading="lazy" style="width:100%;height:640px;border:0;display:block" allowfullscreen></iframe>`;
     $('publish-results').hidden=false;
     $('share-feedback').textContent=embedLink.length>2000
       ? `Links created (${embedLink.length.toLocaleString()} characters). Schoology may reject unusually long links; test the actual Schoology student view.`
@@ -2109,16 +2312,18 @@ $('previous-chapter').addEventListener('click',()=>switchChapter(activeChapter-1
 $('next-chapter').addEventListener('click',()=>switchChapter(activeChapter+1));
 $('add-chapter').addEventListener('click',()=>createChapter(false));
 $('duplicate-chapter').addEventListener('click',()=>createChapter(true));
+$('polish-publish-controls')?.appendChild(document.querySelector('.publish-options'));
+$('polish-student-sharing')?.addEventListener('click',()=>{ $('publish-open')?.click(); });
 $('student-label-mode').addEventListener('change',()=>{labelMode=$('student-label-mode').value;queueDraft();});
 $('student-explore').addEventListener('change',()=>{studentExplore=$('student-explore').checked;queueDraft();});
 // Current working lesson continues to autosave as a draft in localStorage.
 $('new-project').addEventListener('click',()=>{
   if(!protectCurrentEdits('start a new lesson'))return;
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
-  restoreBonePaint([]);
+  restoreBonePaint([]);polishRestoreFade([]);
   libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
   chapters=[];activeChapter=0;
-  publishPermissions={...STUDY_PERMISSIONS};labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
+  publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
   Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false});
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
@@ -2470,7 +2675,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.2.0')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.2.4-polish')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;

@@ -8,7 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./styles.css" />
-  <title>Anatomy Studio • Skeletal, Muscular, Digestive & Cardiovascular Anatomy</title>
+  <title>AnatomIQ Studio • Skeletal, Muscular, Digestive & Cardiovascular Anatomy</title>
   <script type="importmap" id="renderer-importmap">
   {
     "imports": {
@@ -23,8 +23,8 @@
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
-        <span class="brand-label"><strong>Anatomy Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.0</span>
+        <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
+        <span class="version">STUDIO 2.2.4</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -141,7 +141,7 @@
           <input class="text-input" id="project-title" maxlength="90" value="Skull exploration" placeholder="Name your full lesson" />
           <label class="field-label chapter-title-field" for="scene-title">Current chapter title</label>
           <input class="text-input" id="scene-title" maxlength="90" value="Skull: Exterior" placeholder="e.g., Skull: Exterior" />
-          <p class="studio-menu-hint">Use <strong>File</strong> to save or share this lesson, or <strong>Library</strong> to open a saved scene.</p>
+          
           <small id="library-status" class="studio-hint" aria-live="polite">Not yet saved to the library.</small>
           <small id="draft-status" class="studio-hint">Your current working draft autosaves locally.</small>
         </section>
@@ -258,6 +258,7 @@
         </div>
         <div class="list-header"><span id="list-label">ANATOMICAL STRUCTURES</span><span id="list-count">—</span></div>
         <div id="bone-list" class="bone-list" aria-live="polite"><p class="empty-list">Loading anatomical structures…</p></div>
+         <section id="polish-student-labels" class="polish-student-labels" hidden><span class="eyebrow">CHAPTER LABELS</span><div id="polish-student-label-list"></div></section>
         <div class="sidebar-footer"><button id="restore-all" class="button full">↺ &nbsp;Restore hidden structures</button></div>
       </aside>
 
@@ -265,7 +266,8 @@
         <div id="canvas-container" class="canvas-container" role="application" aria-label="Interactive 3D anatomical model"></div>
         <div class="viewer-top">
           <div id="place-hint" class="place-hint" hidden>Click the structure where you want the label to point. Esc cancels.</div>
-          <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip">Drag to rotate · Scroll or pinch to zoom · Click a bone to select</span></div>
+          <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip" hidden></span></div>
+          <button id="polish-label-toggle" class="floating-button polish-label-toggle" type="button" hidden aria-pressed="true">Labels: On</button>
           <button id="reset-camera" class="floating-button" title="Reset camera">⟳ <span>Reset view</span></button>
         </div>
         <div class="loading-overlay" id="loader" aria-live="polite">
@@ -348,7 +350,10 @@
           <input id="new-label-text" class="text-input" maxlength="100" placeholder="e.g., Coronal suture" />
           <button id="place-label" class="button full" type="button">⊕ Place label on bone</button>
           <div id="label-list" class="label-editor-list"></div>
-          <div class="detail-separator"></div>
+          </section>
+        <section id="polish-student-controls" class="annotation-editor teacher-only" aria-label="Student controls">
+           <details id="polish-student-controls-details" open><summary>Student Controls</summary>
+<div class="detail-separator"></div>
           <label for="student-label-mode" class="field-label">Student label display</label>
           <select id="student-label-mode" class="text-input">
             <option value="shown">Show labels</option>
@@ -356,20 +361,18 @@
             <option value="hidden">Hide labels (practice)</option>
           </select>
           <label class="switch-row"><span>Students can hide / isolate bones <small>Otherwise the published scene stays fixed</small></span><input id="student-explore" type="checkbox" /></label>
-        </section>
-        <div class="info-bottom">
-          <span class="eyebrow">CLASSROOM TIP</span>
-          <p id="class-tip">Use the side or rear camera presets to compare skull landmarks from multiple perspectives.</p>
-          <details class="credits"><summary>Model credits & limitations</summary><p>3D geometry: Écorché by Charleeh, based on BodyParts3D (DBCLS) and Z-Anatomy. Model licensed CC BY-SA 4.0. This is an educational visualization, not a diagnostic tool. Some fine landmarks are simplified.</p><a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">Source and attribution ↗</a></details>
-        </div>
+                   <div id="polish-publish-controls"></div>
+           <button type="button" id="polish-student-sharing" class="button full">Generate student link…</button>
+           </details>
+         </section>
+         <div class="info-bottom"><p id="class-tip" hidden></p><details class="credits"><summary>Model credits &amp; limitations</summary><p>3D anatomy and source attribution remain governed by the original model licenses. For educational visualization only.</p><a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">Source and attribution ↗</a></details></div>
       </aside>
     </div>
-    <footer class="mobile-footer">Anatomy Studio · Educational visualization · <a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">3D model attribution</a></footer>
   </div>
   <div class="dialog-backdrop" id="share-dialog" hidden>
     <section role="dialog" aria-modal="true" aria-labelledby="dialog-heading" class="share-dialog">
       <div class="dialog-header"><div><span class="eyebrow">PUBLISH SCENE</span><h2 id="dialog-heading">Student link</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="Close">✕</button></div>
-      <p>Select which controls students can use. Permissions apply to all chapters in this published link without changing your teacher lesson.</p>
+      <p>Student permissions can be adjusted under <strong>Teacher Studio → Student Controls</strong>. Generate a link to publish this lesson.</p>
       <div class="publish-options" aria-labelledby="publish-options-title">
         <label class="field-label" id="publish-options-title" for="publish-preset">Student viewer preset</label>
         <select id="publish-preset" class="text-input">
@@ -402,7 +405,13 @@
       <p class="footnote">These controls hide UI, not source model data. An HTML/URL-only app cannot securely prevent technically skilled students from accessing anatomical names or changing the viewer; don't treat this as a locked-down assessment environment.</p>
     </section>
   </div>
-  <div class="dialog-backdrop" id="library-dialog" hidden>
+     <div class="dialog-backdrop" id="polish-label-dialog" hidden>
+     <section class="share-dialog polish-label-dialog" role="dialog" aria-modal="true" aria-labelledby="polish-label-title">
+       <div class="dialog-header"><h2 id="polish-label-title"></h2><button id="polish-label-close" type="button" class="icon-button" aria-label="Close label details">✕</button></div>
+       <p id="polish-label-description"></p><img id="polish-label-image" hidden alt="" loading="lazy" />
+     </section>
+   </div>
+   <div class="dialog-backdrop" id="library-dialog" hidden>
     <section role="dialog" aria-modal="true" aria-labelledby="library-heading" class="share-dialog library-dialog">
       <div class="dialog-header"><div><span class="eyebrow">TEACHER STORAGE</span><h2 id="library-heading">Scene Library</h2></div><button id="library-close" type="button" class="icon-button" aria-label="Close Scene Library">✕</button></div>
       <p>Saved lessons are stored on this Chromebook in this Chrome profile. Student links stay independent of the library.</p>
@@ -434,9 +443,9 @@
   </div>
   <div class="dialog-backdrop" id="help-dialog" hidden>
     <section class="share-dialog help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
-      <div class="dialog-header"><div><span class="eyebrow">ANATOMY STUDIO</span><h2 id="help-title">Menus & keyboard shortcuts</h2></div><button type="button" id="help-close" class="icon-button" aria-label="Close Help">✕</button></div>
+      <div class="dialog-header"><div><span class="eyebrow">ANATOMIQ STUDIO</span><h2 id="help-title">Menus & keyboard shortcuts</h2></div><button type="button" id="help-close" class="icon-button" aria-label="Close Help">✕</button></div>
       <p><strong>File</strong> manages the current lesson: save, import/export, drafts and student links. <strong>Edit</strong> includes Undo/Redo and chapter actions. <strong>Library</strong> lists saved lessons in this Chrome profile.</p>
-      <div class="help-shortcuts"><span>Save to Library</span><kbd>Ctrl / ⌘ + S</kbd><span>Undo</span><kbd>Ctrl / ⌘ + Z</kbd><span>Redo</span><kbd>Ctrl / ⌘ + Shift + Z</kbd><span>Open Library</span><kbd>Ctrl / ⌘ + O</kbd></div>
+      <div class="help-shortcuts"><span>Hide selected</span><kbd>Delete / Backspace</kbd><span>Search</span><kbd>Ctrl / ⌘ + F</kbd><span>Isolate selected</span><kbd>Ctrl / ⌘ + I</kbd><span>Fade selected</span><kbd>Ctrl / ⌘ + −</kbd><span>Save to Library</span><kbd>Ctrl / ⌘ + S</kbd><span>Undo</span><kbd>Ctrl / ⌘ + Z</kbd><span>Redo</span><kbd>Ctrl / ⌘ + Shift + Z</kbd><span>Open Library</span><kbd>Ctrl / ⌘ + O</kbd></div>
       <p class="footnote">Scene Library data is local to this website and Chrome profile, and is not automatically backed up or synced. Use <strong>Library → Back up entire library</strong> regularly. Clearing site data may remove your library and drafts. Sharing a student link does not upload your saved library.</p>
     </section>
   </div>
