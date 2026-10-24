@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {installSkullGeometry} from './skull-geometry.js';
@@ -28,7 +29,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.4';
+const APP_VERSION = '2.2.5';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -889,7 +890,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
     const text=$('new-label-text').value.trim();
     if(!text){showToast('Enter label text first.');cancelPlacing();return;}
     const local=hit.object.worldToLocal(hit.point.clone());
-    labels.push({id:++labelSequence,s:s.index,p:local.toArray().map(n=>round(n,5)),t:text,dx:24,dy:-31});
+    labels.push({id:++labelSequence,s:s.index,p:local.toArray().map(n=>round(n,5)),t:text,dx:24,dy:-31,...(hit.face?.normal?{ln:hit.face.normal.toArray().map(n=>round(n,5))}:{})});
     $('new-label-text').value='';cancelPlacing();setSelection(s);renderAnnotations();renderLabelEditor();queueDraft();
     showToast('Label anchored. Drag its callout to reposition it.');
   } else {isolated=false;setSelection(s);} 
@@ -1611,7 +1612,7 @@ function snapshotScene(){
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
-    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} )})),
+    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
     ...(pc.length?{pc}:{})
   });
@@ -1956,14 +1957,129 @@ function polishShowLabelDetails(label){
   if(label.u){photo.src=label.u;photo.alt='Reference image: '+label.t;}
   dialog.hidden=false;
 }
+// ANATOMIQ_SMART_LABEL_FOCUS_20261024: orient label clicks by their real surface.
+const smartFocusRay=new THREE.Raycaster();
+const smartFocusGhosts=new Map();
+function smartLabelAnchor(label){
+  const structure=structures[label.s];
+  if(!structure?.mesh)return null;
+  structure.mesh.updateWorldMatrix(true,false);
+  return structure.mesh.localToWorld(new THREE.Vector3(...label.p));
+}
+function smartFocusClearGhosts(){
+  for(const [mesh,info] of smartFocusGhosts){
+    clearTimeout(info.timer);
+    if(mesh.material===info.ghost)mesh.material=info.original;
+    for(const material of (Array.isArray(info.ghost)?info.ghost:[info.ghost]))material.dispose();
+    delete mesh.userData.smartLabelGhost;
+  }
+  smartFocusGhosts.clear();polishOcclusionAt=0;
+}
+function smartFocusGhost(mesh){
+  if(!mesh||smartFocusGhosts.has(mesh)||(!teacherMode&&!studentExplore))return;
+  const original=mesh.material;
+  if(!original)return;
+  const dim=material=>{
+    const copy=material.clone();
+    copy.transparent=true;copy.depthWrite=false;copy.opacity=Math.min(0.16,Number(material.opacity??1));
+    copy.needsUpdate=true;return copy;
+  };
+  const ghost=Array.isArray(original)?original.map(dim):dim(original);
+  mesh.material=ghost;mesh.userData.smartLabelGhost=true;
+  const info={original,ghost,timer:0};smartFocusGhosts.set(mesh,info);
+  info.timer=setTimeout(()=>{
+    if(smartFocusGhosts.get(mesh)!==info)return;
+    if(mesh.material===ghost)mesh.material=original;
+    for(const material of (Array.isArray(ghost)?ghost:[ghost]))material.dispose();
+    delete mesh.userData.smartLabelGhost;
+    smartFocusGhosts.delete(mesh);polishOcclusionAt=0;invalidate(3);
+  },2700);
+  polishOcclusionAt=0;invalidate(3);
+}
+function smartFocusCamera(label){
+  const structure=structures[label.s];
+  const mesh=structure?.mesh;
+  if(!mesh || !mesh.visible)return false;
+  smartFocusClearGhosts();
+  const anchor=smartLabelAnchor(label);
+  const bounds=boxFor([structure]);
+  if(!anchor || bounds.isEmpty())return false;
+  const center=bounds.getCenter(new THREE.Vector3());
+  const aim=center.clone().lerp(anchor,0.63);
+  const size=bounds.getSize(new THREE.Vector3());
+  const vfov=THREE.MathUtils.degToRad(camera.fov);
+  const hfov=2*Math.atan(Math.tan(vfov/2)*Math.max(0.2,camera.aspect));
+  const fit=Math.max(size.x/(2*Math.tan(hfov/2)),size.y/(2*Math.tan(vfov/2)),size.z/(2*Math.tan(vfov/2)));
+  const distance=Math.max(0.065,fit*2.4,anchor.distanceTo(aim)*2.1);
+  // The optional teacher view saves a world-facing direction and camera-to-label
+  // distance. It overrides the automatic geometry/occlusion heuristic exactly.
+  const custom=Array.isArray(label.fv)&&label.fv.length===3&&label.fv.every(Number.isFinite)&&
+    label.fv.some(n=>Math.abs(n)>0.05)&&Number.isFinite(label.fd)&&label.fd>0;
+  let direction;
+  let chosenDistance=distance;
+  if(custom){
+    direction=new THREE.Vector3(...label.fv).normalize();
+    chosenDistance=Math.max(0.04,label.fd);
+    if(Array.isArray(label.ft)&&label.ft.length===3&&label.ft.every(Number.isFinite))
+      aim.copy(anchor).add(new THREE.Vector3(...label.ft));
+  }else{
+    // Older lessons do not have a saved face normal. Infer front/back from
+    // the label's world location relative to the whole anatomical reference.
+    sceneRoot.updateWorldMatrix(true,true);
+    const bodyCenter=new THREE.Box3().setFromObject(sceneRoot).getCenter(new THREE.Vector3());
+    const normal=Array.isArray(label.ln)&&label.ln.length===3
+      ? new THREE.Vector3(...label.ln).applyMatrix3(new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld)).normalize().toArray()
+      : null;
+    const radial=smartLabelFacing(anchor.toArray(),bodyCenter.toArray(),normal);
+    const candidates=smartOrbitDirections(radial);
+    const meshes=structures.filter(s=>s!==structure && s.mesh.visible && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
+    let bestScore=Infinity,blocked=null;
+    for(let i=0;i<candidates.length;i++){
+      const candidate=new THREE.Vector3(...candidates[i]);
+      const from=aim.clone().addScaledVector(candidate,distance);
+      const toward=anchor.clone().sub(from);const span=toward.length();
+      smartFocusRay.set(from,toward.normalize());
+      smartFocusRay.near=0;smartFocusRay.far=Math.max(0.001,span-Math.max(0.003,span*0.01));
+      const hits=smartFocusRay.intersectObjects(meshes,false);
+      const score=(hits.length?100:0)+i*1.3;
+      if(score<bestScore){bestScore=score;direction=candidate;blocked=hits[0]?.object||null;}
+      if(!hits.length && i===0)break;
+    }
+    if(blocked && (teacherMode||studentExplore))smartFocusGhost(blocked);
+    direction=direction||new THREE.Vector3(...radial);
+  }
+  const destination=(custom?anchor:aim).clone().addScaledVector(direction,chosenDistance);
+  camera.near=Math.max(0.002,chosenDistance/300);
+  camera.far=Math.max(12,chosenDistance*60);camera.updateProjectionMatrix();
+  // Keep the same cancellable, reduced-motion-aware camera animation used by
+  // all other orientation buttons. Do not store navigation as scene edits.
+  polishMoveCamera(destination,aim,{duration:1000,save:teacherMode});
+  setPresetActive('');
+  return true;
+}
+function smartSaveFocusView(label){
+  if(!teacherMode)return;
+  const anchor=smartLabelAnchor(label);
+  if(!anchor)return showToast('The label structure is unavailable.');
+  const outward=camera.position.clone().sub(anchor);
+  const distance=outward.length();
+  if(!Number.isFinite(distance)||distance<0.03)return showToast('Move the camera away from the label before saving.');
+  label.fv=outward.normalize().toArray().map(n=>round(n,5));
+  label.fd=round(distance,5);
+  // Save the actual camera target as well: a custom teaching view preserves
+  // precise framing, not just direction and approximate magnification.
+  label.ft=controls.target.clone().sub(anchor).toArray().map(n=>round(n,5));
+  renderLabelEditor();queueDraft();showToast('Focus View saved for this label.');
+}
+
 function polishFocusLabel(label,index){
   const s=structures[label.s];
   if(!s || !s.mesh.visible){showToast('This label’s structure is not visible in the current chapter.');return;}
-  if(studentPermissions.sn)setSelection(s);
-  fitBox(boxFor([s]),activePreset||'front',2.25);
+  if(teacherMode||studentPermissions.sn)setSelection(s);
+  if(!smartFocusCamera(label))return;
   const marker=markers.get(label.id)?.marker;
   marker?.classList.add('revealed');
-  polishShowLabelDetails(label);
+  if(!teacherMode)polishShowLabelDetails(label);
 }
 function polishRenderStudentLabels(){
   const panel=$('polish-student-labels'),list=$('polish-student-label-list'),toggle=$('polish-label-toggle');
@@ -2017,7 +2133,21 @@ function renderLabelEditor(){
       }
       label.u=value;queueDraft();
     });
-    more.append(desc,photo);
+    const focusActions=document.createElement('div');focusActions.className='smart-focus-actions';
+    const saveView=document.createElement('button');saveView.type='button';saveView.className='button small';
+    saveView.textContent=label.fv?'Update Focus View':'Save Focus View';
+    saveView.title='Save this camera angle and zoom for students focusing this label';
+    saveView.addEventListener('click',()=>smartSaveFocusView(label));
+    const preview=document.createElement('button');preview.type='button';preview.className='button small';
+    preview.textContent='Preview Focus';preview.addEventListener('click',()=>polishFocusLabel(label,i));
+    focusActions.append(saveView,preview);
+    if(label.fv){
+      const clear=document.createElement('button');clear.type='button';clear.className='button small subtle';
+      clear.textContent='Use Automatic';clear.title='Remove the saved focus view; infer facing from anatomy instead';
+      clear.addEventListener('click',()=>{delete label.fv;delete label.fd;delete label.ft;renderLabelEditor();queueDraft();showToast('Automatic label focus restored.');});
+      focusActions.append(clear);
+    }
+    more.append(desc,photo,focusActions);
     row.append(number,input,remove,more);list.appendChild(row);
   });
 }
@@ -2076,7 +2206,7 @@ function updateAnnotationPositions(){
   const refreshOcclusion=performance.now()>polishOcclusionAt;
   if(refreshOcclusion){
     polishOcclusionAt=performance.now()+110;
-    polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index)).map(s=>s.mesh);
+    polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
   }
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
@@ -2113,6 +2243,7 @@ function updateAnnotationPositions(){
   }
 }
 async function applyScene(saved){
+  smartFocusClearGhosts();
   if(cardioPreviewIDs)endCardioPreview();
   validateScene(saved);
   if(!sceneModelCompatible(saved,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
@@ -2675,7 +2806,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.2.4-polish')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.2.5-smart-focus')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;

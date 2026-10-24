@@ -1,6 +1,6 @@
 {
-  "version": "2.2.4",
+  "version": "2.2.5",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "AnatomIQ Studio polish: smooth camera, chapter crossfade, label study notes/photos, student label explorer/toggle, shortcuts, persistent cached models."
+  "notes": "Smart Label Focus: rotate toward label surface with optional teacher-saved camera angle and zoom; transparent obstruction handling where permitted."
 }

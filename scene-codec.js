@@ -69,6 +69,19 @@ export function validateScene(scene) {
       (label.u && !/^(https:\/\/|\.\/|media\/|images\/)/i.test(label.u))))
       throw new Error('Photo must be an HTTPS URL or repository image path.');
   }
+  // Optional camera-facing surface normal and teacher-authored focus frame.
+  for(const label of scene.labels){
+    if(label.ln!==undefined && (!vector(label.ln,3) || Math.hypot(...label.ln)<0.1))
+      throw new Error('Invalid label surface normal.');
+    if(label.fv!==undefined && (!vector(label.fv,3)||Math.hypot(...label.fv)<0.1))
+      throw new Error('Invalid label focus direction.');
+    if(label.fd!==undefined && (!num(label.fd)||label.fd<0.03||label.fd>1000))
+      throw new Error('Invalid label focus distance.');
+    if(label.ft!==undefined && (!vector(label.ft,3)||label.fv===undefined))
+      throw new Error('Invalid label custom focus target.');
+    if((label.fv===undefined)!==(label.fd===undefined))
+      throw new Error('Label focus direction and distance must be saved together.');
+  }
   if(scene.fa!==undefined && (!Array.isArray(scene.fa)||scene.fa.length>scene.n||
      scene.fa.some(i=>!Number.isInteger(i)||i<0||i>=scene.n)||
      new Set(scene.fa).size!==scene.fa.length))throw new Error('Invalid faded structure list.');

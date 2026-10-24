@@ -305,3 +305,8 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 #polish-publish-controls .publish-permissions{display:grid;gap:6px;}
 #polish-publish-controls .publish-permissions label{display:flex;gap:8px;}
 @media(prefers-reduced-motion:reduce){.anatomy-label,.leader-line,.leader-dot,.polish-chapter-snapshot{transition:none!important;}}
+
+/* ANATOMIQ_SMART_LABEL_FOCUS_20261024 — per-label teacher focus controls */
+.smart-focus-actions{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 0;align-items:center}
+.smart-focus-actions>.button{flex:1 1 auto;min-width:90px;padding:7px 8px;font-size:11px}
+@media(max-width:630px){.smart-focus-actions>.button{min-width:110px}}
