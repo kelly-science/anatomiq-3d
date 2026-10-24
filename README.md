@@ -1,47 +1,38 @@
-# AnatomIQ 3D 2.0.3 — Nervous Visual Tuning
+# AnatomIQ 3D 2.0.4 — Ventricular Visibility Adjustment
 
-This small update patches your existing AnatomIQ 2.0.2 project to improve the *appearance* of the nervous system without regenerating the GLBs.
+**Only the ventricular material changes.** The ventricles remain slightly translucent (94% opacity) but write depth information, helping overlapping surfaces retain their form. The meninges, structure colors, anatomical geometry, and all other body systems remain unchanged.
 
-## What it changes
+## Apply to your GitHub Desktop checkout
 
-- Changes the outer brain to a more realistic **pink cortical tone**.
-- Gives **deep brain structures** more reference-like color separation:
-  - ventricles: blue-gray
-  - thalamic regions: muted purple
-  - hypothalamic / deep nuclei regions: warm brown tones
-  - basal ganglia: darker brown-red tones
-  - cerebellum / brainstem: softer tan-pink tones
-- Renders **dura / meninges** more transparently so they do not obscure the brain.
-- Improves right-panel nervous-system descriptions for deep brain structures.
+1. Extract this ZIP.
+2. Copy `tools/apply-ventricle-opacity-204.py` into your existing repository's `tools/` folder, replacing nothing else.
+3. Open Terminal in your existing GitHub repository, for example:
 
-## Files patched
+   ```bash
+   cd /Users/steve/Documents/GitHub/anatomiq-3d
+   python3 tools/apply-ventricle-opacity-204.py
+   ```
 
-- `nervous-model.js`
-- `app.js`
-- `sw.js`
-- `version.json`
+4. The script updates exactly these four application files:
+   - `nervous-model.js`
+   - `app.js`
+   - `sw.js`
+   - `version.json`
+5. Commit those four files using GitHub Desktop and **Push origin**. Once Pages finishes deploying, reload your installed PWA. If it still shows the old version, close and reopen the app to activate the updated service worker.
 
-## Install
+The script creates a timestamped `.nervous-204-backup-*` folder before writing. It validates all edits before applying them and can safely be run again. It requires the **2.0.3 visual-tuning installer** to have been applied successfully.
 
-Copy the included `tools/apply-nervous-visuals-203.py` into your existing `anatomy-pwa-studio/tools/` folder, then run:
+## Expected material settings
 
-```bash
-python3 tools/apply-nervous-visuals-203.py
-```
+| Structure | Opacity | Depth writing | Modified? |
+|---|---:|---|---|
+| Cerebral ventricles (3rd, 4th, left and right lateral) | 0.94 | On | Yes |
+| Dura / falx / tentorium | 0.30 (existing setting) | Off | No |
 
-The script creates a backup folder named `.nervous-203-backup` before changing files.
+**No GLB files, mesh manifests, generated models, local saved lessons or structures are altered.**
 
-## After patching
+## Verify
 
-Commit and deploy these updated app files to GitHub:
+Run `python3 tests/check-ventricle-opacity-204.py` from your repository after copying the included test to `tests/`. It confirms the 2.0.4 material settings and the 2.0.4 version stamps.
 
-- `app.js`
-- `nervous-model.js`
-- `sw.js`
-- `version.json`
-
-No nervous-system GLB regeneration is required for this update.
-
-## Notes
-
-This update changes presentation and grouping only. It does **not** add new meshes.
+This is a source-level visual fix; its final appearance should be checked in the browser after deployment.

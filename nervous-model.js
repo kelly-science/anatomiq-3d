@@ -59,7 +59,7 @@ export const nervousColor=s=>s?.provenance==='illustrative-reconstruction'?'#cf9
 export function nervousMaterialOverrides(s){
   const category=nervousNameGroup(s);
   if(category==='dura')return {transparent:true,opacity:0.3,depthWrite:false,roughness:0.48};
-  if(category==='ventricle')return {transparent:true,opacity:0.9,depthWrite:false,roughness:0.48};
+  if(category==='ventricle')return {transparent:true,opacity:0.94,depthWrite:true,roughness:0.48};
   return {transparent:false,opacity:1,depthWrite:true,roughness:0.48};
 }
 export function nervousVisibleInPreset(s,preset){
