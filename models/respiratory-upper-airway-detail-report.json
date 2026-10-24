@@ -1,0 +1,229 @@
+{
+  "release": "1.9.1",
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "purpose": "Quality/refinement audit. Source geometry was not replaced; detail can only be interpolated.",
+  "standard_face_ceiling": 3200,
+  "detailed_face_ceiling": 16000,
+  "target_refined_source_faces": 4200,
+  "mesh_count": 17,
+  "meshes": [
+    {
+      "id": "FJ1252",
+      "name": "Maxillary gingiva",
+      "original_obj_sha256": "e48d35d931ffbe6c5fd4d118fb3e96293e97a65ab0e6c190a844df1553a3f5c7",
+      "refined_obj_sha256": "c349f4ce4fae276ac0407544fe52d1fd0b655f5b9d8356d9e9f32be7c4ec6ac6",
+      "source_triangles": 1848,
+      "refined_triangles": 7392,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 10.241722,
+        "center_shift_fraction_of_diagonal": 5.1448,
+        "surface_area_change_fraction": 13.448661,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ1253",
+      "name": "Mandibular gingiva",
+      "original_obj_sha256": "191e4e58dfeca645a32dfae7a66914334421a95694d172bb7c5d8388388e2c89",
+      "refined_obj_sha256": "c85fcd720f8f7c2cd55e1caa09946edc6f5dc5d66844a1a6f9caaae12f7616ca",
+      "source_triangles": 1918,
+      "refined_triangles": 7672,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 7.412451,
+        "center_shift_fraction_of_diagonal": 3.718882,
+        "surface_area_change_fraction": 7.071306,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ2740",
+      "name": "Left inferior pharyngeal constrictor",
+      "original_obj_sha256": "e963fb507394357b5553e9e20e3d14d0a68c4d1e970bb2213c635bc7c396ed6a",
+      "refined_obj_sha256": "4e417ce0d8bc9a172951d3f8bd6127af0bd0d33cd52b70bd0ccf19c5c22d932b",
+      "source_triangles": 7422,
+      "refined_triangles": 7422,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2741",
+      "name": "Left levator veli palatini",
+      "original_obj_sha256": "303e17915deb228ec62d9d5e89df0e2f2d557ff686eb11da6ff76019ce7062cc",
+      "refined_obj_sha256": "9a6b6e56244190af7305b7cb4f91b452bd4b9f69bfb5c35c2d8ac2bec5426f50",
+      "source_triangles": 12318,
+      "refined_triangles": 12318,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2742",
+      "name": "Right middle pharyngeal constrictor",
+      "original_obj_sha256": "67221b7d20e91fd67c9625231d800e2fc8634cf45ce5ee4fe356dcbe52c8ee2a",
+      "refined_obj_sha256": "8097e4ca7134d9748838e226b11886cc376b662cc2562fd267b655ecc1335d3b",
+      "source_triangles": 5904,
+      "refined_triangles": 5904,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2743",
+      "name": "Left palatopharyngeus",
+      "original_obj_sha256": "548519ac2ba50925b6cc741264bd952de9719078877fc6fddb8a202bea1d75ce",
+      "refined_obj_sha256": "d5bdc8a381950b29697d7c89f5e493cc2a48267fda5db9fe7a78a9c37f1e6ac0",
+      "source_triangles": 41400,
+      "refined_triangles": 41400,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2747",
+      "name": "Left superior pharyngeal constrictor",
+      "original_obj_sha256": "9e0cc24005866cbf4d0eec7f550de25d02aff90bbc53cde38124098779cebc92",
+      "refined_obj_sha256": "09aa5231a7cc43ad5793b70197befe6c62931a9694d510b1578fb1bba3c1fe59",
+      "source_triangles": 10702,
+      "refined_triangles": 10702,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2748",
+      "name": "Left tensor veli palatini",
+      "original_obj_sha256": "6ec38cb904832d0d2560c5f69492d1788807ff718dc0821fc5f107a25c3f9e5f",
+      "refined_obj_sha256": "f624b3e49aed5e3c2c11c811843400e6cd62eaba6f497f869c873a99cb81b64e",
+      "source_triangles": 13872,
+      "refined_triangles": 13872,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2752",
+      "name": "Right inferior pharyngeal constrictor",
+      "original_obj_sha256": "27f1fd0b5c3e27ce05266f6dfa19232da4fc5f844ee2b36de3b5ef5907d51b27",
+      "refined_obj_sha256": "cfadda44bb25f5a375af698fb530f9288ed716299abee70fa6dea79856987459",
+      "source_triangles": 7448,
+      "refined_triangles": 7448,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2753",
+      "name": "Right levator veli palatini",
+      "original_obj_sha256": "8f55b524ce3b6f6658b7db3ee64e2c888c01e94253a8f3d164c3f170da64c80e",
+      "refined_obj_sha256": "7150447c559b729f57c7bb2b9b770e5cd8b861df8c74c8efc2f662fe7fd96a12",
+      "source_triangles": 12312,
+      "refined_triangles": 12312,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2754",
+      "name": "Left middle pharyngeal constrictor",
+      "original_obj_sha256": "e68ae58e629d5bc434318d8e3ba418993f66c4a8ae2f73b9858d0ce4d094d5ba",
+      "refined_obj_sha256": "55d4ad7ac4ab763fbf48f4c454b2be64721ea0a083e4d0aef4f9da223ff1c533",
+      "source_triangles": 5912,
+      "refined_triangles": 5912,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2755",
+      "name": "Right palatopharyngeus",
+      "original_obj_sha256": "34f7d8b820f3dd214bf69558054d803768c71ec01d592e35b50dea1e7bd32b6e",
+      "refined_obj_sha256": "06862dfef0e1b77c76e3c49f2124ef3673eae0d489057823685cb45d978671a4",
+      "source_triangles": 41400,
+      "refined_triangles": 41400,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2759",
+      "name": "Right superior pharyngeal constrictor",
+      "original_obj_sha256": "44b702cd902357c4171608ee905658de85c9d0d5fa107549ec0ae6716c31dcee",
+      "refined_obj_sha256": "35018c273479611ed2a4f19a0d1d40447450b57527637802ba3a0e399ee46c4b",
+      "source_triangles": 10702,
+      "refined_triangles": 10702,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2760",
+      "name": "Right tensor veli palatini",
+      "original_obj_sha256": "52558260e2ad962ef4fdfef68a090d87915bf265e2dd3439cc2df6e635ba9b16",
+      "refined_obj_sha256": "e8581d8c8413b686db357d3a6743d15384b51842ac043bc3c4864c2a03dd39d6",
+      "source_triangles": 13872,
+      "refined_triangles": 13872,
+      "subdivisions": 0,
+      "method": "original",
+      "shape_metrics": {}
+    },
+    {
+      "id": "FJ2761",
+      "name": "Tongue",
+      "original_obj_sha256": "707d87fdd5b29147724d013b18f98e7eeab2d71bceec9490cf14784c63117e34",
+      "refined_obj_sha256": "022d5e416b0e1227968c06d8d1a4c64af1a8a45442857861ea9e999b94994697",
+      "source_triangles": 524,
+      "refined_triangles": 8384,
+      "subdivisions": 2,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 4.718616,
+        "center_shift_fraction_of_diagonal": 2.360426,
+        "surface_area_change_fraction": 2.218581,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ2762",
+      "name": "Uvular muscle",
+      "original_obj_sha256": "55153cbcb23abf7fb1d035e6b2670f0c63fff2ee271df7f74bb4e02e7004e837",
+      "refined_obj_sha256": "1d377d33327c3c7ffa4ed55f584b1309c9b0a8ba06241bb4b18beef8f8e7c4f4",
+      "source_triangles": 1632,
+      "refined_triangles": 6528,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 80.157123,
+        "center_shift_fraction_of_diagonal": 40.167439,
+        "surface_area_change_fraction": 45.276056,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ2814",
+      "name": "Lip",
+      "original_obj_sha256": "1a1ce9ba6f5c48aa9f5c20e6cc4847e68aaa2642757a1425ae02ab304ef86ee5",
+      "refined_obj_sha256": "519c4d0cf9b419821b920ee9b6c7fb0d285736262b92ec89a66e515117841419",
+      "source_triangles": 1340,
+      "refined_triangles": 5360,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 35.663245,
+        "center_shift_fraction_of_diagonal": 17.978026,
+        "surface_area_change_fraction": 203.47225,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    }
+  ]
+}

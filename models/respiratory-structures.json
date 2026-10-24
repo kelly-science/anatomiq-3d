@@ -232,6 +232,142 @@
       "category": "lung",
       "standard_triangles": 3200,
       "detailed_triangles": 9506
+    },
+    {
+      "id": "FJ1252",
+      "fma_id": "FMA55268",
+      "name": "Maxillary gingiva",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7392
+    },
+    {
+      "id": "FJ1253",
+      "fma_id": "FMA55268",
+      "name": "Mandibular gingiva",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7672
+    },
+    {
+      "id": "FJ2740",
+      "fma_id": "FMA46619",
+      "name": "Left inferior pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7422
+    },
+    {
+      "id": "FJ2741",
+      "fma_id": "FMA46726",
+      "name": "Left levator veli palatini",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 12318
+    },
+    {
+      "id": "FJ2742",
+      "fma_id": "FMA46619",
+      "name": "Right middle pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5904
+    },
+    {
+      "id": "FJ2743",
+      "fma_id": "FMA46619",
+      "name": "Left palatopharyngeus",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ2747",
+      "fma_id": "FMA46619",
+      "name": "Left superior pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10702
+    },
+    {
+      "id": "FJ2748",
+      "fma_id": "FMA46726",
+      "name": "Left tensor veli palatini",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 13872
+    },
+    {
+      "id": "FJ2752",
+      "fma_id": "FMA46619",
+      "name": "Right inferior pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7448
+    },
+    {
+      "id": "FJ2753",
+      "fma_id": "FMA46726",
+      "name": "Right levator veli palatini",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 12312
+    },
+    {
+      "id": "FJ2754",
+      "fma_id": "FMA46619",
+      "name": "Left middle pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5912
+    },
+    {
+      "id": "FJ2755",
+      "fma_id": "FMA46619",
+      "name": "Right palatopharyngeus",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ2759",
+      "fma_id": "FMA46619",
+      "name": "Right superior pharyngeal constrictor",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10702
+    },
+    {
+      "id": "FJ2760",
+      "fma_id": "FMA46726",
+      "name": "Right tensor veli palatini",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 13872
+    },
+    {
+      "id": "FJ2761",
+      "fma_id": "FMA49443",
+      "name": "Tongue",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8384
+    },
+    {
+      "id": "FJ2762",
+      "fma_id": "FMA46726",
+      "name": "Uvular muscle",
+      "category": "airway",
+      "standard_triangles": 3200,
+      "detailed_triangles": 6528
+    },
+    {
+      "id": "FJ2814",
+      "fma_id": "FMA24218",
+      "name": "Lip",
+      "category": "airway",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5360
     }
   ]
 }
