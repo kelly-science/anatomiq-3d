@@ -6,6 +6,7 @@ import {validateSkullManifest} from './skeletal-detail.js';
 import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
 import {digestiveMeshEntries,sourceRegistration,digestiveDefaultColor} from './digestive-model.js';
 import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.js';
+import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
@@ -24,7 +25,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '1.8.8';
+const APP_VERSION = '1.9.0';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -44,6 +45,14 @@ const DETAIL_MODEL_SHARP='./models/digestive-detailed.glb';
 const CARDIO_MANIFEST='./models/cardiovascular-structures.json';
 const CARDIO_STANDARD='./models/cardiovascular-standard.glb';
 const CARDIO_DETAILED='./models/cardiovascular-detailed.glb';
+const RESP_MANIFEST='./models/respiratory-structures.json';
+const RESP_STANDARD='./models/respiratory-standard.glb';
+const RESP_DETAILED='./models/respiratory-detailed.glb';
+const RESP_QUALITY_KEY='anatomiq-respiratory-geometry-v1';
+let respiratoryGeometry='standard';
+try{respiratoryGeometry=localStorage.getItem(RESP_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
+let respiratoryRoot=null,respiratoryEntriesList=[],respiratoryAvailable=false,respiratoryLoaded=false;
+let respiratoryOpacity=1;
 const CARDIO_QUALITY_KEY='anatomy-studio-cardio-geometry-v1';
 let cardioGeometry='standard';
 try{cardioGeometry=localStorage.getItem(CARDIO_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
@@ -67,7 +76,7 @@ let digestiveRoot=null;
 let legacyLoaded=false,detailLoaded=false,cardioLoaded=false;
 let studentProjectAtStartup=null;
 let studentAssetBusy=false;
-let digestMetadata=null,cardioMetadata=null,legacyPresent=false;
+let digestMetadata=null,cardioMetadata=null,respMetadata=null,legacyPresent=false;
 let digestiveSourceEntries=[];
 let baseStructureCount=0,baseFingerprint='';
 const $ = id => document.getElementById(id);
@@ -86,7 +95,7 @@ const hidden = new Set();
 let structures = [];
 let legacyStructureCount = 0;
 let legacyFingerprint = '';
-const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false};
+const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false};
 const materials = new Map(); // Model-authored original material(s) for each anatomical structure.
 const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
 const bonePaint = new Map(); // Stable structure index → #RRGGBB, scoped to the active chapter.
@@ -180,7 +189,7 @@ function setRenderQuality(mode){
   $('settings-quality-explanation').textContent=`${renderProfile.effective[0].toUpperCase()+renderProfile.effective.slice(1)} mode · ${cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap).toFixed(2)}x resolution · rendering only when the view changes`;
   renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio,renderProfile.dprCap));
   shadows.setQuality(shadowMode,renderProfile.effective);
-  for(const root of [sceneRoot,digestiveRoot,detailRoot,cardioRoot])configureAnatomyShadows(root,shadows.profile.enabled);
+  for(const root of [sceneRoot,digestiveRoot,detailRoot,cardioRoot,respiratoryRoot])configureAnatomyShadows(root,shadows.profile.enabled);
   // WebGLRenderer.setPixelRatio reconfigures its drawing buffer at the current size.
   invalidate(2);
 }
@@ -270,6 +279,7 @@ function layerEnabled(s){
   if(s.system==='digestive')return layers.digestive &&
     (s.layer==='digestive-detail' ? detailAvailable && detailEnabled : digestiveAvailable && !detailEnabled) && !s.mesh.userData?.deferredAsset;
   if(s.system==='cardiovascular')return layers.cardiovascular && cardioAvailable && !s.mesh.userData?.deferredAsset;
+  if(s.system==='respiratory')return layers.respiratory && respiratoryAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='muscular')return s.layer==='deep muscles'?layers.deep:layers.superficial;
   if(s.system==='skeletal')return layers.skeletal && (mode!=='skull'||s.skull);
   return false;
@@ -381,6 +391,11 @@ function updateSystemControls(){
   $('mode-digestive').title=detailAvailable?`${detailEntries.length} selectable digestive structures`:'Detailed digestive assets are not installed';
   $('mode-cardiovascular').disabled=!cardioAvailable;
   $('mode-cardiovascular').title=cardioAvailable?`${cardioEntries.length} selectable heart and vessel structures`:'Run tools/install-cardiovascular-43.sh to add cardiovascular anatomy';
+  $('mode-respiratory').disabled=!respiratoryAvailable;
+  $('mode-respiratory').title=respiratoryAvailable?`${respiratoryEntriesList.length} lung and airway structures`:'Run tools/install-respiratory-43.sh';
+  $('respiratory-study-panel').hidden=!teacherMode||!respiratoryAvailable||!layers.respiratory;
+  if(respiratoryAvailable){const coverage=respiratoryCoverage(respiratoryEntriesList,cardioEntries);
+    $('respiratory-study-count').textContent=`${coverage.respiratory_meshes} respiratory meshes · ${coverage.groups.lung} lung segments · ${coverage.groups.airway+coverage.groups.trachea} named airway meshes · ${coverage.pulmonary_vessel_meshes} pulmonary-vessel meshes in existing cardiovascular layer`;}
   // The editor has chapter-specific cardiac study views, not a separate model.
   $('cardio-study-panel').hidden=!teacherMode||!cardioAvailable||!layers.cardiovascular;
   if(cardioAvailable){
@@ -484,6 +499,7 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
+  if(s.system==='respiratory')return ({lung:'Lung tissue, including bronchopulmonary segments when individually available.',airway:'An air-conducting bronchial structure.',trachea:'Air passage from the larynx toward the two main bronchi.',larynx:'Protects the airway and supports phonation.',upper:'Passage involved in conducting inspired air.',associated:'A neighboring structure involved in ventilation.'})[s.organId]||'Respiratory anatomy.';
   if(s.system==='cardiovascular')return ({'heart-internal':'A named cardiac structure such as a valve leaflet, chamber cavity or papillary muscle; select Heart interior to hide the exterior walls.',coronary:'Vessel involved in the heart’s own blood supply or drainage.',heart:'Part of the heart wall, which contributes to coordinated pumping of blood.',pulmonary:'Major vessel carrying blood between the heart and lungs.',artery:'Artery carrying blood away from the heart, including pulmonary arteries.',vein:'Vein returning blood toward the heart, including pulmonary veins.',other:'A named cardiovascular structure.'})[s.organId] || 'A named cardiovascular structure.';
   if(s.system==='digestive')return ({liver:'Processes absorbed nutrients, produces bile and supports metabolism.',stomach:'Mixes food with gastric acid and enzymes to begin protein digestion.',intestines:'Digestive and absorptive tract; the small and large intestines have different functions.',esophagus:'Transports swallowed food from the pharynx to the stomach.',gallbladder:'Stores and concentrates bile before its release into the small intestine.',pancreas:'Produces digestive enzymes and bicarbonate, as well as hormones.',duodenum:'First part of the small intestine; receives bile and pancreatic enzymes.',jejunum:'Middle portion of the small intestine; absorbs nutrients.',ileum:'Final portion of the small intestine; absorbs bile salts and vitamin B12.',colon:'Absorbs water and electrolytes and moves fecal matter.',cecum:'Blind pouch at the beginning of the large intestine.',appendix:'Small blind-ended tube arising from the cecum.',rectum:'Stores feces prior to elimination.'})[s.organId] || 'An identifiable segment of the digestive tract.';
   if(s.system==='muscular')return muscleDescriptions.find(([rx])=>rx.test(s.name))?.[1] || 'Skeletal muscle. Explore its position and relationships to adjacent muscles and bones.';
@@ -577,7 +593,7 @@ function setSelection(s){
     elements.selectionContent.hidden=false;
     elements.selName.textContent=s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
-    elements.selCategory.textContent=s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
+    elements.selCategory.textContent=s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
     elements.selDesc.textContent=descriptionFor(s);
   }else{
     elements.noSelection.hidden=false;
@@ -589,7 +605,7 @@ function setSelection(s){
 }
 function updateLayerHeading(){
   const layers=effectiveSystemLayers(mode,systemLayers);
-  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null].filter(Boolean);
+  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null].filter(Boolean);
   const name=mode==='skull'?'Skull':mode==='skeleton'?'Skeletal system':enabled.length?enabled.join(' + '):'No layers selected';
   elements.title.textContent=name;
   elements.subtitle.textContent=mode==='skull'?'Cranial and facial structures':mode==='skeleton'?'Full skeletal system':'Click system buttons to show or hide layers independently.';
@@ -699,7 +715,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -777,7 +793,7 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
@@ -789,7 +805,7 @@ function prepareStructures(root){
   originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
-  console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${structures.filter(x=>x.skull).length} skull structures`);
+  console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${catalog.respiratoryCount} respiratory meshes; ${structures.filter(x=>x.skull).length} skull structures`);
   if(legacyStructureCount<100 || structures.filter(x=>x.skull).length<12 || baseStructureCount-legacyStructureCount<250)
     throw new Error('The model did not contain the expected separate bones and muscle meshes.');
 }
@@ -920,6 +936,49 @@ async function loadCardiovascular(){
     if(cardioRoot){scene.remove(cardioRoot);cardioRoot=null;}
   }
 }
+function applyRespiratoryOpacity(){
+ for(const e of respiratoryEntriesList){
+  if(e.organId!=='lung')continue;
+  e.mesh.material.transparent=respiratoryOpacity<0.995;
+  e.mesh.material.opacity=respiratoryOpacity;
+  e.mesh.material.depthWrite=respiratoryOpacity>=0.995;
+  e.mesh.castShadow=respiratoryOpacity>=0.995;
+  e.mesh.material.needsUpdate=true;
+ }
+ if($('respiratory-opacity'))$('respiratory-opacity').value=String(respiratoryOpacity);
+ invalidate(2);
+}
+async function loadRespiratory(){
+ respiratoryLoaded=false;respiratoryAvailable=false;respiratoryEntriesList=[];
+ if(respiratoryRoot){scene.remove(respiratoryRoot);respiratoryRoot=null;}
+ try{
+  const response=await fetch(RESP_MANIFEST,{cache:'no-cache'});
+  if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))return;
+  const metadata=validateRespiratoryManifest(await response.json());
+  const requested=respiratoryGeometry==='detailed'?RESP_DETAILED:RESP_STANDARD;
+  let gltf;
+  try{gltf=await new GLTFLoader().loadAsync(requested);}
+  catch(error){if(requested===RESP_STANDARD)throw error;gltf=await new GLTFLoader().loadAsync(RESP_STANDARD);}
+  const entries=respiratoryEntries(gltf.scene,metadata);
+  const alignment=correctedDetailTransform(sourceRegistration(new THREE.Box3().setFromObject(sceneRoot)));
+  gltf.scene.scale.set(...alignment.scale);gltf.scene.position.set(...alignment.position);
+  scene.add(gltf.scene);respiratoryRoot=gltf.scene;
+  for(const entry of entries){
+   const mesh=entry.mesh;
+   if(mesh.geometry?.attributes?.position&&!mesh.geometry.attributes.normal)mesh.geometry.computeVertexNormals();
+   const old=mesh.material;
+   mesh.material=new THREE.MeshStandardMaterial({color:respiratoryColor(entry),metalness:0,roughness:0.73,side:THREE.DoubleSide});
+   applySurfaceFinish(mesh.material,'respiratory',surfaceMode);
+   if(Array.isArray(old))old.forEach(m=>m?.dispose());else old?.dispose();
+   materials.set(mesh,mesh.material);mesh.visible=false;
+  }
+  respiratoryEntriesList=entries;respiratoryAvailable=true;respiratoryLoaded=true;
+  applyRespiratoryOpacity();configureAnatomyShadows(respiratoryRoot,shadows.profile.enabled);
+ }catch(error){
+  console.warn('Optional respiratory source models missing or inconsistent',error);
+  if(respiratoryRoot){scene.remove(respiratoryRoot);respiratoryRoot=null;}
+ }
+}
 async function loadHighResolutionSkull(){
   skullDetailStats=null;
   if(skullGeometry!=='detailed')return;
@@ -986,11 +1045,16 @@ async function createDeferredCatalog(){
     cardioEntries=cardiovascularEntries(asVirtualRoot(cardioMetadata.structures.map(s=>s.id)),cardioMetadata);
     cardioAvailable=true;
   }
+  respMetadata=await readOptionalManifest(RESP_MANIFEST,validateRespiratoryManifest);
+  if(respMetadata){
+    respiratoryEntriesList=respiratoryEntries(asVirtualRoot(respMetadata.structures.map(s=>s.id)),respMetadata);
+    respiratoryAvailable=true;
+  }
 }
 function restoreDeferredReferences(system,realEntries){
   // Do not rebuild or reorder the structures array: indices are used by every
   // published annotation, visibility bitmap and paint override.
-  const existing=structures.filter(s=>system==='legacy'?s.system==='digestive'&&s.layer!=='digestive-detail':system==='detailed'?s.layer==='digestive-detail':s.system==='cardiovascular');
+  const existing=structures.filter(s=>system==='legacy'?s.system==='digestive'&&s.layer!=='digestive-detail':system==='detailed'?s.layer==='digestive-detail':system==='cardiovascular'?s.system==='cardiovascular':s.system==='respiratory');
   const id=(s)=>s.sourceName;
   const replacements=new Map(realEntries.map(s=>[id(s),s]));
   if(existing.length!==realEntries.length||new Set(existing.map(id)).size!==realEntries.length)
@@ -1018,6 +1082,11 @@ async function loadNeededAsset(kind){
     await loadDetailedDigestive();
     if(!detailLoaded)throw new Error('Unable to load the detailed digestive model required by this chapter.');
     restoreDeferredReferences('detailed',detailEntries);
+  }else if(kind==='respiratory'){
+    if(respiratoryLoaded)return;
+    await loadRespiratory();
+    if(!respiratoryLoaded)throw new Error('Unable to load the respiratory models for this chapter. Upload respiratory GLBs and metadata.');
+    restoreDeferredReferences('respiratory',respiratoryEntriesList);
   }else if(kind==='cardiovascular'){
     if(cardioLoaded)return;
     await loadCardiovascular();
@@ -1028,7 +1097,7 @@ async function loadNeededAsset(kind){
 async function ensureChapterAssets(chapter){
   if(teacherMode)return;
   const needed=chapterAssets(chapter);
-  for(const type of ['legacyDigestive','detailedDigestive','cardiovascular'])if(needed[type])await loadNeededAsset(type);
+  for(const type of ['legacyDigestive','detailedDigestive','cardiovascular','respiratory'])if(needed[type])await loadNeededAsset(type);
   if(needed.skull && skullGeometry==='detailed' && !skullDetailStats)await loadHighResolutionSkull();
 }
 async function loadAnatomy(){
@@ -1056,7 +1125,7 @@ async function loadAnatomy(){
     configureAnatomyShadows(sceneRoot,shadows.profile.enabled);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.
-      await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
+      await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();
     }else{
       await createDeferredCatalog();
       const start=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start];
@@ -1064,6 +1133,7 @@ async function loadAnatomy(){
       if(requirements.legacyDigestive)await loadDigestiveModel();
       if(requirements.detailedDigestive)await loadDetailedDigestive();
       if(requirements.cardiovascular)await loadCardiovascular();
+      if(requirements.respiratory)await loadRespiratory();
     }
     prepareStructures(sceneRoot);
     if(!teacherMode){
@@ -1073,7 +1143,7 @@ async function loadAnatomy(){
       const sample=studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[0];
       if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
         console.warn('Deferred catalog differs from published lesson; verifying real anatomy files for backward compatibility.');
-        await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();
+        await loadDigestiveModel();await loadDetailedDigestive();await loadCardiovascular();await loadRespiratory();
         prepareStructures(sceneRoot);
       }
     }
@@ -1099,9 +1169,9 @@ async function loadAnatomy(){
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
 async function changeSystemLayer(system){
   if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore))return;
-  if(!teacherMode && (system==='digestive' || system==='cardiovascular')){
-    const type=system==='digestive'?'detailedDigestive':'cardiovascular';
-    const active=system==='digestive'?systemLayers.digestive:systemLayers.cardiovascular;
+  if(!teacherMode && (system==='digestive' || system==='cardiovascular'||system==='respiratory')){
+    const type=system==='digestive'?'detailedDigestive':system==='respiratory'?'respiratory':'cardiovascular';
+    const active=system==='digestive'?systemLayers.digestive:system==='respiratory'?systemLayers.respiratory:systemLayers.cardiovascular;
     if(!active){
       studentAssetBusy=true;
       setStatus('Loading '+system+' model');
@@ -1112,7 +1182,7 @@ async function changeSystemLayer(system){
     }
   }
   let next;
-  try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable);}catch(e){showToast(e.message);return;}
+  try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable,respiratoryAvailable);}catch(e){showToast(e.message);return;}
   const priorCount=currentlyVisible().length;
   Object.assign(systemLayers,next);
   mode='systems'; // New scenes use independent layers; legacy presets are read-only compatibility modes.
@@ -1125,7 +1195,7 @@ async function changeSystemLayer(system){
   // Frame the scene only when turning on the first system; otherwise don't move the camera.
   if(priorCount===0&&currentlyVisible().length)frameVisible(activePreset||'front');
 }
-for(const system of ['skeletal','muscular','digestive','cardiovascular']){
+for(const system of ['skeletal','muscular','digestive','cardiovascular','respiratory']){
   $('mode-'+system).addEventListener('click',()=>changeSystemLayer(system));
 }
 for(const [id,layer] of [['system-deep','deep'],['system-superficial','superficial']]){
@@ -1139,6 +1209,14 @@ for(const [id,layer] of [['system-deep','deep'],['system-superficial','superfici
 }
 $('settings-digestive-geometry').value=digestiveGeometry;
 $('settings-cardio-geometry').value=cardioGeometry;
+$('settings-respiratory-geometry').value=respiratoryGeometry;
+$('settings-respiratory-geometry').addEventListener('change',()=>{
+ const next=$('settings-respiratory-geometry').value==='detailed'?'detailed':'standard';
+ if(next===respiratoryGeometry)return;
+ if(teacherMode)saveDraft(false);
+ try{localStorage.setItem(RESP_QUALITY_KEY,next);}catch{}
+ location.reload();
+});
 $('settings-skull-geometry').value=skullGeometry;
 $('settings-skull-geometry').addEventListener('change',()=>{
   const next=$('settings-skull-geometry').value==='detailed'?'detailed':'standard';
@@ -1193,7 +1271,7 @@ async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
     const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry}):[]});
+    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),respiratory:teacherMode&&respiratoryAvailable,respiratoryMode:respiratoryGeometry,lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry,respiratoryGeometry}):[]});
   } catch (error) { console.warn('Offline setup unavailable:',error); }
 }
 function cacheOffline() {
@@ -1260,7 +1338,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
-    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1)})),
     ...(pc.length?{pc}:{})
@@ -1656,6 +1734,10 @@ async function applyScene(saved){
     systemLayers.superficial=saved.sm ?? true;
     systemLayers.digestive=saved.dg ?? false;
     systemLayers.cardiovascular=saved.cv ?? false;
+    systemLayers.respiratory=saved.rs ?? false;
+    respiratoryOpacity=saved.ro ?? 1;
+    applyRespiratoryOpacity();
+    if(systemLayers.respiratory&&!respiratoryAvailable)throw new Error('This lesson requires respiratory-standard.glb and respiratory-structures.json.');
     if(systemLayers.cardiovascular&&!cardioAvailable)throw new Error('This lesson needs the locally hosted cardiovascular GLB and metadata.');
     detailEnabled=Boolean(saved.hd);
     if(detailEnabled&&!detailAvailable && (saved.m==='digestive'||saved.m==='systems'&&saved.dg))throw new Error('This lesson requires the detailed digestive assets: models/digestive-standard.glb and digestive-structures.json. Ask the teacher to upload the generated files.');
@@ -1966,6 +2048,32 @@ function applyCardioStudyPreset(preset){
 for(const button of document.querySelectorAll('[data-cardio-preset]')){
   button.addEventListener('click',()=>applyCardioStudyPreset(button.dataset.cardioPreset));
 }
+function applyRespiratoryPreset(preset){
+ if(!teacherMode||!respiratoryAvailable||!RESPIRATORY_PRESETS[preset])return;
+ if(preset==='circulation'&&!cardioAvailable){showToast('Load cardiovascular models to display pulmonary circulation.');return;}
+ mode='systems';systemLayers.respiratory=true;
+ systemLayers.skeletal=false;systemLayers.deep=false;systemLayers.superficial=false;systemLayers.digestive=false;
+ systemLayers.cardiovascular=preset==='circulation';
+ respiratoryOpacity=preset==='circulation'?0.3:1;
+ applyRespiratoryOpacity();
+ for(const s of respiratoryEntriesList){if(respiratoryVisibleInPreset(s,preset))hidden.delete(s.mesh);else hidden.add(s.mesh);}
+ for(const s of cardioEntries){
+  const heartContext=/^Wall of (?:ventricle|left atrium|right atrium)$/i.test(s.name);
+  if(preset==='circulation'&&(pulmonaryOverlayVisible(s)||heartContext))hidden.delete(s.mesh);else hidden.add(s.mesh);
+ }
+ isolated=false;setSelection(null);
+ updateLayerHeading();updateSystemControls();refreshVisibility();frameVisible('front');queueDraft();
+ showToast(RESPIRATORY_PRESETS[preset]+' applied');
+}
+for(const button of document.querySelectorAll('[data-respiratory-preset]'))button.addEventListener('click',()=>applyRespiratoryPreset(button.dataset.respiratoryPreset));
+$('respiratory-opacity').addEventListener('input',event=>{
+ respiratoryOpacity=Number(event.target.value);applyRespiratoryOpacity();queueDraft();
+});
+$('respiratory-coverage-export').addEventListener('click',()=>{
+ const data=respiratoryCoverage(respiratoryEntriesList,cardioEntries);
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const href=URL.createObjectURL(blob);const a=document.createElement('a');a.href=href;a.download='respiratory-pulmonary-coverage.json';a.click();setTimeout(()=>URL.revokeObjectURL(href),1000);
+});
 $('studio-menubar').addEventListener('click',event=>{
   const action=event.target.closest('.menu-item');
   if(!action)return;
@@ -2121,7 +2229,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v1.8.6')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v1.9.0')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;

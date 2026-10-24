@@ -1,7 +1,7 @@
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v1.8.8';
-const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const VERSION='anatomy-v1.9.0';
+const SHELL=['./','./index.html','./styles.css','./app.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',
@@ -52,6 +52,7 @@ self.addEventListener('fetch',event=>{
 const MODEL_REFRESH_SCOPES=Object.freeze({
   cardiovascular:['models/cardiovascular-structures.json','models/cardiovascular-standard.glb','models/cardiovascular-detailed.glb'],
   digestive:['models/anatomy-organs.glb','models/digestive-structures.json','models/digestive-standard.glb','models/digestive-detailed.glb'],
+  respiratory:['models/respiratory-structures.json','models/respiratory-standard.glb','models/respiratory-detailed.glb'],
   skeletal:['models/ecorche.glb']
 });
 async function refreshModelAssets(scope,reply){
@@ -78,14 +79,14 @@ async function refreshModelAssets(scope,reply){
       if(view.getUint32(4,true)!==2 || view.getUint32(8,true)!==bytes.byteLength ||
          view.getUint32(16,true)!==0x4e4f534a || jsonLength<10 || jsonLength>bytes.byteLength-20)
         throw new Error(`${path}: malformed GLB header or JSON chunk`);
-      if(scope==='cardiovascular'){
+      if(scope==='cardiovascular'||scope==='respiratory'){
         let sceneData;
         try{sceneData=JSON.parse(new TextDecoder().decode(new Uint8Array(bytes,20,jsonLength)));}
         catch{throw new Error(`${path}: GLB scene metadata is unreadable`);}
-        const catalog=downloads.find(entry=>entry.path.endsWith('cardiovascular-structures.json'))?.catalog;
+        const catalog=downloads.find(entry=>entry.path.endsWith(scope+'-structures.json'))?.catalog;
         const names=new Set((sceneData.nodes||[]).map(node=>node.name).filter(Boolean));
-        if(!catalog || !catalog.structures.every(item=>names.has(item.id)))
-          throw new Error(`${path}: GLB structures do not match cardiovascular-structures.json; upload the complete regenerated model set`);
+        if(!catalog || catalog.structures.length!==((sceneData.nodes||[]).filter(node=>node.mesh!==undefined).length) || !catalog.structures.every(item=>names.has(item.id)))
+          throw new Error(`${path}: GLB structures do not match ${scope}-structures.json; upload the complete regenerated model set`);
       }
     }else{
       try{catalogData=JSON.parse(new TextDecoder().decode(bytes));}catch{throw new Error(`${path}: invalid JSON`);}
@@ -137,11 +138,11 @@ self.addEventListener('message',event=>{
     const renderer=event.data.renderer==='local'?LOCAL_RENDERER:REMOTE_RENDERER;
     // A student's explicit offline request caches the published lesson's
     // required chapter assets (not every model installed in the repository).
-    const lessonAllow=/^(?:models\/(?:anatomy-organs|digestive-(?:standard|detailed)|cardiovascular-(?:standard|detailed)|skull-detailed)\.glb|models\/(?:digestive|cardiovascular|skull)-structures\.json|vendor\/three\/examples\/jsm\/(?:loaders\/DRACOLoader\.js|libs\/draco\/gltf\/(?:draco_decoder\.wasm|draco_wasm_wrapper\.js)))$/;
+    const lessonAllow=/^(?:models\/(?:anatomy-organs|digestive-(?:standard|detailed)|cardiovascular-(?:standard|detailed)|respiratory-(?:standard|detailed)|skull-detailed)\.glb|models\/(?:digestive|cardiovascular|respiratory|skull)-structures\.json|vendor\/three\/examples\/jsm\/(?:loaders\/DRACOLoader\.js|libs\/draco\/gltf\/(?:draco_decoder\.wasm|draco_wasm_wrapper\.js)))$/;
     const lessonModels=Array.isArray(event.data.lessonModels)
       ? event.data.lessonModels.filter(path=>typeof path==='string'&&lessonAllow.test(path)).map(path=>'./'+path)
       : [];
-    const urls=[...SHELL,...renderer,modelURL,...lessonModels,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[]),...(event.data.detail?['./models/digestive-structures.json',event.data.detailMode==='detailed'?'./models/digestive-detailed.glb':'./models/digestive-standard.glb']:[]),...(event.data.cardio?['./models/cardiovascular-structures.json',event.data.cardioMode==='detailed'?'./models/cardiovascular-detailed.glb':'./models/cardiovascular-standard.glb']:[]),...(event.data.skullDetail?['./models/skull-structures.json','./models/skull-detailed.glb']:[])].map(path=>new URL(path,self.location.href).href);
+    const urls=[...SHELL,...renderer,modelURL,...lessonModels,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[]),...(event.data.detail?['./models/digestive-structures.json',event.data.detailMode==='detailed'?'./models/digestive-detailed.glb':'./models/digestive-standard.glb']:[]),...(event.data.cardio?['./models/cardiovascular-structures.json',event.data.cardioMode==='detailed'?'./models/cardiovascular-detailed.glb':'./models/cardiovascular-standard.glb']:[]),...(event.data.respiratory?['./models/respiratory-structures.json',event.data.respiratoryMode==='detailed'?'./models/respiratory-detailed.glb':'./models/respiratory-standard.glb']:[]),...(event.data.skullDetail?['./models/skull-structures.json','./models/skull-detailed.glb']:[])].map(path=>new URL(path,self.location.href).href);
     let done=0;
     for(const url of urls){
       let saved=await cache.match(url);

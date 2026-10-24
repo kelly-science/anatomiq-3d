@@ -1,3 +1,17 @@
+# Anatomy Studio 1.9.0 — Respiratory & Pulmonary Circulation
+
+**Latest release:** [1.9.0 Respiratory & Pulmonary Circulation](RELEASE-1.9.0.md).
+
+This is a self-hosted GitHub Pages PWA. The respiratory model files must be generated locally by running `bash tools/install-respiratory-43.sh` on a Mac with Internet access. Respiratory GLBs are **not** included in the app update. The existing 304 cardiovascular structures are reused by the integrated Airways + Pulmonary Circulation view; do not regenerate or overwrite cardiovascular models to use 1.9.0.
+
+Do not replace your existing `models/`, `vendor/three/`, `.cardiovascular-43-work`, or `.digestive-43-work` with the contents of a lightweight release. Back up lessons through Library export and avoid clearing browser site data.
+
+---
+
+## 1.8.6 — Carotid and pulmonary source-backed update
+
+See [`RELEASE-1.8.6.md`](RELEASE-1.8.6.md) for installation, preserved IDs, validation, and GitHub Pages deployment. Do not overwrite the existing `models/` directory with the lightweight source ZIP.
+
 ## 1.8.5 — Recovering a cardiovascular model after uploading to GitHub
 
 Go to **App Settings → Force re-download anatomy models**, select **Cardiovascular**, and click the refresh button. The app downloads the `cardiovascular-structures.json`, `cardiovascular-standard.glb` and `cardiovascular-detailed.glb` files directly from this GitHub Pages site, bypassing the older cached copies. The files are checked before the new cache is committed. No IndexedDB lessons, draft scenes or other storage is cleared. If any file is missing or has mismatched IDs, the app reports the exact file and stays on the current page.

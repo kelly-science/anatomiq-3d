@@ -266,3 +266,7 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 .cardio-mesh-group{border:1px solid rgba(135,184,201,.2);border-radius:8px;margin:4px 0;padding:5px}
 .cardio-mesh-group>summary{font-size:11px;color:#d0e5ed;cursor:pointer;padding:7px}
 .cardio-mesh-group .bone-item{margin-left:8px;width:calc(100% - 8px)}
+
+/* 1.9.0: five anatomical systems and lung-transparency control. */
+#respiratory-study-panel input[type="range"]{width:140px;max-width:44%;height:22px;flex:0 0 auto;accent-color:#65bfc8;cursor:pointer}
+@media(max-width:1250px){.mode-tabs{min-width:0;max-width:min(56vw,700px);overflow-x:auto;scrollbar-width:thin}.mode-tab{flex-shrink:0}}

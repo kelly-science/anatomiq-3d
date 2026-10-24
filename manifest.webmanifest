@@ -2,7 +2,7 @@
   "id": "./index.html",
   "name": "Anatomy Studio \u2014 Self-hosted 3D Classroom Studio",
   "short_name": "Anatomy Studio",
-  "description": "Create and share self-hosted multi-chapter 3D anatomy lessons; experimental skull detail is optional and Standard is recommended.",
+  "description": "Create and share 3D anatomy lessons with skeletal, muscular, digestive, cardiovascular and respiratory models, including pulmonary circulation.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
