@@ -1,0 +1,11 @@
+{
+  "release": "1.9.1",
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "mesh_count_to_append": 17,
+  "existing_manifest_required_as_prefix": true,
+  "notes": "Mesh selection specification only. Do not upload this in place of models/respiratory-structures.json; that file is regenerated alongside both GLBs.",
+  "added_fj_ids": [
+    "FJ2761", "FJ2762", "FJ2741", "FJ2753", "FJ2748", "FJ2760", "FJ2743", "FJ2755", "FJ2747", "FJ2759", "FJ2754", "FJ2742", "FJ2740", "FJ2752", "FJ1252", "FJ1253", "FJ2814"
+  ]
+}
