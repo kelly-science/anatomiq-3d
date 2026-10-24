@@ -1,0 +1,46 @@
+{
+  "old_structure_count": 125,
+  "new_structure_count": 390,
+  "added_count": 265,
+  "added_repair_ids": [
+    "FJ7463",
+    "FJ7463M",
+    "FJ3890",
+    "FJ7445",
+    "FJ1843"
+  ],
+  "deep_brain_present": [
+    "FJ1730",
+    "FJ1731",
+    "FJ1754",
+    "FJ1760",
+    "FJ1767",
+    "FJ1776",
+    "FJ1802",
+    "FJ1808",
+    "FJ1814",
+    "FJ1823"
+  ],
+  "brachial_present": [
+    "FJ4264",
+    "FJ4265",
+    "FJ4266",
+    "FJ4267",
+    "FJ4273",
+    "FJ4274",
+    "FJ4275",
+    "FJ4276",
+    "FJ4280",
+    "FJ4290"
+  ],
+  "meninges_present": [
+    "FJ1843",
+    "FJ3890",
+    "FJ7445"
+  ],
+  "not_proven": "Whole-brain closed surface; all nerve branches physically connected; arachnoid/pia anatomical shell.",
+  "models_sha256": {
+    "standard": "6722a6fc7120c1317e60fa6ed25473fc419bbb5e560ece72200d26a2a9a83aa2",
+    "detailed": "f5f10bcc5797fda939e60f05f6f5a60ca8b3bdaf2b524b1a4a07feac9641a8c4"
+  }
+}

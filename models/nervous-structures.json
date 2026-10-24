@@ -1009,6 +1009,2392 @@
       "category": "peripheral",
       "standard_triangles": 1506,
       "detailed_triangles": 1506
+    },
+    {
+      "id": "FJ1283",
+      "fma_id": "FMA11195",
+      "name": "Left anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 290,
+      "detailed_triangles": 290
+    },
+    {
+      "id": "FJ1288",
+      "fma_id": "FMA11195",
+      "name": "Left ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 180,
+      "detailed_triangles": 180
+    },
+    {
+      "id": "FJ1290",
+      "fma_id": "FMA11195",
+      "name": "Left frontal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1258,
+      "detailed_triangles": 1258
+    },
+    {
+      "id": "FJ1296",
+      "fma_id": "FMA11195",
+      "name": "Left infratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 250,
+      "detailed_triangles": 250
+    },
+    {
+      "id": "FJ1300",
+      "fma_id": "FMA11195",
+      "name": "Left lacrimal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1944,
+      "detailed_triangles": 1944
+    },
+    {
+      "id": "FJ1310",
+      "fma_id": "FMA11195",
+      "name": "Left nasociliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 834,
+      "detailed_triangles": 834
+    },
+    {
+      "id": "FJ1311",
+      "fma_id": "FMA11195",
+      "name": "Communicating branch of left nasociliary nerve with left ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 230,
+      "detailed_triangles": 230
+    },
+    {
+      "id": "FJ1315",
+      "fma_id": "FMA11195",
+      "name": "Left posterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 222,
+      "detailed_triangles": 222
+    },
+    {
+      "id": "FJ1318",
+      "fma_id": "FMA11195",
+      "name": "Left long ciliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 294,
+      "detailed_triangles": 294
+    },
+    {
+      "id": "FJ1319",
+      "fma_id": "FMA45638",
+      "name": "Short ciliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 602,
+      "detailed_triangles": 602
+    },
+    {
+      "id": "FJ1326",
+      "fma_id": "FMA11195",
+      "name": "Left supratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2358,
+      "detailed_triangles": 2358
+    },
+    {
+      "id": "FJ1333",
+      "fma_id": "FMA11195",
+      "name": "Right anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 236,
+      "detailed_triangles": 236
+    },
+    {
+      "id": "FJ1339",
+      "fma_id": "FMA11195",
+      "name": "Right ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 246,
+      "detailed_triangles": 246
+    },
+    {
+      "id": "FJ1341",
+      "fma_id": "FMA11195",
+      "name": "Right frontal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1258,
+      "detailed_triangles": 1258
+    },
+    {
+      "id": "FJ1347",
+      "fma_id": "FMA11195",
+      "name": "Right infratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 250,
+      "detailed_triangles": 250
+    },
+    {
+      "id": "FJ1351",
+      "fma_id": "FMA11195",
+      "name": "Right lacrimal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1958,
+      "detailed_triangles": 1958
+    },
+    {
+      "id": "FJ1361",
+      "fma_id": "FMA11195",
+      "name": "Right nasociliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 786,
+      "detailed_triangles": 786
+    },
+    {
+      "id": "FJ1362",
+      "fma_id": "FMA11195",
+      "name": "Communicating branch of right nasociliary nerve with right ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 240,
+      "detailed_triangles": 240
+    },
+    {
+      "id": "FJ1363",
+      "fma_id": "FMA11195",
+      "name": "Right ophthalmic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1776,
+      "detailed_triangles": 1776
+    },
+    {
+      "id": "FJ1366",
+      "fma_id": "FMA11195",
+      "name": "Right posterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 200,
+      "detailed_triangles": 200
+    },
+    {
+      "id": "FJ1369",
+      "fma_id": "FMA11195",
+      "name": "Right long ciliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 332,
+      "detailed_triangles": 332
+    },
+    {
+      "id": "FJ1370",
+      "fma_id": "FMA45638",
+      "name": "Short ciliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 638,
+      "detailed_triangles": 638
+    },
+    {
+      "id": "FJ1376",
+      "fma_id": "FMA11195",
+      "name": "Right supra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2598,
+      "detailed_triangles": 2598
+    },
+    {
+      "id": "FJ1377",
+      "fma_id": "FMA11195",
+      "name": "Right supratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2358,
+      "detailed_triangles": 2358
+    },
+    {
+      "id": "FJ1730",
+      "fma_id": "FMA242789",
+      "name": "Third ventricle",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3870
+    },
+    {
+      "id": "FJ1731",
+      "fma_id": "FMA242789",
+      "name": "Fourth ventricle",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 6940
+    },
+    {
+      "id": "FJ1734",
+      "fma_id": "FMA49443",
+      "name": "Anterior commissure",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 812,
+      "detailed_triangles": 812
+    },
+    {
+      "id": "FJ1735",
+      "fma_id": "FMA49443",
+      "name": "Brachium of left superior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 282,
+      "detailed_triangles": 282
+    },
+    {
+      "id": "FJ1736",
+      "fma_id": "FMA49443",
+      "name": "Brachium of right superior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 266,
+      "detailed_triangles": 266
+    },
+    {
+      "id": "FJ1738",
+      "fma_id": "FMA242789",
+      "name": "Cerebral aqueduct",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 518,
+      "detailed_triangles": 518
+    },
+    {
+      "id": "FJ1741",
+      "fma_id": "FMA49443",
+      "name": "Commissure of fornix of forebrain",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10632
+    },
+    {
+      "id": "FJ1742",
+      "fma_id": "FMA49443",
+      "name": "Corpus callosum",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1743",
+      "fma_id": "FMA49443",
+      "name": "Habenula",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 384,
+      "detailed_triangles": 384
+    },
+    {
+      "id": "FJ1750",
+      "fma_id": "FMA256174",
+      "name": "Left internal capsule",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 10740
+    },
+    {
+      "id": "FJ1751",
+      "fma_id": "FMA256174",
+      "name": "Right internal capsule",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 10742
+    },
+    {
+      "id": "FJ1752",
+      "fma_id": "FMA5897",
+      "name": "Interventricular foramen",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1068,
+      "detailed_triangles": 1068
+    },
+    {
+      "id": "FJ1753",
+      "fma_id": "FMA223151",
+      "name": "Left amygdala",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 382,
+      "detailed_triangles": 382
+    },
+    {
+      "id": "FJ1754",
+      "fma_id": "FMA223151",
+      "name": "Left caudate nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2544,
+      "detailed_triangles": 2544
+    },
+    {
+      "id": "FJ1755",
+      "fma_id": "FMA242770",
+      "name": "Choroid plexus of cerebral hemisphere",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4930
+    },
+    {
+      "id": "FJ1757",
+      "fma_id": "FMA223151",
+      "name": "Left globus pallidus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7080
+    },
+    {
+      "id": "FJ1759",
+      "fma_id": "FMA242193",
+      "name": "Left hippocampus proper",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 980,
+      "detailed_triangles": 980
+    },
+    {
+      "id": "FJ1760",
+      "fma_id": "FMA14065",
+      "name": "Hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2050,
+      "detailed_triangles": 2050
+    },
+    {
+      "id": "FJ1761",
+      "fma_id": "FMA49443",
+      "name": "Brachium of left inferior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 308,
+      "detailed_triangles": 308
+    },
+    {
+      "id": "FJ1762",
+      "fma_id": "FMA256237",
+      "name": "Left inferior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 156,
+      "detailed_triangles": 156
+    },
+    {
+      "id": "FJ1764",
+      "fma_id": "FMA49443",
+      "name": "Lamina terminalis",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 286,
+      "detailed_triangles": 286
+    },
+    {
+      "id": "FJ1766",
+      "fma_id": "FMA223151",
+      "name": "Left lateral geniculate body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 196,
+      "detailed_triangles": 196
+    },
+    {
+      "id": "FJ1767",
+      "fma_id": "FMA242789",
+      "name": "Left lateral ventricle",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1776",
+      "fma_id": "FMA223151",
+      "name": "Left putamen",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 7056
+    },
+    {
+      "id": "FJ1777",
+      "fma_id": "FMA49443",
+      "name": "Left stria medullaris of thalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 926,
+      "detailed_triangles": 926
+    },
+    {
+      "id": "FJ1778",
+      "fma_id": "FMA49443",
+      "name": "Left stria terminalis",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 690,
+      "detailed_triangles": 690
+    },
+    {
+      "id": "FJ1779",
+      "fma_id": "FMA256237",
+      "name": "Left superior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 180,
+      "detailed_triangles": 180
+    },
+    {
+      "id": "FJ1795",
+      "fma_id": "FMA61775",
+      "name": "Pineal body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 580,
+      "detailed_triangles": 580
+    },
+    {
+      "id": "FJ1799",
+      "fma_id": "FMA49443",
+      "name": "Posterior commissure",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 834,
+      "detailed_triangles": 834
+    },
+    {
+      "id": "FJ1802",
+      "fma_id": "FMA223151",
+      "name": "Right caudate nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2570,
+      "detailed_triangles": 2570
+    },
+    {
+      "id": "FJ1803",
+      "fma_id": "FMA242770",
+      "name": "Choroid plexus of cerebral hemisphere",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 4942
+    },
+    {
+      "id": "FJ1805",
+      "fma_id": "FMA223151",
+      "name": "Right globus pallidus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5344
+    },
+    {
+      "id": "FJ1807",
+      "fma_id": "FMA242193",
+      "name": "Right hippocampus proper",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1020,
+      "detailed_triangles": 1020
+    },
+    {
+      "id": "FJ1808",
+      "fma_id": "FMA14065",
+      "name": "Hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2028,
+      "detailed_triangles": 2028
+    },
+    {
+      "id": "FJ1809",
+      "fma_id": "FMA49443",
+      "name": "Brachium of right inferior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 260,
+      "detailed_triangles": 260
+    },
+    {
+      "id": "FJ1810",
+      "fma_id": "FMA256237",
+      "name": "Right inferior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 204,
+      "detailed_triangles": 204
+    },
+    {
+      "id": "FJ1812",
+      "fma_id": "FMA49443",
+      "name": "Lamina terminalis",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 278,
+      "detailed_triangles": 278
+    },
+    {
+      "id": "FJ1813",
+      "fma_id": "FMA223151",
+      "name": "Right lateral geniculate body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 604,
+      "detailed_triangles": 604
+    },
+    {
+      "id": "FJ1814",
+      "fma_id": "FMA242789",
+      "name": "Right lateral ventricle",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1816",
+      "fma_id": "FMA223151",
+      "name": "Right medial geniculate body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 198,
+      "detailed_triangles": 198
+    },
+    {
+      "id": "FJ1816M",
+      "fma_id": "FMA223151",
+      "name": "Left medial geniculate body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 198,
+      "detailed_triangles": 198
+    },
+    {
+      "id": "FJ1823",
+      "fma_id": "FMA223151",
+      "name": "Right putamen",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7064
+    },
+    {
+      "id": "FJ1824",
+      "fma_id": "FMA49443",
+      "name": "Right stria medullaris of thalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 848,
+      "detailed_triangles": 848
+    },
+    {
+      "id": "FJ1825",
+      "fma_id": "FMA49443",
+      "name": "Right stria terminalis",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 764,
+      "detailed_triangles": 764
+    },
+    {
+      "id": "FJ1826",
+      "fma_id": "FMA256237",
+      "name": "Right superior colliculus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 176,
+      "detailed_triangles": 176
+    },
+    {
+      "id": "FJ1829",
+      "fma_id": "FMA223151",
+      "name": "Right amygdala",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 384,
+      "detailed_triangles": 384
+    },
+    {
+      "id": "FJ1832",
+      "fma_id": "FMA49443",
+      "name": "Septum of telencephalon",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5704
+    },
+    {
+      "id": "FJ1843",
+      "fma_id": "FMA266054",
+      "name": "Tentorium cerebelli",
+      "category": "meninges",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ3855",
+      "fma_id": "FMA242770",
+      "name": "Choroid plexus of right lateral ventricle",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4838
+    },
+    {
+      "id": "FJ3890",
+      "fma_id": "FMA266054",
+      "name": "Cerebral hemisphere segment of dura mater",
+      "category": "meninges",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ3892",
+      "fma_id": "FMA11195",
+      "name": "Right anterior superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1538,
+      "detailed_triangles": 1538
+    },
+    {
+      "id": "FJ3893",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right auriculotemporal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3886
+    },
+    {
+      "id": "FJ3895",
+      "fma_id": "FMA11195",
+      "name": "Branch of right mandibular nerve to right otic ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 498,
+      "detailed_triangles": 498
+    },
+    {
+      "id": "FJ3897",
+      "fma_id": "FMA11195",
+      "name": "Right buccal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1954,
+      "detailed_triangles": 1954
+    },
+    {
+      "id": "FJ3900",
+      "fma_id": "FMA11195",
+      "name": "Ganglionic branch of right maxillary nerve to right pterygopalatine ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 316,
+      "detailed_triangles": 316
+    },
+    {
+      "id": "FJ3902",
+      "fma_id": "FMA11195",
+      "name": "Right greater palatine nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1088,
+      "detailed_triangles": 1088
+    },
+    {
+      "id": "FJ3903",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right inferior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2510,
+      "detailed_triangles": 2510
+    },
+    {
+      "id": "FJ3904",
+      "fma_id": "FMA11195",
+      "name": "External nasal branch of right infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1012,
+      "detailed_triangles": 1012
+    },
+    {
+      "id": "FJ3905",
+      "fma_id": "FMA11195",
+      "name": "Inferior palpebral branch of right infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 598,
+      "detailed_triangles": 598
+    },
+    {
+      "id": "FJ3906",
+      "fma_id": "FMA11195",
+      "name": "Internal nasal branch of right infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 480,
+      "detailed_triangles": 480
+    },
+    {
+      "id": "FJ3907",
+      "fma_id": "FMA11195",
+      "name": "Superior labial branch of right infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1270,
+      "detailed_triangles": 1270
+    },
+    {
+      "id": "FJ3908",
+      "fma_id": "FMA11195",
+      "name": "Left anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1016,
+      "detailed_triangles": 1016
+    },
+    {
+      "id": "FJ3909",
+      "fma_id": "FMA11195",
+      "name": "Communicating branch of left nasociliary nerve with left ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 234,
+      "detailed_triangles": 234
+    },
+    {
+      "id": "FJ3910",
+      "fma_id": "FMA11195",
+      "name": "Left frontal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2642,
+      "detailed_triangles": 2642
+    },
+    {
+      "id": "FJ3911",
+      "fma_id": "FMA11195",
+      "name": "Left infratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 482,
+      "detailed_triangles": 482
+    },
+    {
+      "id": "FJ3912",
+      "fma_id": "FMA11195",
+      "name": "Left lacrimal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2008,
+      "detailed_triangles": 2008
+    },
+    {
+      "id": "FJ3913",
+      "fma_id": "FMA11195",
+      "name": "Left nasociliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 458,
+      "detailed_triangles": 458
+    },
+    {
+      "id": "FJ3915",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 560,
+      "detailed_triangles": 560
+    },
+    {
+      "id": "FJ3916",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 510,
+      "detailed_triangles": 510
+    },
+    {
+      "id": "FJ3917",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 480,
+      "detailed_triangles": 480
+    },
+    {
+      "id": "FJ3918",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 522,
+      "detailed_triangles": 522
+    },
+    {
+      "id": "FJ3919",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 492,
+      "detailed_triangles": 492
+    },
+    {
+      "id": "FJ3920",
+      "fma_id": "FMA11195",
+      "name": "Left olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 526,
+      "detailed_triangles": 526
+    },
+    {
+      "id": "FJ3921",
+      "fma_id": "FMA11195",
+      "name": "Left ophthalmic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1000,
+      "detailed_triangles": 1000
+    },
+    {
+      "id": "FJ3922",
+      "fma_id": "FMA11195",
+      "name": "Left posterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 612,
+      "detailed_triangles": 612
+    },
+    {
+      "id": "FJ3923",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left recurrent laryngeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5008
+    },
+    {
+      "id": "FJ3924",
+      "fma_id": "FMA11195",
+      "name": "Left supra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1364,
+      "detailed_triangles": 1364
+    },
+    {
+      "id": "FJ3925",
+      "fma_id": "FMA11195",
+      "name": "Left supratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2216,
+      "detailed_triangles": 2216
+    },
+    {
+      "id": "FJ3928",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left accessory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 8018
+    },
+    {
+      "id": "FJ3929",
+      "fma_id": "FMA11195",
+      "name": "Ganglionic branch of left maxillary nerve to left pterygopalatine ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 322,
+      "detailed_triangles": 322
+    },
+    {
+      "id": "FJ3930",
+      "fma_id": "FMA11195",
+      "name": "Left anterior superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1564,
+      "detailed_triangles": 1564
+    },
+    {
+      "id": "FJ3931",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left auriculotemporal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3970
+    },
+    {
+      "id": "FJ3933",
+      "fma_id": "FMA11195",
+      "name": "Branch of left mandibular nerve to left otic ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 528,
+      "detailed_triangles": 528
+    },
+    {
+      "id": "FJ3935",
+      "fma_id": "FMA11195",
+      "name": "Left buccal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1992,
+      "detailed_triangles": 1992
+    },
+    {
+      "id": "FJ3937",
+      "fma_id": "FMA11195",
+      "name": "Left external nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 800,
+      "detailed_triangles": 800
+    },
+    {
+      "id": "FJ3940",
+      "fma_id": "FMA11195",
+      "name": "Left greater palatine nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1088,
+      "detailed_triangles": 1088
+    },
+    {
+      "id": "FJ3942",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left inferior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2562,
+      "detailed_triangles": 2562
+    },
+    {
+      "id": "FJ3943",
+      "fma_id": "FMA11195",
+      "name": "External nasal branch of left infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1030,
+      "detailed_triangles": 1030
+    },
+    {
+      "id": "FJ3944",
+      "fma_id": "FMA11195",
+      "name": "Inferior palpebral branch of left infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 608,
+      "detailed_triangles": 608
+    },
+    {
+      "id": "FJ3945",
+      "fma_id": "FMA11195",
+      "name": "Internal nasal branch of left infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 488,
+      "detailed_triangles": 488
+    },
+    {
+      "id": "FJ3946",
+      "fma_id": "FMA11195",
+      "name": "Superior labial branch of left infra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1294,
+      "detailed_triangles": 1294
+    },
+    {
+      "id": "FJ3947",
+      "fma_id": "FMA11195",
+      "name": "Internal nasal branch of left anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 342,
+      "detailed_triangles": 342
+    },
+    {
+      "id": "FJ3948",
+      "fma_id": "FMA11195",
+      "name": "Lateral internal nasal branch of left anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 470,
+      "detailed_triangles": 470
+    },
+    {
+      "id": "FJ3949",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left lingual nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2426,
+      "detailed_triangles": 2426
+    },
+    {
+      "id": "FJ3950",
+      "fma_id": "FMA11195",
+      "name": "Left long ciliary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 360,
+      "detailed_triangles": 360
+    },
+    {
+      "id": "FJ3951",
+      "fma_id": "FMA11195",
+      "name": "Left mandibular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 668,
+      "detailed_triangles": 668
+    },
+    {
+      "id": "FJ3953",
+      "fma_id": "FMA11195",
+      "name": "Left masseteric nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1664,
+      "detailed_triangles": 1664
+    },
+    {
+      "id": "FJ3954",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left maxillary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1360,
+      "detailed_triangles": 1360
+    },
+    {
+      "id": "FJ3955",
+      "fma_id": "FMA11195",
+      "name": "Left middle meningeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 460,
+      "detailed_triangles": 460
+    },
+    {
+      "id": "FJ3956",
+      "fma_id": "FMA11195",
+      "name": "Left mental nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1364,
+      "detailed_triangles": 1364
+    },
+    {
+      "id": "FJ3957",
+      "fma_id": "FMA11195",
+      "name": "Left middle superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1250,
+      "detailed_triangles": 1250
+    },
+    {
+      "id": "FJ3958",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left mylohyoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1878,
+      "detailed_triangles": 1878
+    },
+    {
+      "id": "FJ3959",
+      "fma_id": "FMA11195",
+      "name": "Left nasopalatine nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1028,
+      "detailed_triangles": 1028
+    },
+    {
+      "id": "FJ3960",
+      "fma_id": "FMA11195",
+      "name": "Left medial pterygoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 914,
+      "detailed_triangles": 914
+    },
+    {
+      "id": "FJ3961",
+      "fma_id": "FMA11195",
+      "name": "Left lateral pterygoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 784,
+      "detailed_triangles": 784
+    },
+    {
+      "id": "FJ3962",
+      "fma_id": "FMA11195",
+      "name": "Trunk of branch of left mandibular nerve to tensor tympani",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 734,
+      "detailed_triangles": 734
+    },
+    {
+      "id": "FJ3963",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left tensor veli palatini",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 380,
+      "detailed_triangles": 380
+    },
+    {
+      "id": "FJ3964",
+      "fma_id": "FMA11195",
+      "name": "Occipital branch of left posterior auricular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3744
+    },
+    {
+      "id": "FJ3965",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 216,
+      "detailed_triangles": 216
+    },
+    {
+      "id": "FJ3966",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left inferior rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 554,
+      "detailed_triangles": 554
+    },
+    {
+      "id": "FJ3967",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left superior rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 330,
+      "detailed_triangles": 330
+    },
+    {
+      "id": "FJ3969",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left inferior oblique",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 706,
+      "detailed_triangles": 706
+    },
+    {
+      "id": "FJ3970",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left medial rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 288,
+      "detailed_triangles": 288
+    },
+    {
+      "id": "FJ3971",
+      "fma_id": "FMA11195",
+      "name": "Orbital branch of left maxillary nerve to left orbitalis",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 546,
+      "detailed_triangles": 546
+    },
+    {
+      "id": "FJ3972",
+      "fma_id": "FMA11195",
+      "name": "Pharyngeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1138,
+      "detailed_triangles": 1138
+    },
+    {
+      "id": "FJ3973",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left posterior auricular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3328
+    },
+    {
+      "id": "FJ3974",
+      "fma_id": "FMA11195",
+      "name": "Left posterior inferior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1530,
+      "detailed_triangles": 1530
+    },
+    {
+      "id": "FJ3975",
+      "fma_id": "FMA11195",
+      "name": "Left posterior superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1686,
+      "detailed_triangles": 1686
+    },
+    {
+      "id": "FJ3976",
+      "fma_id": "FMA11195",
+      "name": "Left lateral posterior superior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 744,
+      "detailed_triangles": 744
+    },
+    {
+      "id": "FJ3977",
+      "fma_id": "FMA11195",
+      "name": "Nerve to left levator palpebrae superioris",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 344,
+      "detailed_triangles": 344
+    },
+    {
+      "id": "FJ3978",
+      "fma_id": "FMA11195",
+      "name": "Left medial posterior superior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 798,
+      "detailed_triangles": 798
+    },
+    {
+      "id": "FJ3983",
+      "fma_id": "FMA11195",
+      "name": "Left zygomatic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1880,
+      "detailed_triangles": 1880
+    },
+    {
+      "id": "FJ3984",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right lingual nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2378,
+      "detailed_triangles": 2378
+    },
+    {
+      "id": "FJ3985",
+      "fma_id": "FMA11195",
+      "name": "Right mandibular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 656,
+      "detailed_triangles": 656
+    },
+    {
+      "id": "FJ3987",
+      "fma_id": "FMA11195",
+      "name": "Right masseteric nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1632,
+      "detailed_triangles": 1632
+    },
+    {
+      "id": "FJ3988",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right maxillary nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1336,
+      "detailed_triangles": 1336
+    },
+    {
+      "id": "FJ3989",
+      "fma_id": "FMA11195",
+      "name": "Right middle meningeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 452,
+      "detailed_triangles": 452
+    },
+    {
+      "id": "FJ3990",
+      "fma_id": "FMA11195",
+      "name": "Right mental nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1224,
+      "detailed_triangles": 1224
+    },
+    {
+      "id": "FJ3991",
+      "fma_id": "FMA11195",
+      "name": "Right middle superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1228,
+      "detailed_triangles": 1228
+    },
+    {
+      "id": "FJ3992",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right mylohyoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1840,
+      "detailed_triangles": 1840
+    },
+    {
+      "id": "FJ3993",
+      "fma_id": "FMA11195",
+      "name": "Right nasopalatine nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1008,
+      "detailed_triangles": 1008
+    },
+    {
+      "id": "FJ3994",
+      "fma_id": "FMA11195",
+      "name": "Right medial pterygoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 896,
+      "detailed_triangles": 896
+    },
+    {
+      "id": "FJ3995",
+      "fma_id": "FMA11195",
+      "name": "Right lateral pterygoid nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 794,
+      "detailed_triangles": 794
+    },
+    {
+      "id": "FJ3996",
+      "fma_id": "FMA11195",
+      "name": "Trunk of branch of right mandibular nerve to tensor tympani",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 712,
+      "detailed_triangles": 712
+    },
+    {
+      "id": "FJ3997",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right tensor veli palatini",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 374,
+      "detailed_triangles": 374
+    },
+    {
+      "id": "FJ3998",
+      "fma_id": "FMA11195",
+      "name": "Occipital branch of right posterior auricular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3652
+    },
+    {
+      "id": "FJ3999",
+      "fma_id": "FMA11195",
+      "name": "Orbital branch of right maxillary nerve to right orbitalis",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 538,
+      "detailed_triangles": 538
+    },
+    {
+      "id": "FJ4000",
+      "fma_id": "FMA11195",
+      "name": "Pharyngeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1118,
+      "detailed_triangles": 1118
+    },
+    {
+      "id": "FJ4001",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right posterior auricular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3246
+    },
+    {
+      "id": "FJ4002",
+      "fma_id": "FMA11195",
+      "name": "Right posterior inferior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1500,
+      "detailed_triangles": 1500
+    },
+    {
+      "id": "FJ4003",
+      "fma_id": "FMA11195",
+      "name": "Right posterior superior alveolar nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1658,
+      "detailed_triangles": 1658
+    },
+    {
+      "id": "FJ4004",
+      "fma_id": "FMA11195",
+      "name": "Right lateral posterior superior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 730,
+      "detailed_triangles": 730
+    },
+    {
+      "id": "FJ4005",
+      "fma_id": "FMA11195",
+      "name": "Right medial posterior superior nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 784,
+      "detailed_triangles": 784
+    },
+    {
+      "id": "FJ4006",
+      "fma_id": "FMA11195",
+      "name": "Right anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1004,
+      "detailed_triangles": 1004
+    },
+    {
+      "id": "FJ4007",
+      "fma_id": "FMA11195",
+      "name": "Communicating branch of right nasociliary nerve with right ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 218,
+      "detailed_triangles": 218
+    },
+    {
+      "id": "FJ4008",
+      "fma_id": "FMA11195",
+      "name": "Right frontal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2626,
+      "detailed_triangles": 2626
+    },
+    {
+      "id": "FJ4009",
+      "fma_id": "FMA11195",
+      "name": "Palpebral branch of right infratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 448,
+      "detailed_triangles": 448
+    },
+    {
+      "id": "FJ4010",
+      "fma_id": "FMA11195",
+      "name": "Right lacrimal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1994,
+      "detailed_triangles": 1994
+    },
+    {
+      "id": "FJ4011",
+      "fma_id": "FMA11195",
+      "name": "Right infratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 470,
+      "detailed_triangles": 470
+    },
+    {
+      "id": "FJ4013",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 560,
+      "detailed_triangles": 560
+    },
+    {
+      "id": "FJ4014",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 510,
+      "detailed_triangles": 510
+    },
+    {
+      "id": "FJ4015",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 480,
+      "detailed_triangles": 480
+    },
+    {
+      "id": "FJ4016",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 522,
+      "detailed_triangles": 522
+    },
+    {
+      "id": "FJ4017",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 492,
+      "detailed_triangles": 492
+    },
+    {
+      "id": "FJ4018",
+      "fma_id": "FMA11195",
+      "name": "Right olfactory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 550,
+      "detailed_triangles": 550
+    },
+    {
+      "id": "FJ4019",
+      "fma_id": "FMA11195",
+      "name": "Right ophthalmic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 994,
+      "detailed_triangles": 994
+    },
+    {
+      "id": "FJ4020",
+      "fma_id": "FMA11195",
+      "name": "Right posterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 432,
+      "detailed_triangles": 432
+    },
+    {
+      "id": "FJ4021",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right recurrent laryngeal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2596,
+      "detailed_triangles": 2596
+    },
+    {
+      "id": "FJ4022",
+      "fma_id": "FMA11195",
+      "name": "Right supra-orbital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1356,
+      "detailed_triangles": 1356
+    },
+    {
+      "id": "FJ4023",
+      "fma_id": "FMA11195",
+      "name": "Right supratrochlear nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2202,
+      "detailed_triangles": 2202
+    },
+    {
+      "id": "FJ4025",
+      "fma_id": "FMA11195",
+      "name": "Trunk of right accessory nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 7822
+    },
+    {
+      "id": "FJ4026",
+      "fma_id": "FMA11195",
+      "name": "Right external nasal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 748,
+      "detailed_triangles": 748
+    },
+    {
+      "id": "FJ4028",
+      "fma_id": "FMA11195",
+      "name": "Internal nasal branch of right anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 404,
+      "detailed_triangles": 404
+    },
+    {
+      "id": "FJ4029",
+      "fma_id": "FMA11195",
+      "name": "Lateral internal nasal branch of right anterior ethmoidal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 390,
+      "detailed_triangles": 390
+    },
+    {
+      "id": "FJ4030",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right ciliary ganglion",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 242,
+      "detailed_triangles": 242
+    },
+    {
+      "id": "FJ4031",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right inferior rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 628,
+      "detailed_triangles": 628
+    },
+    {
+      "id": "FJ4032",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right superior rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 324,
+      "detailed_triangles": 324
+    },
+    {
+      "id": "FJ4035",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right medial rectus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 358,
+      "detailed_triangles": 358
+    },
+    {
+      "id": "FJ4037",
+      "fma_id": "FMA11195",
+      "name": "Nerve to right levator palpebrae superioris",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 304,
+      "detailed_triangles": 304
+    },
+    {
+      "id": "FJ4042",
+      "fma_id": "FMA11195",
+      "name": "Right zygomatic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1924,
+      "detailed_triangles": 1924
+    },
+    {
+      "id": "FJ4158",
+      "fma_id": "FMA11195",
+      "name": "Left anterior interosseous nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 404,
+      "detailed_triangles": 404
+    },
+    {
+      "id": "FJ4159",
+      "fma_id": "FMA10982",
+      "name": "Anterior cutaneous branch of left first intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 620,
+      "detailed_triangles": 620
+    },
+    {
+      "id": "FJ4163",
+      "fma_id": "FMA10982",
+      "name": "Anterior cutaneous branch of left second intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 446,
+      "detailed_triangles": 446
+    },
+    {
+      "id": "FJ4173",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left great auricular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1258,
+      "detailed_triangles": 1258
+    },
+    {
+      "id": "FJ4174",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left first intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 774,
+      "detailed_triangles": 774
+    },
+    {
+      "id": "FJ4178",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left second intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1132,
+      "detailed_triangles": 1132
+    },
+    {
+      "id": "FJ4185",
+      "fma_id": "FMA10977",
+      "name": "Left second intercostobrachial nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1568,
+      "detailed_triangles": 1568
+    },
+    {
+      "id": "FJ4197",
+      "fma_id": "FMA10982",
+      "name": "Lateral cutaneous branch of left first intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1188,
+      "detailed_triangles": 1188
+    },
+    {
+      "id": "FJ4209",
+      "fma_id": "FMA10982",
+      "name": "Anterior cutaneous branch of left first intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 776,
+      "detailed_triangles": 776
+    },
+    {
+      "id": "FJ4213",
+      "fma_id": "FMA10982",
+      "name": "Anterior cutaneous branch of left second intercostal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 824,
+      "detailed_triangles": 824
+    },
+    {
+      "id": "FJ4221",
+      "fma_id": "FMA10982",
+      "name": "Left lesser occipital nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1262,
+      "detailed_triangles": 1262
+    },
+    {
+      "id": "FJ4222",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left long thoracic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1560,
+      "detailed_triangles": 1560
+    },
+    {
+      "id": "FJ4223",
+      "fma_id": "FMA55665",
+      "name": "Left medial pectoral nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2300,
+      "detailed_triangles": 2300
+    },
+    {
+      "id": "FJ4241",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left subclavian nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 488,
+      "detailed_triangles": 488
+    },
+    {
+      "id": "FJ4242",
+      "fma_id": "FMA55665",
+      "name": "Left superior subscapular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 916,
+      "detailed_triangles": 916
+    },
+    {
+      "id": "FJ4244",
+      "fma_id": "FMA55665",
+      "name": "Left supraclavicular nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1698,
+      "detailed_triangles": 1698
+    },
+    {
+      "id": "FJ4245",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left first thoracic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 344,
+      "detailed_triangles": 344
+    },
+    {
+      "id": "FJ4248",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left second thoracic nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 440,
+      "detailed_triangles": 440
+    },
+    {
+      "id": "FJ4256",
+      "fma_id": "FMA55665",
+      "name": "Left thoracodorsal nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2068,
+      "detailed_triangles": 2068
+    },
+    {
+      "id": "FJ4257",
+      "fma_id": "FMA55173",
+      "name": "Left transverse cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 854,
+      "detailed_triangles": 854
+    },
+    {
+      "id": "FJ4260",
+      "fma_id": "FMA55665",
+      "name": "Left first cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2166,
+      "detailed_triangles": 2166
+    },
+    {
+      "id": "FJ4261",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left second cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1100,
+      "detailed_triangles": 1100
+    },
+    {
+      "id": "FJ4262",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left third cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1364,
+      "detailed_triangles": 1364
+    },
+    {
+      "id": "FJ4263",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left fourth cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 934,
+      "detailed_triangles": 934
+    },
+    {
+      "id": "FJ4264",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left fifth cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1926,
+      "detailed_triangles": 1926
+    },
+    {
+      "id": "FJ4265",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left sixth cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1106,
+      "detailed_triangles": 1106
+    },
+    {
+      "id": "FJ4266",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left seventh cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 956,
+      "detailed_triangles": 956
+    },
+    {
+      "id": "FJ4267",
+      "fma_id": "FMA11195",
+      "name": "Trunk of left eighth cervical nerve",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 970,
+      "detailed_triangles": 970
+    },
+    {
+      "id": "FJ4273",
+      "fma_id": "FMA11195",
+      "name": "Inferior trunk of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 330,
+      "detailed_triangles": 330
+    },
+    {
+      "id": "FJ4274",
+      "fma_id": "FMA11195",
+      "name": "Lateral cord of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 348,
+      "detailed_triangles": 348
+    },
+    {
+      "id": "FJ4275",
+      "fma_id": "FMA11195",
+      "name": "Medial cord of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1708,
+      "detailed_triangles": 1708
+    },
+    {
+      "id": "FJ4276",
+      "fma_id": "FMA11195",
+      "name": "Middle trunk of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 350,
+      "detailed_triangles": 350
+    },
+    {
+      "id": "FJ4280",
+      "fma_id": "FMA11195",
+      "name": "Posterior cord of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1130,
+      "detailed_triangles": 1130
+    },
+    {
+      "id": "FJ4290",
+      "fma_id": "FMA11195",
+      "name": "Superior trunk of left brachial nerve plexus",
+      "category": "peripheral",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 428,
+      "detailed_triangles": 428
+    },
+    {
+      "id": "FJ7445",
+      "fma_id": "FMA266054",
+      "name": "Falx cerebri",
+      "category": "meninges",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7463",
+      "fma_id": "FMA256237",
+      "name": "Left superior parietal lobule",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11632
+    },
+    {
+      "id": "FJ7463M",
+      "fma_id": "FMA256237",
+      "name": "Right superior parietal lobule",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 11632
+    },
+    {
+      "id": "FJ7481",
+      "fma_id": "FMA223151",
+      "name": "Right substantia nigra",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11828
+    },
+    {
+      "id": "FJ7481M",
+      "fma_id": "FMA223151",
+      "name": "Left substantia nigra",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 11828
+    },
+    {
+      "id": "FJ7482",
+      "fma_id": "FMA223151",
+      "name": "Right subthalamic nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2920,
+      "detailed_triangles": 2920
+    },
+    {
+      "id": "FJ7482M",
+      "fma_id": "FMA223151",
+      "name": "Left subthalamic nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2920,
+      "detailed_triangles": 2920
+    },
+    {
+      "id": "FJ7483",
+      "fma_id": "FMA223151",
+      "name": "Left anterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 12600
+    },
+    {
+      "id": "FJ7483M",
+      "fma_id": "FMA223151",
+      "name": "Right anterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 12600
+    },
+    {
+      "id": "FJ7484",
+      "fma_id": "FMA223151",
+      "name": "Left anterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2464,
+      "detailed_triangles": 2464
+    },
+    {
+      "id": "FJ7484M",
+      "fma_id": "FMA223151",
+      "name": "Right anterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2464,
+      "detailed_triangles": 2464
+    },
+    {
+      "id": "FJ7485",
+      "fma_id": "FMA49443",
+      "name": "Mammillary body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 204,
+      "detailed_triangles": 204
+    },
+    {
+      "id": "FJ7485M",
+      "fma_id": "FMA49443",
+      "name": "Mammillary body",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 204,
+      "detailed_triangles": 204
+    },
+    {
+      "id": "FJ7486",
+      "fma_id": "FMA49443",
+      "name": "Left mammillothalamic tract of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 596,
+      "detailed_triangles": 596
+    },
+    {
+      "id": "FJ7486M",
+      "fma_id": "FMA49443",
+      "name": "Right mammillothalamic tract of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 596,
+      "detailed_triangles": 596
+    },
+    {
+      "id": "FJ7487",
+      "fma_id": "FMA223151",
+      "name": "Left red nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 762,
+      "detailed_triangles": 762
+    },
+    {
+      "id": "FJ7487M",
+      "fma_id": "FMA223151",
+      "name": "Right red nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 762,
+      "detailed_triangles": 762
+    },
+    {
+      "id": "FJ7488",
+      "fma_id": "FMA223151",
+      "name": "Left arcuate nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 912,
+      "detailed_triangles": 912
+    },
+    {
+      "id": "FJ7488M",
+      "fma_id": "FMA223151",
+      "name": "Right arcuate nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 912,
+      "detailed_triangles": 912
+    },
+    {
+      "id": "FJ7489",
+      "fma_id": "FMA223151",
+      "name": "Left paraventricular nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1186,
+      "detailed_triangles": 1186
+    },
+    {
+      "id": "FJ7489M",
+      "fma_id": "FMA223151",
+      "name": "Right paraventricular nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1186,
+      "detailed_triangles": 1186
+    },
+    {
+      "id": "FJ7490",
+      "fma_id": "FMA223151",
+      "name": "Left ventromedial nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1186,
+      "detailed_triangles": 1186
+    },
+    {
+      "id": "FJ7490M",
+      "fma_id": "FMA223151",
+      "name": "Right ventromedial nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1186,
+      "detailed_triangles": 1186
+    },
+    {
+      "id": "FJ7491",
+      "fma_id": "FMA223151",
+      "name": "Left lateral hypothalamic nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1368,
+      "detailed_triangles": 1368
+    },
+    {
+      "id": "FJ7491M",
+      "fma_id": "FMA223151",
+      "name": "Right lateral hypothalamic nucleus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1368,
+      "detailed_triangles": 1368
+    },
+    {
+      "id": "FJ7496",
+      "fma_id": "FMA223151",
+      "name": "Left posterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1826,
+      "detailed_triangles": 1826
+    },
+    {
+      "id": "FJ7496M",
+      "fma_id": "FMA223151",
+      "name": "Right posterior nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1826,
+      "detailed_triangles": 1826
+    },
+    {
+      "id": "FJ7497",
+      "fma_id": "FMA223151",
+      "name": "Left dorsomedial nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2100,
+      "detailed_triangles": 2100
+    },
+    {
+      "id": "FJ7497M",
+      "fma_id": "FMA223151",
+      "name": "Right dorsomedial nucleus of hypothalamus",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 2100,
+      "detailed_triangles": 2100
+    },
+    {
+      "id": "FJ7498",
+      "fma_id": "FMA49443",
+      "name": "Left fornix of forebrain",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4782
+    },
+    {
+      "id": "FJ7498M",
+      "fma_id": "FMA49443",
+      "name": "Right fornix of forebrain",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 4782
+    },
+    {
+      "id": "FJ7502",
+      "fma_id": "FMA11195",
+      "name": "Right optic tract",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 912,
+      "detailed_triangles": 912
+    },
+    {
+      "id": "FJ7502M",
+      "fma_id": "FMA11195",
+      "name": "Left optic tract",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 912,
+      "detailed_triangles": 912
+    },
+    {
+      "id": "FJ7503",
+      "fma_id": "FMA11195",
+      "name": "Optic chiasm",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1464,
+      "detailed_triangles": 1464
+    },
+    {
+      "id": "FJ7503M",
+      "fma_id": "FMA11195",
+      "name": "Optic chiasm",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 1464,
+      "detailed_triangles": 1464
+    },
+    {
+      "id": "FJ7505",
+      "fma_id": "FMA11195",
+      "name": "Optic chiasm",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3199,
+      "detailed_triangles": 3406
+    },
+    {
+      "id": "FJ7505M",
+      "fma_id": "FMA11195",
+      "name": "Optic chiasm",
+      "category": "brain",
+      "provenance": "BodyParts3D 4.3",
+      "standard_triangles": 3200,
+      "detailed_triangles": 3406
     }
-  ]
+  ],
+  "coverage_note": "Source-backed posterior superior parietal lobules, deep brain, brachial plexus and dural surfaces; not a guaranteed continuous peripheral-nerve network."
 }

@@ -1,0 +1,153 @@
+{
+  "version": "2.0.2",
+  "measurement": "Approximate minimum mesh vertex separation in Anatomy Studio normalized units",
+  "warning": "Proximity does not establish continuous anatomy. No anatomy was synthesized, extended or moved.",
+  "model_quality": "standard",
+  "available_pairs": 16,
+  "pathways": [
+    {
+      "pathway": "Spinal cord \u2192 C5",
+      "ids": [
+        "FJ4426",
+        "FJ4264"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.00212
+    },
+    {
+      "pathway": "Spinal cord \u2192 C6",
+      "ids": [
+        "FJ4426",
+        "FJ4265"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.002341
+    },
+    {
+      "pathway": "Spinal cord \u2192 C7",
+      "ids": [
+        "FJ4426",
+        "FJ4266"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.001324
+    },
+    {
+      "pathway": "Spinal cord \u2192 C8",
+      "ids": [
+        "FJ4426",
+        "FJ4267"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.001541
+    },
+    {
+      "pathway": "C5 \u2192 superior trunk",
+      "ids": [
+        "FJ4264",
+        "FJ4290"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.002061
+    },
+    {
+      "pathway": "C6 \u2192 superior trunk",
+      "ids": [
+        "FJ4265",
+        "FJ4290"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000285
+    },
+    {
+      "pathway": "C7 \u2192 middle trunk",
+      "ids": [
+        "FJ4266",
+        "FJ4276"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000627
+    },
+    {
+      "pathway": "C8 \u2192 inferior trunk",
+      "ids": [
+        "FJ4267",
+        "FJ4273"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000427
+    },
+    {
+      "pathway": "T1 \u2192 inferior trunk",
+      "ids": [
+        "FJ4245",
+        "FJ4273"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.047552
+    },
+    {
+      "pathway": "Superior trunk \u2192 lateral cord",
+      "ids": [
+        "FJ4290",
+        "FJ4274"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000629
+    },
+    {
+      "pathway": "Middle trunk \u2192 posterior cord",
+      "ids": [
+        "FJ4276",
+        "FJ4280"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000474
+    },
+    {
+      "pathway": "Inferior trunk \u2192 medial cord",
+      "ids": [
+        "FJ4273",
+        "FJ4275"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000272
+    },
+    {
+      "pathway": "Lateral cord \u2192 median nerve",
+      "ids": [
+        "FJ4274",
+        "FJ4224"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000437
+    },
+    {
+      "pathway": "Medial cord \u2192 ulnar nerve",
+      "ids": [
+        "FJ4275",
+        "FJ4258"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000313
+    },
+    {
+      "pathway": "Posterior cord \u2192 radial nerve",
+      "ids": [
+        "FJ4280",
+        "FJ4240"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.000139
+    },
+    {
+      "pathway": "Posterior cord \u2192 axillary nerve",
+      "ids": [
+        "FJ4280",
+        "FJ4171"
+      ],
+      "status": "distance_measured",
+      "minimum_sampled_distance_normalized_units": 0.211293
+    }
+  ]
+}
