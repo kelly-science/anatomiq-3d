@@ -1,0 +1,114 @@
+{
+  "source": "BodyParts3D 4.3",
+  "source_backed": true,
+  "meshes": [
+    {
+      "id": "FJ3144",
+      "name": "Left ureter",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3144_BP21722_FMA15572_Left ureter.obj",
+      "source_sha256": "a272114f60f1fb1df428d8a05203f555fb97766f954ee0480a2471e25ee36393",
+      "source_triangles": 2062,
+      "refined_triangles": 8248,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.433109,
+        "center_shift_fraction_of_diagonal": 0.255168,
+        "surface_area_change_fraction": 1.801274,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ3145",
+      "name": "Left kidney",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3145_BP21596_FMA7205_Left kidney.obj",
+      "source_sha256": "6284a5129713c3456d2d29ac4eaa450d68ea879a005d4abd84307cfd73541dcd",
+      "source_triangles": 2982,
+      "refined_triangles": 11928,
+      "subdivisions": 1,
+      "method": "loop-smoothed",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.000607,
+        "center_shift_fraction_of_diagonal": 0.000253,
+        "surface_area_change_fraction": 0.004501,
+        "closed_volume_change_fraction": null
+      }
+    },
+    {
+      "id": "FJ3146",
+      "name": "Right ureter",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3146_BP22675_FMA15571_Right ureter.obj",
+      "source_sha256": "a9669f3e45981d9ac2607078b0e7024e66d47b15a7bcb9568ae9e1b9be4fa6f2",
+      "source_triangles": 1924,
+      "refined_triangles": 7696,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.509055,
+        "center_shift_fraction_of_diagonal": 0.304135,
+        "surface_area_change_fraction": 4.093412,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ3147",
+      "name": "Right kidney",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3147_BP23801_FMA7204_Right kidney.obj",
+      "source_sha256": "df2a928327de5d6ec21987274d6af704d49d12306786c9a75469c5ee89070b2b",
+      "source_triangles": 2310,
+      "refined_triangles": 9240,
+      "subdivisions": 1,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.100951,
+        "center_shift_fraction_of_diagonal": 0.05064,
+        "surface_area_change_fraction": 0.048877,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ3148",
+      "name": "Urethra",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3148_BP22605_FMA19667_Urethra.obj",
+      "source_sha256": "678dc673b3a16e235b2cbd43cd6a8ae209a4e382043cb674620a362b1ae5eebc",
+      "source_triangles": 440,
+      "refined_triangles": 7040,
+      "subdivisions": 2,
+      "method": "midpoint-fallback",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.49845,
+        "center_shift_fraction_of_diagonal": 0.323423,
+        "surface_area_change_fraction": 13.736962,
+        "closed_volume_change_fraction": null
+      },
+      "fallback_reason": "Loop smoothing unavailable or altered anatomical envelope"
+    },
+    {
+      "id": "FJ3149",
+      "name": "Urinary bladder",
+      "source_obj": "/Users/steve/Documents/GitHub/anatomiq-3d/.urinary-21-work/subset/urinary/FJ3149_BP22630_FMA15900_Urinary bladder.obj",
+      "source_sha256": "d47502a715addeec165a69270c1b94bc1d079609877cf0463882b9a4375ca4e4",
+      "source_triangles": 226,
+      "refined_triangles": 3616,
+      "subdivisions": 2,
+      "method": "loop-smoothed",
+      "shape_metrics": {
+        "bound_shift_fraction_of_diagonal": 0.018114,
+        "center_shift_fraction_of_diagonal": 0.006404,
+        "surface_area_change_fraction": 0.019361,
+        "closed_volume_change_fraction": null
+      }
+    }
+  ],
+  "missing_internal_geometry": [
+    "renal cortex",
+    "renal medulla",
+    "renal pyramids",
+    "renal calyces",
+    "renal pelvis",
+    "nephrons"
+  ]
+}

@@ -1,0 +1,6 @@
+Source mesh geometry: BodyParts3D / Anatomography 4.3
+Copyright (c) Database Center for Life Science (DBCLS)
+Creative Commons Attribution-ShareAlike 2.1 Japan (CC BY-SA 2.1 JP)
+Generated Standard and Detailed geometry must retain source attribution.
+The internal kidney schematic is independently drawn instructional art,
+not BodyParts3D internal kidney anatomy.

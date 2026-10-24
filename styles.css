@@ -273,3 +273,7 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 
 /* 2.0: Six system controls remain reachable on compact Chromebooks and phones. */
 .mode-tabs{min-width:0;flex:0 1 auto;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin}.mode-tab{flex:0 0 auto}
+
+/* AnatomIQ 2.1 urinary schematic; separate educational illustration, not source 3D geometry. */
+.kidney-interior-dialog{width:min(780px,96vw);max-height:90vh;overflow:auto}
+.kidney-interior-image{display:block;width:100%;height:auto;border-radius:12px}

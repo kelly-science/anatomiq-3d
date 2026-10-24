@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "system": "urinary",
+  "coordinate_frame": "BodyParts3D skin-normalized to Anatomy Studio 1.2 body frame",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ3144",
+      "fma_id": "FMA15572",
+      "name": "Left ureter",
+      "category": "ureter",
+      "standard_triangles": 2062,
+      "detailed_triangles": 8248
+    },
+    {
+      "id": "FJ3145",
+      "fma_id": "FMA55661",
+      "name": "Left kidney",
+      "category": "kidney",
+      "standard_triangles": 2982,
+      "detailed_triangles": 11928
+    },
+    {
+      "id": "FJ3146",
+      "fma_id": "FMA15571",
+      "name": "Right ureter",
+      "category": "ureter",
+      "standard_triangles": 1924,
+      "detailed_triangles": 7696
+    },
+    {
+      "id": "FJ3147",
+      "fma_id": "FMA55661",
+      "name": "Right kidney",
+      "category": "kidney",
+      "standard_triangles": 2310,
+      "detailed_triangles": 9240
+    },
+    {
+      "id": "FJ3148",
+      "fma_id": "FMA19667",
+      "name": "Urethra",
+      "category": "urethra",
+      "standard_triangles": 1760,
+      "detailed_triangles": 7040
+    },
+    {
+      "id": "FJ3149",
+      "fma_id": "FMA15900",
+      "name": "Urinary bladder",
+      "category": "bladder",
+      "standard_triangles": 904,
+      "detailed_triangles": 3616
+    }
+  ]
+}

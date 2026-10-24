@@ -1,0 +1,7 @@
+group,fj_id,bp_id,fma_id,name,obj,bytes
+urinary,FJ3144,BP21722,FMA15572,Left ureter,urinary/FJ3144_BP21722_FMA15572_Left ureter.obj,127235
+urinary,FJ3145,BP21596,FMA55661,Left kidney,urinary/FJ3145_BP21596_FMA7205_Left kidney.obj,181911
+urinary,FJ3146,BP21423,FMA15571,Right ureter,urinary/FJ3146_BP22675_FMA15571_Right ureter.obj,124755
+urinary,FJ3147,BP23048,FMA55661,Right kidney,urinary/FJ3147_BP23801_FMA7204_Right kidney.obj,139034
+urinary,FJ3148,BP22605,FMA19667,Urethra,urinary/FJ3148_BP22605_FMA19667_Urethra.obj,34000
+urinary,FJ3149,BP22630,FMA15900,Urinary bladder,urinary/FJ3149_BP22630_FMA15900_Urinary bladder.obj,13333

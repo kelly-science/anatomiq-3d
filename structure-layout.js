@@ -24,7 +24,8 @@ export function catalogAnatomy(entries){
   // New 1.9 mesh indices append AFTER all existing cardiovascular structures.
   // Nervous is appended strictly AFTER all 1.9.1 structures; old scene IDs are immutable.
   const nervous=entries.filter(s=>s.system==='nervous');
-  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous];
+  const urinary=entries.filter(s=>s.system==='urinary');
+  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary];
   const originalCardio=[...preCardio,...legacyCv];
   return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
     baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),
@@ -33,7 +34,7 @@ export function catalogAnatomy(entries){
     preCardioCount:preCardio.length,preCardioFingerprint:hashForStructures(preCardio.map(key)),
     originalCardioCount:legacyCv.length===ORIGINAL_CARDIO_IDS.length?originalCardio.length:undefined,
     originalCardioFingerprint:legacyCv.length===ORIGINAL_CARDIO_IDS.length?hashForStructures(originalCardio.map(key)):undefined,
-    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length,respiratoryCount:respiratory.length,nervousCount:nervous.length};
+    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length,respiratoryCount:respiratory.length,nervousCount:nervous.length,urinaryCount:urinary.length};
 }
 export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint,preCardioCount,preCardioFingerprint,originalCardioCount,originalCardioFingerprint,appendStructures=null){
   if(!scene)return false;

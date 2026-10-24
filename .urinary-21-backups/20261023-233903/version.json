@@ -1,0 +1,6 @@
+{
+  "version": "2.0.4",
+  "channel": "beta",
+  "published": "2026-10-23",
+  "notes": "Ventricular model opacity corrected: 94% opaque ventricular volumes with depth writes enabled. Meninges remain translucent; GLBs unchanged."
+}

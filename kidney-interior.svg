@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 500" role="img" aria-label="Schematic kidney section with cortex, medullary pyramids, calyces, pelvis, and ureter">
+  <rect width="760" height="500" rx="24" fill="#182a36"/>
+  <text x="32" y="43" fill="#f3f3f3" font-family="system-ui,sans-serif" font-size="24" font-weight="700">Kidney interior · instructional schematic</text>
+  <text x="32" y="68" fill="#9db8c8" font-family="system-ui,sans-serif" font-size="14">Illustration only — these internal structures are not separate meshes in BodyParts3D 4.3</text>
+  <path d="M338 97 C204 49 100 143 107 272 C113 396 243 448 359 397 C432 368 448 322 407 282 C374 248 373 198 412 164 C431 140 412 121 338 97Z" fill="#bb5a60" stroke="#f3a19d" stroke-width="7"/>
+  <path d="M328 128 C208 88 147 168 151 274 C155 371 246 412 337 370 C388 347 386 319 358 286 C322 244 331 194 379 157 C374 140 354 134 328 128Z" fill="#e7a59a"/>
+  <path d="M348 162 Q275 186 268 226 Q316 213 359 228 Z" fill="#a74b62"/>
+  <path d="M255 150 Q211 184 209 241 L275 226Z" fill="#a74b62"/>
+  <path d="M181 241 Q179 299 222 323 L274 264Z" fill="#a74b62"/>
+  <path d="M232 355 Q278 385 318 361 L299 296Z" fill="#a74b62"/>
+  <path d="M339 334 Q365 313 335 280 L311 267 L297 296 Z" fill="#a74b62"/>
+  <path d="M265 227 L303 252 M275 265 L303 270 M301 296 L320 275 M359 230 L321 257" stroke="#f7c8a6" stroke-width="11" fill="none" stroke-linecap="round"/>
+  <path d="M303 252 Q328 250 349 273 C370 302 403 298 444 292 L444 392" fill="none" stroke="#efcc82" stroke-width="22" stroke-linecap="round"/>
+  <path d="M303 252 Q328 250 349 273 C370 302 403 298 444 292 L444 392" fill="none" stroke="#b78f58" stroke-width="3" stroke-linecap="round"/>
+  <g font-family="system-ui,sans-serif" font-size="19" fill="#e8f1f5" stroke="#9bb9c5" stroke-width="1.6">
+    <path d="M202 113 L96 96 L54 96" fill="none"/><text x="54" y="87" stroke="none">Renal cortex</text>
+    <path d="M213 221 L54 203" fill="none"/><text x="45" y="194" stroke="none">Medullary</text><text x="45" y="217" stroke="none">pyramids</text>
+    <path d="M315 254 L538 214" fill="none"/><text x="543" y="207" stroke="none">Minor calyces</text>
+    <path d="M374 287 L541 290" fill="none"/><text x="547" y="283" stroke="none">Renal pelvis</text>
+    <path d="M444 369 L542 379" fill="none"/><text x="550" y="386" stroke="none">Ureter</text>
+  </g>
+  <text x="28" y="472" font-family="system-ui,sans-serif" font-size="15" fill="#a8bdc9">Collecting system schematic · not to scale · not patient-specific</text>
+</svg>
