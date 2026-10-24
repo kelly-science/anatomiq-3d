@@ -26,7 +26,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '2.0.2';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -406,8 +406,8 @@ function updateSystemControls(){
   $('mode-nervous').title=nervousAvailable?`${nervousEntriesList.length} brain, spinal cord and nerve structures`:'Install the AnatomIQ 2.0 nervous-system model files';
   $('nervous-study-panel').hidden=!teacherMode||!nervousAvailable||!layers.nervous;
   if(nervousAvailable){
-    const counts=Object.fromEntries(['brain','spinal_cord','peripheral'].map(k=>[k,nervousEntriesList.filter(s=>s.organId===k).length]));
-    $('nervous-study-count').textContent=`${nervousEntriesList.length} source meshes · ${counts.brain} brain · ${counts.spinal_cord} spinal cord · ${counts.peripheral} cranial and peripheral nerve segments`;
+    const counts=Object.fromEntries(['brain','spinal_cord','peripheral','meninges'].map(k=>[k,nervousEntriesList.filter(s=>s.organId===k).length]));
+    $('nervous-study-count').textContent=`${nervousEntriesList.length} selectable meshes · ${counts.brain} brain · ${counts.spinal_cord} spinal cord · ${counts.peripheral} nerves · ${counts.meninges} meningeal surfaces`;
   }
   $('respiratory-study-panel').hidden=!teacherMode||!respiratoryAvailable||!layers.respiratory;
   if(respiratoryAvailable){const coverage=respiratoryCoverage(respiratoryEntriesList,cardioEntries);
@@ -732,7 +732,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves','meninges':'Meninges / dural folds'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -988,6 +988,8 @@ async function loadRespiratory(){
    applySurfaceFinish(mesh.material,'respiratory',surfaceMode);
    if(Array.isArray(old))old.forEach(m=>m?.dispose());else old?.dispose();
    materials.set(mesh,mesh.material);mesh.visible=false;
+      // New meninges default hidden; older scene visibility/labels stay authoritative on restore.
+      if(entry.organId==='meninges')hidden.add(mesh);
   }
   respiratoryEntriesList=entries;respiratoryAvailable=true;respiratoryLoaded=true;
   applyRespiratoryOpacity();configureAnatomyShadows(respiratoryRoot,shadows.profile.enabled);
@@ -1014,10 +1016,12 @@ async function loadNervous(){
       const mesh=entry.mesh;
       if(mesh.geometry?.attributes?.position&&!mesh.geometry.attributes.normal)mesh.geometry.computeVertexNormals();
       const original=mesh.material;
-      mesh.material=new THREE.MeshStandardMaterial({color:nervousColor(entry),metalness:0,roughness:0.72,side:THREE.DoubleSide});
+      mesh.material=new THREE.MeshStandardMaterial({color:nervousColor(entry),metalness:0,roughness:entry.organId==='meninges'?0.52:0.72,side:THREE.DoubleSide,transparent:entry.organId==='meninges',opacity:entry.organId==='meninges'?0.28:1,depthWrite:entry.organId!=='meninges'});
       applySurfaceFinish(mesh.material,'nervous',surfaceMode);
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(mesh,mesh.material);mesh.visible=false;
+      // New meninges default hidden; older scene visibility/labels stay authoritative on restore.
+      if(entry.organId==='meninges')hidden.add(mesh);
     }
     nervousEntriesList=entries;nervousAvailable=true;nervousLoaded=true;
     configureAnatomyShadows(nervousRoot,shadows.profile.enabled);
@@ -2150,7 +2154,7 @@ $('nervous-focus').addEventListener('click',()=>{
  if(!teacherMode||!nervousAvailable)return;
  Object.assign(systemLayers,{skeletal:false,superficial:false,deep:false,digestive:false,cardiovascular:false,respiratory:false,nervous:true});
  mode='systems';
- for(const s of nervousEntriesList)hidden.delete(s.mesh);
+ for(const s of nervousEntriesList){if(nervousVisibleInPreset(s,'all'))hidden.delete(s.mesh);else hidden.add(s.mesh);}
  isolated=false;setSelection(null);updateLayerHeading();updateSystemControls();refreshVisibility();frameVisible('front');queueDraft();
 });
 
@@ -2318,7 +2322,7 @@ async function forceRefreshModels(){
       });
     }
     const pong=await workerMessage({type:'MODEL_REFRESH_PING'});
-    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.0.1')
+    if(pong.type!=='MODEL_REFRESH_PONG'||pong.version!=='anatomy-v2.0.2')
       throw new Error('The updated offline worker is not active yet. Close other tabs and reopen Anatomy Studio.');
     const response=await workerMessage({type:'REFRESH_MODELS',scope},{timeout:180000,onProgress:msg=>{
       result.textContent=`Downloaded ${msg.completed}/${msg.total}: ${msg.path}`;
