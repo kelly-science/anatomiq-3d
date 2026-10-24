@@ -1,0 +1,1007 @@
+{
+  "source": "DBCLS / BodyParts3D 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "system": "nervous",
+  "meshes": [
+    {
+      "id": "FJ1293",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ1293_BP20304_FMA52577_Inferior branch of left oculomotor nerve.obj",
+      "source_sha256": "58c75a4b8dc830e1e08ca1a2541fc78c9465e1f3a1f6e606f575c3f7c0d2c8e0",
+      "source_triangles": 1654,
+      "standard_triangles": 1654,
+      "detailed_triangles": 1654
+    },
+    {
+      "id": "FJ1321",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ1321_BP20060_FMA52575_Superior branch of left oculomotor nerve.obj",
+      "source_sha256": "59ed7d0296824709819f76700f92ff2a22591b21ba6cbb9279e154f8273f6454",
+      "source_triangles": 810,
+      "standard_triangles": 810,
+      "detailed_triangles": 810
+    },
+    {
+      "id": "FJ1344",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ1344_BP20231_FMA52576_Inferior branch of right oculomotor nerve.obj",
+      "source_sha256": "af74c8934f5869a460cd6f75c90245538377e013fae3d87a406094f4cfdd4977",
+      "source_triangles": 1570,
+      "standard_triangles": 1570,
+      "detailed_triangles": 1570
+    },
+    {
+      "id": "FJ1372",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ1372_BP20049_FMA52574_Superior branch of right oculomotor nerve.obj",
+      "source_sha256": "bbcb64ae69d4b9af6330e791f73ec49a2b1f591b571178163dad8c984eca3700",
+      "source_triangles": 848,
+      "standard_triangles": 848,
+      "detailed_triangles": 848
+    },
+    {
+      "id": "FJ1381",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ1381_BP23210_FMA50881_Right trochlear nerve.obj",
+      "source_sha256": "4bc7adf0fb6d00ffc565ff4d71e54f2e2d59a5ecb23e225bc20b60a050544b96",
+      "source_triangles": 2758,
+      "standard_triangles": 2758,
+      "detailed_triangles": 2758
+    },
+    {
+      "id": "FJ1732",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1732_BP21657_FMA72670_Left angular gyrus.obj",
+      "source_sha256": "b4091377b4dfd33f33a84a9a66f12f47fa534f6535429b2b0c0d4594a5b166cd",
+      "source_triangles": 3588,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3588
+    },
+    {
+      "id": "FJ1733",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1733_BP23987_FMA72669_Right angular gyrus.obj",
+      "source_sha256": "c8dd20ce18616ea43c4935733899a96ebf092de1eb65fe97f5dc6fec866cac68",
+      "source_triangles": 3554,
+      "standard_triangles": 3200,
+      "detailed_triangles": 3554
+    },
+    {
+      "id": "FJ1744",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1744_BP22402_FMA72658_Left inferior frontal gyrus.obj",
+      "source_sha256": "52fbd7c171a48cc746e221e2caf7285dd3236d1997471a83a1d871be477e410a",
+      "source_triangles": 3290,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3290
+    },
+    {
+      "id": "FJ1745",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1745_BP22397_FMA72657_Right inferior frontal gyrus.obj",
+      "source_sha256": "b4d47e04b64092abc56e522a3e1e49f74bed6afebaf1061a6567d842b724c464",
+      "source_triangles": 3292,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3292
+    },
+    {
+      "id": "FJ1746",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1746_BP22696_FMA72688_Left inferior temporal gyrus.obj",
+      "source_sha256": "b64deed124f4d5e4fe3909620e282fb84d32e7fa7258f9b7536a645668a213d0",
+      "source_triangles": 2732,
+      "standard_triangles": 2732,
+      "detailed_triangles": 2732
+    },
+    {
+      "id": "FJ1747",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1747_BP22176_FMA72687_Right inferior temporal gyrus.obj",
+      "source_sha256": "a738fe90d9b984cb1f173179e40dd5544861fee3d5dfc23935891514414bae47",
+      "source_triangles": 2768,
+      "standard_triangles": 2768,
+      "detailed_triangles": 2768
+    },
+    {
+      "id": "FJ1748",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1748_BP23978_FMA72978_Left insula.obj",
+      "source_sha256": "941d824f461433d486be6291a55e5b9aad880f759e16b616a04fecae3d2d3a38",
+      "source_triangles": 2448,
+      "standard_triangles": 2448,
+      "detailed_triangles": 2448
+    },
+    {
+      "id": "FJ1749",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1749_BP21973_FMA72977_Right insula.obj",
+      "source_sha256": "c724379de905744b0a6ffea5a20376af1a521bd577e9abdca9665dfd3daf39e0",
+      "source_triangles": 2448,
+      "standard_triangles": 2448,
+      "detailed_triangles": 2448
+    },
+    {
+      "id": "FJ1769",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1769_BP23201_FMA62004_Medulla oblongata.obj",
+      "source_sha256": "6d898f913df68a12422df564f54ddf6ee4d73c6a412808b456f23f1b2c9330eb",
+      "source_triangles": 6036,
+      "standard_triangles": 3199,
+      "detailed_triangles": 6036
+    },
+    {
+      "id": "FJ1775",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1775_BP22028_FMA67943_Pons.obj",
+      "source_sha256": "755d10a5b4f471ed02b3188e2d70254a02152b89c803913afeec39cfac2131ec",
+      "source_triangles": 10304,
+      "standard_triangles": 3199,
+      "detailed_triangles": 10304
+    },
+    {
+      "id": "FJ1781",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1781_BP22033_FMA67944_Cerebellum.obj",
+      "source_sha256": "58a6513be18c30875ae3bc124a0c7658ad1dbb060391fb4b48a5c43bac91d03e",
+      "source_triangles": 23818,
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1782",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1782_BP21462_FMA258716_Left thalamus.obj",
+      "source_sha256": "5ec986cc2be7519115ac6e1dfc8679de7164d56dbbae32ded69d584cb3fddf63",
+      "source_triangles": 1702,
+      "standard_triangles": 1702,
+      "detailed_triangles": 1702
+    },
+    {
+      "id": "FJ1787",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1787_BP22367_FMA72656_Left middle frontal gyrus.obj",
+      "source_sha256": "e6ca6e379b91d5f203c15f9f064e3958e390f91f819458f5fc4f37a4ce52344a",
+      "source_triangles": 3416,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3416
+    },
+    {
+      "id": "FJ1788",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1788_BP20959_FMA72655_Right middle frontal gyrus.obj",
+      "source_sha256": "6a615bb30f034dfea5e954aef0f6a182e7aa32cf19e2bfd307c2a9a091ed3461",
+      "source_triangles": 3326,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3326
+    },
+    {
+      "id": "FJ1789",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1789_BP22697_FMA72686_Left middle temporal gyrus.obj",
+      "source_sha256": "6c7165ea255b5d2da30ce1102b0f041e50a047e73c085e8a853e45b05ce5d6bb",
+      "source_triangles": 2710,
+      "standard_triangles": 2710,
+      "detailed_triangles": 2710
+    },
+    {
+      "id": "FJ1790",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1790_BP22182_FMA72685_Right middle temporal gyrus.obj",
+      "source_sha256": "6c77777a0abb4171da95d9f37edfdf7ba3f53d828b9df6a73e77e6c976592397",
+      "source_triangles": 2754,
+      "standard_triangles": 2754,
+      "detailed_triangles": 2754
+    },
+    {
+      "id": "FJ1797",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1797_BP22179_FMA72666_Left postcentral gyrus.obj",
+      "source_sha256": "b15debc6839323f9465abd0ffbdb3e589c567110c77000a25de09ef85d086a9c",
+      "source_triangles": 3604,
+      "standard_triangles": 3200,
+      "detailed_triangles": 3604
+    },
+    {
+      "id": "FJ1798",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1798_BP22140_FMA72665_Right postcentral gyrus.obj",
+      "source_sha256": "654bfc5d371b721596ef891e528905caa810031541de3da6d53045be2a119484",
+      "source_triangles": 3604,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3604
+    },
+    {
+      "id": "FJ1800",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1800_BP22183_FMA72662_Left precentral gyrus.obj",
+      "source_sha256": "8d2f96c138a533222e1f70ea80c07ba0699e0985fa46e6f394bc64326c168d9c",
+      "source_triangles": 4042,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4042
+    },
+    {
+      "id": "FJ1801",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1801_BP22215_FMA72661_Right precentral gyrus.obj",
+      "source_sha256": "9520c6260fdad81f12bb0a7d3ff4288a9ca82e894c612cb2ce2856a8a204dece",
+      "source_triangles": 4042,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4042
+    },
+    {
+      "id": "FJ1822",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1822_BP22028_FMA67943_Pons.obj",
+      "source_sha256": "850dd4aa348b95a47c3e79cfcd0c745266f1254155e5af7ce2c3258bb9ea5cbf",
+      "source_triangles": 10346,
+      "standard_triangles": 3200,
+      "detailed_triangles": 10346
+    },
+    {
+      "id": "FJ1827",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1827_BP21533_FMA258714_Right thalamus.obj",
+      "source_sha256": "9b4d914f47a49a2c77a0bb99e84fa11494a1dba124120a5646e2615d38527756",
+      "source_triangles": 758,
+      "standard_triangles": 758,
+      "detailed_triangles": 758
+    },
+    {
+      "id": "FJ1830",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1830_BP22033_FMA67944_Cerebellum.obj",
+      "source_sha256": "cf82a264696bdef138dd0f22e8a4d2fff4df4b04229410cc9212809a0ce16514",
+      "source_triangles": 23882,
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ1831",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1831_BP23201_FMA62004_Medulla oblongata.obj",
+      "source_sha256": "eab7e3bcb83eea47987673233d3965ea29a9b9e3d00bab9393c5ed12823f286e",
+      "source_triangles": 6060,
+      "standard_triangles": 3199,
+      "detailed_triangles": 6060
+    },
+    {
+      "id": "FJ1833",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1833_BP22376_FMA72654_Left superior frontal gyrus.obj",
+      "source_sha256": "2e2abf960f62ffa0ae8c26656778be0764bdc2b612c238bdace447a40e8b03dd",
+      "source_triangles": 6452,
+      "standard_triangles": 3199,
+      "detailed_triangles": 6452
+    },
+    {
+      "id": "FJ1834",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1834_BP23996_FMA72653_Right superior frontal gyrus.obj",
+      "source_sha256": "aa9948bdcefc28f079768397361f2ea640d81dac7dcf9ede83fb30ead3b964e7",
+      "source_triangles": 6450,
+      "standard_triangles": 3199,
+      "detailed_triangles": 6450
+    },
+    {
+      "id": "FJ1837",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1837_BP20634_FMA72801_Anterior part of left superior temporal gyrus.obj",
+      "source_sha256": "14d3687e160c41a4b141eed2b4aa74ce153bf4f2f836bd14abf36ba774958a66",
+      "source_triangles": 1804,
+      "standard_triangles": 1804,
+      "detailed_triangles": 1804
+    },
+    {
+      "id": "FJ1838",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1838_BP21881_FMA72800_Anterior part of right superior temporal gyrus.obj",
+      "source_sha256": "206a7efcb3f125cee96307cc6766bae84a4db786e347876269bfb4f00dc516a3",
+      "source_triangles": 1892,
+      "standard_triangles": 1892,
+      "detailed_triangles": 1892
+    },
+    {
+      "id": "FJ1839",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1839_BP21142_FMA72805_Posterior part of left superior temporal gyrus.obj",
+      "source_sha256": "207fdf972bb62e65f5ba6828012fb102718e19f41c1e3217e3cab6504a11f739",
+      "source_triangles": 2264,
+      "standard_triangles": 2264,
+      "detailed_triangles": 2264
+    },
+    {
+      "id": "FJ1840",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1840_BP21069_FMA72804_Posterior part of right superior temporal gyrus.obj",
+      "source_sha256": "fea6b55ff776e53eda922949524236145c98d9e6261e0501bb812f0854e91e82",
+      "source_triangles": 2264,
+      "standard_triangles": 2264,
+      "detailed_triangles": 2264
+    },
+    {
+      "id": "FJ1841",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1841_BP22180_FMA72668_Left supramarginal gyrus.obj",
+      "source_sha256": "2217ead15bb83b7556f1efca934afa2f308f1d9d606ba86cfd72b40a3ea7b7e6",
+      "source_triangles": 2344,
+      "standard_triangles": 2344,
+      "detailed_triangles": 2344
+    },
+    {
+      "id": "FJ1842",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ1842_BP22255_FMA72667_Right supramarginal gyrus.obj",
+      "source_sha256": "f341ba331d13d72ecbe311e73f681b122bedb4d896263958327e236e50c06999",
+      "source_triangles": 2314,
+      "standard_triangles": 2314,
+      "detailed_triangles": 2314
+    },
+    {
+      "id": "FJ3891",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3891_BP29534_FMA50886_Right abducens nerve.obj",
+      "source_sha256": "2447bdf59125a20d8d4285a48e70d623248c5591aa5ba3d024158d033124223c",
+      "source_triangles": 1090,
+      "standard_triangles": 1090,
+      "detailed_triangles": 1090
+    },
+    {
+      "id": "FJ3894",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3894_BP29543_FMA50890_Right vestibulocochlear nerve.obj",
+      "source_sha256": "6be6de736fcf27c481890f605f1cc5e2211547b2a993a51a2922cf622d0c739e",
+      "source_triangles": 1672,
+      "standard_triangles": 1672,
+      "detailed_triangles": 1672
+    },
+    {
+      "id": "FJ3896",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3896_BP29352_FMA53311_Buccal branch of right facial nerve.obj",
+      "source_sha256": "76e5894cb39a6dae74745dd8cd05038f34a10d4ab5d897b5172f9b11a3476950",
+      "source_triangles": 4180,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4180
+    },
+    {
+      "id": "FJ3898",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3898_BP29302_FMA53398_Cervical branch of right facial nerve.obj",
+      "source_sha256": "37fc40c0f053ffe99538b456b443edc94832c7d86af9da83a80e00d088e121b0",
+      "source_triangles": 2840,
+      "standard_triangles": 2840,
+      "detailed_triangles": 2840
+    },
+    {
+      "id": "FJ3899",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3899_BP29410_FMA65421_Trunk of right facial nerve.obj",
+      "source_sha256": "b9a13f88f9282463941529d7b081e5885fa650071b17b8dfc4fde0bec675b600",
+      "source_triangles": 4672,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4672
+    },
+    {
+      "id": "FJ3901",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3901_BP29500_FMA50894_Left glossopharyngeal nerve.obj",
+      "source_sha256": "75b6042e1038a077c1c26e4158cc51930a4fa61749603a07f2d8131882f83d8c",
+      "source_triangles": 6926,
+      "standard_triangles": 3200,
+      "detailed_triangles": 6926
+    },
+    {
+      "id": "FJ3926",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/vagus_nerve/FJ3926_BP29477_FMA18157_Trunk of left vagus nerve.obj",
+      "source_sha256": "d9a723878f9fc77ca8e82778dcbd08a40fc27b5d3880c404f30747f854d3074c",
+      "source_triangles": 29372,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ3927",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3927_BP29502_FMA50887_Left abducens nerve.obj",
+      "source_sha256": "6d73c3be88280529fc93c08427d0c305883831e1a253f8e608128a17dda7dda7",
+      "source_triangles": 1146,
+      "standard_triangles": 1146,
+      "detailed_triangles": 1146
+    },
+    {
+      "id": "FJ3932",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3932_BP29535_FMA50891_Left vestibulocochlear nerve.obj",
+      "source_sha256": "0ad502daacef35f5332e4afafacfa4eb4e054ff4aec32301b7e9d2c8cdbd98b0",
+      "source_triangles": 1714,
+      "standard_triangles": 1714,
+      "detailed_triangles": 1714
+    },
+    {
+      "id": "FJ3934",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3934_BP29347_FMA53312_Buccal branch of left facial nerve.obj",
+      "source_sha256": "48441f4fa6ed429d30d34c85346c2c4e3295f6cd7b3b1ea6e2f0d73c684482a4",
+      "source_triangles": 4284,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4284
+    },
+    {
+      "id": "FJ3936",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3936_BP29357_FMA53399_Cervical branch of left facial nerve.obj",
+      "source_sha256": "25cbcd7e3810161533c9ae6403106abfb66493fd3f968108c7cb0590400c44be",
+      "source_triangles": 2912,
+      "standard_triangles": 2912,
+      "detailed_triangles": 2912
+    },
+    {
+      "id": "FJ3938",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3938_BP29462_FMA65422_Trunk of left facial nerve.obj",
+      "source_sha256": "11e87253b185411f5d8755b26547b421936b20263dbd01fe77bd05af111a4ec9",
+      "source_triangles": 4790,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4790
+    },
+    {
+      "id": "FJ3939",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3939_BP29500_FMA50894_Left glossopharyngeal nerve.obj",
+      "source_sha256": "b5974899a90d02463da0385030c9105cbcb37e71f4e34d0b8d4d9b13a5b66291",
+      "source_triangles": 7100,
+      "standard_triangles": 3200,
+      "detailed_triangles": 7100
+    },
+    {
+      "id": "FJ3941",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3941_BP29459_FMA80483_Trunk of left hypoglossal nerve.obj",
+      "source_sha256": "bdef6f96d99391903b39322a760318ecaaa0aa534efe21796004bc81a7fa5d73",
+      "source_triangles": 1682,
+      "standard_triangles": 1682,
+      "detailed_triangles": 1682
+    },
+    {
+      "id": "FJ3952",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3952_BP29350_FMA53367_Marginal mandibular branch of left facial nerve.obj",
+      "source_sha256": "09bfef79c73f8403193e446bf31392cfff2944293f7e528fd5f260fcddbd3ca3",
+      "source_triangles": 4052,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4052
+    },
+    {
+      "id": "FJ3968",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3968_BP29438_FMA65426_Trunk of left oculomotor nerve.obj",
+      "source_sha256": "416c07d2d859ad02c81f0ba0ce921abcec1c2ae20704d62b9dec4fa31b92ccac",
+      "source_triangles": 648,
+      "standard_triangles": 648,
+      "detailed_triangles": 648
+    },
+    {
+      "id": "FJ3979",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3979_BP29341_FMA80828_Trunk of temporal branch of left facial nerve.obj",
+      "source_sha256": "ce680d0639aadc62c6e18942ed7af63a364d3204c904ecd6f7059b6344bd28be",
+      "source_triangles": 5466,
+      "standard_triangles": 3199,
+      "detailed_triangles": 5466
+    },
+    {
+      "id": "FJ3980",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3980_BP29463_FMA65424_Trunk of left trigeminal nerve.obj",
+      "source_sha256": "f7e1789b0df8a66ffad551245e3d2043a79f38764669d995a7ab69d650661d0e",
+      "source_triangles": 246,
+      "standard_triangles": 246,
+      "detailed_triangles": 246
+    },
+    {
+      "id": "FJ3981",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3981_BP23034_FMA50882_Left trochlear nerve.obj",
+      "source_sha256": "e2cc5d5c57a7859cbd23ba31e9ee26deba19206c4125f6c2634fda99de50a7fa",
+      "source_triangles": 4856,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4856
+    },
+    {
+      "id": "FJ3982",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3982_BP29360_FMA80847_Trunk of zygomatic branch of left facial nerve.obj",
+      "source_sha256": "e94ea3c1e818677f7b160d1cdff827430a1c662ad1921ebf7b64d147a11c8a1d",
+      "source_triangles": 4126,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4126
+    },
+    {
+      "id": "FJ3986",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ3986_BP29323_FMA53366_Marginal mandibular branch of right facial nerve.obj",
+      "source_sha256": "80a6d4373045f7517d8f260a4bd190fef198cc3d847346e874e3f5c57050e99f",
+      "source_triangles": 3952,
+      "standard_triangles": 3199,
+      "detailed_triangles": 3952
+    },
+    {
+      "id": "FJ4024",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/vagus_nerve/FJ4024_BP29476_FMA18151_Trunk of right vagus nerve.obj",
+      "source_sha256": "be374d656c6ec642a93681673744d0330b06d70a84d0dd53bcd3dcde870284df",
+      "source_triangles": 24790,
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ4027",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4027_BP29430_FMA80482_Trunk of right hypoglossal nerve.obj",
+      "source_sha256": "680000147b0ac768185da3310b3aaf910889d8428fd5891a8db3e1d2f32d320f",
+      "source_triangles": 4878,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4878
+    },
+    {
+      "id": "FJ4033",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4033_BP29461_FMA65425_Trunk of right oculomotor nerve.obj",
+      "source_sha256": "3be46eec2cabf39270b443326760fd3077b9f894bdd563ebe6d02bc786853bca",
+      "source_triangles": 648,
+      "standard_triangles": 648,
+      "detailed_triangles": 648
+    },
+    {
+      "id": "FJ4034",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4034_BP29461_FMA65425_Trunk of right oculomotor nerve.obj",
+      "source_sha256": "e29e7e539955a915bd893c4ff533c4a00726a6ea3808a2d3065662a2cbed296d",
+      "source_triangles": 876,
+      "standard_triangles": 876,
+      "detailed_triangles": 876
+    },
+    {
+      "id": "FJ4038",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4038_BP29432_FMA65423_Trunk of right trigeminal nerve.obj",
+      "source_sha256": "e9169b6ac3881ded050f2fd6c7605cc4692d1b3696a0567154fc68c60aad5bc4",
+      "source_triangles": 244,
+      "standard_triangles": 244,
+      "detailed_triangles": 244
+    },
+    {
+      "id": "FJ4039",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4039_BP23210_FMA50881_Right trochlear nerve.obj",
+      "source_sha256": "41405d1a29aea69114e34f513c2f2e525ccefb2a88451784abfbe35c788bdffa",
+      "source_triangles": 4826,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4826
+    },
+    {
+      "id": "FJ4040",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4040_BP29394_FMA80827_Trunk of temporal branch of right facial nerve.obj",
+      "source_sha256": "88a32aa7f67701ff5cf919c53e878bfe27a36c8b3a028593a9e650338dbed642",
+      "source_triangles": 5332,
+      "standard_triangles": 3199,
+      "detailed_triangles": 5332
+    },
+    {
+      "id": "FJ4041",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4041_BP29335_FMA80846_Trunk of zygomatic branch of right facial nerve.obj",
+      "source_sha256": "342d43a3a773f420bbda1c3767ca6a4b7faf4eae51236ec4a76db97c10d82fdf",
+      "source_triangles": 4026,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4026
+    },
+    {
+      "id": "FJ4156",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4156_BP29455_FMA6201_Pericardial branch of phrenic nerve.obj",
+      "source_sha256": "b52a9b3469141b1fae1905f8d98551baa859ff2d97ee4153821970dc39449258",
+      "source_triangles": 442,
+      "standard_triangles": 442,
+      "detailed_triangles": 442
+    },
+    {
+      "id": "FJ4157",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4157_BP29423_FMA65387_Trunk of left phrenic nerve.obj",
+      "source_sha256": "8f0b011b7675e9484f6779d05368853541cd498971e31ff0e024d8bdc8971fa7",
+      "source_triangles": 1106,
+      "standard_triangles": 1106,
+      "detailed_triangles": 1106
+    },
+    {
+      "id": "FJ4171",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4171_BP29488_FMA37074_Left axillary nerve.obj",
+      "source_sha256": "ba5be7fa0836ccfa72b016da504ab8ff04498c053d3ca4f5cf6b7ff18940418d",
+      "source_triangles": 654,
+      "standard_triangles": 654,
+      "detailed_triangles": 654
+    },
+    {
+      "id": "FJ4172",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4172_BP29806_FMA37071_Left radial nerve.obj",
+      "source_sha256": "a6cd726af7026964e340fdae14c1dc22a8c8fbe0ed8996c937709e83a4cef909",
+      "source_triangles": 576,
+      "standard_triangles": 576,
+      "detailed_triangles": 576
+    },
+    {
+      "id": "FJ4224",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4224_BP29809_FMA37068_Left median nerve.obj",
+      "source_sha256": "0005af3008aa7ae05d1c8900bd559458f897d89fc99c4899323195af81ba99e3",
+      "source_triangles": 4372,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4372
+    },
+    {
+      "id": "FJ4225",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4225_BP29815_FMA37066_Left musculocutaneous nerve.obj",
+      "source_sha256": "33bcb8e18b548e418eaef9905d8639382498628b0937a2faba4b43b2d257e303",
+      "source_triangles": 3264,
+      "standard_triangles": 3200,
+      "detailed_triangles": 3264
+    },
+    {
+      "id": "FJ4226",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4226_BP29455_FMA6201_Pericardial branch of phrenic nerve.obj",
+      "source_sha256": "d3f8a433870376379548dbe56681a08da7878626188da6f51e5fe241842c67b9",
+      "source_triangles": 408,
+      "standard_triangles": 408,
+      "detailed_triangles": 408
+    },
+    {
+      "id": "FJ4240",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4240_BP29806_FMA37071_Left radial nerve.obj",
+      "source_sha256": "b7bbc22a41bcfc72af2c1a9b6fedd888e372d784887ef4d7400f079e678f698d",
+      "source_triangles": 4474,
+      "standard_triangles": 3199,
+      "detailed_triangles": 4474
+    },
+    {
+      "id": "FJ4243",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4243_BP29488_FMA37074_Left axillary nerve.obj",
+      "source_sha256": "1744a5584078ab48f0a1fd4e4c06efefd304c61208eda1f2792d17d745179d12",
+      "source_triangles": 360,
+      "standard_triangles": 360,
+      "detailed_triangles": 360
+    },
+    {
+      "id": "FJ4258",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4258_BP29812_FMA37321_Left ulnar nerve.obj",
+      "source_sha256": "e83c41c5d566d299f56e4e68ae45022fa7b41a649e4a2a6e4de1cc6ba17ad38f",
+      "source_triangles": 4406,
+      "standard_triangles": 3200,
+      "detailed_triangles": 4406
+    },
+    {
+      "id": "FJ4268",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4268_BP29802_FMA44997_Medial dorsal digital branch of left radial nerve to left middle finger.obj",
+      "source_sha256": "2d5746ee24015a824621a25a34a94799b269222d108785e11c6fe69e0276453d",
+      "source_triangles": 782,
+      "standard_triangles": 782,
+      "detailed_triangles": 782
+    },
+    {
+      "id": "FJ4269",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4269_BP29786_FMA44977_First dorsal digital branch of radial nerve.obj",
+      "source_sha256": "db79eeaa7ce17b437e79846dea09b93ea021e2b0d54dade976b98fe5d6d00d00",
+      "source_triangles": 644,
+      "standard_triangles": 644,
+      "detailed_triangles": 644
+    },
+    {
+      "id": "FJ4270",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4270_BP29794_FMA44979_First dorsal digital branch of left radial nerve.obj",
+      "source_sha256": "22cb87e03de72e017a4caa63603f93793a30cc300570be73990562cad5210fdc",
+      "source_triangles": 1314,
+      "standard_triangles": 1314,
+      "detailed_triangles": 1314
+    },
+    {
+      "id": "FJ4271",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4271_BP29790_FMA44986_Dorsal digital branch of left radial nerve to medial side of left index finger.obj",
+      "source_sha256": "180533a3530d9d7c10415f3e6126ca181147b36d84538707f9ca59c9cde17d1f",
+      "source_triangles": 466,
+      "standard_triangles": 466,
+      "detailed_triangles": 466
+    },
+    {
+      "id": "FJ4278",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4278_BP29777_FMA44984_Lateral dorsal digital branch of radial nerve to index finger.obj",
+      "source_sha256": "6fb98b933f510a6be6e93040652ef57e590163bb2b0c88ec17b5b2b19be5e2db",
+      "source_triangles": 604,
+      "standard_triangles": 604,
+      "detailed_triangles": 604
+    },
+    {
+      "id": "FJ4279",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4279_BP29423_FMA65387_Trunk of left phrenic nerve.obj",
+      "source_sha256": "9d9fb727aa8a3bd4d8596f2cdda44a6bf1e8ef941f288d3ade9542203d99d846",
+      "source_triangles": 716,
+      "standard_triangles": 716,
+      "detailed_triangles": 716
+    },
+    {
+      "id": "FJ4281",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4281_BP29027_FMA65338_Lateral proper palmar digital branch of left median nerve to left thumb.obj",
+      "source_sha256": "d88b84cc7425ef07af878e7e653dfb6dc19da4bb3f7c357596a06bb49ed0b3d0",
+      "source_triangles": 670,
+      "standard_triangles": 670,
+      "detailed_triangles": 670
+    },
+    {
+      "id": "FJ4282",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4282_BP29041_FMA65344_Medial proper palmar digital branch of left median nerve to left index finger.obj",
+      "source_sha256": "32c713dcc51b4795a93a5f92837ea3bd3c8d385d7b8d8041941b17fc466c838f",
+      "source_triangles": 762,
+      "standard_triangles": 762,
+      "detailed_triangles": 762
+    },
+    {
+      "id": "FJ4283",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4283_BP29095_FMA65348_Medial proper palmar digital branch of left median nerve to left middle finger.obj",
+      "source_sha256": "59eb7f2804fb9cb54f54e98411c5b72e71a1e287cfca48eb177cecf1b36a7b92",
+      "source_triangles": 668,
+      "standard_triangles": 668,
+      "detailed_triangles": 668
+    },
+    {
+      "id": "FJ4284",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4284_BP29101_FMA65342_Lateral proper palmar digital branch of left median nerve to left index finger.obj",
+      "source_sha256": "75ad7bedddb7d669889e2e9d7f1e93b4ea38ea039f6028aae27ff87f3e2a7ba2",
+      "source_triangles": 640,
+      "standard_triangles": 640,
+      "detailed_triangles": 640
+    },
+    {
+      "id": "FJ4285",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4285_BP29115_FMA44867_Lateral proper palmar digital branch of median nerve to middle finger.obj",
+      "source_sha256": "320f55307f8ff753ed20beedd13d8716e6b391f324db59dc1d658c4c2b6615c8",
+      "source_triangles": 516,
+      "standard_triangles": 516,
+      "detailed_triangles": 516
+    },
+    {
+      "id": "FJ4286",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4286_BP29194_FMA44871_Lateral proper palmar digital branch of left median nerve to left ring finger.obj",
+      "source_sha256": "9e26a20ae66a12b1aa1feaa692c8e7ab76379a9d5ea744d812d95a09e915a9df",
+      "source_triangles": 694,
+      "standard_triangles": 694,
+      "detailed_triangles": 694
+    },
+    {
+      "id": "FJ4287",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4287_BP28982_FMA65340_Medial proper palmar digital branch of left median nerve to left thumb.obj",
+      "source_sha256": "33073fc6ea60d9d09a2952586de20e064098c3562cfd57b52b89a269c263409b",
+      "source_triangles": 366,
+      "standard_triangles": 366,
+      "detailed_triangles": 366
+    },
+    {
+      "id": "FJ4291",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ4291_BP29635_FMA75533_Set of phrenico-abdominal branches of phrenic nerve.obj",
+      "source_sha256": "20c14106def611e9545307c64a636fdbbfa2f7f354463eca4b8f1c1b6a7c4d4a",
+      "source_triangles": 632,
+      "standard_triangles": 632,
+      "detailed_triangles": 632
+    },
+    {
+      "id": "FJ4426",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/spinal_cord/FJ4426_BP29816_FMA242005_Neural tissue of spinal cord.obj",
+      "source_sha256": "16a3dbf5a0fbc6334df956071a8e27b4f538a9d1f18178919984df0856aa7053",
+      "source_triangles": 9952,
+      "standard_triangles": 3200,
+      "detailed_triangles": 9952
+    },
+    {
+      "id": "FJ7462",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7462_BP29926_FMA72674_Left precuneus.obj",
+      "source_sha256": "862da9144e77c8f8ba57ddf891e3840de623fd56466f9c108514bbb8a2719675",
+      "source_triangles": 8632,
+      "standard_triangles": 3200,
+      "detailed_triangles": 8632
+    },
+    {
+      "id": "FJ7462M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7462M_BP29930_FMA72673_Right precuneus.obj",
+      "source_sha256": "b79d31c480296763aa56f29aba364f739053ac23a0707947eefd2355e619ad58",
+      "source_triangles": 8632,
+      "standard_triangles": 3200,
+      "detailed_triangles": 8632
+    },
+    {
+      "id": "FJ7465",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7465_BP29911_FMA256200_Left anterior orbital gyrus.obj",
+      "source_sha256": "002e84a975f6c26b5a68094a1576a3aee80f55a11ab645d3adeee091d68962ac",
+      "source_triangles": 10090,
+      "standard_triangles": 3200,
+      "detailed_triangles": 10090
+    },
+    {
+      "id": "FJ7465M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7465M_BP29916_FMA256198_Right anterior orbital gyrus.obj",
+      "source_sha256": "09576da7e67c3a3d4d75e95d155138fd45f14b22fd595703f9a51e41c32b935a",
+      "source_triangles": 10090,
+      "standard_triangles": 3200,
+      "detailed_triangles": 10090
+    },
+    {
+      "id": "FJ7466",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7466_BP29925_FMA72757_Left lateral orbital gyrus.obj",
+      "source_sha256": "a1a988a7f55e0901bebbf8bf17c9cf897a850bd4a75362023b0dbef5548c9d8b",
+      "source_triangles": 8840,
+      "standard_triangles": 3199,
+      "detailed_triangles": 8840
+    },
+    {
+      "id": "FJ7466M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7466M_BP29920_FMA72756_Right lateral orbital gyrus.obj",
+      "source_sha256": "a25229cc5a70693fa5e3436df878850c0feac6863a2132dd8f68a44e198c8639",
+      "source_triangles": 8840,
+      "standard_triangles": 3199,
+      "detailed_triangles": 8840
+    },
+    {
+      "id": "FJ7467",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7467_BP29924_FMA72759_Left medial orbital gyrus.obj",
+      "source_sha256": "77f98495380b4ef0293021e404c1d55f86b03f4ae64e4f4babf092499e03b509",
+      "source_triangles": 9508,
+      "standard_triangles": 3200,
+      "detailed_triangles": 9508
+    },
+    {
+      "id": "FJ7467M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7467M_BP29929_FMA72758_Right medial orbital gyrus.obj",
+      "source_sha256": "65dd56dc8726f7cddfb5cd788a8eca68ec70a448265d5303d5e7149a78adebdb",
+      "source_triangles": 9508,
+      "standard_triangles": 3200,
+      "detailed_triangles": 9508
+    },
+    {
+      "id": "FJ7468",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7468_BP29931_FMA80188_Left posterior orbital gyrus.obj",
+      "source_sha256": "9e8457534de9697799e7b1f9fa8d1db4edd651278b2961e93037d9f4fb32a174",
+      "source_triangles": 8566,
+      "standard_triangles": 3199,
+      "detailed_triangles": 8566
+    },
+    {
+      "id": "FJ7468M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7468M_BP29918_FMA80187_Right posterior orbital gyrus.obj",
+      "source_sha256": "3cf80e55f9b44de75dd78128068576b0e2625e7217056359f42ca3e5c1c47af4",
+      "source_triangles": 8566,
+      "standard_triangles": 3200,
+      "detailed_triangles": 8566
+    },
+    {
+      "id": "FJ7469",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7469_BP29922_FMA72660_Left straight gyrus.obj",
+      "source_sha256": "3e4c6f8fcd00333350c77861486cdd84c8eed6c4a9f120c0fff742e6c8211948",
+      "source_triangles": 12802,
+      "standard_triangles": 3199,
+      "detailed_triangles": 12802
+    },
+    {
+      "id": "FJ7469M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7469M_BP29910_FMA72659_Right straight gyrus.obj",
+      "source_sha256": "e8815236b093437b264412a5c6776def2e62f022f9eab6f19bf853f84d629045",
+      "source_triangles": 12802,
+      "standard_triangles": 3199,
+      "detailed_triangles": 12802
+    },
+    {
+      "id": "FJ7470",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7470_BP20829_FMA72718_Left cingulate gyrus.obj",
+      "source_sha256": "fc45f2b5c6086d04bce56e6201c967121822b2999291ce92fdc88ef5a863b915",
+      "source_triangles": 40600,
+      "standard_triangles": 3199,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7470M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7470M_BP23974_FMA72717_Right cingulate gyrus.obj",
+      "source_sha256": "f253cd14553fded9c8e468eeb7338f0b9d3fd83654c9ee1d75ff000dad809e9f",
+      "source_triangles": 40600,
+      "standard_triangles": 3199,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7471",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7471_BP29919_FMA72680_Left cuneus.obj",
+      "source_sha256": "73c145d98459fe3af73b2024b91630c90f5b70b2ec650e91b7b3ca3655b1274a",
+      "source_triangles": 13372,
+      "standard_triangles": 3199,
+      "detailed_triangles": 13372
+    },
+    {
+      "id": "FJ7471M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7471M_BP29915_FMA72679_Right cuneus.obj",
+      "source_sha256": "ca9aa9bd102eaaafb3e45942fc01c5ba6814141dafd244708a6615a35a93dc6c",
+      "source_triangles": 13372,
+      "standard_triangles": 3199,
+      "detailed_triangles": 13372
+    },
+    {
+      "id": "FJ7472",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7472_BP20995_FMA72690_Left fusiform gyrus.obj",
+      "source_sha256": "b7010be8c87e1e9080258028c9a223408c02b7f1bcbf61bdfaa0d48715e53ad6",
+      "source_triangles": 26110,
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7472M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7472M_BP24018_FMA72689_Right fusiform gyrus.obj",
+      "source_sha256": "b9c10f3eee2fb2df89c7bc44aa2fc9ed8f83f357e79657e79ad754d0a3bdffcd",
+      "source_triangles": 26110,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7473",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7473_BP22696_FMA72688_Left inferior temporal gyrus.obj",
+      "source_sha256": "5c9dc83eb8bef81115e6699f105d2679a2fa980d07d142d9c0028a78861d194f",
+      "source_triangles": 30002,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7473M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7473M_BP22176_FMA72687_Right inferior temporal gyrus.obj",
+      "source_sha256": "c6883a1604ad987b6d0254ee9699c3162c2f27151877610dcbd7d2c80f97c96d",
+      "source_triangles": 30002,
+      "standard_triangles": 3199,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7474",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7474_BP29927_FMA72678_Left lateral occipital gyrus.obj",
+      "source_sha256": "c70d6edd2319f537e027e6a476af2d0d377d9f22e07a547174fae19d5b0a6108",
+      "source_triangles": 18146,
+      "standard_triangles": 3200,
+      "detailed_triangles": 16000
+    },
+    {
+      "id": "FJ7474M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7474M_BP29928_FMA72677_Right lateral occipital gyrus.obj",
+      "source_sha256": "e482b0fce22285a46de2242ca3ec6ebfb40a8000d9ad3f8f3d5c9590deb26266",
+      "source_triangles": 18146,
+      "standard_triangles": 3200,
+      "detailed_triangles": 15999
+    },
+    {
+      "id": "FJ7475",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7475_BP29917_FMA72682_Left lingual gyrus.obj",
+      "source_sha256": "78efbe613c543f4b75b5775c9ac8ff9c2998f9028713e681bd8129156a78365a",
+      "source_triangles": 9370,
+      "standard_triangles": 3200,
+      "detailed_triangles": 9370
+    },
+    {
+      "id": "FJ7475M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7475M_BP29912_FMA72681_Right lingual gyrus.obj",
+      "source_sha256": "e0b3ee38b759259e3a1b5f5087e2f2a6eef761d9fa85e47e4dd3992d220c564e",
+      "source_triangles": 9370,
+      "standard_triangles": 3200,
+      "detailed_triangles": 9370
+    },
+    {
+      "id": "FJ7476",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7476_BP22707_FMA72706_Left parahippocampal gyrus.obj",
+      "source_sha256": "0328cb7c089ef863c3ee899f048496a98ebb6cf5b439b6d83dba205f89948d05",
+      "source_triangles": 8324,
+      "standard_triangles": 3199,
+      "detailed_triangles": 8324
+    },
+    {
+      "id": "FJ7476M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7476M_BP22184_FMA72705_Right parahippocampal gyrus.obj",
+      "source_sha256": "541c9b6836ebcea582fbd4d78a98afa499a979edd0dd041f87f0b5c84e76a35e",
+      "source_triangles": 8324,
+      "standard_triangles": 3199,
+      "detailed_triangles": 8324
+    },
+    {
+      "id": "FJ7478",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7478_BP29923_FMA72676_Left superior occipital gyrus.obj",
+      "source_sha256": "9a041dfa3d25991caa1f3863cfedd76c7300d3b9f38bedd5b064dc3b2ab5caf1",
+      "source_triangles": 12714,
+      "standard_triangles": 3199,
+      "detailed_triangles": 12714
+    },
+    {
+      "id": "FJ7478M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7478M_BP29921_FMA72675_Right superior occipital gyrus.obj",
+      "source_sha256": "0f31a80151c865b7650a1326af0faedadc6197e41949ed52919598697f0f572f",
+      "source_triangles": 12714,
+      "standard_triangles": 3199,
+      "detailed_triangles": 12714
+    },
+    {
+      "id": "FJ7479",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7479_BP29914_FMA72684_Left superior temporal gyrus.obj",
+      "source_sha256": "81446a29e939e6afe5d1889d3dd564c43ef719e6a2fb955d917828a90a51e607",
+      "source_triangles": 13278,
+      "standard_triangles": 3200,
+      "detailed_triangles": 13278
+    },
+    {
+      "id": "FJ7479M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7479M_BP29913_FMA72683_Right superior temporal gyrus.obj",
+      "source_sha256": "161625f7a1434cb04b02c8b930781ec68c57d1fa00b51665f40d3a0393bc4f55",
+      "source_triangles": 13278,
+      "standard_triangles": 3200,
+      "detailed_triangles": 13278
+    },
+    {
+      "id": "FJ7500",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7500_BP29917_FMA72682_Left lingual gyrus.obj",
+      "source_sha256": "1cf98926e03c449a7182cbcec853365d001b22924bf12582968f605065f6e28f",
+      "source_triangles": 3366,
+      "standard_triangles": 3200,
+      "detailed_triangles": 3366
+    },
+    {
+      "id": "FJ7500M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-core/brain/FJ7500M_BP29912_FMA72681_Right lingual gyrus.obj",
+      "source_sha256": "08e5f9ebf5d78a676bb01c073c480c83608818cff2423a193731b9c79bd6e41f",
+      "source_triangles": 3366,
+      "standard_triangles": 3200,
+      "detailed_triangles": 3366
+    },
+    {
+      "id": "FJ7501",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ7501_BP23301_FMA50875_Right optic nerve.obj",
+      "source_sha256": "15c204aca7e2140d534e10e1bc048cfe8ed67a5ab480365be2fbff5c8e5b398f",
+      "source_triangles": 1506,
+      "standard_triangles": 1506,
+      "detailed_triangles": 1506
+    },
+    {
+      "id": "FJ7501M",
+      "source": "/Users/steve/Downloads/anatomy-pwa-studio/.atlas-20-work/subsets/nervous-extra/nervous-extra/FJ7501M_BP23214_FMA50878_Left optic nerve.obj",
+      "source_sha256": "b0ffb2097bb6fd3609c68df8aea9b5383c074863e0b4583184a7135ccbae5c54",
+      "source_triangles": 1506,
+      "standard_triangles": 1506,
+      "detailed_triangles": 1506
+    }
+  ]
+}
