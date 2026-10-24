@@ -1,38 +1,25 @@
-# AnatomIQ 3D 2.0.4 — Ventricular Visibility Adjustment
+# AnatomIQ 3D 2.1.1 — Kidney Surface Finish
 
-**Only the ventricular material changes.** The ventricles remain slightly translucent (94% opacity) but write depth information, helping overlapping surfaces retain their form. The meninges, structure colors, anatomical geometry, and all other body systems remain unchanged.
+This is a small app-only patch for the urinary system.
 
-## Apply to your GitHub Desktop checkout
+## What it changes
 
-1. Extract this ZIP.
-2. Copy `tools/apply-ventricle-opacity-204.py` into your existing repository's `tools/` folder, replacing nothing else.
-3. Open Terminal in your existing GitHub repository, for example:
+- Makes the **kidneys** appear glossier / shinier.
+- Leaves the **ureters, bladder, and urethra** unchanged.
+- Does **not** regenerate urinary GLBs.
 
-   ```bash
-   cd /Users/steve/Documents/GitHub/anatomiq-3d
-   python3 tools/apply-ventricle-opacity-204.py
-   ```
+## Install
 
-4. The script updates exactly these four application files:
-   - `nervous-model.js`
-   - `app.js`
-   - `sw.js`
-   - `version.json`
-5. Commit those four files using GitHub Desktop and **Push origin**. Once Pages finishes deploying, reload your installed PWA. If it still shows the old version, close and reopen the app to activate the updated service worker.
+From the root of your `anatomiq-3d` repository, run:
 
-The script creates a timestamped `.nervous-204-backup-*` folder before writing. It validates all edits before applying them and can safely be run again. It requires the **2.0.3 visual-tuning installer** to have been applied successfully.
+```bash
+python3 tools/apply-kidney-shine-211.py
+```
 
-## Expected material settings
+## Files changed
 
-| Structure | Opacity | Depth writing | Modified? |
-|---|---:|---|---|
-| Cerebral ventricles (3rd, 4th, left and right lateral) | 0.94 | On | Yes |
-| Dura / falx / tentorium | 0.30 (existing setting) | Off | No |
+- `app.js`
+- `sw.js`
+- `version.json`
 
-**No GLB files, mesh manifests, generated models, local saved lessons or structures are altered.**
-
-## Verify
-
-Run `python3 tests/check-ventricle-opacity-204.py` from your repository after copying the included test to `tests/`. It confirms the 2.0.4 material settings and the 2.0.4 version stamps.
-
-This is a source-level visual fix; its final appearance should be checked in the browser after deployment.
+A backup is created in `.kidney-shine-211-backup/`.
