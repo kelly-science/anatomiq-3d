@@ -1,6 +1,6 @@
 {
-  "version": "2.2.17",
+  "version": "2.2.18",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Axial and Appendicular Skeletal special views; shift/mouse and Shift/Cmd/Ctrl list multi-selection for paint, fade, hide; numeric release and legacy letter-aware update checks."
+  "notes": "Data-backed anatomy hierarchy and clickable breadcrumbs across installed systems; transient division isolation preserves chapter visibility and existing IDs."
 }
