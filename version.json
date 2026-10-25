@@ -1,6 +1,6 @@
 {
-  "version": "2.2.11",
+  "version": "2.2.12",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Connective visibility migration: older all-hidden 14-mesh drafts recover on teacher tab/preset activation, without Restore All. Other saved structure visibility, model geometry and IDs are unchanged."
+  "notes": "Label performance: defer mesh occlusion until camera settles; time-slice raycasts; throttle callout position updates while orbiting. Anatomical models, saved lesson IDs and styling unchanged."
 }
