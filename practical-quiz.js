@@ -1,6 +1,7 @@
-/* AnatomIQ 2.2.16 — deterministic eligibility, randomized practicals.
-   Pure JavaScript: no Three.js dependency and no student network requests. */
-export const PRACTICAL_DEFAULTS=Object.freeze({on:false,count:15,off:[]});
+/* AnatomIQ 2.2.16b — side-neutral practical identification.
+   A single anatomical answer can reference multiple original mesh/label IDs.
+   No changes to saved anatomy IDs, chapters, or project schema. */
+export const PRACTICAL_DEFAULTS = Object.freeze({on:false,count:15,off:[]});
 export function normalPractical(value){
   if(!value||typeof value!=='object')return {on:false,count:15,off:[]};
   return {on:value.on===true,count:Math.max(1,Math.min(60,Number.isInteger(value.count)?value.count:15)),
@@ -18,11 +19,29 @@ function visibleBits(encoded,count){
     return i=>Boolean(decoded.charCodeAt(i>>>3)&(1<<(i&7)));
   }catch{return null;}
 }
-const normalizedName=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
-/* One structure question per anatomy ID. Labels have teacher-stable qi identifiers. */
+const normalizedName=v=>String(v||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('en-US');
+
+/* Strip ONLY left/right identifiers at the beginning or end, rather than
+   modifying anatomical terms such as 'lateral' or numeric vertebra labels.
+   Examples: Left temporal, temporal (right), Right humerus, Femur - left. */
+export function practicalAnswerName(value){
+  const original=String(value??'').normalize('NFKC').replace(/\s+/g,' ').trim();
+  if(!original)return '';
+  let name=original;
+  name=name.replace(/^(?:left|right)(?:\s+|[\s]*[-–—:]\s*)/i,'');
+  name=name.replace(/\s*\((?:left|right)\)\s*$/i,'');
+  name=name.replace(/\s*\[(?:left|right)\]\s*$/i,'');
+  name=name.replace(/\s*[,;:/–—-]\s*(?:left|right)\s*$/i,'');
+  name=name.trim().replace(/^[,;:\s-]+|[,;:\s-]+$/g,'');
+  if(!name)return original;
+  return name.replace(/^[a-z]/,c=>c.toUpperCase());
+}
+
+/* Original anatomical identity is retained in each variant; matching answers
+   are grouped for the teacher pool and each new student attempt. */
 export function practicalCandidates(chapters,structures){
   if(!Array.isArray(chapters)||!Array.isArray(structures))return [];
-  const found=[],seenStructure=new Set(),seenLabels=new Set();
+  const raw=[],seenStructure=new Set(),seenLabels=new Set();
   chapters.forEach((chapter,ci)=>{
     const isVisible=visibleBits(chapter?.b,chapter?.n);
     if(!isVisible)return;
@@ -31,7 +50,7 @@ export function practicalCandidates(chapters,structures){
       const s=structures[i];const name=String(s?.name||'').trim();
       if(!name||!s||!Number.isInteger(s.index)||s.index!==i)continue;
       if(!seenStructure.has(i)){
-        found.push({key:`s:${i}`,type:'structure',s:i,chapter:ci,name,
+        raw.push({key:`s:${i}`,type:'structure',s:i,chapter:ci,name,
           system:s.system||'',tissue:s.tissue||'',side:s.side||''});
         seenStructure.add(i);
       }
@@ -41,15 +60,28 @@ export function practicalCandidates(chapters,structures){
       const s=structures[label.s];const name=String(label.t||'').trim();
       if(!s||!name||!label.qi||!/^q-[0-9A-Za-z-]{4,62}$/.test(label.qi))continue;
       const key='l:'+label.qi;
-      // A duplicated identical question has one answer, not two attempts.
       const signature=`${label.s}:${normalizedName(name)}`;
       if(seenLabels.has(signature))continue;
       seenLabels.add(signature);
-      found.push({key,type:'label',s:label.s,chapter:ci,name,
+      raw.push({key,type:'label',s:label.s,chapter:ci,name,
         system:s.system||'',tissue:s.tissue||'',side:s.side||'',anchor:Array.isArray(label.p)?label.p:null});
     }
   });
-  return found;
+  const byAnswer=new Map();
+  for(const candidate of raw){
+    const name=practicalAnswerName(candidate.name);
+    const answerKey=normalizedName(name);
+    if(!answerKey)continue;
+    let group=byAnswer.get(answerKey);
+    if(!group){
+      group={...candidate,name,memberKeys:[],variants:[],chapters:[]};
+      byAnswer.set(answerKey,group);
+    }
+    group.memberKeys.push(candidate.key);
+    group.variants.push(candidate);
+    if(!group.chapters.includes(candidate.chapter))group.chapters.push(candidate.chapter);
+  }
+  return [...byAnswer.values()];
 }
 function randomInteger(bound){
   if(bound<=1)return 0;
@@ -63,33 +95,48 @@ function randomInteger(bound){
 }
 export function shuffled(items,randomIndex=randomInteger){
   const arr=[...items];
-  for(let i=arr.length-1;i>0;i--){const j=Math.max(0,Math.min(i,randomIndex(i+1)));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.max(0,Math.min(i,randomIndex(i+1)));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
   return arr;
 }
+const variantsFor=q=>Array.isArray(q.variants)&&q.variants.length?q.variants:[q];
+const keysFor=q=>Array.isArray(q.memberKeys)&&q.memberKeys.length?q.memberKeys:[q.key];
 export function practicalAttempt(candidates,structures,config,randomIndex=randomInteger){
-  const cfg=normalPractical(config);const off=new Set(cfg.off);
-  const eligible=candidates.filter(c=>!off.has(c.key));
-  const chosen=shuffled(eligible,randomIndex).slice(0,Math.min(cfg.count,eligible.length));
-  const namedCatalog=[...eligible,...structures.map((s,i)=>({s:i,name:s?.name||'',system:s?.system||'',tissue:s?.tissue||'',side:s?.side||''}))]
-    .filter(s=>String(s.name||'').trim());
-  return chosen.map(target=>{
-    const answer=normalizedName(target.name);
-    const pool=namedCatalog.filter(s=>normalizedName(s.name)!==answer);
+  const cfg=normalPractical(config),off=new Set(cfg.off);
+  const eligible=candidates.map(group=>{
+    const variants=variantsFor(group).filter(v=>!off.has(v.key));
+    return variants.length?{group,variants}:null;
+  }).filter(Boolean);
+  const selected=shuffled(eligible,randomIndex).slice(0,Math.min(cfg.count,eligible.length));
+  const catalog=[...candidates.map(c=>({name:c.name,system:c.system,tissue:c.tissue})),
+    ...structures.map(s=>({name:practicalAnswerName(s?.name),system:s?.system||'',tissue:s?.tissue||''}))]
+    .filter(s=>normalizedName(s.name));
+  return selected.map(({group,variants})=>{
+    const representative=shuffled(variants,randomIndex)[0];
+    const answer=normalizedName(group.name);
+    const pool=catalog.filter(s=>normalizedName(practicalAnswerName(s.name))!==answer);
     const ranked=shuffled(pool,randomIndex).sort((a,b)=>{
-      const rank=s=>Number(s.system===target.system)*4+Number(s.tissue===target.tissue)*3+Number(s.side===target.side);
+      const rank=s=>Number(s.system===representative.system)*4+Number(s.tissue===representative.tissue)*3;
       return rank(b)-rank(a);
     });
     const unique=new Set([answer]),wrong=[];
-    for(const p of ranked){const name=normalizedName(p.name);if(!name||unique.has(name))continue;
-      unique.add(name);wrong.push(p.name.trim());if(wrong.length===3)break;
+    for(const p of ranked){
+      const name=practicalAnswerName(p.name),key=normalizedName(name);
+      if(!key||unique.has(key))continue;
+      unique.add(key);wrong.push(name);
+      if(wrong.length===3)break;
     }
-    return {...target,choices:shuffled([target.name,...wrong],randomIndex)};
+    // The question's original mesh/anchor is preserved, despite the common answer.
+    return {...representative,name:group.name,memberKeys:keysFor(group),
+      choices:shuffled([group.name,...wrong],randomIndex)};
   }).filter(q=>q.choices.length>=2);
 }
 export function gradePractical(questions,answers){
   const missed=[];let correct=0;
   questions.forEach((q,i)=>{
-    if(normalizedName(answers[i])===normalizedName(q.name))correct++;
+    if(normalizedName(practicalAnswerName(answers[i]))===normalizedName(practicalAnswerName(q.name)))correct++;
     else missed.push({name:q.name,answer:answers[i]||'(no answer)',chapter:q.chapter+1,type:q.type});
   });
   return {correct,total:questions.length,percent:questions.length?Math.round(correct/questions.length*100):0,missed};

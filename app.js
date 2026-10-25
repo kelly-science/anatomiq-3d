@@ -35,7 +35,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.16';
+const APP_VERSION = '2.2.16b';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -3281,13 +3281,21 @@ function practicalPool(){
   const current=teacherMode ? snapshotScene() : chapters[activeChapter];
   return practicalCandidates(chapters.map((ch,i)=>teacherMode&&i===activeChapter?current:ch),structures);
 }
+// A displayed question may represent several left/right anatomy IDs. The
+// teacher uses one checkbox to enable/disable the complete answer group.
+function practicalKeysOf(item){
+  return Array.isArray(item.memberKeys)&&item.memberKeys.length?item.memberKeys:[item.key];
+}
+function practicalInChapter(item,chapter){
+  return chapter==='all'||(Array.isArray(item.chapters)&&item.chapters.includes(Number(chapter)))||item.chapter===Number(chapter);
+}
 let practicalSearch='',practicalFilter='all';
 function renderPracticalEditor(){
   if(!teacherMode||!sceneRoot)return;
   const enabled=$('practical-enabled');if(!enabled)return;
   enabled.checked=practicalConfig.on;
   const pool=practicalPool(),off=new Set(practicalConfig.off);
-  const eligible=pool.filter(q=>!off.has(q.key));
+  const eligible=pool.filter(q=>practicalKeysOf(q).some(key=>!off.has(key)));
   const opts=$('practical-editor-options');opts.hidden=!practicalConfig.on;
   $('practical-eligible-count').textContent=`${eligible.length} of ${pool.length} eligible targets`;
   $('practical-question-count').value=String(practicalConfig.count);
@@ -3302,18 +3310,20 @@ function renderPracticalEditor(){
   if(prior!=='all'&&Number(prior)>=chapters.length)practicalFilter='all';
   select.value=practicalFilter;
   const list=$('practical-candidate-list');list.replaceChildren();
-  const match=pool.filter(q=>(practicalFilter==='all'||q.chapter===Number(practicalFilter)) &&
+  const match=pool.filter(q=>practicalInChapter(q,practicalFilter) &&
     `${q.name} ${q.system} ${q.tissue}`.toLowerCase().includes(practicalSearch.toLowerCase()));
   for(const item of match.slice(0,140)){
     const row=document.createElement('label');row.className='practical-candidate';
-    const input=document.createElement('input');input.type='checkbox';input.checked=!off.has(item.key);
+    const input=document.createElement('input');input.type='checkbox';input.checked=practicalKeysOf(item).some(key=>!off.has(key));
     input.addEventListener('change',()=>{
       const disabled=new Set(practicalConfig.off);
-      if(input.checked)disabled.delete(item.key);else disabled.add(item.key);
+      for(const key of practicalKeysOf(item)){if(input.checked)disabled.delete(key);else disabled.add(key);}
       practicalConfig.off=[...disabled];renderPracticalEditor();queueDraft();
     });
     const name=document.createElement('span');name.textContent=item.name;
-    const detail=document.createElement('small');detail.textContent=`Chapter ${item.chapter+1} · ${item.type==='label'?'Teacher label':'Anatomical mesh'} · ${item.system}`;
+    const detail=document.createElement('small');
+    const sourceChapters=Array.isArray(item.chapters)?item.chapters:[item.chapter];
+    detail.textContent=`Chapter${sourceChapters.length>1?'s':''} ${sourceChapters.map(n=>n+1).join(', ')} · ${item.type==='label'?'Teacher label':'Anatomical mesh'} · ${item.system}${practicalKeysOf(item).length>1?' · bilateral/common answer':''}`;
     const text=document.createElement('span');text.className='practical-candidate-text';text.append(name,detail);
     row.append(input,text);list.append(row);
   }
@@ -3322,9 +3332,9 @@ function renderPracticalEditor(){
 function practicalBulk(enable){
   const pool=practicalPool();const off=new Set(practicalConfig.off);
   for(const q of pool){
-    if(practicalFilter!=='all'&&q.chapter!==Number(practicalFilter))continue;
+    if(!practicalInChapter(q,practicalFilter))continue;
     if(!`${q.name} ${q.system} ${q.tissue}`.toLowerCase().includes(practicalSearch.toLowerCase()))continue;
-    if(enable)off.delete(q.key);else off.add(q.key);
+    for(const key of practicalKeysOf(q)){if(enable)off.delete(key);else off.add(key);}
   }
   practicalConfig.off=[...off];renderPracticalEditor();queueDraft();
 }
