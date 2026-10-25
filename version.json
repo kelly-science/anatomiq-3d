@@ -1,6 +1,6 @@
 {
-  "version": "2.2.21",
+  "version": "2.2.22",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Unified Teacher/Student menu chrome, File/About, native fullscreen and bottom toolbar; rendering quality in Settings, labels in View, offline in Student File."
+  "notes": "Fullscreen floating student details, reset chapter, student undo/redo and updated toolbar icons."
 }

@@ -2,7 +2,7 @@
    The new menu and toolbar proxy existing app handlers rather than reimplement them. */
 (() => {
   'use strict';
-  const VERSION='2.2.21';
+  const VERSION='2.2.22';
   const $ = id => document.getElementById(id);
   const teacher = () => !document.body.classList.contains('student-mode') && !/^#(?:scene|lesson)=/.test(location.hash);
   const button = (label, action, extra={}) => {
@@ -27,6 +27,12 @@
   let toolbarFullscreen=null;
   let toolbarUndo=null;
   let toolbarRedo=null;
+  let toolbarChapterReset=null;
+  let floatingDetailsAnchor=null;
+  let floatingDetailsToggle=null;
+  let floatingWasOpen=false;
+  let studentHistoryState={canUndo:false,canRedo:false,ready:false};
+  let studentMenuUndo=null,studentMenuRedo=null;
   const activeStudent=()=>!teacher();
 
   function displayMessage(message){
@@ -85,12 +91,14 @@
     const file=createStudentGroup('File');
     file.append(button('Save lesson for offline use',()=>saveOffline(),{id:'anat-student-offline'}),divider(),button('About AnatomIQ…',openAbout));
     const edit=createStudentGroup('Edit');
-    edit.append(button('Clear selection',()=>targetClick('clear-selection')),button('Reset camera',()=>targetClick('reset-camera')));
+    studentMenuUndo=button('Undo',()=>runStudentHistory('undo'),{id:'anat-student-undo'});
+    studentMenuRedo=button('Redo',()=>runStudentHistory('redo'),{id:'anat-student-redo'});
+    edit.append(studentMenuUndo,studentMenuRedo,divider(),button('Clear selection',()=>targetClick('clear-selection')),button('Reset camera',()=>targetClick('reset-camera')));
     const view=createStudentGroup('View');
     for(const [direction,label] of [['front','Front'],['back','Back'],['left','Left'],['right','Right']]){
       view.append(button(label,()=>activateView(direction)));
     }
-    view.append(divider(),button('Show / Hide Labels',toggleLabels,{id:'anat-student-toggle-labels'}));
+    view.append(divider(),button('Reset Chapter',resetStudentChapter,{id:'anat-student-reset-chapter'}),divider(),button('Show / Hide Labels',toggleLabels,{id:'anat-student-toggle-labels'}));
     view.append(button('Enter Full Screen',toggleFullscreen,{id:'anat-student-fullscreen'}));
     const settings=createStudentGroup('Settings');
     settings.append(createQuickQuality('student'));
@@ -132,6 +140,85 @@
     // Resume label placement immediately when the teacher turns labels back on.
     window.dispatchEvent(new Event('resize'));
   }
+
+  // Student actions are implemented in app.js where chapter snapshots and mesh state live.
+  // No teacher project changes or saves are performed by these commands.
+  function runStudentHistory(action){
+    if(teacher()||!studentHistoryState.ready)return;
+    if(action==='undo'&&!studentHistoryState.canUndo)return;
+    if(action==='redo'&&!studentHistoryState.canRedo)return;
+    window.dispatchEvent(new CustomEvent('anatomiq:student-history-command',{detail:{action}}));
+  }
+  function resetStudentChapter(){
+    if(teacher()||!studentHistoryState.ready)return;
+    window.dispatchEvent(new CustomEvent('anatomiq:student-history-command',{detail:{action:'reset'}}));
+  }
+  function syncHistoryTools(){
+    const sourceUndo=$('edit-undo'),sourceRedo=$('edit-redo');
+    const canUndo=teacher()?Boolean(sourceUndo&&!sourceUndo.disabled):studentHistoryState.ready&&studentHistoryState.canUndo;
+    const canRedo=teacher()?Boolean(sourceRedo&&!sourceRedo.disabled):studentHistoryState.ready&&studentHistoryState.canRedo;
+    if(toolbarUndo)toolbarUndo.disabled=!canUndo;
+    if(toolbarRedo)toolbarRedo.disabled=!canRedo;
+    if(studentMenuUndo)studentMenuUndo.disabled=!studentHistoryState.ready||!studentHistoryState.canUndo;
+    if(studentMenuRedo)studentMenuRedo.disabled=!studentHistoryState.ready||!studentHistoryState.canRedo;
+    const reset=$('anat-student-reset-chapter');if(reset)reset.disabled=!studentHistoryState.ready;
+    if(toolbarChapterReset)toolbarChapterReset.disabled=!studentHistoryState.ready;
+  }
+  function makeStrokeIcon(paths){
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','19');svg.setAttribute('height','19');
+    svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');
+    svg.setAttribute('stroke-width','1.9');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');
+    svg.setAttribute('aria-hidden','true');
+    for(const d of paths){const path=document.createElementNS(ns,'path');path.setAttribute('d',d);svg.append(path);}
+    return svg;
+  }
+  // Lucide-style curved history arrows (rather than the previous U-turn glyphs).
+  const UNDO_PATHS=['M9 14 4 9l5-5','M4 9h10.5a5.5 5.5 0 0 1 0 11H11'];
+  const REDO_PATHS=['m15 14 5-5-5-5','M20 9H9.5a5.5 5.5 0 0 0 0 11H13'];
+  const RESET_PATHS=['M3 11a9 9 0 1 1 2.6 6.4','M3 4v7h7'];
+
+  function syncFloatingDetails(active){
+    const info=$('info-sidebar'),viewer=document.querySelector('.viewer-panel');
+    if(!info||!viewer)return;
+    if(active){
+      if(!floatingDetailsAnchor){
+        floatingWasOpen=info.classList.contains('open');
+        floatingDetailsAnchor=document.createComment('AnatomIQ student details original location');
+        info.parentNode.insertBefore(floatingDetailsAnchor,info);
+        viewer.appendChild(info);info.classList.add('anat-floating-info');
+        info.classList.add('open');
+      }
+      if(!floatingDetailsToggle){
+        floatingDetailsToggle=document.createElement('button');
+        floatingDetailsToggle.type='button';floatingDetailsToggle.className='anat-floating-details-toggle';
+        floatingDetailsToggle.setAttribute('aria-controls','info-sidebar');
+        floatingDetailsToggle.addEventListener('click',()=>{
+          info.classList.toggle('open');
+          syncFloatingDetailsButton();
+        });
+        viewer.appendChild(floatingDetailsToggle);
+      }
+      syncFloatingDetailsButton();
+    }else{
+      if(floatingDetailsToggle){floatingDetailsToggle.remove();floatingDetailsToggle=null;}
+      if(floatingDetailsAnchor){
+        floatingDetailsAnchor.parentNode.insertBefore(info,floatingDetailsAnchor);
+        floatingDetailsAnchor.remove();floatingDetailsAnchor=null;
+        info.classList.remove('anat-floating-info');
+        info.classList.toggle('open',floatingWasOpen);
+      }
+    }
+  }
+  function syncFloatingDetailsButton(){
+    if(!floatingDetailsToggle)return;
+    const open=Boolean($('info-sidebar')?.classList.contains('open'));
+    floatingDetailsToggle.textContent=open?'✕':'ⓘ';
+    floatingDetailsToggle.title=open?'Collapse structure details':'Show structure details';
+    floatingDetailsToggle.setAttribute('aria-label',floatingDetailsToggle.title);
+    floatingDetailsToggle.setAttribute('aria-expanded',String(open));
+  }
   async function toggleFullscreen(){
     try{
       if(document.fullscreenElement){await document.exitFullscreen();return;}
@@ -147,6 +234,7 @@
   function syncFullscreen(){
     const active=Boolean(document.fullscreenElement || document.webkitFullscreenElement);
     document.body.classList.toggle('anat-fullscreen',active);
+    syncFloatingDetails(active&&activeStudent()&&Boolean(document.fullscreenElement?.matches('.viewer-panel')||document.webkitFullscreenElement?.matches?.('.viewer-panel')));
     if(toolbarFullscreen){toolbarFullscreen.textContent=active?'⤢':'⛶';toolbarFullscreen.title=active?'Exit Full Screen':'Full Screen';toolbarFullscreen.setAttribute('aria-label',toolbarFullscreen.title);toolbarFullscreen.setAttribute('aria-pressed',String(active));}
     for(const id of ['anat-teacher-fullscreen','anat-student-fullscreen']){
       const item=$(id);if(item)item.textContent=active?'Exit Full Screen':'Enter Full Screen';
@@ -217,10 +305,14 @@
     reset.classList.remove('floating-button');reset.classList.add('anat-tool','anat-reset');
     reset.replaceChildren(document.createTextNode('⌖'));reset.title='Reset camera view';reset.setAttribute('aria-label','Reset camera view');
     cameraTools.append(reset);
-    const history=document.createElement('div');history.className='anat-toolbar-group anat-teacher-tools';
-    toolbarUndo=makeToolbarButton('↶','Undo',()=>targetClick('edit-undo'));
-    toolbarRedo=makeToolbarButton('↷','Redo',()=>targetClick('edit-redo'));
-    history.append(toolbarUndo,toolbarRedo);
+    const history=document.createElement('div');history.className='anat-toolbar-group anat-history-tools';
+    toolbarUndo=makeToolbarButton('','Undo',()=>teacher()?targetClick('edit-undo'):runStudentHistory('undo'));
+    toolbarRedo=makeToolbarButton('','Redo',()=>teacher()?targetClick('edit-redo'):runStudentHistory('redo'));
+    toolbarUndo.append(makeStrokeIcon(UNDO_PATHS));
+    toolbarRedo.append(makeStrokeIcon(REDO_PATHS));
+    toolbarChapterReset=makeToolbarButton('','Reset Chapter',resetStudentChapter,'anat-student-chapter-reset');
+    toolbarChapterReset.append(makeStrokeIcon(RESET_PATHS));
+    history.append(toolbarUndo,toolbarRedo,toolbarChapterReset);
     const display=document.createElement('div');display.className='anat-toolbar-group';
     toolbarFullscreen=makeToolbarButton('⛶','Full Screen',toggleFullscreen);
     display.append(toolbarFullscreen);
@@ -228,13 +320,8 @@
     bar.append(cameras,sep(),cameraTools,sep(),history,sep(),display);
     bottom.append(bar);
     const sourceUndo=$('edit-undo'),sourceRedo=$('edit-redo');
-    const syncHistory=()=>{
-      if(toolbarUndo)toolbarUndo.disabled=!teacher()||!sourceUndo||sourceUndo.disabled;
-      if(toolbarRedo)toolbarRedo.disabled=!teacher()||!sourceRedo||sourceRedo.disabled;
-    };
-    if(sourceUndo)new MutationObserver(syncHistory).observe(sourceUndo,{attributes:true,attributeFilter:['disabled']});
-    if(sourceRedo)new MutationObserver(syncHistory).observe(sourceRedo,{attributes:true,attributeFilter:['disabled']});
-    syncHistory();syncFullscreen();
+    for(const source of [sourceUndo,sourceRedo])if(source)new MutationObserver(syncHistoryTools).observe(source,{attributes:true,attributeFilter:['disabled']});
+    syncHistoryTools();syncFullscreen();
   }
   function syncStudentOffline(){
     const action=$('anat-student-offline');const source=$('save-offline');if(!action)return;
@@ -242,7 +329,7 @@
     action.textContent=source?.disabled&&source?.textContent?.includes('ready')?'✓ Saved for offline use':'Save lesson for offline use';
   }
   function maintain(){
-    syncStudentOffline();syncLabelMenus();syncQuality();
+    syncStudentOffline();syncLabelMenus();syncQuality();syncHistoryTools();
     if(studentMenu)studentMenu.hidden=!activeStudent();
     // Viewer type belongs in File > About, not in either viewer header.
     const brand=document.querySelector('.brand-label strong');
@@ -251,10 +338,24 @@
   function initialize(){
     if(!$('studio-menubar')||!$('canvas-container')||!$('view-quality'))return;
     createAbout();createStudentMenu();addTeacherMenuEntries();createToolbar();
+    if(window.__AnatomIQStudentHistoryStatus){
+      const s=window.__AnatomIQStudentHistoryStatus;
+      studentHistoryState={ready:!!s.ready,canUndo:!!s.canUndo,canRedo:!!s.canRedo};
+    }
+    window.addEventListener('anatomiq:student-history-state',event=>{
+      studentHistoryState={ready:!!event.detail?.ready,canUndo:!!event.detail?.canUndo,canRedo:!!event.detail?.canRedo};
+      syncHistoryTools();
+    });
     document.addEventListener('fullscreenchange',syncFullscreen);
     document.addEventListener('webkitfullscreenchange',syncFullscreen);
     document.addEventListener('pointerdown',e=>{if(studentMenu && !studentMenu.contains(e.target))closeStudentMenus();});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeStudentMenus();if(aboutModal&&!aboutModal.hidden)aboutModal.hidden=true;}});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){closeStudentMenus();if(aboutModal&&!aboutModal.hidden)aboutModal.hidden=true;}
+      if(!teacher()&&(e.metaKey||e.ctrlKey)&&!e.altKey&&e.key.toLowerCase()==='z'&&
+        !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)&&!document.activeElement?.isContentEditable){
+        e.preventDefault();runStudentHistory(e.shiftKey?'redo':'undo');
+      }
+    });
     // Existing app code changes these attributes when it loads a lesson or begins caching.
     for(const id of ['polish-label-toggle','save-offline']){
       const source=$(id);if(source)new MutationObserver(maintain).observe(source,{attributes:true,attributeFilter:['hidden','disabled','aria-pressed'],childList:true});
@@ -266,7 +367,7 @@
     // Student links can initialize asynchronously after the browser chrome is mounted.
     new MutationObserver(maintain).observe(document.body,{attributes:true,attributeFilter:['class']});
     maintain();
-    window.__AnatomIQUI2221={version:VERSION,fullscreenSupported:!!document.querySelector('.viewer-panel')?.requestFullscreen,studentMenu:!!studentMenu,toolbar:!!$('anat-unified-toolbar')};
+    window.__AnatomIQUI2222={version:VERSION,fullscreenSupported:!!document.querySelector('.viewer-panel')?.requestFullscreen,studentMenu:!!studentMenu,toolbar:!!$('anat-unified-toolbar'),studentHistory:true};
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initialize,{once:true});
   else initialize();

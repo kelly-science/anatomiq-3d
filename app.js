@@ -38,7 +38,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.21';
+const APP_VERSION = '2.2.22';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -580,7 +580,7 @@ function refreshVisibility(transient=false){
   }
   renderList();
   invalidate(2);
-  if(!transient)queueDraft();
+  if(!transient){queueDraft();if(!teacherMode)studentHistoryQueue();}
 }
 function setStatus(message,state='ready'){
   elements.connection.className='status '+state;
@@ -2049,6 +2049,78 @@ function snapshotScene(){
     ...(pc.length?{pc}:{})
   });
 }
+
+// 2.2.22: transient Student View history. Nothing is written into teacher lessons.
+// Student changes can be undone within the current chapter; chapter reset restores the
+// original immutable published snapshot, not the teacher's working draft.
+let studentHistoryEntries=[];
+let studentHistoryIndex=-1;
+let studentHistoryChapter=-1;
+let studentHistoryTimer=0;
+let studentHistoryApplying=false;
+function studentHistoryNotify(){
+  const ready=!teacherMode&&!!sceneRoot&&studentHistoryIndex>=0&&!studentHistoryApplying;
+  const state={ready,chapter:activeChapter,canUndo:ready&&studentHistoryIndex>0,
+    canRedo:ready&&studentHistoryIndex<studentHistoryEntries.length-1};
+  window.__AnatomIQStudentHistoryStatus=state;
+  window.dispatchEvent(new CustomEvent('anatomiq:student-history-state',{detail:state}));
+}
+function studentHistoryBegin(){
+  clearTimeout(studentHistoryTimer);
+  studentHistoryTimer=0;
+  if(teacherMode||!sceneRoot)return;
+  studentHistoryEntries=[JSON.stringify(snapshotScene())];
+  studentHistoryIndex=0;studentHistoryChapter=activeChapter;
+  studentHistoryNotify();
+}
+function studentHistoryPush(){
+  clearTimeout(studentHistoryTimer);studentHistoryTimer=0;
+  if(teacherMode||studentHistoryApplying||restoringScene||!sceneRoot||studentHistoryIndex<0)return;
+  if(studentHistoryChapter!==activeChapter){studentHistoryBegin();return;}
+  let state;
+  try{state=JSON.stringify(snapshotScene());}
+  catch(error){console.warn('Student history snapshot unavailable:',error);return;}
+  if(state===studentHistoryEntries[studentHistoryIndex])return;
+  studentHistoryEntries=studentHistoryEntries.slice(0,studentHistoryIndex+1);
+  studentHistoryEntries.push(state);
+  if(studentHistoryEntries.length>40)studentHistoryEntries.shift();
+  studentHistoryIndex=studentHistoryEntries.length-1;
+  studentHistoryNotify();
+}
+function studentHistoryQueue(){
+  if(teacherMode||studentHistoryApplying||restoringScene||!sceneRoot||studentHistoryIndex<0)return;
+  clearTimeout(studentHistoryTimer);
+  studentHistoryTimer=setTimeout(studentHistoryPush,65);
+}
+async function studentHistoryCommand(action){
+  if(teacherMode||studentHistoryApplying||!sceneRoot||studentAssetBusy||studentHistoryIndex<0)return;
+  if(studentHistoryChapter!==activeChapter){studentHistoryBegin();return;}
+  if(action!=='reset')studentHistoryPush();
+  let target;
+  if(action==='reset')target=chapters[activeChapter];
+  else if(action==='undo'&&studentHistoryIndex>0)target=JSON.parse(studentHistoryEntries[--studentHistoryIndex]);
+  else if(action==='redo'&&studentHistoryIndex<studentHistoryEntries.length-1)target=JSON.parse(studentHistoryEntries[++studentHistoryIndex]);
+  else return;
+  studentHistoryApplying=true;
+  clearTimeout(studentHistoryTimer);studentHistoryTimer=0;
+  try{
+    await applyScene(target);
+    if(action==='reset')studentHistoryBegin();
+    showToast(action==='reset'?'Chapter restored to its original view.':action==='undo'?'Undone.':'Redone.');
+  }catch(error){
+    // If a history restore failed, fall back to the published chapter scene.
+    console.warn('Student history action failed:',error);
+    showToast('Could not restore the view: '+error.message);
+  }finally{
+    studentHistoryApplying=false;
+    studentHistoryNotify();
+  }
+}
+window.addEventListener('anatomiq:student-history-command',event=>{
+  const action=event.detail?.action;
+  if(['undo','redo','reset'].includes(action))void studentHistoryCommand(action);
+});
+
 function updateHistoryButtons(){
   if(!teacherMode)return;
   $('edit-undo').disabled=!editHistory.canUndo;
@@ -2175,6 +2247,7 @@ async function switchChapter(index){
     activeChapter=index;
     await applyScene(chapters[activeChapter]);
     renderChapterUI();
+    if(!teacherMode)studentHistoryBegin();
   }finally{polishRevealChapter(polishSnapshot);}
   if(teacherMode)queueDraft();else setStatus('Student view');
 }
@@ -2768,7 +2841,7 @@ async function loadProject(data){
   $('project-title').value=project.t;
   await applyScene(chapters[activeChapter]);
   renderChapterUI();
-  if(!teacherMode)applyStudentPermissions();
+  if(!teacherMode){applyStudentPermissions();studentHistoryBegin();}
   document.title=project.t+' • AnatomIQ Studio';
 }
 async function initializeStudioScene(){

@@ -66,8 +66,8 @@ body:not(.student-mode) .anat-student-menubar { display:none !important; }
 .anat-unified-toolbar .anat-reset,
 .anat-unified-toolbar .anat-tool{font-size:20px;}
 .anat-toolbar-separator{width:1px;height:23px;flex-shrink:0;background:rgba(175,206,220,.35);margin:0 3px;}
-body.student-mode .anat-unified-toolbar .anat-teacher-tools{display:none;}
-body.student-mode .anat-unified-toolbar .anat-teacher-tools + .anat-toolbar-separator{display:none;}
+.anat-unified-toolbar .anat-student-chapter-reset{display:none;}
+body.student-mode .anat-unified-toolbar .anat-student-chapter-reset{display:inline-flex;}
 @media(max-width:540px){
   .anat-student-menubar{padding-left:5px;gap:0;overflow:visible;}
   .anat-student-menubar .menu-trigger{font-size:11px;padding:7px 8px;}
@@ -95,3 +95,37 @@ body.anat-labels-hidden #label-overlay{display:none!important;}
 .anat-about-panel dt{opacity:.65;}.anat-about-panel dd{margin:0;text-align:right;font-weight:650;}
 .anat-about-close,.anat-about-dismiss{padding:8px 13px;color:inherit;background:rgba(115,174,197,.15);border:1px solid rgba(145,195,210,.35);border-radius:8px;cursor:pointer;}
 .anat-about-dismiss{width:100%;}
+
+/* 2.2.22: exact same information panel, floated within the browser fullscreen viewer.
+   The panel is reparented only during student fullscreen, then returned on exit. */
+.viewer-panel:fullscreen > .anat-floating-info,
+.viewer-panel:-webkit-full-screen > .anat-floating-info{
+  display:block!important;position:absolute!important;right:16px!important;top:20px!important;
+  left:auto!important;bottom:auto!important;float:none!important;transform:none!important;
+  width:min(325px,calc(100vw - 32px))!important;min-width:0!important;
+  max-width:calc(100vw - 32px)!important;max-height:min(76dvh,calc(100% - 115px))!important;
+  overflow-y:auto!important;padding:17px!important;margin:0!important;
+  background:rgba(21,34,45,.95)!important;color:#f3f8fa!important;
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border:1px solid rgba(143,193,211,.42)!important;border-radius:14px!important;
+  box-shadow:0 14px 45px rgba(0,0,0,.43)!important;z-index:75!important;
+}
+.viewer-panel:fullscreen > .anat-floating-info:not(.open),
+.viewer-panel:-webkit-full-screen > .anat-floating-info:not(.open){display:none!important;}
+.anat-floating-details-toggle{
+  position:absolute;top:12px;right:12px;z-index:80;min-width:33px;height:33px;
+  display:none;align-items:center;justify-content:center;font-size:18px;
+  border:1px solid rgba(140,193,210,.5);border-radius:9px;
+  background:#273a47;color:white;cursor:pointer;
+}
+.viewer-panel:fullscreen > .anat-floating-details-toggle,
+.viewer-panel:-webkit-full-screen > .anat-floating-details-toggle{display:flex;}
+.viewer-panel:fullscreen > .anat-floating-info,
+.viewer-panel:-webkit-full-screen > .anat-floating-info{padding-top:40px!important;}
+@media(max-width:520px){
+ .viewer-panel:fullscreen > .anat-floating-info,
+ .viewer-panel:-webkit-full-screen > .anat-floating-info{
+   right:9px!important;top:9px!important;width:min(285px,calc(100vw - 18px))!important;
+   max-height:min(56dvh,calc(100% - 110px))!important;
+ }
+}
