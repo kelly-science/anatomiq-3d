@@ -17,6 +17,7 @@
     }
   }
   </script>
+  <link rel="stylesheet" href="./view-menu-polish.css?rev=2216c" />
 </head>
 <body>
   <div class="app-shell">
@@ -24,7 +25,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.16b</span>
+        <span class="version">STUDIO 2.2.16c</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -272,7 +273,7 @@
         </section>
         <div class="explorer-settings">
           <label class="switch-row"><span>Show teeth <small>Skull and dental structures</small></span><input id="toggle-teeth" type="checkbox" checked /></label>
-          <label class="switch-row"><span>Show cartilage <small>Ribs, discs and nasal cartilage</small></span><input id="toggle-cartilage" type="checkbox" checked /></label>
+          <input id="toggle-cartilage" type="checkbox" checked hidden aria-hidden="true" tabindex="-1" />
         </div>
         <div class="list-header"><span id="list-label">ANATOMICAL STRUCTURES</span><span id="list-count">—</span></div>
         <div id="bone-list" class="bone-list" aria-live="polite"><p class="empty-list">Loading anatomical structures…</p></div>
@@ -649,5 +650,6 @@
     }
     await import('./app.js');
   </script>
+  <script type="module" src="./view-menu-polish.js?rev=2216c"></script>
 </body>
 </html>

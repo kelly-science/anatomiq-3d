@@ -35,7 +35,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.16b';
+const APP_VERSION = '2.2.16c';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -325,8 +325,12 @@ function openDetails(open) {
   elements.infoSidebar.classList.toggle('open',open);
   elements.detailsToggle.setAttribute('aria-expanded',String(open));
 }
-function tissueVisible(s){return (s.system==='ocular'||s.tissue !== 'eye') && (elements.teeth.checked || s.tissue !== 'tooth') && (elements.cartilage.checked || s.tissue !== 'cartilage');}
+function tissueVisible(s){return (s.system==='ocular'||s.tissue !== 'eye') && (elements.teeth.checked || s.tissue !== 'tooth') && true;}
+// ANATOMIQ_VIEW_POLISH_2216C: Skull Only is an anatomical isolation preset,
+// not permission for Connective to leak into the skull view. Does not mutate
+// systemLayers, so switching back retains independently selected systems.
 function layerEnabled(s){
+  if(mode==='skull')return s.system==='skeletal' && !isBaseConnective(s) && Boolean(s.skull);
   const layers=effectiveSystemLayers(mode,systemLayers);
   if(s.system==='digestive')return layers.digestive &&
     (s.layer==='digestive-detail' ? detailAvailable && detailEnabled : digestiveAvailable && !detailEnabled) && !s.mesh.userData?.deferredAsset;
@@ -2958,7 +2962,7 @@ menuGroups.forEach((group,index)=>{
     }
   });
   group.querySelector('.menu-dropdown').addEventListener('keydown',event=>{
-    const items=[...group.querySelectorAll('.menu-item:not([disabled])')];const current=items.indexOf(document.activeElement);
+    const items=[...group.querySelectorAll('.menu-item:not([disabled])')].filter(item=>item.getClientRects().length);const current=items.indexOf(document.activeElement);
     if(event.key==='ArrowDown'||event.key==='ArrowUp'){
       event.preventDefault();items[(current+(event.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();
     }
@@ -3070,7 +3074,7 @@ $('studio-menubar').addEventListener('click',event=>{
   if(view)orient(view);
   if(cardiacPreset && teacherMode)applyCardioStudyPreset(cardiacPreset);
   if(anatomyPreset && teacherMode){
-    Object.assign(systemLayers,{skeletal:true,superficial:false,deep:false,digestive:false,cardiovascular:false,respiratory:false,nervous:false});
+    Object.assign(systemLayers,Object.fromEntries(Object.keys(systemLayers).map(key=>[key,key==='skeletal'])));
     setMode(anatomyPreset);
   }
   closeStudioMenus();

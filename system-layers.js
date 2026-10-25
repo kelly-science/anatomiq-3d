@@ -3,7 +3,7 @@
 export function effectiveSystemLayers(mode, raw){
   const s={skeletal:Boolean(raw.skeletal), superficial:Boolean(raw.superficial),deep:Boolean(raw.deep),digestive:Boolean(raw.digestive),cardiovascular:Boolean(raw.cardiovascular),respiratory:Boolean(raw.respiratory),nervous:Boolean(raw.nervous),urinary:Boolean(raw.urinary),lymphatic:Boolean(raw.lymphatic),connective:raw.connective!==false,ocular:Boolean(raw.ocular)};
   switch(mode){
-    case 'skull': case 'skeleton':return {skeletal:true,superficial:false,deep:false,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false};
+    case 'skull': case 'skeleton':return {skeletal:true,superficial:false,deep:false,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:false,ocular:false};
     case 'muscular':return {skeletal:false,superficial:s.superficial,deep:s.deep,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:false,ocular:false};
     case 'digestive':return {skeletal:false,superficial:false,deep:false,digestive:true,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:false,ocular:false};
     case 'systems':return s;

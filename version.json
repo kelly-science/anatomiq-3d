@@ -1,6 +1,6 @@
 {
-  "version": "2.2.16b",
+  "version": "2.2.16c",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "External eyes: white sclera, fine red vessels, gloss and corneal highlights; eyes integrated under Nervous/Special Senses without independent Eyes tab. Preserves source anatomy IDs and old lessons."
+  "notes": "View menu reorganized by body system with nested study presets and camera group; Skull Only isolates true skeletal skull, Connective independently controlled, obsolete Show Cartilage checkbox removed. Scene and model IDs unchanged."
 }

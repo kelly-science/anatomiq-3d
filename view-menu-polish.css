@@ -1,0 +1,12 @@
+/* AnatomIQ 2.2.16c: scoped View menu hierarchy; no global menu layout changes. */
+#menu-view{min-width:270px;max-height:min(72vh,620px);overflow-y:auto;overscroll-behavior:contain}
+#menu-view .view-menu-caption{padding:9px 13px 5px;font-size:10px;letter-spacing:.10em;opacity:.60;font-weight:700}
+#menu-view .view-system-head{display:flex;align-items:stretch;min-width:0}
+#menu-view .view-system-button{flex:1;min-width:0;text-align:left;white-space:pre-wrap}
+#menu-view .view-submenu-toggle{display:flex;align-items:center;justify-content:center;width:40px;flex-shrink:0;border:0;background:transparent;color:inherit;cursor:pointer;font-size:20px;border-radius:8px}
+#menu-view .view-submenu-toggle:hover,#menu-view .view-submenu-toggle:focus-visible{background:rgba(128,152,170,.15);outline-offset:-2px}
+#menu-view .view-submenu{padding:2px 0 5px 14px;border-left:1px solid rgba(128,152,170,.24);margin-left:13px}
+#menu-view .view-submenu[hidden]{display:none!important}
+#menu-view .view-special-option{font-size:.92em;white-space:normal;min-height:32px}
+#menu-view .view-system-button:disabled{opacity:.38;cursor:not-allowed}
+@media(max-width:650px){#menu-view{min-width:min(290px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:65vh}}
