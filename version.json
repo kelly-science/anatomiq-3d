@@ -1,6 +1,6 @@
 {
-  "version": "2.2.16d",
+  "version": "2.2.16e",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Student lesson startup awaits anatomy and first scene paint, retries transient model loads, and reboots PWA for changed student links. Models and lesson schema unchanged."
+  "notes": "Reverts only the 2.2.12 label movement throttling and deferred occlusion; restores pre-2.2.12 label positioning. Eyes, lessons, practicals, view menu, student readiness, and anatomy remain unchanged."
 }

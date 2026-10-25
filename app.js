@@ -35,7 +35,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.16d';
+const APP_VERSION = '2.2.16e';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -307,7 +307,7 @@ function draw(){
   try { moved=controls.update(); } finally {updatingControls=false;}
   shadows.update(camera,controls.target,moved);
   renderer.render(scene,camera);
-  updateAnnotationPositions(moved);
+  updateAnnotationPositions();
   drawFrames=Math.max(0,drawFrames-1);
   if(moved || drawFrames>0)frameRequest=requestAnimationFrame(draw);
 }
@@ -523,7 +523,6 @@ for(const button of document.querySelectorAll('[data-cardio-preset]')){
 }
 function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible);}
 function refreshVisibility(transient=false){
-  polishResetLabelOcclusion();
   for(const s of structures){
     const inspecting=Boolean(cardioPreviewIDs && s.system==='cardiovascular');
     s.mesh.visible = layerEnabled(s) && tissueVisible(s)
@@ -2163,60 +2162,6 @@ document.addEventListener('keydown',e=>{
 let polishStudentLabelsVisible=true;
 const polishOcclusionRay=new THREE.Raycaster();
 let polishOcclusionAt=0,polishOccluders=[];
-// ANATOMIQ_LABEL_PERFORMANCE_2212
-// Projection follows the camera at ~30 FPS; costly mesh occlusion is performed
-// only when the camera settles, in short RAF batches (no full GLB traversal per orbit frame).
-const LABEL_POSITION_INTERVAL_MS=33;
-const LABEL_OCCLUSION_BUDGET_MS=3;
-let polishPositionAt=0;
-let polishCameraMoving=false;
-let polishOcclusionFrame=0;
-let polishOcclusionIndex=0;
-function polishResetLabelOcclusion(){
-  if(polishOcclusionFrame){cancelAnimationFrame(polishOcclusionFrame);polishOcclusionFrame=0;}
-  polishOcclusionAt=0;
-}
-function polishProcessLabelOcclusion(){
-  polishOcclusionFrame=0;
-  if(document.hidden || polishCameraMoving || !sceneRoot){polishOcclusionAt=0;return;}
-  const started=performance.now();
-  let processed=0;
-  while(polishOcclusionIndex<labels.length){
-    const label=labels[polishOcclusionIndex++];
-    const nodes=markers.get(label.id);
-    const structure=structures[label.s];
-    if(nodes && structure?.mesh.visible && !nodes.marker.hidden){
-      const anchor=structure.mesh.localToWorld(new THREE.Vector3(...label.p));
-      const direction=anchor.sub(camera.position),distance=direction.length();
-      if(distance>0.001){
-        polishOcclusionRay.set(camera.position,direction.normalize());
-        polishOcclusionRay.near=0;
-        polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
-        // Reuses the original occlusion accuracy: no approximation of source geometry.
-        const occluded=polishOcclusionRay.intersectObjects(polishOccluders,false).length>0;
-        nodes.marker.dataset.occluded=occluded?'1':'0';
-        nodes.marker.classList.toggle('polish-occluded',occluded);
-        nodes.line.style.opacity=occluded?'0':'1';
-        nodes.dot.style.opacity=occluded?'0':'1';
-      }
-    }
-    processed++;
-    // A large scene with many labels never raycasts every label in one frame.
-    if(processed>=1 && performance.now()-started>=LABEL_OCCLUSION_BUDGET_MS)break;
-  }
-  if(polishOcclusionIndex<labels.length){
-    polishOcclusionFrame=requestAnimationFrame(polishProcessLabelOcclusion);
-  }
-}
-function polishScheduleLabelOcclusion(){
-  if(polishOcclusionFrame || document.hidden || !labels.length || (!teacherMode && (labelMode==='hidden'||!polishStudentLabelsVisible)))return;
-  // Build this expensive candidate list once, only after orbit controls settle.
-  polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
-  polishOcclusionIndex=0;
-  polishOcclusionAt=performance.now() || 1;
-  polishOcclusionFrame=requestAnimationFrame(polishProcessLabelOcclusion);
-}
-
 function polishShowLabelDetails(label){
   if(!label?.d && !label?.u)return;
   const dialog=$('polish-label-dialog');if(!dialog)return;
@@ -2425,7 +2370,6 @@ function renderLabelEditor(){
   });
 }
 function renderAnnotations(){
-  polishResetLabelOcclusion();
   markers.clear();labelContainer.replaceChildren();labelSVG.replaceChildren();
   labels.forEach((label,i)=>{
     const marker=document.createElement('button');
@@ -2472,19 +2416,16 @@ function renderAnnotations(){
   polishRenderStudentLabels();
   invalidate(2);
 }
-function updateAnnotationPositions(moved=false){
+function updateAnnotationPositions(){
   if(!sceneRoot || !labels.length)return;
-  const now=performance.now();
-  if(moved){
-    polishCameraMoving=true;
-    polishResetLabelOcclusion();
-  }else if(polishCameraMoving){
-    polishCameraMoving=false;
-  }
-  // Keep callouts following rotation, but avoid hundreds of SVG/DOM writes at 60+ FPS.
-  if(moved && now-polishPositionAt<LABEL_POSITION_INTERVAL_MS)return;
-  polishPositionAt=now;
+  // The scene renderer already updates matrices; avoid a second full traversal
+  // of hundreds of muscle meshes for each annotation refresh.
   const width=stageWidth,height=stageHeight;
+  const refreshOcclusion=performance.now()>polishOcclusionAt;
+  if(refreshOcclusion){
+    polishOcclusionAt=performance.now()+110;
+    polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
+  }
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
     const s=structures[label.s];
@@ -2492,13 +2433,22 @@ function updateAnnotationPositions(moved=false){
       nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
     }
     const world=s.mesh.localToWorld(new THREE.Vector3(...label.p));
-    const at=world.project(camera);
+    const at=world.clone().project(camera);
     if(at.z<-1 || at.z>1 || Math.abs(at.x)>1.15 || Math.abs(at.y)>1.15){
       nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
     }
     const x=(at.x+1)*width/2,y=(1-at.y)*height/2;
     const bx=x+label.dx,by=y+label.dy;
     nodes.marker.hidden=false;
+    if(refreshOcclusion){
+      const delta=world.clone().sub(camera.position),distance=delta.length();
+      polishOcclusionRay.set(camera.position,delta.normalize());
+      polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
+      // Only a closer, visible mesh can occlude a label; the label's own surface
+      // can be encountered at the anchor without counting as an occluder.
+      const hits=polishOcclusionRay.intersectObjects(polishOccluders,false);
+      nodes.marker.dataset.occluded=hits.length?'1':'0';
+    }
     const isOccluded=nodes.marker.dataset.occluded==='1';
     nodes.marker.classList.toggle('polish-occluded',isOccluded);
     nodes.line.style.opacity=isOccluded?'0':'1';
@@ -2509,7 +2459,6 @@ function updateAnnotationPositions(moved=false){
     nodes.line.setAttribute('x2',String(bx+10));nodes.line.setAttribute('y2',String(by+13));
     nodes.dot.setAttribute('cx',String(x));nodes.dot.setAttribute('cy',String(y));
   }
-  if(!moved && polishOcclusionAt===0)polishScheduleLabelOcclusion();
 }
 async function applyScene(saved){
   smartFocusClearGhosts();
