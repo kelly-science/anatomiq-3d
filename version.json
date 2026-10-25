@@ -1,6 +1,6 @@
 {
-  "version": "2.2.18",
+  "version": "2.2.19",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Data-backed anatomy hierarchy and clickable breadcrumbs across installed systems; transient division isolation preserves chapter visibility and existing IDs."
+  "notes": "Unified anatomical explorer: shared system/division sidebar and contextual breadcrumbs; preserves transient isolation and teacher multiselect."
 }

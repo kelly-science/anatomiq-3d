@@ -31,13 +31,14 @@ import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from '
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {skeletalDivision,parseStudioVersion,compareStudioVersions} from './skeletal-views-2217.mjs';
 import {anatomyPath,buildAnatomyTree,getDivisionNode,divisionCoverage} from './anatomy-divisions-2218.mjs';
+import {renderAnatomySidebar} from './anatomy-sidebar-2219.mjs'; // ANATOMIQ_SIDEBAR_2219
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
 import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.18';
+const APP_VERSION = '2.2.19';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -532,7 +533,7 @@ function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible)
 // ANATOMIQ_DIVISIONS_2218 — reversible browsing, not chapter editing.
 let divisionScope=null,divisionBrowsePath=[],divisionStudentAllowed=null,divisionSavedCamera=null;
 let divisionNavRoot=null,divisionNavMenu=null,divisionNavFingerprint='';
-function divisionCanBrowse(){return teacherMode || (studentPermissions.st && studentPermissions.sn && !practicalActive);}
+function divisionCanBrowse(){return teacherMode || (studentPermissions.st && studentPermissions.sn && !(typeof practicalActive!=='undefined'&&practicalActive));}
 function divisionTree(){return buildAnatomyTree(structures);}
 window.__AnatomIQDivisionCoverage=()=>divisionCoverage(divisionTree());
 function divisionNode(path){return getDivisionNode(divisionTree(),path);}
@@ -592,11 +593,10 @@ function divisionRenderNavigation(){
   const trail=divisionNavRoot.querySelector('.division-trail');trail.replaceChildren();divisionNavMenu.hidden=true;
   function makeButton(label,path){
     const btn=document.createElement('button');btn.className='division-crumb';btn.type='button';
-    btn.textContent=label;btn.title=path.length?`Show ${label} only; select again to browse subdivisions`:'Browse anatomical systems';
+    btn.textContent=label;btn.title=path.length?`Show only ${label}`:'Restore the original view';
     btn.addEventListener('click',()=>{
-      const openNode=divisionNode(path);
       if(path.length)divisionOpen(path);
-      divisionShowChildren(openNode);
+      else if(divisionScope)divisionClose();
     });
     return btn;
   }
@@ -875,6 +875,7 @@ function pickMultiSelection(s,event,origin){
   const additive=event.metaKey||event.ctrlKey;
   if(event.shiftKey&&origin==='list'){
     const ordered=[...elements.boneList.querySelectorAll('button.bone-item[data-structure-index]')]
+      .filter(b=>b.getClientRects().length>0) // range-select only expanded, actually visible list rows
       .map(b=>Number(b.dataset.structureIndex)).filter(Number.isInteger);
     const anchor=ordered.indexOf(multiListAnchor)>=0?multiListAnchor:selected?.index;
     const first=ordered.indexOf(anchor),last=ordered.indexOf(s.index);
@@ -1087,8 +1088,21 @@ function renderList(){
     });
     return b;
   };
-  if(!teacherMode && studentPermissions.st && !text){
-    // Hierarchical student explorer, grouped by tissue then left/right/midline.
+  if((teacherMode || (studentPermissions.st && studentPermissions.sn)) && found.length){
+    // ANATOMIQ_SIDEBAR_2219: canonical sidebar tree and breadcrumbs share the same anatomyPath taxonomy.
+    // The View button only changes transient divisionScope; browsing/expansion doesn't edit a chapter.
+    renderAnatomySidebar(frag,found,{
+      createItem:createBoneButton,
+      onView:path=>divisionOpen(path),
+      expanded:treeExpanded,
+      selected,
+      activePath:divisionScope?divisionBrowsePath:[],
+      searching:Boolean(text),
+      document
+    });
+  }else if(!teacherMode && studentPermissions.st && !text){
+    // Compatibility: teacher can permit student tree browsing without revealing structure names.
+    // Keep the older anonymous tissue/side hierarchy whenever studentPermissions.sn is false.
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){

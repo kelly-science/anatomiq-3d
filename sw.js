@@ -1,9 +1,9 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.18-anatomical-divisions';
+const VERSION='anatomy-v2.2.19-unified-anatomy-explorer';
 const POLISH_MODELS='anatomiq-models-persistent-v1';
-const SHELL=['./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./skeletal-views-2217.mjs','./selection-2217.css','./anatomy-divisions-2218.mjs','./anatomy-divisions-2218.css','./app.js',
+const SHELL=['./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./skeletal-views-2217.mjs','./selection-2217.css','./anatomy-divisions-2218.mjs','./anatomy-divisions-2218.css','./anatomy-sidebar-2219.mjs','./anatomy-sidebar-2219.css','./app.js',
   './practical-quiz.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./connective-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
