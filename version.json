@@ -1,6 +1,6 @@
 {
-  "version": "2.2.6",
+  "version": "2.2.7",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Live GitHub lesson publishing with public stable student URLs; teacher-owned repositories; local JSON export; no server or stored token."
+  "notes": "Optional passphrase-encrypted GitHub connection on trusted devices; automatic reconnect on reload within tab; unlock after new session. No hosted authentication server."
 }

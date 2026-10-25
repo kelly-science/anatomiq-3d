@@ -321,3 +321,10 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 .cloud-publishing .error{color:#e99586}
 .cloud-publishing textarea{width:100%;box-sizing:border-box}
 @media(max-width:600px){.cloud-grid{grid-template-columns:1fr}}
+
+/* ANATOMIQ_REMEMBER_GITHUB_20261024 — credential vault controls */
+.cloud-remember-choice{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px}
+.cloud-remember-choice input{flex:0 0 auto;accent-color:var(--accent,#659cd4)}
+#cloud-remember-password-fields,#cloud-unlock-panel{margin:8px 0;padding:10px;border-radius:9px;background:var(--panel,#2c3540)}
+#cloud-unlock{margin:9px 0 0}
+#cloud-forget-saved{margin:5px 0}

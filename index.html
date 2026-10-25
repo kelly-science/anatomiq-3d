@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.6</span>
+        <span class="version">STUDIO 2.2.7</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -413,7 +413,22 @@
         </div>
         <label class="field-label" for="cloud-token">Fine-grained GitHub token (Contents: Read and write; selected repository only)</label>
         <input id="cloud-token" class="text-input" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" />
-        <p class="studio-hint">Token is held in memory only and forgotten when the tab reloads or closes. Never enter it on a shared student device. The repository and lesson name (not the token) are remembered locally.</p>
+        <p class="studio-hint">By default your token is held in memory only. Remembering the connection below is optional and requires an encryption passphrase. Never connect on shared student devices.</p>
+        <!-- ANATOMIQ_REMEMBER_GITHUB_20261024 — optional client-side encrypted token storage -->
+        <label class="cloud-remember-choice"><input id="cloud-remember" type="checkbox" /> Remember GitHub connection on this device</label>
+        <div id="cloud-remember-password-fields" hidden>
+          <label class="field-label" for="cloud-remember-password">Create an encryption passphrase (12+ characters)</label>
+          <input id="cloud-remember-password" class="text-input" type="password" autocomplete="new-password" spellcheck="false" placeholder="Only you know this passphrase" />
+          <p class="studio-hint">Encrypts your GitHub token on this device. Reloads reconnect automatically in this tab; a new tab or browser session requires this passphrase, not another GitHub token.</p>
+        </div>
+        <div id="cloud-unlock-panel" hidden>
+          <label class="field-label" for="cloud-unlock-password">Unlock remembered GitHub connection</label>
+          <input id="cloud-unlock-password" class="text-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="Vault passphrase" />
+          <button id="cloud-unlock" type="button" class="button small">Unlock saved connection</button>
+        </div>
+        <button id="cloud-forget-saved" type="button" class="button small subtle" hidden>Forget saved GitHub credential</button>
+        <p class="studio-hint">Use only on a private, trusted browser. Encryption protects the stored token when the vault is locked, but no browser-only method protects against malicious code running in an unlocked page. Disconnect or Forget clears this browser's saved credential.</p>
+
         <div class="cloud-actions">
           <button id="cloud-connect" type="button" class="button small">Connect GitHub</button>
           <button id="cloud-disconnect" type="button" class="button small subtle" hidden>Disconnect</button>

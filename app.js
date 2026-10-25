@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
+import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {installSkullGeometry} from './skull-geometry.js';
@@ -30,7 +31,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.6';
+const APP_VERSION = '2.2.7';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -2377,33 +2378,46 @@ function cloudOpenPublishing(){
   $('cloud-slug').value=cloudCurrentLessonSlug();
   $('cloud-token').value='';
   $('cloud-publish-results').hidden=true;
-  cloudSetStatus(cloudVerified?'Connected for this browser tab. Ready to publish.':'Choose a public repository and connect using your fine-grained token.');
+  cloudSetStatus(cloudVerified?'Connected and ready to publish.':'Choose a public repository and connect using your fine-grained token.');
   $('cloud-connect').textContent=cloudVerified?'Connected ✓':'Connect GitHub';
   $('cloud-disconnect').hidden=!cloudVerified;
+  cloudUpdateCredentialControls();
+  if(!cloudVerified)void cloudRestoreRemembered();
 }
 function cloudSetBusy(active){
   cloudBusy=active;
-  for(const id of ['cloud-connect','cloud-disconnect','cloud-publish','cloud-export-json'])$(id).disabled=active;
+  for(const id of ['cloud-connect','cloud-disconnect','cloud-publish','cloud-export-json','cloud-unlock','cloud-forget-saved'])$(id).disabled=active;
 }
 $('cloud-connect').addEventListener('click',async()=>{
   if(cloudBusy)return;
   if(cloudVerified){cloudSetStatus('Already connected. Disconnect to change the repository.');return;}
   const typed=$('cloud-token').value.trim();
+  const wantsRemember=$('cloud-remember').checked;
+  const vaultPassphrase=$('cloud-remember-password').value;
+  if(wantsRemember && vaultPassphrase.length<12){cloudSetStatus('A remembered connection requires an encryption passphrase of at least 12 characters.',true);return;}
   cloudSetBusy(true);cloudSetStatus('Verifying repository and token…');
   try{
     const verified=await verifyPublishingRepository({owner:$('cloud-owner').value,repo:$('cloud-repo').value,token:typed});
+    let vaultWarning='';
+    if(wantsRemember){
+      try{await rememberConnection({token:typed,passphrase:vaultPassphrase,scope:verified});}
+      catch(error){vaultWarning=` Connection was NOT saved: ${error.message}`;}
+    }else forgetRememberedConnection(); // Do not retain a previous remembered token after a new one is connected.
     cloudToken=typed;cloudVerified=verified;
     $('cloud-owner').value=verified.owner;$('cloud-repo').value=verified.repo;$('cloud-branch').value=verified.branch;
     localStorage.setItem(CLOUD_PREFS_KEY,JSON.stringify({owner:verified.owner,repo:verified.repo,branch:verified.branch}));
-    cloudSetStatus(`Connected: ${verified.fullName} (${verified.branch}). Token retained in memory until this tab closes.`);
+    cloudSetStatus(`Connected: ${verified.fullName} (${verified.branch}). ${wantsRemember&&!vaultWarning?'Encrypted credential saved on this device.':'Connected for this tab only.'}${vaultWarning}`,Boolean(vaultWarning));
     $('cloud-connect').textContent='Connected ✓';$('cloud-disconnect').hidden=false;
   }catch(error){cloudToken='';cloudVerified=null;cloudSetStatus(error.message,true);}
-  finally{$('cloud-token').value='';cloudSetBusy(false);}
+  finally{$('cloud-token').value='';$('cloud-remember-password').value='';cloudSetBusy(false);cloudUpdateCredentialControls();}
 });
 $('cloud-disconnect').addEventListener('click',()=>{
   cloudToken='';cloudVerified=null;$('cloud-token').value='';
+  forgetRememberedConnection();
+  $('cloud-remember').checked=false;
   $('cloud-connect').textContent='Connect GitHub';$('cloud-disconnect').hidden=true;
-  cloudSetStatus('Disconnected. Repository name remains saved, but no token is stored.');
+  cloudUpdateCredentialControls();
+  cloudSetStatus('Disconnected. Removed the remembered GitHub credential from this browser.');
 });
 $('cloud-export-json').addEventListener('click',()=>{
   try{
@@ -2416,7 +2430,7 @@ $('cloud-export-json').addEventListener('click',()=>{
 $('cloud-publish').addEventListener('click',async()=>{
   if(cloudBusy)return;
   if(!teacherMode||!sceneRoot)return;
-  if(!cloudVerified||!cloudToken){cloudSetStatus('Connect GitHub first. Tokens are session-only.',true);return;}
+  if(!cloudVerified||!cloudToken){cloudSetStatus('Connect or unlock your GitHub publishing credential first.',true);return;}
   cloudSetBusy(true);cloudSetStatus('Checking the existing lesson on GitHub…');
   try{
     const r=lessonRef($('cloud-owner').value,$('cloud-repo').value,$('cloud-branch').value,$('cloud-slug').value);
@@ -2458,6 +2472,58 @@ $('cloud-copy-embed').addEventListener('click',async()=>{
   const input=$('cloud-embed-url');
   try{await navigator.clipboard.writeText(input.value);cloudSetStatus('Schoology embed link copied.');}
   catch{input.select();cloudSetStatus('Copy the selected Schoology URL.');}
+});
+
+
+// ANATOMIQ_REMEMBER_GITHUB_20261024 — encrypted browser-only GitHub connection.
+// User-controlled vault; never send vault passphrase to GitHub or save a raw PAT.
+function cloudUpdateCredentialControls(){
+  const saved=hasRememberedConnection();
+  $('cloud-remember-password-fields').hidden=!$('cloud-remember').checked||Boolean(cloudVerified);
+  $('cloud-forget-saved').hidden=!saved;
+  $('cloud-unlock-panel').hidden=!saved||Boolean(cloudVerified);
+  $('cloud-disconnect').hidden=!cloudVerified;
+}
+$('cloud-remember').addEventListener('change',cloudUpdateCredentialControls);
+$('cloud-forget-saved').addEventListener('click',()=>{
+  forgetRememberedConnection();
+  // Explicitly disconnect too, so the teacher is never left with a live credential.
+  cloudToken='';cloudVerified=null;
+  $('cloud-token').value='';$('cloud-remember-password').value='';$('cloud-unlock-password').value='';
+  $('cloud-remember').checked=false;
+  $('cloud-connect').textContent='Connect GitHub';
+  cloudUpdateCredentialControls();
+  cloudSetStatus('Saved GitHub credential deleted from this browser. Disconnected.');
+});
+async function cloudRestoreRemembered(passphrase=null){
+  if(cloudBusy||cloudVerified||!hasRememberedConnection())return;
+  if(passphrase===null&&!isTabUnlocked()){
+    cloudUpdateCredentialControls();
+    cloudSetStatus('Saved connection found. Enter your vault passphrase once to unlock this tab.');
+    return;
+  }
+  cloudSetBusy(true);cloudSetStatus('Restoring your saved GitHub connection…');
+  try{
+    const saved=await unlockRememberedConnection({passphrase});
+    const verified=await verifyPublishingRepository({owner:saved.scope.owner,repo:saved.scope.repo,token:saved.token});
+    if(verified.branch!==saved.scope.branch)throw new Error('The GitHub repository default branch changed. Reconnect with a new token.');
+    cloudToken=saved.token;cloudVerified=verified;
+    $('cloud-owner').value=verified.owner;$('cloud-repo').value=verified.repo;$('cloud-branch').value=verified.branch;
+    $('cloud-connect').textContent='Connected ✓';
+    cloudSetStatus(`✓ Reconnected securely to ${verified.fullName}. Publishing is ready.`);
+    $('cloud-unlock-password').value='';
+  }catch(error){
+    cloudToken='';cloudVerified=null;
+    lockRememberedConnection();
+    cloudSetStatus(error.message,true);
+  }finally{cloudSetBusy(false);cloudUpdateCredentialControls();}
+}
+$('cloud-unlock').addEventListener('click',async()=>{
+  const passphrase=$('cloud-unlock-password').value;
+  try{await cloudRestoreRemembered(passphrase);}finally{$('cloud-unlock-password').value='';}
+});
+$('cloud-unlock-password').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();$('cloud-unlock').click();}
 });
 
 // --- Publishing: one link with explicit lesson-wide student permissions. ---
