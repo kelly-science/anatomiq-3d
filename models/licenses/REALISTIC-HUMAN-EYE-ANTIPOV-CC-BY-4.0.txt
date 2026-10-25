@@ -1,0 +1,15 @@
+Realistic Human Eye
+Author: Alexander Antipov (Sketchfab: Dessen)
+Source: https://sketchfab.com/3d-models/realistic-human-eye-417cbd1aac554ea189966250b784ab6f
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License text: https://creativecommons.org/licenses/by/4.0/
+
+Modifications for AnatomIQ Studio 2.2.14:
+- Retained the authored geometry, vertex coordinates, mesh transforms, UVs, and textures.
+- Converted the two older KHR_materials_pbrSpecularGlossiness materials to standard glTF 2.0 metallic-roughness PBR materials, including the original 1024x1024 diffuse and normal textures.
+- Adjusted the clear outer-eye material to render a subtle transparent reflective surface.
+- AnatomIQ duplicates the model at runtime and fits it into the two pre-existing, separately selectable Écorché eyeball positions; these are alignment transforms, not source geometry edits.
+
+Changes indicated as required by CC BY 4.0; original credit and URL remain embedded in the GLB metadata.
+
+Écorché source alignment: Charleeh/ecorche, https://github.com/Charleeh/ecorche, CC BY-SA 4.0 (separate asset).

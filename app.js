@@ -5,6 +5,7 @@ import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,no
 import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import {installRealisticEyeSurfaces} from './realistic-eye-model.js?rev=2215';
 import {installSkullGeometry} from './skull-geometry.js';
 import {validateSkullManifest} from './skeletal-detail.js';
 import {getSkullGeometry,setSkullGeometry} from './skull-preferences.js';
@@ -33,11 +34,12 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.12';
+const APP_VERSION = '2.2.15';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const LOCAL_MODEL = './models/ecorche.glb';
+const REALISTIC_EYE_MODEL = './models/realistic-human-eye.glb?rev=2215';
 const SKULL_MANIFEST='./models/skull-structures.json';
 const SKULL_HIGH='./models/skull-detailed.glb';
 // The legacy v1 detailed preference is intentionally not imported: this
@@ -133,11 +135,14 @@ let mode = 'skull';
 let sceneRoot = null;
 let selected = null;
 let isolated = false;
+// ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
 let structures = [];
+let eyeStructures=[];
+let legacyEyeVisibilityPending=true;
 let legacyStructureCount = 0;
 let legacyFingerprint = '';
-const systemLayers = {skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true};
+const systemLayers = {ocular:false,skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true};
 const materials = new Map(); // Model-authored original material(s) for each anatomical structure.
 const paintedMaterials = new Map(); // Cloned materials owned by the editor (never mutate the GLB originals).
 const bonePaint = new Map();
@@ -318,7 +323,7 @@ function openDetails(open) {
   elements.infoSidebar.classList.toggle('open',open);
   elements.detailsToggle.setAttribute('aria-expanded',String(open));
 }
-function tissueVisible(s){return s.tissue !== 'eye' && (elements.teeth.checked || s.tissue !== 'tooth') && (elements.cartilage.checked || s.tissue !== 'cartilage');}
+function tissueVisible(s){return (s.system==='ocular'||s.tissue !== 'eye') && (elements.teeth.checked || s.tissue !== 'tooth') && (elements.cartilage.checked || s.tissue !== 'cartilage');}
 function layerEnabled(s){
   const layers=effectiveSystemLayers(mode,systemLayers);
   if(s.system==='digestive')return layers.digestive &&
@@ -328,7 +333,9 @@ function layerEnabled(s){
   if(s.system==='nervous')return layers.nervous && nervousAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='urinary')return layers.urinary && urinaryAvailable && !s.mesh.userData?.deferredAsset;
   if(s.system==='lymphatic')return layers.lymphatic && lymphaticAvailable && !s.mesh.userData?.deferredAsset;
-   if(s.system==='connective')return layers.connective && connectiveAvailable && !s.mesh.userData?.deferredAsset && connectiveVisibleInPreset(s,connectivePreset);
+   // ANATOMIQ_EYE_NERVOUS_2215: eye meshes use Nervous visibility, without changing their indices.
+  if(s.system==='ocular')return layers.nervous;
+  if(s.system==='connective')return layers.connective && connectiveAvailable && !s.mesh.userData?.deferredAsset && connectiveVisibleInPreset(s,connectivePreset);
   if(s.system==='muscular')return s.layer==='deep muscles'?layers.deep:layers.superficial;
   if(s.system==='skeletal')return (isBaseConnective(s)?(layers.connective && baseConnectiveVisibleInPreset(s,connectivePreset)):layers.skeletal) && (mode!=='skull'||s.skull);
   return false;
@@ -445,6 +452,8 @@ function updateSystemControls(){
   $('mode-nervous').disabled=!nervousAvailable;
   // Connective is always available for existing Écorché skeletal cartilage.
   // Native BodyParts3D structures appear after the optional model build.
+  $('eye-study-panel').hidden=!teacherMode||!layers.nervous;
+  $('eye-study-count').textContent=`${eyeStructures.length} source-native eye meshes · separately selectable`;
   $('mode-connective').disabled=false;
   $('mode-connective').title=connectiveAvailable?`${connectiveEntriesList.length} source-backed connective meshes plus legacy skeletal cartilage`:'Existing skeletal cartilage; build models/connective-* to add 14 nonduplicating source meshes';
   $('connective-study-panel').hidden=!teacherMode||!layers.connective;
@@ -570,6 +579,7 @@ const muscleDescriptions = [
   [/tibialis anterior/i,'Anterior leg muscle that dorsiflexes and inverts the foot.']
 ];
 function descriptionFor(s){
+  if(s.system==='ocular')return 'External eyeball surface, part of the special sense of vision. The cornea and sclera are separately selectable.';
   if(s.system==='nervous'){
     const n=(s.name||'').toLowerCase();
     if(/dura mater|falx cerebri|tentorium cerebelli/.test(n))return 'A protective fold or covering of the brain’s dura mater.';
@@ -704,7 +714,7 @@ function setSelection(s){
     elements.selectionContent.hidden=false;
     elements.selName.textContent=s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
-    elements.selCategory.textContent=(s.system==='connective'||isBaseConnective(s))?'CONNECTIVE TISSUE':s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='nervous'?'NERVOUS SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
+    elements.selCategory.textContent=s.system==='ocular'?'SPECIAL SENSES · EYE':(s.system==='connective'||isBaseConnective(s))?'CONNECTIVE TISSUE':s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='nervous'?'NERVOUS SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
     elements.selDesc.textContent=descriptionFor(s);
   }else{
     elements.noSelection.hidden=false;
@@ -716,7 +726,7 @@ function setSelection(s){
 }
 function updateLayerHeading(){
   const layers=effectiveSystemLayers(mode,systemLayers);
-  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null,layers.nervous?'Nervous':null,layers.urinary?'Urinary':null,layers.lymphatic?'Lymphatic':null,layers.connective?'Connective':null].filter(Boolean);
+  const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null,layers.nervous?'Nervous':null,layers.urinary?'Urinary':null,layers.lymphatic?'Lymphatic':null,layers.connective?'Connective':null,null].filter(Boolean);
   const name=mode==='skull'?'Skull':mode==='skeleton'?'Skeletal system':enabled.length?enabled.join(' + '):'No layers selected';
   elements.title.textContent=name;
   elements.subtitle.textContent=mode==='skull'?'Cranial and facial structures':mode==='skeleton'?'Full skeletal system':'Click system buttons to show or hide layers independently.';
@@ -860,7 +870,7 @@ function renderList(){
     // Each anatomical name remains governed by the separate 'identify' permission.
     const tissueGroups=new Map();
     for(const s of found){
-      const tissue=(s.system==='connective'||isBaseConnective(s))?({'cartilage':'Costal cartilage','joint_ligament':'Ligaments','tendon_retinaculum':'Tendons & retinacula','membrane_fascia':'Interosseous membranes'}[s.organId]||'Cartilage / connective'):s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='lymphatic'?({'spleen':'Spleen','thymus':'Thymus'}[s.organId]||'Lymphatic structures'):s.system==='urinary'?({'kidney':'Kidneys','ureter':'Ureters','bladder':'Urinary bladder','urethra':'Urethra'}[s.organId]||'Urinary structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves','meninges':'Meninges / dural folds'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
+      const tissue=s.system==='ocular'?'Nervous · Special Senses — Eyes':(s.system==='connective'||isBaseConnective(s))?({'cartilage':'Costal cartilage','joint_ligament':'Ligaments','tendon_retinaculum':'Tendons & retinacula','membrane_fascia':'Interosseous membranes'}[s.organId]||'Cartilage / connective'):s.system==='cardiovascular'?({'heart-internal':'Heart: valves & cavities',heart:'Heart walls',pulmonary:'Pulmonary circulation',coronary:'Coronary circulation',systemic:'Systemic vessels',nonvascular:'Nonvascular source anatomy'}[s.cardioGroup]||'Cardiovascular structures'):s.system==='respiratory'?({'lung':'Lung segments','airway':'Bronchi & airways','trachea':'Trachea','larynx':'Larynx','upper':'Upper respiratory','associated':'Respiratory-associated structures'}[s.organId]||'Respiratory structures'):s.system==='lymphatic'?({'spleen':'Spleen','thymus':'Thymus'}[s.organId]||'Lymphatic structures'):s.system==='urinary'?({'kidney':'Kidneys','ureter':'Ureters','bladder':'Urinary bladder','urethra':'Urethra'}[s.organId]||'Urinary structures'):s.system==='nervous'?({'brain':'Brain regions','spinal_cord':'Spinal cord','peripheral':'Cranial and peripheral nerves','meninges':'Meninges / dural folds'}[s.organId]||'Nervous system'):s.system==='digestive'?'Digestive organs':s.system==='muscular'?(s.layer==='deep muscles'?'Deep muscles':'Superficial muscles'):s.tissue==='tooth'?'Teeth':s.tissue==='cartilage'?'Cartilage':'Bones';
       if(!tissueGroups.has(tissue))tissueGroups.set(tissue,new Map());
       const sides=tissueGroups.get(tissue);const side=s.side==='left'?'Left':s.side==='right'?'Right':'Midline';
       if(!sides.has(side))sides.set(side,[]);
@@ -922,15 +932,23 @@ renderer.domElement.addEventListener('pointerup',event=>{
 });
 function prepareStructures(root){
   const found=[];
+  eyeStructures=[];
   root.traverse(obj=>{
     if(!obj.isMesh)return;
     const meta=obj.userData||{};
+    if(String(meta.tissue||'').toLowerCase()==='eye'){
+      const name=(meta.name||obj.name||'Eye').trim();
+      eyeStructures.push({mesh:obj,name,side:meta.side||'midline',tissue:'eye',
+        system:'ocular',layer:'eyes',skull:false});
+      materials.set(obj,obj.material);obj.visible=false;
+      return;
+    }
     if(!['skeleton','deep muscles','superficial muscles'].includes(meta.layer)){
       obj.visible=false;return;
     }
     const system=meta.layer==='skeleton'?'skeletal':'muscular';
     const tissue=system==='muscular'?'muscle':(meta.tissue||'bone');
-    if(tissue==='eye'){obj.visible=false;return;}
+    if(tissue==='eye'){obj.visible=false;return;} // Defensive legacy fallback for malformed metadata
     const name=(meta.name||obj.name||'Unnamed structure').trim();
     found.push({mesh:obj,name,side:meta.side||'midline',tissue,
       system,layer:meta.layer,skull:system==='skeletal'&&isSkull(name,tissue)});
@@ -938,7 +956,7 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList,...eyeStructures]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
@@ -950,6 +968,9 @@ function prepareStructures(root){
   originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
+  window.__AnatomIQEyeStatus={version:'2.2.13',source:'Original Écorché GLB',structures:eyeStructures.length,
+    names:eyeStructures.map(s=>s.name),indices:structures.filter(s=>s.system==='ocular').map(s=>s.index)};
+  console.info('AnatomIQ Eyes:',eyeStructures.length,'source-native eye structures registered.');
   console.info(`Anatomy Studio: ${legacyStructureCount} skeletal structures; ${baseStructureCount-legacyStructureCount} muscles, ${catalog.digestiveCount} digestive meshes; ${catalog.cardiovascularCount} cardiovascular meshes; ${catalog.respiratoryCount} respiratory meshes; ${catalog.nervousCount} nervous meshes; ${catalog.urinaryCount} urinary meshes; ${catalog.lymphaticCount} lymphatic meshes; ${catalog.connectiveCount} connective meshes; ${structures.filter(x=>x.skull).length} skull structures`);
   if(legacyStructureCount<100 || structures.filter(x=>x.skull).length<12 || baseStructureCount-legacyStructureCount<250)
     throw new Error('The model did not contain the expected separate bones and muscle meshes.');
@@ -1466,6 +1487,23 @@ async function loadAnatomy(){
       }
     }
     if(teacherMode||(skullGeometry==='detailed' && chapterAssets(studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start]).skull))await loadHighResolutionSkull();
+    // ANATOMIQ_REALISTIC_EYES_2214: update visual surfaces of the original
+    // four selectable eye anchors, without altering mesh identity or catalog IDs.
+    // If the optional external texture cannot load, native gray eyes remain.
+    if(eyeStructures.length){
+      try{
+        const eyeInfo=await installRealisticEyeSurfaces(THREE,
+          ()=>new GLTFLoader().loadAsync(REALISTIC_EYE_MODEL),eyeStructures,materials);
+        window.__AnatomIQEyeStatus={...window.__AnatomIQEyeStatus,
+          ...eyeInfo,version:'2.2.15',rendering:'polished external eyes · Nervous / special senses',system:'nervous'};
+        console.info('AnatomIQ Eyes: realistic textures applied to existing 4 native anchors.',eyeInfo);
+      }catch(error){
+        window.__AnatomIQEyeStatus={...window.__AnatomIQEyeStatus,
+          version:'2.2.15',rendering:'original native eyes',system:'nervous',realisticLoaded:false,
+          realisticError:String(error?.message||error)};
+        console.warn('Realistic eyes unavailable; retaining native eye surfaces.',error);
+      }
+    }
     elements.loader.hidden=true;
     await initializeStudioScene();
     setStatus(teacherMode?'Studio ready':'Student view');
@@ -1511,6 +1549,13 @@ $('settings-connective-geometry').addEventListener('change',()=>{
  try{localStorage.setItem(CONNECTIVE_QUALITY_KEY,next);}catch{}
  location.reload();
 });
+// Focus just the source-native eyes without changing current anatomy visibility.
+$('eye-focus').addEventListener('click',()=>{
+  if(!teacherMode||!eyeStructures.length)return;
+  const items=structures.filter(s=>s.system==='ocular'&&s.mesh.visible);
+  if(!items.length){showToast('Enable Nervous to focus on the eyes.');return;}
+  fitBox(boxFor(items),'front',2.15);
+});
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
 async function changeSystemLayer(system){
   if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore))return;
@@ -1530,6 +1575,15 @@ async function changeSystemLayer(system){
   try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable,respiratoryAvailable,nervousAvailable,urinaryAvailable,lymphaticAvailable,true);}catch(e){showToast(e.message);return;}
   const priorCount=currentlyVisible().length;
   const enablingConnective=system==='connective' && next.connective && !effectiveSystemLayers(mode,systemLayers).connective;
+  // Earlier scenes have no eye visibility bits; only restore the unmistakable
+  // all-hidden original-eye case, never a teacher's partial eye selection.
+  if(system==='nervous'&&next.nervous&&!systemLayers.nervous&&legacyEyeVisibilityPending){
+    const originals=structures.filter(entry=>entry.system==='ocular');
+    if(originals.length&&originals.every(entry=>hidden.has(entry.mesh))){
+      for(const entry of originals)hidden.delete(entry.mesh);
+    }
+    legacyEyeVisibilityPending=false;
+  }
   Object.assign(systemLayers,next);
   mode='systems';
   if(enablingConnective)revealStaleConnectiveOnTeacherAction(); // New scenes use independent layers; legacy presets are read-only compatibility modes.
@@ -1717,7 +1771,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
-    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ey:systemLayers.nervous,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
@@ -2419,6 +2473,10 @@ async function applyScene(saved){
     systemLayers.lymphatic=saved.ly ?? false;
     // Old scenes had no connective field: preserve former Skeletal cartilage visibility.
     systemLayers.connective=saved.cn ?? (saved.sb ?? true);
+    // Legacy lessons may have enabled Eyes separately. Merge that flag into Nervous.
+    systemLayers.ocular=false;
+    if(saved.ey===true)systemLayers.nervous=true;
+    legacyEyeVisibilityPending=saved.ey===undefined;
     legacyConnectiveVisibilityPending=teacherMode && saved.ci!==true;
     respiratoryOpacity=saved.ro ?? 1;
     applyRespiratoryOpacity();
@@ -2793,7 +2851,8 @@ $('new-project').addEventListener('click',()=>{
   chapters=[];activeChapter=0;
   publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
-  Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true});
+  Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
+   legacyEyeVisibilityPending=false;
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
   renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
 });

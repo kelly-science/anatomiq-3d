@@ -46,6 +46,7 @@ export function validateScene(scene) {
   if (!Number.isInteger(scene.n) || scene.n < 1 || scene.n > 2000) throw new Error('Invalid model size.');
   if (typeof scene.f !== 'string' || !/^[0-9a-z]{1,16}$/.test(scene.f)) throw new Error('Invalid model fingerprint.');
   readVisibilityBits(scene.b, scene.n);
+  if(scene.ey!==undefined&&typeof scene.ey!=='boolean')throw new Error('Invalid eye layer setting.');
   if(scene.ci!==undefined && typeof scene.ci!=='boolean')throw new Error('Invalid Connective visibility migration marker.');
   if (!boundedText(scene.t, 90)) throw new Error('A scene title is required (90 characters maximum).');
   if (!['shown', 'reveal', 'hidden'].includes(scene.lm)) throw new Error('Invalid label visibility.');
