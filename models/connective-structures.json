@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "source": "BodyParts3D / DBCLS 4.3",
+  "license": "CC BY-SA 2.1 Japan",
+  "registration": {
+    "vertical_axis": "z",
+    "inverted": false,
+    "scale": 0.003907105277482984
+  },
+  "structures": [
+    {
+      "id": "FJ1424M",
+      "fma_id": "FMA21496",
+      "name": "Left long plantar ligament",
+      "category": "joint_ligament",
+      "standard_triangles": 2722,
+      "detailed_triangles": 2722
+    },
+    {
+      "id": "FJ1424",
+      "fma_id": "FMA21496",
+      "name": "Right long plantar ligament",
+      "category": "joint_ligament",
+      "standard_triangles": 2722,
+      "detailed_triangles": 2722
+    },
+    {
+      "id": "FJ1471M",
+      "fma_id": "FMA14065",
+      "name": "Flexor retinaculum of left wrist",
+      "category": "tendon_retinaculum",
+      "standard_triangles": 1924,
+      "detailed_triangles": 1924
+    },
+    {
+      "id": "FJ1471",
+      "fma_id": "FMA14065",
+      "name": "Flexor retinaculum of right wrist",
+      "category": "tendon_retinaculum",
+      "standard_triangles": 1924,
+      "detailed_triangles": 1924
+    },
+    {
+      "id": "FJ1476M",
+      "fma_id": "FMA23706",
+      "name": "Interosseous membrane of left forearm",
+      "category": "membrane_fascia",
+      "standard_triangles": 1588,
+      "detailed_triangles": 1588
+    },
+    {
+      "id": "FJ1392M",
+      "fma_id": "FMA35187",
+      "name": "Interosseous membrane of left leg",
+      "category": "membrane_fascia",
+      "standard_triangles": 3200,
+      "detailed_triangles": 5640
+    },
+    {
+      "id": "FJ1476",
+      "fma_id": "FMA23706",
+      "name": "Interosseous membrane of right forearm",
+      "category": "membrane_fascia",
+      "standard_triangles": 1588,
+      "detailed_triangles": 1588
+    },
+    {
+      "id": "FJ1392",
+      "fma_id": "FMA35187",
+      "name": "Interosseous membrane of right leg",
+      "category": "membrane_fascia",
+      "standard_triangles": 3199,
+      "detailed_triangles": 5640
+    },
+    {
+      "id": "FJ3668",
+      "fma_id": "FMA14065",
+      "name": "Left eighth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 2265,
+      "detailed_triangles": 2265
+    },
+    {
+      "id": "FJ3669",
+      "fma_id": "FMA14065",
+      "name": "Left ninth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 1678,
+      "detailed_triangles": 1678
+    },
+    {
+      "id": "FJ3667",
+      "fma_id": "FMA14065",
+      "name": "Left tenth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 1400,
+      "detailed_triangles": 1400
+    },
+    {
+      "id": "FJ3668M",
+      "fma_id": "FMA14065",
+      "name": "Right eighth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 2265,
+      "detailed_triangles": 2265
+    },
+    {
+      "id": "FJ3669M",
+      "fma_id": "FMA14065",
+      "name": "Right ninth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 1678,
+      "detailed_triangles": 1678
+    },
+    {
+      "id": "FJ3667M",
+      "fma_id": "FMA14065",
+      "name": "Right tenth costal cartilage",
+      "category": "cartilage",
+      "standard_triangles": 1400,
+      "detailed_triangles": 1400
+    }
+  ]
+}

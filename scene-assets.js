@@ -11,6 +11,7 @@ export function chapterAssets(chapter){
     detailedDigestive:digestive && chapter.hd===true,
     cardiovascular:chapter.cv===true,
     respiratory:chapter.rs===true,
+    connective:chapter.cm===true,
     nervous:chapter.nv===true,
     urinary:chapter.ur===true,
     lymphatic:chapter.ly===true,
@@ -21,20 +22,21 @@ export function projectChapters(project){
   return project.v===1?[project]:project.chapters;
 }
 export function assetsForProject(project){
-  const needs={base:true,legacyDigestive:false,detailedDigestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,skull:false};
+  const needs={base:true,legacyDigestive:false,detailedDigestive:false,cardiovascular:false,respiratory:false,connective:false,nervous:false,urinary:false,lymphatic:false,skull:false};
   for(const chapter of projectChapters(project)){
     const assets=chapterAssets(chapter);
     for(const [key,value] of Object.entries(assets))needs[key] ||= value;
   }
   return needs;
 }
-export function offlineLessonFiles(project,{digestiveGeometry='standard',cardioGeometry='standard',skullGeometry='standard',respiratoryGeometry='standard',nervousGeometry='standard',urinaryGeometry='standard',lymphaticGeometry='standard'}={}){
+export function offlineLessonFiles(project,{digestiveGeometry='standard',cardioGeometry='standard',skullGeometry='standard',respiratoryGeometry='standard',connectiveGeometry='standard',nervousGeometry='standard',urinaryGeometry='standard',lymphaticGeometry='standard'}={}){
   const needed=assetsForProject(project);
   const files=[];
   if(needed.legacyDigestive)files.push('models/anatomy-organs.glb','vendor/three/examples/jsm/loaders/DRACOLoader.js','vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js');
   if(needed.detailedDigestive)files.push('models/digestive-structures.json',`models/digestive-${digestiveGeometry==='detailed'?'detailed':'standard'}.glb`);
   if(needed.cardiovascular)files.push('models/cardiovascular-structures.json',`models/cardiovascular-${cardioGeometry==='detailed'?'detailed':'standard'}.glb`);
-  if(needed.respiratory)files.push('models/respiratory-structures.json',`models/respiratory-${respiratoryGeometry==='detailed'?'detailed':'standard'}.glb`);
+  if(needed.connective)files.push('models/connective-structures.json',`models/connective-${connectiveGeometry==='detailed'?'detailed':'standard'}.glb`);
+   if(needed.respiratory)files.push('models/respiratory-structures.json',`models/respiratory-${respiratoryGeometry==='detailed'?'detailed':'standard'}.glb`);
   if(needed.nervous)files.push('models/nervous-structures.json',`models/nervous-${nervousGeometry==='detailed'?'detailed':'standard'}.glb`);
   if(needed.urinary)files.push('models/urinary-structures.json',`models/urinary-${urinaryGeometry==='detailed'?'detailed':'standard'}.glb`);
   if(needed.lymphatic)files.push('models/lymphatic-structures.json',`models/lymphatic-${lymphaticGeometry==='detailed'?'detailed':'standard'}.glb`);

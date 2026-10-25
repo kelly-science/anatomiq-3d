@@ -1,0 +1,103 @@
+{
+  "source": "BodyParts3D / DBCLS 4.3",
+  "structures": [
+    {
+      "fj_id": "FJ1424M",
+      "name": "Left long plantar ligament",
+      "fma_id": "FMA21496",
+      "category": "joint_ligament",
+      "region": "Foot / ankle"
+    },
+    {
+      "fj_id": "FJ1424",
+      "name": "Right long plantar ligament",
+      "fma_id": "FMA21496",
+      "category": "joint_ligament",
+      "region": "Foot / ankle"
+    },
+    {
+      "fj_id": "FJ1471M",
+      "name": "Flexor retinaculum of left wrist",
+      "fma_id": "FMA14065",
+      "category": "tendon_retinaculum",
+      "region": "Wrist / hand"
+    },
+    {
+      "fj_id": "FJ1471",
+      "name": "Flexor retinaculum of right wrist",
+      "fma_id": "FMA14065",
+      "category": "tendon_retinaculum",
+      "region": "Wrist / hand"
+    },
+    {
+      "fj_id": "FJ1476M",
+      "name": "Interosseous membrane of left forearm",
+      "fma_id": "FMA23706",
+      "category": "membrane_fascia",
+      "region": "Other / unspecified"
+    },
+    {
+      "fj_id": "FJ1392M",
+      "name": "Interosseous membrane of left leg",
+      "fma_id": "FMA35187",
+      "category": "membrane_fascia",
+      "region": "Other / unspecified"
+    },
+    {
+      "fj_id": "FJ1476",
+      "name": "Interosseous membrane of right forearm",
+      "fma_id": "FMA23706",
+      "category": "membrane_fascia",
+      "region": "Other / unspecified"
+    },
+    {
+      "fj_id": "FJ1392",
+      "name": "Interosseous membrane of right leg",
+      "fma_id": "FMA35187",
+      "category": "membrane_fascia",
+      "region": "Other / unspecified"
+    },
+    {
+      "fj_id": "FJ3668",
+      "name": "Left eighth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    },
+    {
+      "fj_id": "FJ3669",
+      "name": "Left ninth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    },
+    {
+      "fj_id": "FJ3667",
+      "name": "Left tenth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    },
+    {
+      "fj_id": "FJ3668M",
+      "name": "Right eighth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    },
+    {
+      "fj_id": "FJ3669M",
+      "name": "Right ninth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    },
+    {
+      "fj_id": "FJ3667M",
+      "name": "Right tenth costal cartilage",
+      "fma_id": "",
+      "category": "cartilage",
+      "region": "Thorax \u00b7 false-rib costal cartilage"
+    }
+  ]
+}

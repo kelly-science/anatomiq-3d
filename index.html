@@ -24,10 +24,11 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.7</span>
+        <span class="version">STUDIO 2.2.9</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
+        <button id="mode-connective" class="mode-tab" type="button" aria-pressed="false" data-system="connective" title="Cartilage, ligaments, tendons and intervertebral discs">Connective</button>
         <button id="mode-muscular" class="mode-tab" type="button" aria-pressed="false" data-system="muscular">Muscular</button>
         <button id="mode-digestive" class="mode-tab" type="button" aria-pressed="false" data-system="digestive">Digestive</button>
         <button id="mode-cardiovascular" class="mode-tab" type="button" aria-pressed="false" data-system="cardiovascular" disabled>Cardiovascular</button>
@@ -174,6 +175,18 @@
             <button class="button small" type="button" data-nervous-preset="plexus">Brachial plexus &amp; arm</button>
             <button class="button small" type="button" data-nervous-preset="verified">Verified source only</button>
             <button id="nervous-focus" class="button small primary" type="button">Focus nervous system</button>
+          </div>
+        </section>
+        <section id="connective-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Connective tissue study views" hidden>
+          <div class="systems-header"><span class="eyebrow">CONNECTIVE TISSUE STUDY VIEWS</span><p id="connective-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Existing Écorché cartilage is reclassified without changing mesh IDs. Native Connective only adds anatomy absent from the existing models: 6 costal-cartilage meshes for ribs 8–10, 2 plantar ligaments, 2 wrist retinacula and 4 interosseous membranes. Existing Écorché discs and Muscular Achilles tendons are preserved without duplication. Knee ACL/PCL and menisci are not in this native set.</p>
+          <div class="cardio-presets" role="group" aria-label="Connective anatomy presets">
+            <button class="button small" type="button" data-connective-preset="all">All connective</button>
+            <button class="button small" type="button" data-connective-preset="spine">Spine &amp; discs</button>
+            <button class="button small" type="button" data-connective-preset="ankle">Foot &amp; ankle</button>
+            <button class="button small" type="button" data-connective-preset="ribs">Rib cartilages 8–10</button>
+            <button class="button small" type="button" data-connective-preset="wrist">Wrist &amp; forearm</button>
+            <button class="button small" type="button" data-connective-preset="membranes">Interosseous membranes</button>
           </div>
         </section>
         <section id="lymphatic-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Lymphatic and immune organs" hidden>
@@ -516,6 +529,8 @@
         <p class="studio-hint">Standard is recommended for accurate dental alignment and predictable performance. In Experimental mode, only safely matched skull surfaces are upgraded; the original maxillae, mandible and teeth remain together. The replacement uses a neutral bone material. Existing 1.7.1 devices have been reset to Standard once. The experiment requires <code>models/skull-detailed.glb</code> and <code>models/skull-structures.json</code>. The setting is device-specific and never changes saved lessons or student links.</p>
       </div>
       <div class="render-settings-group">
+        <label for="settings-connective-geometry"><strong>Connective anatomy geometry</strong></label>
+        <select id="settings-connective-geometry" class="text-input" aria-label="Connective model detail"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — smooth connective surfaces</option></select>
         <label for="settings-lymphatic-geometry"><strong>Lymphatic geometry</strong></label>
         <select id="settings-lymphatic-geometry" class="text-input" aria-label="Lymphatic geometry quality"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — smoother spleen and thymus</option></select>
         <label for="settings-urinary-geometry"><strong>Urinary system geometry</strong></label>

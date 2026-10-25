@@ -26,7 +26,8 @@ export function catalogAnatomy(entries){
   const nervous=entries.filter(s=>s.system==='nervous');
   const urinary=entries.filter(s=>s.system==='urinary');
   const lymphatic=entries.filter(s=>s.system==='lymphatic');
-  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic];
+  const connective=entries.filter(s=>s.system==='connective');
+  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic,...connective];
   const originalCardio=[...preCardio,...legacyCv];
   return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
     baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),
@@ -35,7 +36,7 @@ export function catalogAnatomy(entries){
     preCardioCount:preCardio.length,preCardioFingerprint:hashForStructures(preCardio.map(key)),
     originalCardioCount:legacyCv.length===ORIGINAL_CARDIO_IDS.length?originalCardio.length:undefined,
     originalCardioFingerprint:legacyCv.length===ORIGINAL_CARDIO_IDS.length?hashForStructures(originalCardio.map(key)):undefined,
-    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length,respiratoryCount:respiratory.length,nervousCount:nervous.length,urinaryCount:urinary.length,lymphaticCount:lymphatic.length};
+    fullFingerprint:hashForStructures(structures.map(key)),digestiveCount:digestive.length,cardiovascularCount:cardiovascular.length,respiratoryCount:respiratory.length,nervousCount:nervous.length,urinaryCount:urinary.length,lymphaticCount:lymphatic.length,connectiveCount:connective.length};
 }
 export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCount,oldFingerprint,baseCount,baseFingerprint,previousCount,previousFingerprint,preCardioCount,preCardioFingerprint,originalCardioCount,originalCardioFingerprint,appendStructures=null){
   if(!scene)return false;

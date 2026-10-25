@@ -1,0 +1,8 @@
+BodyParts3D / Anatomography 4.3, © Database Center for Life Science (DBCLS).
+Model/mesh license CC BY-SA 2.1 Japan:
+https://creativecommons.org/licenses/by-sa/2.1/jp/deed.en
+Provider subset downloader: olivercase/body_parts_3d_api v1.0.0 (MIT tool code).
+https://github.com/olivercase/body_parts_3d_api
+The 33 selected real BodyParts3D OBJs are converted into the same skin-normalized
+coordinate system as the app's source-derived visceral anatomy. The source
+geometry remains attributed; the converter does not fabricate missing anatomy.

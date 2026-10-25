@@ -1,9 +1,9 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.7-remember-github';
+const VERSION='anatomy-v2.2.9-connective-curated';
 const POLISH_MODELS='anatomiq-models-persistent-v1';
-const SHELL=['./','./index.html','./styles.css','./app.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const SHELL=['./','./index.html','./styles.css','./app.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./connective-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',
@@ -71,6 +71,7 @@ const MODEL_REFRESH_SCOPES=Object.freeze({
   respiratory:['models/respiratory-structures.json','models/respiratory-standard.glb','models/respiratory-detailed.glb'],
   nervous:['models/nervous-structures.json','models/nervous-standard.glb','models/nervous-detailed.glb'],
   urinary:['models/urinary-structures.json','models/urinary-standard.glb','models/urinary-detailed.glb'],
+  connective:['models/connective-structures.json','models/connective-standard.glb','models/connective-detailed.glb'],
   lymphatic:['models/lymphatic-structures.json','models/lymphatic-standard.glb','models/lymphatic-detailed.glb'],
   skeletal:['models/ecorche.glb']
 });
