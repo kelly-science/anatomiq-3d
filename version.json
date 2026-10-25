@@ -1,6 +1,6 @@
 {
-  "version": "2.2.10",
+  "version": "2.2.11",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Live Connective cache-coherence patch: versioned native assets and module, loader diagnostics. The 14 native meshes and final cartilage alignment are unchanged."
+  "notes": "Connective visibility migration: older all-hidden 14-mesh drafts recover on teacher tab/preset activation, without Restore All. Other saved structure visibility, model geometry and IDs are unchanged."
 }

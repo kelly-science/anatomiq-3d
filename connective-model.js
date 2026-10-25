@@ -68,3 +68,13 @@ export function baseConnectiveVisibleInPreset(s,preset){
   if(preset==='wrist')return /wrist|retinaculum|forearm/.test(n);
   return /interosseous membrane/.test(n);
 }
+
+// ANATOMIQ_CONNECTIVE_2211_VISIBILITY: Only repair a legacy all-hidden native atlas.
+// Do not change saved structure IDs, authored partial selections, or other systems.
+export function recoverLegacyConnectiveHidden(hidden,entries){
+  if(!(hidden instanceof Set)||!Array.isArray(entries)||entries.length!==14)return 0;
+  const meshes=entries.map(entry=>entry?.mesh);
+  if(meshes.some(mesh=>!mesh||mesh.userData?.deferredAsset||!hidden.has(mesh)))return 0;
+  for(const mesh of meshes)hidden.delete(mesh);
+  return meshes.length;
+}

@@ -13,7 +13,7 @@ import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.
 import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
 import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset,nervousMaterialOverrides} from './nervous-model.js';
 import {urinaryEntries,validateUrinaryManifest,urinaryColor,URINARY_PRESETS,urinaryVisibleInPreset,isRenalVessel} from './urinary-model.js';
-import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset} from './connective-model.js?rev=2210';
+import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset,recoverLegacyConnectiveHidden} from './connective-model.js?rev=2211';
 import {lymphaticEntries,validateLymphaticManifest,lymphaticColor,LYMPHATIC_PRESETS,lymphaticVisibleInPreset} from './lymphatic-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
@@ -33,7 +33,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.10';
+const APP_VERSION = '2.2.11';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -56,9 +56,9 @@ const CARDIO_DETAILED='./models/cardiovascular-detailed.glb';
 const RESP_MANIFEST='./models/respiratory-structures.json';
 const RESP_STANDARD='./models/respiratory-standard.glb';
 const RESP_DETAILED='./models/respiratory-detailed.glb';
-const CONNECTIVE_MANIFEST='./models/connective-structures.json?rev=2210';
-const CONNECTIVE_STANDARD='./models/connective-standard.glb?rev=2210';
-const CONNECTIVE_DETAILED='./models/connective-detailed.glb?rev=2210';
+const CONNECTIVE_MANIFEST='./models/connective-structures.json?rev=2211';
+const CONNECTIVE_STANDARD='./models/connective-standard.glb?rev=2211';
+const CONNECTIVE_DETAILED='./models/connective-detailed.glb?rev=2211';
 const LYMPHATIC_MANIFEST='./models/lymphatic-structures.json';
 const LYMPHATIC_STANDARD='./models/lymphatic-standard.glb';
 const LYMPHATIC_DETAILED='./models/lymphatic-detailed.glb';
@@ -81,6 +81,9 @@ let connectiveGeometry='standard';
 try{connectiveGeometry=localStorage.getItem(CONNECTIVE_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let connectiveRoot=null,connectiveEntriesList=[],connectiveAvailable=false,connectiveLoaded=false,connectiveMetadata=null;
 let connectivePreset='all';
+// Older scene snapshots can contain all 14 native meshes as hidden, even though
+// the teacher never deliberately hid them (they were not loaded yet).
+let legacyConnectiveVisibilityPending=false;
 let connectiveLoadError='';
 window.__AnatomIQConnectiveStatus={loaded:false,stage:'not started'};
 const LYMPHATIC_QUALITY_KEY='anatomiq-lymphatic-geometry-v1';
@@ -1216,7 +1219,7 @@ async function loadLymphatic(){
 }
 async function loadConnective(){
   connectiveLoaded=false;connectiveAvailable=false;connectiveEntriesList=[];connectiveLoadError='';
-  window.__AnatomIQConnectiveStatus={loaded:false,stage:'fetching manifest',version:'2.2.10'};
+  window.__AnatomIQConnectiveStatus={loaded:false,stage:'fetching manifest',version:'2.2.11'};
   if(connectiveRoot){scene.remove(connectiveRoot);connectiveRoot=null;}
   try{
     const manifest=await readOptionalManifest(CONNECTIVE_MANIFEST,validateConnectiveManifest);
@@ -1225,7 +1228,7 @@ async function loadConnective(){
     let gltf;
     try{gltf=await new GLTFLoader().loadAsync(requested);}
     catch(error){if(requested===CONNECTIVE_STANDARD)throw error;gltf=await new GLTFLoader().loadAsync(CONNECTIVE_STANDARD);}
-    window.__AnatomIQConnectiveStatus={loaded:false,stage:'validating GLB',version:'2.2.10',manifestStructures:manifest.structures.length};
+    window.__AnatomIQConnectiveStatus={loaded:false,stage:'validating GLB',version:'2.2.11',manifestStructures:manifest.structures.length};
     const entries=connectiveEntries(gltf.scene,manifest);
     const alignment=correctedDetailTransform(sourceRegistration(new THREE.Box3().setFromObject(sceneRoot)));
     gltf.scene.scale.set(...alignment.scale);gltf.scene.position.set(...alignment.position);
@@ -1240,12 +1243,12 @@ async function loadConnective(){
       materials.set(mesh,mesh.material);mesh.visible=false;
     }
     connectiveEntriesList=entries;connectiveAvailable=true;connectiveLoaded=true;connectiveLoadError='';
-    window.__AnatomIQConnectiveStatus={loaded:true,stage:'complete',version:'2.2.10',structures:entries.length,model:requested};
+    window.__AnatomIQConnectiveStatus={loaded:true,stage:'complete',version:'2.2.11',structures:entries.length,model:requested};
     console.info('AnatomIQ Connective: successfully loaded',entries.length,'meshes from',requested);
     configureAnatomyShadows(connectiveRoot,shadows.profile.enabled);
   }catch(error){
     connectiveLoadError=String(error?.message||error);
-    window.__AnatomIQConnectiveStatus={loaded:false,stage:'failed',version:'2.2.10',error:connectiveLoadError};
+    window.__AnatomIQConnectiveStatus={loaded:false,stage:'failed',version:'2.2.11',error:connectiveLoadError};
     console.error('AnatomIQ Connective: failed to load 14 source meshes:',error);
     if(connectiveRoot){scene.remove(connectiveRoot);connectiveRoot=null;}
   }
@@ -1480,11 +1483,22 @@ async function loadAnatomy(){
   }
 }
 
+// ANATOMIQ_CONNECTIVE_2211_VISIBILITY: recover a stale legacy snapshot only on an explicit teacher action.
+// NEVER clear the global hidden set: other systems and authored exclusions remain.
+function revealStaleConnectiveOnTeacherAction(){
+  if(!teacherMode||!legacyConnectiveVisibilityPending||!connectiveLoaded||!connectiveAvailable)return;
+  // Recover only the unmistakable all-native-hidden case. A partially hidden
+  // Connective selection may be an intentional teacher-created practical.
+  const restored=recoverLegacyConnectiveHidden(hidden,connectiveEntriesList);
+  legacyConnectiveVisibilityPending=false;
+  if(restored)console.info('AnatomIQ: restored',restored,'previously hidden native Connective structures from an older draft.');
+}
 // Native-connective study presets, retaining skeletal context if the teacher wishes.
 for(const button of document.querySelectorAll('[data-connective-preset]'))button.addEventListener('click',()=>{
   if(!teacherMode)return;
   connectivePreset=button.dataset.connectivePreset;
   mode='systems';systemLayers.connective=true;
+  revealStaleConnectiveOnTeacherAction();
   updateLayerHeading();updateSystemControls();refreshVisibility();
   frameVisible('front');queueDraft();
 });
@@ -1514,8 +1528,10 @@ async function changeSystemLayer(system){
   let next;
   try{next=toggleAnatomySystem(mode,systemLayers,system,detailAvailable,cardioAvailable,respiratoryAvailable,nervousAvailable,urinaryAvailable,lymphaticAvailable,true);}catch(e){showToast(e.message);return;}
   const priorCount=currentlyVisible().length;
+  const enablingConnective=system==='connective' && next.connective && !effectiveSystemLayers(mode,systemLayers).connective;
   Object.assign(systemLayers,next);
-  mode='systems'; // New scenes use independent layers; legacy presets are read-only compatibility modes.
+  mode='systems';
+  if(enablingConnective)revealStaleConnectiveOnTeacherAction(); // New scenes use independent layers; legacy presets are read-only compatibility modes.
   if(system==='digestive'&&systemLayers.digestive){detailEnabled=true;detailLayerExplicitlyChanged=true;}
   if(selected&&!layerEnabled(selected))setSelection(null);
   isolated=false;
@@ -1700,7 +1716,7 @@ function snapshotScene(){
     b:makeVisibilityBits(visible),t:$('scene-title').value.trim()||'Untitled anatomy scene',
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
-    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
+    sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
@@ -2352,6 +2368,7 @@ async function applyScene(saved){
     systemLayers.lymphatic=saved.ly ?? false;
     // Old scenes had no connective field: preserve former Skeletal cartilage visibility.
     systemLayers.connective=saved.cn ?? (saved.sb ?? true);
+    legacyConnectiveVisibilityPending=teacherMode && saved.ci!==true;
     respiratoryOpacity=saved.ro ?? 1;
     applyRespiratoryOpacity();
     if(systemLayers.respiratory&&!respiratoryAvailable)throw new Error('This lesson requires respiratory-standard.glb and respiratory-structures.json.');
