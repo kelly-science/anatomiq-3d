@@ -15,3 +15,18 @@
 #bone-list .anat-nav-children>.bone-item{display:flex;width:100%;}
 #bone-list .anat-nav-children>.anat-nav-node{min-width:0}
 @media(max-width:620px){#bone-list .anat-nav-view{padding:5px 8px;font-size:12px}}
+
+/* 2.2.20 — one anatomy explorer; selection and visibility are separate. */
+#bone-list .anat-explorer-toolbar{position:sticky;top:0;z-index:3;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px 4px 8px;background:var(--panel-bg,rgba(18,29,39,.97));border-bottom:1px solid rgba(132,171,187,.25)}
+#bone-list .anat-explorer-title{font-size:11px;font-weight:600;opacity:.75}
+#bone-list .anat-explorer-filter{min-width:0;flex:1;font:inherit;font-size:11px;max-width:190px;padding:5px;border-radius:6px;color:inherit;background:rgba(100,140,158,.12);border:1px solid rgba(122,163,180,.4)}
+#bone-list .anat-explorer-restore{width:100%;border:1px solid rgba(110,207,225,.6);border-radius:6px;background:rgba(110,207,225,.14);color:inherit;padding:6px;cursor:pointer;font-size:11px}
+#bone-list .anat-explorer-row{display:flex;align-items:center;gap:3px;width:100%;min-width:0}
+#bone-list .anat-explorer-row>button.bone-item{flex:1;min-width:0;text-align:left;display:flex;align-items:center;gap:4px}
+#bone-list .anat-explorer-status{font-size:9px;opacity:.62;white-space:nowrap;margin-left:auto}
+#bone-list .anat-explorer-status.is-hidden{opacity:.42}
+#bone-list .anat-explorer-eye{flex:0 0 26px;height:27px;display:grid;place-items:center;border:1px solid rgba(122,163,180,.35);border-radius:6px;background:transparent;color:inherit;cursor:pointer;font-size:16px;padding:0}
+#bone-list .anat-explorer-eye[aria-pressed='true']{color:#7fd5dc}
+#bone-list .anat-explorer-eye:disabled{opacity:.22;cursor:not-allowed}
+#bone-list .anat-explorer-eye:not(:disabled):hover{background:rgba(110,207,225,.16)}
+@media(max-width:620px){#bone-list .anat-explorer-eye{flex-basis:32px;height:32px}}

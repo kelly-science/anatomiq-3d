@@ -1,6 +1,6 @@
 {
-  "version": "2.2.19",
+  "version": "2.2.20",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Unified anatomical explorer: shared system/division sidebar and contextual breadcrumbs; preserves transient isolation and teacher multiselect."
+  "notes": "Single Anatomical Structures navigator with chapter visibility filter, eye toggles and auto-expanded selected path; breadcrumbs archived for possible return."
 }

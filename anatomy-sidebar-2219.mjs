@@ -1,6 +1,5 @@
-/* AnatomIQ Studio 2.2.19: one anatomical taxonomy, two complementary surfaces.
-   This builds the interactive sidebar from the same 2.2.18 tree as breadcrumbs.
-   No chapter/mesh settings are mutated until a teacher requests View only. */
+/* AnatomIQ Studio 2.2.20: the sidebar is the single anatomical navigator.
+   Group View is temporary; leaf visibility is changed only by its separate eye button. */
 import {buildAnatomyTree,anatomyPath} from './anatomy-divisions-2218.mjs';
 
 const compare=(a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:'base'});
@@ -16,6 +15,11 @@ export function orderedNodes(node){
   });
 }
 export function pathIncludes(parent,child){return parent.every((name,i)=>child[i]===name);}
+export function expandToStructure(expanded,structure){
+  const path=anatomyPath(structure);
+  for(let i=1;i<path.length;i++)expanded.set('anat-tree:'+path.slice(0,i).join('/'),true);
+  return path;
+}
 export function sidebarOpenDefault(node,selectedPath,scopePath,searching){
   if(searching)return true;
   if(node.path.length===1)return true;

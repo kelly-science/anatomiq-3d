@@ -31,14 +31,14 @@ import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from '
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {skeletalDivision,parseStudioVersion,compareStudioVersions} from './skeletal-views-2217.mjs';
 import {anatomyPath,buildAnatomyTree,getDivisionNode,divisionCoverage} from './anatomy-divisions-2218.mjs';
-import {renderAnatomySidebar} from './anatomy-sidebar-2219.mjs'; // ANATOMIQ_SIDEBAR_2219
+import {renderAnatomySidebar,expandToStructure} from './anatomy-sidebar-2219.mjs?rev=2220'; // ANATOMIQ_SINGLE_EXPLORER_2220
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
 import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.19';
+const APP_VERSION = '2.2.20';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -532,7 +532,6 @@ function currentlyVisible(){return currentStructures().filter(s=>s.mesh.visible)
 
 // ANATOMIQ_DIVISIONS_2218 — reversible browsing, not chapter editing.
 let divisionScope=null,divisionBrowsePath=[],divisionStudentAllowed=null,divisionSavedCamera=null;
-let divisionNavRoot=null,divisionNavMenu=null,divisionNavFingerprint='';
 function divisionCanBrowse(){return teacherMode || (studentPermissions.st && studentPermissions.sn && !(typeof practicalActive!=='undefined'&&practicalActive));}
 function divisionTree(){return buildAnatomyTree(structures);}
 window.__AnatomIQDivisionCoverage=()=>divisionCoverage(divisionTree());
@@ -545,7 +544,7 @@ function divisionNavReset(restoreCamera=false){
     controls.target.fromArray(divisionSavedCamera.slice(3,6));
     camera.updateProjectionMatrix();controls.update();
   }
-  divisionSavedCamera=null;divisionNavFingerprint='';
+  divisionSavedCamera=null;
 }
 function divisionUnderlyingVisible(s){
   return layerEnabled(s)&&tissueVisible(s)&&!hidden.has(s.mesh)&&(!isolated||s===selected);
@@ -562,87 +561,15 @@ function divisionOpen(path){
   isolated=false;
   divisionScope=new Set(entries.map(s=>s.index));
   divisionBrowsePath=path;
-  divisionNavFingerprint='';
   refreshVisibility(true);
   const visible=entries.filter(s=>s.mesh.visible);
   if(visible.length)fitBox(boxFor(visible),activePreset||'front',1.34,true);
-  divisionRenderNavigation();
 }
 function divisionClose(){
-  divisionNavMenu?.setAttribute('hidden','');
-  divisionNavReset(true);refreshVisibility(true);divisionRenderNavigation();
+  divisionNavReset(true);
+  refreshVisibility(true);
 }
-function divisionRenderNavigation(){
-  if(!sceneRoot || !divisionCanBrowse()){
-    if(divisionNavRoot)divisionNavRoot.hidden=true;
-    return;
-  }
-  if(!divisionNavRoot){
-    const nav=document.createElement('nav');nav.id='anatomiq-division-nav';nav.setAttribute('aria-label','Anatomical divisions');
-    const trail=document.createElement('div');trail.className='division-trail';
-    const menu=document.createElement('div');menu.className='division-menu';menu.hidden=true;
-    nav.append(trail,menu);elements.stage.append(nav);divisionNavRoot=nav;divisionNavMenu=menu;
-    nav.addEventListener('keydown',ev=>{if(ev.key==='Escape'){menu.hidden=true;nav.querySelector('.division-crumb')?.focus();}});
-    document.addEventListener('pointerdown',ev=>{if(divisionNavRoot && !divisionNavRoot.contains(ev.target))divisionNavMenu.hidden=true;});
-  }
-  divisionNavRoot.hidden=false;
-  const fullPath=divisionScope ? divisionBrowsePath : (selected ? anatomyPath(selected) : []);
-  const key=[structures.length,selected?.index??'-',divisionScope?.size??'-',fullPath.join('|')].join(':');
-  if(key===divisionNavFingerprint)return;
-  divisionNavFingerprint=key;
-  const trail=divisionNavRoot.querySelector('.division-trail');trail.replaceChildren();divisionNavMenu.hidden=true;
-  function makeButton(label,path){
-    const btn=document.createElement('button');btn.className='division-crumb';btn.type='button';
-    btn.textContent=label;btn.title=path.length?`Show only ${label}`:'Restore the original view';
-    btn.addEventListener('click',()=>{
-      if(path.length)divisionOpen(path);
-      else if(divisionScope)divisionClose();
-    });
-    return btn;
-  }
-  trail.append(makeButton('Systems',[]));
-  fullPath.forEach((segment,i)=>{
-    const arrow=document.createElement('span');arrow.className='division-separator';arrow.textContent='›';arrow.setAttribute('aria-hidden','true');trail.append(arrow);
-    trail.append(makeButton(segment,fullPath.slice(0,i+1)));
-  });
-  if(divisionScope){
-    const btn=document.createElement('button');btn.className='division-clear';btn.type='button';btn.textContent='Show original view';btn.addEventListener('click',divisionClose);
-    trail.append(btn);
-  }
-}
-function divisionShowChildren(node){
-  if(!divisionNavMenu||!node)return;
-  divisionNavMenu.replaceChildren();
-  const children=[...node.children.values()].filter(x=>{
-    if(teacherMode)return Boolean(x.entries.length);
-    return x.entries.some(s=>divisionStudentAllowed?divisionStudentAllowed.has(s.index):divisionUnderlyingVisible(s));
-  }).sort((a,b)=>a.label.localeCompare(b.label,undefined,{numeric:true}));
-  if(!children.length){divisionNavMenu.hidden=true;return;}
-  let filter=null;
-  if(children.length>15){
-    filter=document.createElement('input');filter.type='search';filter.className='division-filter';
-    filter.placeholder='Filter '+children.length+' structures…';filter.setAttribute('aria-label','Filter anatomical divisions');
-    divisionNavMenu.append(filter);
-  }
-  const buttons=[];
-  for(const child of children){
-    const b=document.createElement('button');b.type='button';
-    const name=document.createElement('span');name.textContent=child.label;
-    const count=document.createElement('span');count.className='division-menu-count';count.textContent=String(child.entries.length);
-    b.append(name,count);
-    b.addEventListener('click',()=>{
-      divisionOpen(child.path);
-      divisionShowChildren(child);
-      if(!child.children.size)divisionNavMenu.hidden=true;
-    });
-    divisionNavMenu.append(b);buttons.push(b);
-  }
-  if(filter)filter.addEventListener('input',()=>{
-    const q=filter.value.trim().toLowerCase();
-    for(const b of buttons)b.hidden=!b.firstChild.textContent.toLowerCase().includes(q);
-  });
-  divisionNavMenu.hidden=false;
-}
+// Breadcrumb code retired in 2.2.20; exact 2.2.19 implementation archived in docs/archive.
 
 function refreshVisibility(transient=false){
   for(const s of structures){
@@ -1053,14 +980,62 @@ function orient(view){
   polishMoveCamera(destination,controls.target.clone());setPresetActive(view);
 }
 function focusSelected(){const targets=multiTargets();if(targets.length)fitBox(boxFor(targets),activePreset,2.15);}
+let anatomyExplorerFilter='all';
+let lastExplorerSelectedIndex=null;
+function chapterStructureVisible(s){
+  // Ignores temporary division masking: report the chapter's actual visibility settings.
+  return layerEnabled(s) && tissueVisible(s) && !hidden.has(s.mesh) && !s.mesh.userData?.deferredAsset;
+}
+function toggleExplorerStructure(s){
+  if(!teacherMode)return;
+  if(divisionScope)divisionClose();
+  if(!layerEnabled(s)||!tissueVisible(s)){
+    showToast('Enable this anatomy system in View before showing its structures.');return;
+  }
+  if(hidden.has(s.mesh))hidden.delete(s.mesh);
+  else if(s.mesh.visible)hidden.add(s.mesh);
+  else {isolated=false;hidden.delete(s.mesh);}
+  refreshVisibility();
+}
 function renderList(){
   const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
   document.body.classList.toggle('student-has-query',!teacherMode && Boolean(text));
-  const available=currentStructures().filter(s=>tissueVisible(s) && (!teacherMode||!teacherCoreTreeOnly||s.system!=='cardiovascular'||classCoreVisible(s)));
-  const found=available.filter(s=>s.name.toLowerCase().includes(text) && (teacherMode || studentExplore || s.mesh.visible));
+  // Teachers can browse all loaded systems, including chapters that currently hide them.
+  // Student visibility and identification permissions remain exactly as before.
+  const trackSelectedInExplorer=Boolean(teacherMode && selected && selected.index!==lastExplorerSelectedIndex);
+  if(trackSelectedInExplorer){
+    // Find hidden selections too: adjust the filter before computing matching entries.
+    expandToStructure(treeExpanded,selected);
+    if(anatomyExplorerFilter==='visible'&&!chapterStructureVisible(selected))anatomyExplorerFilter='all';
+    lastExplorerSelectedIndex=selected.index;
+  }else if(teacherMode&&!selected){lastExplorerSelectedIndex=null;}
+  const available=teacherMode ? structures : currentStructures().filter(s=>tissueVisible(s));
+  const found=available.filter(s=>s.name.toLowerCase().includes(text)
+    && (teacherMode ? (anatomyExplorerFilter==='all'||chapterStructureVisible(s)) : (studentExplore||s.mesh.visible)));
   elements.count.textContent=found.length;
   elements.clearSearch.hidden=!elements.search.value;
   const frag=document.createDocumentFragment();
+  if(teacherMode){
+    const toolbar=document.createElement('div');toolbar.className='anat-explorer-toolbar';
+    const title=document.createElement('span');title.textContent='Browse';title.className='anat-explorer-title';
+    const filter=document.createElement('select');filter.className='anat-explorer-filter';filter.setAttribute('aria-label','Anatomical structures filter');
+    for(const [value,label] of [['all','All Structures'],['visible','Visible in Chapter']]){
+      const option=document.createElement('option');option.value=value;option.textContent=label;filter.append(option);
+    }
+    filter.value=anatomyExplorerFilter;
+    filter.addEventListener('change',()=>{anatomyExplorerFilter=filter.value;renderList();});
+    toolbar.append(title,filter);
+    if(divisionScope){
+      const restore=document.createElement('button');restore.type='button';restore.className='anat-explorer-restore';
+      restore.textContent='Show original view';restore.addEventListener('click',divisionClose);toolbar.append(restore);
+    }
+    frag.append(toolbar);
+  }else if(divisionScope && divisionCanBrowse()){
+    // Students who can navigate divisions must retain a way out after retiring the top breadcrumb.
+    const restore=document.createElement('button');restore.type='button';restore.className='anat-explorer-restore';
+    restore.textContent='Show original view';restore.addEventListener('click',divisionClose);
+    frag.append(restore);
+  }
   if(!teacherMode && !studentPermissions.st && !text){
     const p=document.createElement('p');p.className='empty-list';p.textContent='Search for a structure above.';frag.appendChild(p);
   }else if(!found.length){
@@ -1070,6 +1045,10 @@ function renderList(){
     const b=document.createElement('button');b.dataset.structureIndex=s.index;b.className='bone-item'+(selected===s?' active':'')+(teacherMode&&multiSelectedIndices.has(s.index)?' multi-selected':'');
     b.setAttribute('aria-pressed',String(teacherMode?multiSelectedIndices.has(s.index):selected===s));
     const t=document.createElement('span');t.textContent=studentAllowed('sn') ? s.name : `Structure ${s.index+1}`;b.appendChild(t);
+    if(teacherMode){
+      const displayStatus=document.createElement('span');displayStatus.className='anat-explorer-status'+(chapterStructureVisible(s)?' is-visible':' is-hidden');
+      displayStatus.textContent=chapterStructureVisible(s)?'Visible':'Hidden';b.append(displayStatus);
+    }
     if(bonePaint.has(s.index)){
       const chip=document.createElement('span');chip.className='paint-list-dot';
       chip.style.backgroundColor=bonePaint.get(s.index);chip.setAttribute('aria-label',`Painted ${bonePaint.get(s.index)}`);
@@ -1079,18 +1058,29 @@ function renderList(){
       if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)){
         event.preventDefault();isolated=false;pickMultiSelection(s,event,'list');return;
       }
-      if(teacherMode||studentExplore)hidden.delete(s.mesh);
+      if(!teacherMode&&studentExplore)hidden.delete(s.mesh);
       if(teacherMode)multiListAnchor=s.index;
       isolated=false;
       if(studentAllowed('sn')){setSelection(s);if(teacherMode)multiListAnchor=s.index;focusSelected();}
       else {setSelection(null);fitBox(boxFor([s]),activePreset,2.2);}
       if(innerWidth<630)elements.sidebar.classList.remove('open');
     });
-    return b;
+    if(!teacherMode)return b;
+    const row=document.createElement('div');row.className='anat-explorer-row';
+    row.append(b);
+    const eye=document.createElement('button');eye.type='button';eye.className='anat-explorer-eye';
+    const canShow=layerEnabled(s)&&tissueVisible(s)&&!s.mesh.userData?.deferredAsset;
+    const isShown=chapterStructureVisible(s);
+    eye.textContent=isShown?'◉':'○';eye.disabled=!canShow;
+    eye.title=!canShow?'Enable this structure’s system in View first':isShown?'Hide structure in chapter':'Show structure in chapter';
+    eye.setAttribute('aria-label',eye.title);eye.setAttribute('aria-pressed',String(isShown));
+    eye.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();toggleExplorerStructure(s);});
+    row.append(eye);
+    return row;
   };
   if((teacherMode || (studentPermissions.st && studentPermissions.sn)) && found.length){
-    // ANATOMIQ_SIDEBAR_2219: canonical sidebar tree and breadcrumbs share the same anatomyPath taxonomy.
-    // The View button only changes transient divisionScope; browsing/expansion doesn't edit a chapter.
+    // ANATOMIQ_SINGLE_EXPLORER_2220: sidebar is the only full anatomy hierarchy.
+    // View isolates temporarily; visibility button edits the chapter explicitly.
     renderAnatomySidebar(frag,found,{
       createItem:createBoneButton,
       onView:path=>divisionOpen(path),
@@ -1142,7 +1132,12 @@ function renderList(){
     }else for(const bone of found)frag.append(createBoneButton(bone));
   }
   elements.boneList.replaceChildren(frag);
-  divisionRenderNavigation();
+  if(teacherMode && trackSelectedInExplorer){
+    requestAnimationFrame(()=>{
+      const row=[...elements.boneList.querySelectorAll('button.bone-item[data-structure-index]')].find(b=>Number(b.dataset.structureIndex)===selected?.index);
+      row?.scrollIntoView({block:'nearest'});
+    });
+  }
 }
 
 let press={x:0,y:0};

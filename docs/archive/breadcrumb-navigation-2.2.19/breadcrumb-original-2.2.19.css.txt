@@ -1,0 +1,18 @@
+/* Scoped, compact anatomy breadcrumbs over the 3D stage. */
+#anatomiq-division-nav{position:absolute;top:12px;left:12px;right:12px;z-index:48;pointer-events:none;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;font:inherit}
+#anatomiq-division-nav[hidden]{display:none!important}
+#anatomiq-division-nav .division-trail{display:flex;align-items:center;gap:4px;flex-wrap:wrap;max-width:min(100%,920px);padding:6px 9px;border:1px solid rgba(139,165,177,.4);border-radius:12px;background:rgba(15,27,39,.90);color:#edf8fa;backdrop-filter:blur(12px);box-shadow:0 8px 25px #0005;pointer-events:auto}
+#anatomiq-division-nav .division-crumb{font:inherit;font-size:12px;color:inherit;border:0;border-radius:7px;background:transparent;padding:5px 6px;cursor:pointer;white-space:nowrap}
+#anatomiq-division-nav .division-crumb:hover,#anatomiq-division-nav .division-crumb:focus-visible{background:#2c5869;outline:1px solid #79cdd3}
+#anatomiq-division-nav .division-separator{font-size:12px;opacity:.5}
+#anatomiq-division-nav .division-clear{font:inherit;font-size:12px;color:#d8f3f3;border:1px solid #6c8997;border-radius:7px;background:#294755;padding:5px 9px;cursor:pointer}
+#anatomiq-division-nav .division-menu{position:absolute;top:48px;left:0;max-height:min(48vh,440px);overflow:auto;min-width:235px;max-width:min(470px,calc(100vw - 32px));box-sizing:border-box;padding:8px;border-radius:12px;border:1px solid #718f9d;background:#172632f5;color:#edf8fa;box-shadow:0 15px 38px #0008;pointer-events:auto}
+#anatomiq-division-nav .division-menu[hidden]{display:none!important}
+#anatomiq-division-nav .division-menu button{display:flex;width:100%;gap:10px;justify-content:space-between;align-items:center;text-align:left;border:0;border-radius:7px;background:transparent;color:inherit;font:inherit;font-size:13px;padding:10px;cursor:pointer}
+#anatomiq-division-nav .division-menu button:hover,#anatomiq-division-nav .division-menu button:focus-visible{background:#2c5869}
+#anatomiq-division-nav .division-menu-count{opacity:.66;font-variant-numeric:tabular-nums;flex-shrink:0}
+body.practical-active #anatomiq-division-nav{display:none!important}
+@media(max-width:620px){#anatomiq-division-nav{top:7px;left:7px;right:7px}#anatomiq-division-nav .division-trail{gap:2px;padding:5px;max-width:100%}#anatomiq-division-nav .division-crumb{font-size:11px;padding:4px}#anatomiq-division-nav .division-menu{top:44px}}
+
+#anatomiq-division-nav .division-filter{position:sticky;top:0;display:block;width:100%;box-sizing:border-box;margin-bottom:7px;padding:10px;border:1px solid #698694;border-radius:8px;background:#243c49;color:#edf8fa;font:inherit;font-size:13px}
+#anatomiq-division-nav .division-menu button[hidden]{display:none!important}

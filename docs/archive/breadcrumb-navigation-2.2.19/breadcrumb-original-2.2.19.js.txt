@@ -1,0 +1,114 @@
+// ANATOMIQ_DIVISIONS_2218 — reversible browsing, not chapter editing.
+let divisionScope=null,divisionBrowsePath=[],divisionStudentAllowed=null,divisionSavedCamera=null;
+let divisionNavRoot=null,divisionNavMenu=null,divisionNavFingerprint='';
+function divisionCanBrowse(){return teacherMode || (studentPermissions.st && studentPermissions.sn && !(typeof practicalActive!=='undefined'&&practicalActive));}
+function divisionTree(){return buildAnatomyTree(structures);}
+window.__AnatomIQDivisionCoverage=()=>divisionCoverage(divisionTree());
+function divisionNode(path){return getDivisionNode(divisionTree(),path);}
+function divisionNavReset(restoreCamera=false){
+  if(!divisionScope)return;
+  divisionScope=null;divisionBrowsePath=[];divisionStudentAllowed=null;
+  if(restoreCamera && divisionSavedCamera){
+    camera.position.fromArray(divisionSavedCamera.slice(0,3));
+    controls.target.fromArray(divisionSavedCamera.slice(3,6));
+    camera.updateProjectionMatrix();controls.update();
+  }
+  divisionSavedCamera=null;divisionNavFingerprint='';
+}
+function divisionUnderlyingVisible(s){
+  return layerEnabled(s)&&tissueVisible(s)&&!hidden.has(s.mesh)&&(!isolated||s===selected);
+}
+function divisionOpen(path){
+  if(!divisionCanBrowse()||!sceneRoot)return;
+  const node=divisionNode(path);if(!node?.entries.length)return;
+  if(!divisionScope){
+    divisionSavedCamera=[...camera.position.toArray(),...controls.target.toArray()];
+    if(!teacherMode)divisionStudentAllowed=new Set(structures.filter(divisionUnderlyingVisible).map(s=>s.index));
+  }
+  const entries=teacherMode?node.entries:node.entries.filter(s=>divisionStudentAllowed?.has(s.index));
+  if(!entries.length){showToast('This division is not visible in the current lesson.');return;}
+  isolated=false;
+  divisionScope=new Set(entries.map(s=>s.index));
+  divisionBrowsePath=path;
+  divisionNavFingerprint='';
+  refreshVisibility(true);
+  const visible=entries.filter(s=>s.mesh.visible);
+  if(visible.length)fitBox(boxFor(visible),activePreset||'front',1.34,true);
+  divisionRenderNavigation();
+}
+function divisionClose(){
+  divisionNavMenu?.setAttribute('hidden','');
+  divisionNavReset(true);refreshVisibility(true);divisionRenderNavigation();
+}
+function divisionRenderNavigation(){
+  if(!sceneRoot || !divisionCanBrowse()){
+    if(divisionNavRoot)divisionNavRoot.hidden=true;
+    return;
+  }
+  if(!divisionNavRoot){
+    const nav=document.createElement('nav');nav.id='anatomiq-division-nav';nav.setAttribute('aria-label','Anatomical divisions');
+    const trail=document.createElement('div');trail.className='division-trail';
+    const menu=document.createElement('div');menu.className='division-menu';menu.hidden=true;
+    nav.append(trail,menu);elements.stage.append(nav);divisionNavRoot=nav;divisionNavMenu=menu;
+    nav.addEventListener('keydown',ev=>{if(ev.key==='Escape'){menu.hidden=true;nav.querySelector('.division-crumb')?.focus();}});
+    document.addEventListener('pointerdown',ev=>{if(divisionNavRoot && !divisionNavRoot.contains(ev.target))divisionNavMenu.hidden=true;});
+  }
+  divisionNavRoot.hidden=false;
+  const fullPath=divisionScope ? divisionBrowsePath : (selected ? anatomyPath(selected) : []);
+  const key=[structures.length,selected?.index??'-',divisionScope?.size??'-',fullPath.join('|')].join(':');
+  if(key===divisionNavFingerprint)return;
+  divisionNavFingerprint=key;
+  const trail=divisionNavRoot.querySelector('.division-trail');trail.replaceChildren();divisionNavMenu.hidden=true;
+  function makeButton(label,path){
+    const btn=document.createElement('button');btn.className='division-crumb';btn.type='button';
+    btn.textContent=label;btn.title=path.length?`Show only ${label}`:'Restore the original view';
+    btn.addEventListener('click',()=>{
+      if(path.length)divisionOpen(path);
+      else if(divisionScope)divisionClose();
+    });
+    return btn;
+  }
+  trail.append(makeButton('Systems',[]));
+  fullPath.forEach((segment,i)=>{
+    const arrow=document.createElement('span');arrow.className='division-separator';arrow.textContent='›';arrow.setAttribute('aria-hidden','true');trail.append(arrow);
+    trail.append(makeButton(segment,fullPath.slice(0,i+1)));
+  });
+  if(divisionScope){
+    const btn=document.createElement('button');btn.className='division-clear';btn.type='button';btn.textContent='Show original view';btn.addEventListener('click',divisionClose);
+    trail.append(btn);
+  }
+}
+function divisionShowChildren(node){
+  if(!divisionNavMenu||!node)return;
+  divisionNavMenu.replaceChildren();
+  const children=[...node.children.values()].filter(x=>{
+    if(teacherMode)return Boolean(x.entries.length);
+    return x.entries.some(s=>divisionStudentAllowed?divisionStudentAllowed.has(s.index):divisionUnderlyingVisible(s));
+  }).sort((a,b)=>a.label.localeCompare(b.label,undefined,{numeric:true}));
+  if(!children.length){divisionNavMenu.hidden=true;return;}
+  let filter=null;
+  if(children.length>15){
+    filter=document.createElement('input');filter.type='search';filter.className='division-filter';
+    filter.placeholder='Filter '+children.length+' structures…';filter.setAttribute('aria-label','Filter anatomical divisions');
+    divisionNavMenu.append(filter);
+  }
+  const buttons=[];
+  for(const child of children){
+    const b=document.createElement('button');b.type='button';
+    const name=document.createElement('span');name.textContent=child.label;
+    const count=document.createElement('span');count.className='division-menu-count';count.textContent=String(child.entries.length);
+    b.append(name,count);
+    b.addEventListener('click',()=>{
+      divisionOpen(child.path);
+      divisionShowChildren(child);
+      if(!child.children.size)divisionNavMenu.hidden=true;
+    });
+    divisionNavMenu.append(b);buttons.push(b);
+  }
+  if(filter)filter.addEventListener('input',()=>{
+    const q=filter.value.trim().toLowerCase();
+    for(const b of buttons)b.hidden=!b.firstChild.textContent.toLowerCase().includes(q);
+  });
+  divisionNavMenu.hidden=false;
+}
+
