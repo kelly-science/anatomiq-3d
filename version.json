@@ -1,6 +1,6 @@
 {
-  "version": "2.2.9",
+  "version": "2.2.10",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Curated connective: preserve original discs and calcaneal tendons; add six costal cartilages for ribs 8\u201310 plus eight nonduplicating native connective structures."
+  "notes": "Live Connective cache-coherence patch: versioned native assets and module, loader diagnostics. The 14 native meshes and final cartilage alignment are unchanged."
 }

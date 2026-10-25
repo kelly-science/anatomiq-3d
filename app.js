@@ -13,7 +13,7 @@ import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.
 import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
 import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset,nervousMaterialOverrides} from './nervous-model.js';
 import {urinaryEntries,validateUrinaryManifest,urinaryColor,URINARY_PRESETS,urinaryVisibleInPreset,isRenalVessel} from './urinary-model.js';
-import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset} from './connective-model.js';
+import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset} from './connective-model.js?rev=2210';
 import {lymphaticEntries,validateLymphaticManifest,lymphaticColor,LYMPHATIC_PRESETS,lymphaticVisibleInPreset} from './lymphatic-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
@@ -33,7 +33,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.9';
+const APP_VERSION = '2.2.10';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -56,9 +56,9 @@ const CARDIO_DETAILED='./models/cardiovascular-detailed.glb';
 const RESP_MANIFEST='./models/respiratory-structures.json';
 const RESP_STANDARD='./models/respiratory-standard.glb';
 const RESP_DETAILED='./models/respiratory-detailed.glb';
-const CONNECTIVE_MANIFEST='./models/connective-structures.json';
-const CONNECTIVE_STANDARD='./models/connective-standard.glb';
-const CONNECTIVE_DETAILED='./models/connective-detailed.glb';
+const CONNECTIVE_MANIFEST='./models/connective-structures.json?rev=2210';
+const CONNECTIVE_STANDARD='./models/connective-standard.glb?rev=2210';
+const CONNECTIVE_DETAILED='./models/connective-detailed.glb?rev=2210';
 const LYMPHATIC_MANIFEST='./models/lymphatic-structures.json';
 const LYMPHATIC_STANDARD='./models/lymphatic-standard.glb';
 const LYMPHATIC_DETAILED='./models/lymphatic-detailed.glb';
@@ -81,6 +81,8 @@ let connectiveGeometry='standard';
 try{connectiveGeometry=localStorage.getItem(CONNECTIVE_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
 let connectiveRoot=null,connectiveEntriesList=[],connectiveAvailable=false,connectiveLoaded=false,connectiveMetadata=null;
 let connectivePreset='all';
+let connectiveLoadError='';
+window.__AnatomIQConnectiveStatus={loaded:false,stage:'not started'};
 const LYMPHATIC_QUALITY_KEY='anatomiq-lymphatic-geometry-v1';
 let lymphaticGeometry='standard';
 try{lymphaticGeometry=localStorage.getItem(LYMPHATIC_QUALITY_KEY)==='detailed'?'detailed':'standard';}catch{}
@@ -443,7 +445,7 @@ function updateSystemControls(){
   $('mode-connective').disabled=false;
   $('mode-connective').title=connectiveAvailable?`${connectiveEntriesList.length} source-backed connective meshes plus legacy skeletal cartilage`:'Existing skeletal cartilage; build models/connective-* to add 14 nonduplicating source meshes';
   $('connective-study-panel').hidden=!teacherMode||!layers.connective;
-  $('connective-study-count').textContent=connectiveAvailable?`${connectiveEntriesList.length} BodyParts3D joints-support meshes + any Écorché cartilage`:'Écorché cartilage available · curated 14-mesh expansion not installed';
+  $('connective-study-count').textContent=connectiveAvailable?`${connectiveEntriesList.length} BodyParts3D joints-support meshes + any Écorché cartilage`:(connectiveLoadError?'Native Connective load error: '+connectiveLoadError:'Écorché cartilage available · curated 14-mesh expansion not installed');
   $('mode-lymphatic').disabled=!lymphaticAvailable;
   $('mode-lymphatic').title=lymphaticAvailable?'Verified spleen and thymus models':'Publish lymphatic GLBs and manifest to activate this layer';
   $('lymphatic-study-panel').hidden=!teacherMode||!lymphaticAvailable||!layers.lymphatic;
@@ -1213,15 +1215,17 @@ async function loadLymphatic(){
   }catch(error){console.warn('Lymphatic atlas missing or inconsistent',error);if(lymphaticRoot){scene.remove(lymphaticRoot);lymphaticRoot=null;}}
 }
 async function loadConnective(){
-  connectiveLoaded=false;connectiveAvailable=false;connectiveEntriesList=[];
+  connectiveLoaded=false;connectiveAvailable=false;connectiveEntriesList=[];connectiveLoadError='';
+  window.__AnatomIQConnectiveStatus={loaded:false,stage:'fetching manifest',version:'2.2.10'};
   if(connectiveRoot){scene.remove(connectiveRoot);connectiveRoot=null;}
   try{
     const manifest=await readOptionalManifest(CONNECTIVE_MANIFEST,validateConnectiveManifest);
-    if(!manifest)return;
+    if(!manifest)throw new Error('Connective metadata was unavailable or rejected; inspect the Console and the published manifest.');
     const requested=connectiveGeometry==='detailed'?CONNECTIVE_DETAILED:CONNECTIVE_STANDARD;
     let gltf;
     try{gltf=await new GLTFLoader().loadAsync(requested);}
     catch(error){if(requested===CONNECTIVE_STANDARD)throw error;gltf=await new GLTFLoader().loadAsync(CONNECTIVE_STANDARD);}
+    window.__AnatomIQConnectiveStatus={loaded:false,stage:'validating GLB',version:'2.2.10',manifestStructures:manifest.structures.length};
     const entries=connectiveEntries(gltf.scene,manifest);
     const alignment=correctedDetailTransform(sourceRegistration(new THREE.Box3().setFromObject(sceneRoot)));
     gltf.scene.scale.set(...alignment.scale);gltf.scene.position.set(...alignment.position);
@@ -1235,10 +1239,14 @@ async function loadConnective(){
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(mesh,mesh.material);mesh.visible=false;
     }
-    connectiveEntriesList=entries;connectiveAvailable=true;connectiveLoaded=true;
+    connectiveEntriesList=entries;connectiveAvailable=true;connectiveLoaded=true;connectiveLoadError='';
+    window.__AnatomIQConnectiveStatus={loaded:true,stage:'complete',version:'2.2.10',structures:entries.length,model:requested};
+    console.info('AnatomIQ Connective: successfully loaded',entries.length,'meshes from',requested);
     configureAnatomyShadows(connectiveRoot,shadows.profile.enabled);
   }catch(error){
-    console.warn('Connective anatomy not available or GLB/JSON pair invalid:',error);
+    connectiveLoadError=String(error?.message||error);
+    window.__AnatomIQConnectiveStatus={loaded:false,stage:'failed',version:'2.2.10',error:connectiveLoadError};
+    console.error('AnatomIQ Connective: failed to load 14 source meshes:',error);
     if(connectiveRoot){scene.remove(connectiveRoot);connectiveRoot=null;}
   }
 }
