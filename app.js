@@ -38,7 +38,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.20';
+const APP_VERSION = '2.2.21';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -2639,6 +2639,8 @@ function renderAnnotations(){
   invalidate(2);
 }
 function updateAnnotationPositions(){
+  // View > Labels: avoid costly occlusion raycasts when teacher labels are off.
+  if(document.body.classList.contains('anat-labels-hidden'))return;
   if(!sceneRoot || !labels.length)return;
   // The scene renderer already updates matrices; avoid a second full traversal
   // of hundreds of muscle meshes for each annotation refresh.

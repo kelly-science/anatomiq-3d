@@ -1,6 +1,6 @@
 {
-  "version": "2.2.20",
+  "version": "2.2.21",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Single Anatomical Structures navigator with chapter visibility filter, eye toggles and auto-expanded selected path; breadcrumbs archived for possible return."
+  "notes": "Unified Teacher/Student menu chrome, File/About, native fullscreen and bottom toolbar; rendering quality in Settings, labels in View, offline in Student File."
 }

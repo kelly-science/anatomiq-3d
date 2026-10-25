@@ -19,7 +19,8 @@
   </script>
   <link rel="stylesheet" href="./view-menu-polish.css?rev=2216c" />
   <link rel="stylesheet" href="./selection-2217.css?rev=2217" />
-  <link rel="stylesheet" href="./anatomy-sidebar-2219.css?rev=2220" />
+  <link rel="stylesheet" href="./anatomy-sidebar-2219.css?rev=2221" />
+  <link rel="stylesheet" href="./interface-2221.css?rev=2221" />
 </head>
 <body>
   <div class="app-shell">
@@ -27,7 +28,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.20</span>
+        <span class="version">STUDIO 2.2.21</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -650,8 +651,9 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=2220');
+    await import('./app.js?rev=2221');
   </script>
   <script type="module" src="./view-menu-polish.js?rev=2217"></script>
+  <script defer src="./interface-2221.js?rev=2221"></script>
 </body>
 </html>
