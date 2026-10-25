@@ -29,13 +29,14 @@ import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-pe
 import {normalizeSurfaceMode, applySurfaceFinish, finishSourceAnatomy, installSurfaceLighting} from './surface-lighting.js';
 import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from './dynamic-shadows.js';
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
+import {skeletalDivision,parseStudioVersion,compareStudioVersions} from './skeletal-views-2217.mjs';
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
 import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.16e';
+const APP_VERSION = '2.2.17';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -135,6 +136,10 @@ const elements = {
 let mode = 'skull';
 let sceneRoot = null;
 let selected = null;
+// ANATOMIQ_MULTI_SELECTION_2217: editor-only, deliberately not serialized.
+const multiSelectedIndices=new Set();
+const multiSelectionHighlights=new Map();
+let multiListAnchor=null;
 let isolated = false;
 // ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
@@ -527,7 +532,7 @@ function refreshVisibility(transient=false){
     const inspecting=Boolean(cardioPreviewIDs && s.system==='cardiovascular');
     s.mesh.visible = layerEnabled(s) && tissueVisible(s)
       && (inspecting ? cardioPreviewIDs.has(s.sourceName) : !hidden.has(s.mesh))
-      && (!isolated||s===selected);
+      && (!isolated||(teacherMode?multiSelectedIndices.has(s.index):s===selected));
   }
   renderList();
   invalidate(2);
@@ -638,11 +643,16 @@ function polishRestoreFade(indices=[]){
   for(const i of changed)if(structures[i])updateBoneMaterial(structures[i]);
 }
 function polishToggleSelectedFade(){
-  if(!teacherMode || !selected)return;
-  if(polishFadedIndices.has(selected.index))polishFadedIndices.delete(selected.index);
-  else polishFadedIndices.add(selected.index);
-  updateBoneMaterial(selected);queueDraft();
-  showToast(polishFadedIndices.has(selected.index)?'Structure faded to 26%.':'Structure opacity restored.');
+  if(!teacherMode || !multiTargets().length)return;
+  const targets=multiTargets(),allFaded=targets.every(s=>polishFadedIndices.has(s.index));
+  clearMultiHighlights();
+  for(const s of targets){
+    if(allFaded)polishFadedIndices.delete(s.index);
+    else polishFadedIndices.add(s.index);
+    updateBoneMaterial(s);
+  }
+  renderList();syncMultiHighlights();queueDraft();
+  showToast(`${targets.length} structure${targets.length===1?'':'s'} ${allFaded?'restored':'faded to 26%'}.`);
 }
 
 function makePaintedMaterial(original,hex){
@@ -686,9 +696,9 @@ function highlightSelection(s){
 }
 function updatePaintControls(){
   if(!teacherMode)return;
-  const canSelect=Boolean(selected);
+  const canSelect=Boolean(multiTargets().length);
   $('paint-selected').disabled=!canSelect;
-  $('erase-selected').disabled=!canSelect||!bonePaint.has(selected.index);
+  $('erase-selected').disabled=!canSelect||!multiTargets().some(s=>bonePaint.has(s.index));
   $('erase-all').disabled=bonePaint.size===0;
   $('paint-status').textContent=`${bonePaint.size} painted structure${bonePaint.size===1?'':'s'} in this chapter`;
   $('paint-mode').classList.toggle('placing',paintMode);
@@ -696,10 +706,10 @@ function updatePaintControls(){
   $('paint-mode').textContent=paintMode?'✓ Painting structures — click to color':'◉ Paint mode — click structures';
   document.querySelectorAll('.paint-swatch').forEach(button=>button.classList.toggle('active',button.dataset.color===paintColor));
 }
-function setBoneColor(s,hex){
+function setBoneColor(s,hex,batch=false){
   if(!teacherMode||!s)return;
   if(hex)bonePaint.set(s.index,hex.toLowerCase());else bonePaint.delete(s.index);
-  updateBoneMaterial(s);updatePaintControls();renderList();queueDraft();
+  updateBoneMaterial(s);if(!batch){updatePaintControls();renderList();queueDraft();}
 }
 function restoreBonePaint(entries=[]){
   const changed=new Set(bonePaint.keys());
@@ -714,7 +724,82 @@ function cancelPainting(){
   $('place-hint').hidden=true;
   updatePaintControls();
 }
-function setSelection(s){
+
+// Multi-selection is deliberately transient; hidden/fade/paint remain chapter-level.
+function multiTargets(){
+  if(!teacherMode)return selected?[selected]:[];
+  const result=[...multiSelectedIndices].map(i=>structures[i]).filter(Boolean);
+  return result.length?result:(selected?[selected]:[]);
+}
+function clearMultiHighlights(){
+  for(const [mesh,material] of multiSelectionHighlights){
+    const s=structures.find(item=>item.mesh===mesh);
+    if(s)mesh.material=displayMaterial(s);
+    disposeMaterial(material);
+  }
+  multiSelectionHighlights.clear();
+}
+function syncMultiHighlights(){
+  clearMultiHighlights();
+  if(!teacherMode||multiSelectedIndices.size<2)return;
+  for(const s of multiTargets()){
+    if(s===selected||!s.mesh.visible)continue;
+    const base=displayMaterial(s);
+    if(!base)continue;
+    const make=m=>{const copy=m.clone();if(copy.emissive?.isColor){copy.emissive.set('#20bcc6');copy.emissiveIntensity=0.4;}return copy;};
+    const highlight=Array.isArray(base)?base.map(make):make(base);
+    multiSelectionHighlights.set(s.mesh,highlight);
+    s.mesh.material=highlight;
+  }
+  invalidate(2);
+}
+function pickMultiSelection(s,event,origin){
+  if(!teacherMode||!s)return;
+  const additive=event.metaKey||event.ctrlKey;
+  if(event.shiftKey&&origin==='list'){
+    const ordered=[...elements.boneList.querySelectorAll('button.bone-item[data-structure-index]')]
+      .map(b=>Number(b.dataset.structureIndex)).filter(Number.isInteger);
+    const anchor=ordered.indexOf(multiListAnchor)>=0?multiListAnchor:selected?.index;
+    const first=ordered.indexOf(anchor),last=ordered.indexOf(s.index);
+    if(!additive)multiSelectedIndices.clear();
+    if(first>=0&&last>=0)for(let i=Math.min(first,last);i<=Math.max(first,last);i++)multiSelectedIndices.add(ordered[i]);
+    else multiSelectedIndices.add(s.index);
+  }else if(additive){
+    if(multiSelectedIndices.has(s.index))multiSelectedIndices.delete(s.index);
+    else multiSelectedIndices.add(s.index);
+    multiListAnchor=s.index;
+  }else{
+    multiSelectedIndices.add(s.index); // Shift-click in the 3D scene adds one mesh.
+    multiListAnchor=s.index;
+  }
+  const current=multiSelectedIndices.has(s.index)?s:multiTargets().find(t=>multiSelectedIndices.has(t.index))||
+    [...multiSelectedIndices].map(i=>structures[i]).filter(Boolean).at(-1)||null;
+  setSelection(current,true);
+}
+function paintMultiSelection(hex){
+  if(!teacherMode||!multiTargets().length)return;
+  const targets=multiTargets();clearMultiHighlights();
+  for(const s of targets)setBoneColor(s,hex,true);
+  updatePaintControls();renderList();syncMultiHighlights();queueDraft();
+  showToast(`${targets.length} structure${targets.length===1?'':'s'} ${hex?'painted':'restored'}.`);
+}
+function hideMultiSelection(){
+  for(const s of multiTargets())hidden.add(s.mesh);
+  isolated=false;setSelection(null);queueDraft();
+}
+function applySkeletonDivision(division){
+  if(!teacherMode||!sceneRoot||!['axial','appendicular'].includes(division))return;
+  Object.assign(systemLayers,Object.fromEntries(Object.keys(systemLayers).map(key=>[key,key==='skeletal'])));
+  setMode('skeleton'); // Reset to Skeletal-only, never enable Connective.
+  for(const s of structures)if(s.system==='skeletal'&&skeletalDivision(s)!==division)hidden.add(s.mesh);
+  refreshVisibility();frameVisible('front');
+  showToast(division==='axial'?'Axial skeleton only':'Appendicular skeleton only');
+}
+window.addEventListener('anatomiq:skeletal-preset',event=>applySkeletonDivision(event.detail?.division));
+
+function setSelection(s,preserveMulti=false){
+  clearMultiHighlights();
+  if(!preserveMulti){multiSelectedIndices.clear();if(teacherMode&&s)multiSelectedIndices.add(s.index);multiListAnchor=null;}
   if(selected){
     selected.mesh.material=displayMaterial(selected);
     disposeMaterial(selectedHighlight);
@@ -726,7 +811,7 @@ function setSelection(s){
     if(displayMaterial(s))highlightSelection(s);
     elements.noSelection.hidden=true;
     elements.selectionContent.hidden=false;
-    elements.selName.textContent=s.name;
+    elements.selName.textContent=teacherMode&&multiSelectedIndices.size>1?`${multiSelectedIndices.size} structures selected`:s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
     elements.selCategory.textContent=s.system==='ocular'?'SPECIAL SENSES · EYE':(s.system==='connective'||isBaseConnective(s))?'CONNECTIVE TISSUE':s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='nervous'?'NERVOUS SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
     elements.selDesc.textContent=descriptionFor(s);
@@ -736,6 +821,7 @@ function setSelection(s){
   }
   refreshVisibility();
   updatePaintControls();
+  syncMultiHighlights();
   if (s && matchMedia('(max-width:850px)').matches && !placingLabel && !paintMode) openDetails(true);
 }
 function updateLayerHeading(){
@@ -847,7 +933,7 @@ function orient(view){
   const destination=controls.target.clone().add(new THREE.Vector3(...direction).multiplyScalar(distance));
   polishMoveCamera(destination,controls.target.clone());setPresetActive(view);
 }
-function focusSelected(){if(selected)fitBox(boxFor([selected]),activePreset,2.15);}
+function focusSelected(){const targets=multiTargets();if(targets.length)fitBox(boxFor(targets),activePreset,2.15);}
 function renderList(){
   const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
   document.body.classList.toggle('student-has-query',!teacherMode && Boolean(text));
@@ -862,18 +948,22 @@ function renderList(){
     const p=document.createElement('p');p.className='empty-list';p.textContent='No matching structures found.';frag.appendChild(p);
   }
   const createBoneButton=s=>{
-    const b=document.createElement('button');b.className='bone-item'+(selected===s?' active':'');
-    b.setAttribute('aria-pressed',String(selected===s));
+    const b=document.createElement('button');b.dataset.structureIndex=s.index;b.className='bone-item'+(selected===s?' active':'')+(teacherMode&&multiSelectedIndices.has(s.index)?' multi-selected':'');
+    b.setAttribute('aria-pressed',String(teacherMode?multiSelectedIndices.has(s.index):selected===s));
     const t=document.createElement('span');t.textContent=studentAllowed('sn') ? s.name : `Structure ${s.index+1}`;b.appendChild(t);
     if(bonePaint.has(s.index)){
       const chip=document.createElement('span');chip.className='paint-list-dot';
       chip.style.backgroundColor=bonePaint.get(s.index);chip.setAttribute('aria-label',`Painted ${bonePaint.get(s.index)}`);
       chip.title=`Bone color: ${bonePaint.get(s.index)}`;b.appendChild(chip);
     }
-    b.addEventListener('click',()=>{
+    b.addEventListener('click',event=>{
+      if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)){
+        event.preventDefault();isolated=false;pickMultiSelection(s,event,'list');return;
+      }
       if(teacherMode||studentExplore)hidden.delete(s.mesh);
+      if(teacherMode)multiListAnchor=s.index;
       isolated=false;
-      if(studentAllowed('sn')){setSelection(s);focusSelected();}
+      if(studentAllowed('sn')){setSelection(s);if(teacherMode)multiListAnchor=s.index;focusSelected();}
       else {setSelection(null);fitBox(boxFor([s]),activePreset,2.2);}
       if(innerWidth<630)elements.sidebar.classList.remove('open');
     });
@@ -933,6 +1023,9 @@ renderer.domElement.addEventListener('pointerup',event=>{
   if(!hit || (!teacherMode && !studentPermissions.sn))return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
+  if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)&&!placingLabel){
+    isolated=false;pickMultiSelection(s,event,'model');return;
+  }
   if(paintMode && teacherMode){
     setBoneColor(s,paintColor);isolated=false;setSelection(s);
   } else if(placingLabel && teacherMode){
@@ -1713,7 +1806,7 @@ $('reset-camera').addEventListener('click',()=>frameVisible('front'));
 $('restore-all').addEventListener('click',()=>{if(!teacherMode&&!studentExplore)return;hidden.clear();isolated=false;refreshVisibility();frameVisible('front');});
 $('focus-selected').addEventListener('click',focusSelected);
 $('isolate-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;isolated=!isolated;refreshVisibility();$('isolate-selected').textContent=isolated?'◈   Show all structures':'◈   Isolate structure';if(isolated)focusSelected();else frameVisible('front');});
-$('hide-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;hidden.add(selected.mesh);isolated=false;setSelection(null);});
+$('hide-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;if(teacherMode){hideMultiSelection();return;}hidden.add(selected.mesh);isolated=false;setSelection(null);});
 $('clear-selection').addEventListener('click',()=>{isolated=false;setSelection(null);});
 for(const b of document.querySelectorAll('.preset'))b.addEventListener('click',()=>orient(b.dataset.view));
 $('zoom-in').addEventListener('click',()=>{camera.position.lerp(controls.target,0.18);controls.update();invalidate(2);queueDraft();});
@@ -1776,7 +1869,7 @@ window.addEventListener('keydown',event=>{
     event.preventDefault();elements.sidebar.classList.add('open');elements.search.focus();elements.search.select();
   }else if(teacherMode && !event.metaKey && !event.ctrlKey && !event.altKey &&
            (event.key==='Backspace'||event.key==='Delete') && selected){
-    event.preventDefault();hidden.add(selected.mesh);isolated=false;setSelection(null);queueDraft();
+    event.preventDefault();hideMultiSelection();
   }else if(teacherMode && (event.metaKey||event.ctrlKey) && !event.altKey &&
            event.key.toLowerCase()==='i' && selected){
     event.preventDefault();$('isolate-selected').click();
@@ -2834,8 +2927,8 @@ $('paint-mode').addEventListener('click',()=>{
   elements.stage.style.cursor=paintMode?'crosshair':'';
   openDetails(false);updatePaintControls();
 });
-$('paint-selected').addEventListener('click',()=>setBoneColor(selected,paintColor));
-$('erase-selected').addEventListener('click',()=>setBoneColor(selected,null));
+$('paint-selected').addEventListener('click',()=>paintMultiSelection(paintColor));
+$('erase-selected').addEventListener('click',()=>paintMultiSelection(null));
 $('erase-all').addEventListener('click',()=>{
   if(!teacherMode||!bonePaint.size||!confirm(`Reset colors on all ${bonePaint.size} painted bones in this chapter?`))return;
   restoreBonePaint([]);renderList();queueDraft();showToast('Restored original colors in this chapter.');
@@ -3133,11 +3226,8 @@ $('settings-connective-geometry').value=connectiveGeometry;
   $('settings-close').focus();
 }
 function closeAppSettings(){$('settings-dialog').hidden=true;}
-function compareVersions(a,b){
-  const A=String(a).split('.').map(n=>Number(n)||0),B=String(b).split('.').map(n=>Number(n)||0);
-  for(let i=0;i<3;i++)if((A[i]||0)!==(B[i]||0))return (A[i]||0)-(B[i]||0);
-  return 0;
-}
+function compareVersions(a,b){return compareStudioVersions(a,b);}
+
 async function checkAppUpdates(){
   const status=$('settings-check-result');
   const button=$('settings-check-updates');
@@ -3148,7 +3238,7 @@ async function checkAppUpdates(){
     const response=await fetch(`${APP_VERSION_URL}?check=${Date.now()}`,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
     if(!response.ok)throw new Error(`HTTP ${response.status}`);
     const info=await response.json();
-    if(!/^\d+\.\d+\.\d+$/.test(info.version||''))throw new Error('Invalid version.json');
+    if(!parseStudioVersion(info.version))throw new Error('Invalid version.json');
     $('settings-published').textContent=info.version;
     updateAvailable=compareVersions(info.version,APP_VERSION)>0;
     if(updateAvailable){

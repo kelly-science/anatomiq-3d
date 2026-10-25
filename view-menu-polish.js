@@ -22,6 +22,8 @@ function specialsFor(system){
   if(system==='skeletal')return [
     {label:'Skull Only',attrs:{anatomyPreset:'skull'}},
     {label:'Full Skeleton',attrs:{anatomyPreset:'skeleton'}},
+    {label:'Axial Skeleton',attrs:{viewSkeleton:'axial'}},
+    {label:'Appendicular Skeleton',attrs:{viewSkeleton:'appendicular'}},
     {label:'Show Teeth',attrs:{viewTeeth:'toggle'}}
   ];
   if(system==='connective')return availablePresets('[data-connective-preset]','connective');
@@ -112,6 +114,9 @@ export function installViewMenuPolish(){
     if(action.dataset.viewSystem){
       const tab=document.querySelector('.mode-tab[data-system="'+action.dataset.viewSystem+'"]');
       if(tab&&!tab.disabled)tab.click();
+    }
+    if(action.dataset.viewSkeleton){
+      window.dispatchEvent(new CustomEvent('anatomiq:skeletal-preset',{detail:{division:action.dataset.viewSkeleton}}));
     }
     if(action.dataset.viewTeeth){
       // Keep one canonical teeth setting; the original input dispatches its own change event.

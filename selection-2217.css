@@ -1,0 +1,7 @@
+/* AnatomIQ 2.2.17: list multi-selection, no change to student style. */
+body:not(.student-mode) .bone-item.multi-selected,
+.bone-item.multi-selected {
+  background: color-mix(in srgb, #20bcc6 18%, transparent);
+  border-color: #20bcc6;
+  box-shadow: inset 3px 0 0 #20bcc6;
+}

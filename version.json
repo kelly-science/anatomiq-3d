@@ -1,6 +1,6 @@
 {
-  "version": "2.2.16e",
+  "version": "2.2.17",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Reverts only the 2.2.12 label movement throttling and deferred occlusion; restores pre-2.2.12 label positioning. Eyes, lessons, practicals, view menu, student readiness, and anatomy remain unchanged."
+  "notes": "Axial and Appendicular Skeletal special views; shift/mouse and Shift/Cmd/Ctrl list multi-selection for paint, fade, hide; numeric release and legacy letter-aware update checks."
 }
