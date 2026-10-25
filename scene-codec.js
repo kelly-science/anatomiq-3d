@@ -64,6 +64,7 @@ export function validateScene(scene) {
       throw new Error('A label contains invalid placement or text.');
     }
   }
+  for(const label of scene.labels)if(label.qi!==undefined && (typeof label.qi!=='string'||!/^q-[0-9A-Za-z-]{4,62}$/.test(label.qi)))throw new Error('Invalid quiz label ID.');
   // Optional label study notes/photos and per-chapter faded structure IDs.
   for(const label of scene.labels){
     if(label.d!==undefined && (typeof label.d!=='string'||label.d.length>1200))throw new Error('Label description is too long.');
@@ -117,6 +118,10 @@ export function validateProject(project) {
   if (project?.v === 1) return validateScene(project);
   if (!project || typeof project !== 'object' || Array.isArray(project) || project.v !== 2) throw new Error('This project format is unsupported.');
   if (project.sp !== undefined) validatePermissions(project.sp);
+  if(project.practical!==undefined){const p=project.practical;
+    if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!Number.isInteger(p.count)||p.count<1||p.count>60||
+      !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
+  }
   if (!boundedText(project.t, 90)) throw new Error('A project title is required (90 characters maximum).');
   if (!Array.isArray(project.chapters) || !project.chapters.length || project.chapters.length > MAX_CHAPTERS) throw new Error(`A project must contain 1–${MAX_CHAPTERS} chapters.`);
   if (!Number.isInteger(project.start) || project.start < 0 || project.start >= project.chapters.length) throw new Error('Invalid starting chapter.');

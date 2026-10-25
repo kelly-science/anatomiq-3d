@@ -1,5 +1,6 @@
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 import * as THREE from 'three';
+import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
 import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
@@ -34,7 +35,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.15';
+const APP_VERSION = '2.2.16';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -191,6 +192,7 @@ let draftTimeout = 0;
 const DRAFT_KEY = 'anatomy-studio-project-v2';
 const OLD_DRAFT_KEY = 'anatomy-studio-project-v1';
 let chapters = [];
+let practicalConfig=normalPractical(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
 let activeChapter = 0;
 const markers = new Map();
 const labelSVG = $('label-lines');
@@ -925,7 +927,8 @@ renderer.domElement.addEventListener('pointerup',event=>{
     const text=$('new-label-text').value.trim();
     if(!text){showToast('Enter label text first.');cancelPlacing();return;}
     const local=hit.object.worldToLocal(hit.point.clone());
-    labels.push({id:++labelSequence,s:s.index,p:local.toArray().map(n=>round(n,5)),t:text,dx:24,dy:-31,...(hit.face?.normal?{ln:hit.face.normal.toArray().map(n=>round(n,5))}:{})});
+    practicalNewLabelExpand=labelSequence+1;
+    labels.push({id:++labelSequence,qi:newPracticalLabelId(),s:s.index,p:local.toArray().map(n=>round(n,5)),t:text,dx:24,dy:-31,...(hit.face?.normal?{ln:hit.face.normal.toArray().map(n=>round(n,5))}:{})});
     $('new-label-text').value='';cancelPlacing();setSelection(s);renderAnnotations();renderLabelEditor();queueDraft();
     showToast('Label anchored. Drag its callout to reposition it.');
   } else {isolated=false;setSelection(s);} 
@@ -1773,7 +1776,7 @@ function snapshotScene(){
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ey:systemLayers.nervous,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||[...camera.position.toArray(),...controls.target.toArray()]).map(n=>round(n,5)),
-    labels:labels.map(l=>({s:l.s,p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
+    labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
     ...(pc.length?{pc}:{})
   });
@@ -1820,7 +1823,7 @@ function snapshotProject(){
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
   if(teacherMode)publishPermissions={...currentPublishPermissions()};
-  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions}});
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:normalPractical(practicalConfig)});
 }
 function verifyProjectModel(project){
   const sample = project.v === 1 ? project : project.chapters[0];
@@ -1830,17 +1833,22 @@ function verifyProjectModel(project){
 function renderChapterUI(){
   const count=chapters.length;
   if(!count)return;
-  const nav=$('chapter-nav');nav.hidden=count<2;
-  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}`;
-  $('chapter-progress').textContent=`CHAPTER ${activeChapter+1} OF ${count}`;
-  $('previous-chapter').disabled=activeChapter===0;
-  $('next-chapter').disabled=activeChapter===count-1;
+  const nav=$('chapter-nav');nav.hidden=count<2 && !(practicalConfig.on&&!teacherMode);
+  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on?' + practical':''}`;
+  $('chapter-progress').textContent=practicalActive?`PRACTICAL · FINAL CHAPTER`:`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode?1:0)}`;
+  $('previous-chapter').disabled=activeChapter===0&&!practicalActive;
+  $('next-chapter').disabled=(activeChapter===count-1&&(teacherMode||!practicalConfig.on))||practicalActive;
   const tabs=$('chapter-tabs');tabs.replaceChildren();
   chapters.forEach((ch,i)=>{
     const b=document.createElement('button');b.type='button';b.className='chapter-tab'+(i===activeChapter?' active':'');
     b.textContent=ch.t;b.title=ch.t;b.setAttribute('aria-current',i===activeChapter?'step':'false');
     b.addEventListener('click',()=>switchChapter(i));tabs.append(b);
   });
+  if(!teacherMode&&practicalConfig.on){
+    const tab=document.createElement('button');tab.className='chapter-tab practical-chapter-tab'+(practicalActive?' active':'');tab.type='button';
+    tab.textContent='Practical';tab.setAttribute('aria-current',practicalActive?'step':'false');tab.addEventListener('click',()=>{if(!practicalActive)void startPractical();});tabs.append(tab);
+  }
+  if(teacherMode)renderPracticalEditor();
   if(!teacherMode)return;
   const list=$('teacher-chapter-list');list.replaceChildren();
   chapters.forEach((ch,i)=>{
@@ -2323,14 +2331,16 @@ $('polish-label-dialog')?.addEventListener('click',event=>{
   if(event.target===$('polish-label-dialog'))event.currentTarget.hidden=true;
 });
 
+let practicalNewLabelExpand=null;
 function renderLabelEditor(){
   const list=$('label-list');list.replaceChildren();
   if(!labels.length){const p=document.createElement('p');p.className='studio-hint';p.textContent='No labels yet. Add your first callout above.';list.appendChild(p);return;}
   labels.forEach((label,i)=>{
-    const row=document.createElement('div');row.className='label-editor-row';
+    const row=document.createElement('details');row.className='label-editor-row';row.open=label.id===practicalNewLabelExpand;
+    const summary=document.createElement('summary');summary.className='label-editor-summary';summary.textContent=label.t||`Label ${i+1}`;
     const number=document.createElement('span');number.textContent=`${i+1}.`;number.className='label-index';
     const input=document.createElement('input');input.type='text';input.maxLength=100;input.value=label.t;input.setAttribute('aria-label',`Edit label ${i+1}`);
-    input.addEventListener('input',()=>{label.t=input.value;renderAnnotations();queueDraft();});
+    input.addEventListener('input',()=>{label.t=input.value;summary.textContent=input.value||`Label ${i+1}`;renderAnnotations();queueDraft();});
     const remove=document.createElement('button');remove.textContent='×';remove.className='icon-button';remove.title='Remove label';remove.setAttribute('aria-label',`Remove label ${i+1}`);
     remove.addEventListener('click',()=>{labels=labels.filter(l=>l.id!==label.id);renderAnnotations();renderLabelEditor();queueDraft();});
     const more=document.createElement('div');more.className='polish-label-fields';
@@ -2363,7 +2373,8 @@ function renderLabelEditor(){
       focusActions.append(clear);
     }
     more.append(desc,photo,focusActions);
-    row.append(number,input,remove,more);list.appendChild(row);
+    const inner=document.createElement('div');inner.className='label-editor-inside';inner.append(number,input,remove,more);
+    row.append(summary,inner);list.appendChild(row);
   });
 }
 function renderAnnotations(){
@@ -2511,7 +2522,7 @@ async function applyScene(saved){
     const c=saved.cam;
     camera.position.set(c[0],c[1],c[2]);controls.target.set(c[3],c[4],c[5]);
     camera.updateProjectionMatrix();controls.update();setPresetActive('');
-    labels=saved.labels.map(l=>({...l,id:++labelSequence}));
+    labels=saved.labels.map(l=>({...l,id:++labelSequence,qi:l.qi||newPracticalLabelId()}));
     renderLabelEditor();renderAnnotations();
     $('context-name').textContent=saved.t;
     if(!teacherMode){
@@ -2529,6 +2540,7 @@ async function loadProject(data){
   // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
   chapters=(project.v===1?[project]:project.chapters).map(ch=>upgradeLegacyScene(ch,structures.length,sceneFingerprint));
   activeChapter=!teacherMode?0:(project.v===1?0:project.start);
+  practicalConfig=normalPractical(project.v===2?project.practical:null);
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode)studentPermissions={...publishPermissions};
   else showPublishPermissions(publishPermissions);
@@ -2848,7 +2860,7 @@ $('new-project').addEventListener('click',()=>{
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
   restoreBonePaint([]);polishRestoreFade([]);
   libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
-  chapters=[];activeChapter=0;
+  chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
   publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
   Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
@@ -3252,3 +3264,206 @@ window.addEventListener('keydown',event=>{
   if(key==='z') {event.preventDefault();navigateHistory(event.shiftKey?'redo':'undo');}
   if(key==='y') {event.preventDefault();navigateHistory('redo');}
 });
+
+// Enter the generated final chapter through existing Next navigation.
+$('next-chapter')?.addEventListener('click',event=>{
+  if(!teacherMode&&practicalConfig.on&&!practicalActive&&activeChapter===chapters.length-1){
+    event.preventDefault();event.stopImmediatePropagation();void startPractical();
+  }
+},true);
+$('previous-chapter')?.addEventListener('click',event=>{
+  if(practicalActive){event.preventDefault();event.stopImmediatePropagation();practicalLeave(true);}
+},true);
+
+// ANATOMIQ_PRACTICAL_2216 — lesson-level teacher editor and student 3D practical.
+function practicalPool(){
+  if(!sceneRoot)return [];
+  const current=teacherMode ? snapshotScene() : chapters[activeChapter];
+  return practicalCandidates(chapters.map((ch,i)=>teacherMode&&i===activeChapter?current:ch),structures);
+}
+let practicalSearch='',practicalFilter='all';
+function renderPracticalEditor(){
+  if(!teacherMode||!sceneRoot)return;
+  const enabled=$('practical-enabled');if(!enabled)return;
+  enabled.checked=practicalConfig.on;
+  const pool=practicalPool(),off=new Set(practicalConfig.off);
+  const eligible=pool.filter(q=>!off.has(q.key));
+  const opts=$('practical-editor-options');opts.hidden=!practicalConfig.on;
+  $('practical-eligible-count').textContent=`${eligible.length} of ${pool.length} eligible targets`;
+  $('practical-question-count').value=String(practicalConfig.count);
+  $('practical-question-count').max=String(Math.max(1,Math.min(60,eligible.length)));
+  $('practical-question-count').disabled=!eligible.length;
+  $('practical-warning').textContent=!eligible.length?'Select at least one visible structure or label before publishing a practical.':practicalConfig.count>eligible.length?`Only ${eligible.length} eligible questions; the practical will use all of them.`:'Questions are randomized on every attempt. Labels must identify their anchored structure.';
+  $('practical-search').value=practicalSearch;
+  const select=$('practical-chapter-filter');
+  const prior=practicalFilter;select.replaceChildren();
+  const all=document.createElement('option');all.value='all';all.textContent='All chapters';select.append(all);
+  chapters.forEach((ch,i)=>{const opt=document.createElement('option');opt.value=String(i);opt.textContent=`${i+1}. ${ch.t}`;select.append(opt);});
+  if(prior!=='all'&&Number(prior)>=chapters.length)practicalFilter='all';
+  select.value=practicalFilter;
+  const list=$('practical-candidate-list');list.replaceChildren();
+  const match=pool.filter(q=>(practicalFilter==='all'||q.chapter===Number(practicalFilter)) &&
+    `${q.name} ${q.system} ${q.tissue}`.toLowerCase().includes(practicalSearch.toLowerCase()));
+  for(const item of match.slice(0,140)){
+    const row=document.createElement('label');row.className='practical-candidate';
+    const input=document.createElement('input');input.type='checkbox';input.checked=!off.has(item.key);
+    input.addEventListener('change',()=>{
+      const disabled=new Set(practicalConfig.off);
+      if(input.checked)disabled.delete(item.key);else disabled.add(item.key);
+      practicalConfig.off=[...disabled];renderPracticalEditor();queueDraft();
+    });
+    const name=document.createElement('span');name.textContent=item.name;
+    const detail=document.createElement('small');detail.textContent=`Chapter ${item.chapter+1} · ${item.type==='label'?'Teacher label':'Anatomical mesh'} · ${item.system}`;
+    const text=document.createElement('span');text.className='practical-candidate-text';text.append(name,detail);
+    row.append(input,text);list.append(row);
+  }
+  const footer=$('practical-candidate-footer');footer.textContent=match.length>140?`Showing 140 of ${match.length} matches. Search or filter to narrow the list.`:`${match.length} matching targets`;
+}
+function practicalBulk(enable){
+  const pool=practicalPool();const off=new Set(practicalConfig.off);
+  for(const q of pool){
+    if(practicalFilter!=='all'&&q.chapter!==Number(practicalFilter))continue;
+    if(!`${q.name} ${q.system} ${q.tissue}`.toLowerCase().includes(practicalSearch.toLowerCase()))continue;
+    if(enable)off.delete(q.key);else off.add(q.key);
+  }
+  practicalConfig.off=[...off];renderPracticalEditor();queueDraft();
+}
+$('practical-enabled')?.addEventListener('change',e=>{practicalConfig.on=e.target.checked;renderPracticalEditor();queueDraft();});
+$('practical-question-count')?.addEventListener('change',e=>{
+  practicalConfig.count=Math.min(60,Math.max(1,Math.floor(Number(e.target.value)||15)));
+  renderPracticalEditor();queueDraft();
+});
+$('practical-search')?.addEventListener('input',e=>{practicalSearch=e.target.value;renderPracticalEditor();$('practical-search').focus();$('practical-search').setSelectionRange(practicalSearch.length,practicalSearch.length);});
+$('practical-chapter-filter')?.addEventListener('change',e=>{practicalFilter=e.target.value;renderPracticalEditor();});
+$('practical-select-all')?.addEventListener('click',()=>practicalBulk(true));
+$('practical-select-none')?.addEventListener('click',()=>practicalBulk(false));
+
+function practicalClearHighlight(){
+  if(practicalHighlight){
+    practicalHighlight.mesh.material=practicalHighlight.original;
+    for(const material of practicalHighlight.temporary)material.dispose();
+    practicalHighlight=null;
+  }
+  if(practicalTargetMarker){scene.remove(practicalTargetMarker);practicalTargetMarker.geometry.dispose();practicalTargetMarker.material.dispose();practicalTargetMarker=null;}
+  invalidate(2);
+}
+function practicalSetHighlight(question){
+  const s=structures[question.s];if(!s?.mesh?.visible||s.mesh.userData?.deferredAsset)throw new Error(`Quiz target not rendered: ${question.name}`);
+  const mesh=s.mesh,original=mesh.material;
+  const temporary=(Array.isArray(original)?original:[original]).map(material=>{
+    const copy=material?.clone?.()||new THREE.MeshStandardMaterial({color:0x4df0b1});
+    if(copy.color?.lerp)copy.color.lerp(new THREE.Color(0x68ffd1),0.65);
+    if(copy.emissive?.set){copy.emissive.set(0x11b7a8);copy.emissiveIntensity=0.52;}
+    copy.depthTest=true;return copy;
+  });
+  mesh.material=Array.isArray(original)?temporary:temporary[0];
+  practicalHighlight={mesh,original,temporary};
+  if(question.type==='label'&&Array.isArray(question.anchor)&&question.anchor.length===3){
+    mesh.updateWorldMatrix(true,false);
+    const anchor=mesh.localToWorld(new THREE.Vector3(...question.anchor));
+    const box=new THREE.Box3().setFromObject(mesh);const radius=Math.max(.004,Math.min(.018,box.getSize(new THREE.Vector3()).length()*.035));
+    practicalTargetMarker=new THREE.Mesh(new THREE.SphereGeometry(radius,12,10),new THREE.MeshBasicMaterial({color:0xffdb5a,depthTest:false}));
+    practicalTargetMarker.position.copy(anchor);practicalTargetMarker.renderOrder=999;
+    scene.add(practicalTargetMarker);
+  }
+  invalidate(3);
+}
+function practicalPositionCamera(q){
+  const mesh=structures[q.s]?.mesh;if(!mesh)return;
+  const box=new THREE.Box3().setFromObject(mesh);
+  if(box.isEmpty())return;
+  const center=box.getCenter(new THREE.Vector3());
+  const radius=box.getBoundingSphere(new THREE.Sphere()).radius;
+  const c=chapters[q.chapter]?.cam||[];
+  const dir=new THREE.Vector3((c[0]||0)-(c[3]||0),(c[1]||0)-(c[4]||0),(c[2]||1)-(c[5]||0));
+  if(dir.lengthSq()<0.001)dir.set(0,0,1);
+  const distance=Math.max(0.16,Math.min(6,radius*4.3));
+  polishMoveCamera(center.clone().addScaledVector(dir.normalize(),distance),center,{duration:340,save:false});
+}
+async function practicalShowQuestion(){
+  if(!practicalActive||!practicalState)return;
+  const index=practicalState.index,q=practicalState.questions[index];
+  if(!q)return;
+  practicalClearHighlight();
+  practicalBusy=true;
+  const status=$('practical-message');status.textContent='Preparing 3D target…';
+  $('practical-next').disabled=true;
+  try{
+    await ensureChapterAssets(chapters[q.chapter]);
+    if(!practicalActive||!practicalState||practicalState.index!==index)return;
+    await applyScene(chapters[q.chapter]);
+    if(!practicalActive||!practicalState||practicalState.index!==index)return;
+    practicalSetHighlight(q);practicalPositionCamera(q);
+    $('practical-progress').textContent=`QUESTION ${index+1} OF ${practicalState.questions.length}`;
+    status.textContent=q.type==='label'?'Identify the structure indicated by the highlighted marker.':'Identify the highlighted anatomical structure.';
+    const options=$('practical-options');options.replaceChildren();
+    practicalState.selected=null;
+    q.choices.forEach((name,i)=>{
+      const button=document.createElement('button');button.type='button';button.className='practical-option';
+      const letter=document.createElement('span');letter.className='practical-option-letter';letter.textContent='ABCD'[i]||String(i+1);
+      const label=document.createElement('span');label.textContent=name;button.append(letter,label);
+      button.addEventListener('click',()=>{
+        if(practicalBusy)return;
+        practicalState.selected=name;
+        for(const b of options.children)b.classList.toggle('chosen',b===button);
+        $('practical-next').disabled=false;
+      });options.append(button);
+    });
+    $('practical-next').textContent=index===practicalState.questions.length-1?'Finish practical':'Next question →';
+    $('practical-question-content').hidden=false;$('practical-results').hidden=true;
+  }catch(error){console.error('AnatomIQ Practical target failed',error);showToast(error.message);practicalLeave(true);}
+  finally{practicalBusy=false;}
+}
+async function startPractical(){
+  if(teacherMode||!practicalConfig.on||practicalBusy)return;
+  if(practicalActive){renderChapterUI();return;}
+  const qs=practicalAttempt(practicalPool(),structures,practicalConfig);
+  if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
+  practicalActive=true;practicalState={questions:qs,index:0,answers:[],selected:null};
+  setSelection(null);
+  document.body.classList.add('practical-active');
+  $('practical-panel').hidden=false;
+  $('practical-question-content').hidden=false;$('practical-results').hidden=true;
+  renderChapterUI();await practicalShowQuestion();
+}
+function practicalLeave(restoreChapter=false){
+  practicalClearHighlight();practicalActive=false;practicalState=null;practicalBusy=false;
+  document.body.classList.remove('practical-active');$('practical-panel').hidden=true;
+  if(restoreChapter&&chapters[activeChapter])void applyScene(chapters[activeChapter]).then(renderChapterUI).catch(console.warn);
+  else renderChapterUI();
+}
+function practicalFinish(){
+  if(!practicalState)return;
+  practicalClearHighlight();
+  const result=gradePractical(practicalState.questions,practicalState.answers);
+  $('practical-question-content').hidden=true;$('practical-results').hidden=false;
+  $('practical-result-score').textContent=`${result.percent}%`;
+  $('practical-result-detail').textContent=`${result.correct} of ${result.total} correct`;
+  const missed=$('practical-missed');missed.replaceChildren();
+  if(!result.missed.length){const p=document.createElement('p');p.textContent='Excellent — no missed structures!';missed.append(p);}
+  else result.missed.forEach(m=>{
+    const item=document.createElement('div');item.className='practical-missed-item';
+    const heading=document.createElement('strong');heading.textContent=m.name;
+    const text=document.createElement('small');text.textContent=`Your choice: ${m.answer} · Chapter ${m.chapter}`;
+    item.append(heading,text);missed.append(item);
+  });
+  $('practical-progress').textContent='PRACTICAL COMPLETE';
+  $('practical-message').textContent='Your results are shown only in this browser. A retake will generate a new shuffle.';
+}
+$('practical-next')?.addEventListener('click',()=>{
+  if(!practicalActive||practicalBusy||!practicalState?.selected)return;
+  practicalState.answers.push(practicalState.selected);
+  if(practicalState.index===practicalState.questions.length-1){practicalFinish();return;}
+  practicalState.index++;
+  void practicalShowQuestion();
+});
+$('practical-retake')?.addEventListener('click',async()=>{
+  if(!practicalActive||practicalBusy)return;
+  practicalClearHighlight();practicalActive=false;practicalState=null;
+  await startPractical();
+});
+$('practical-exit')?.addEventListener('click',()=>{
+  if(!practicalActive)return;
+  practicalLeave(true);
+});
+

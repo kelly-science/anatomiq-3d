@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.15</span>
+        <span class="version">STUDIO 2.2.16</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -301,6 +301,12 @@
           <div class="chapter-nav-content"><span id="chapter-progress" class="chapter-progress">CHAPTER 1 OF 1</span><div id="chapter-tabs" class="chapter-tabs"></div></div>
           <button id="next-chapter" class="chapter-arrow" type="button" aria-label="Next chapter">›</button>
         </nav>
+        <section id="practical-panel" class="practical-panel" hidden aria-label="Anatomy practical assessment">
+ <div class="practical-panel-head"><strong id="practical-progress">QUESTION 1</strong><button id="practical-exit" type="button" class="button small subtle">Exit</button></div>
+ <p id="practical-message">Identify the highlighted structure.</p>
+ <div id="practical-question-content"><div id="practical-options" class="practical-options"></div><button type="button" id="practical-next" class="button primary full" disabled>Next question →</button></div>
+ <div id="practical-results" hidden><strong id="practical-result-score" class="practical-score"></strong><p id="practical-result-detail"></p><div id="practical-missed"></div><button type="button" id="practical-retake" class="button primary full">Retake practical ↻</button></div>
+ </section>
         <div class="viewer-bottom">
           <div class="view-presets" role="group" aria-label="Camera presets">
             <button data-view="front" class="preset active">Front</button>
@@ -369,7 +375,20 @@
           <button id="place-label" class="button full" type="button">⊕ Place label on bone</button>
           <div id="label-list" class="label-editor-list"></div>
           </section>
-        <section id="polish-student-controls" class="annotation-editor teacher-only" aria-label="Student controls">
+        <section id="practical-teacher-editor" class="annotation-editor teacher-only" aria-label="Practical examination setup">
+ <details><summary>Practical Examination</summary><div class="practical-config">
+ <label class="switch-row">Enable final-chapter practical <input id="practical-enabled" type="checkbox"></label>
+ <div id="practical-editor-options" hidden>
+ <label class="field-label" for="practical-question-count">Questions per attempt (1–60)</label>
+ <input class="text-input" id="practical-question-count" type="number" min="1" max="60" value="15">
+ <p class="studio-hint" id="practical-eligible-count"></p><p class="studio-hint" id="practical-warning"></p>
+ <input class="text-input" id="practical-search" type="search" placeholder="Find eligible structures or labels" aria-label="Filter practical questions">
+ <select id="practical-chapter-filter" class="text-input" aria-label="Filter by chapter"></select>
+ <div class="practical-bulk"><button type="button" id="practical-select-all" class="button small">Select shown</button><button type="button" id="practical-select-none" class="button small subtle">Deselect shown</button></div>
+ <div id="practical-candidate-list" class="practical-candidate-list"></div>
+ <small id="practical-candidate-footer" class="studio-hint"></small>
+ </div></div></details></section>
+<section id="polish-student-controls" class="annotation-editor teacher-only" aria-label="Student controls">
            <details id="polish-student-controls-details" open><summary>Student Controls</summary>
 <div class="detail-separator"></div>
           <label for="student-label-mode" class="field-label">Student label display</label>
