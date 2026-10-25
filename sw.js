@@ -1,7 +1,7 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.16c-view-polish';
+const VERSION='anatomy-v2.2.16d-student-ready';
 const POLISH_MODELS='anatomiq-models-persistent-v1';
 const SHELL=['./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./app.js',
   './practical-quiz.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./connective-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];

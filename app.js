@@ -35,7 +35,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.16c';
+const APP_VERSION = '2.2.16d';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -156,6 +156,15 @@ let activePreset = 'front';
 let currentModelURL = LOCAL_MODEL;
 let offlineReady = false;
 const teacherMode = !location.hash.startsWith('#scene=') && !location.hash.startsWith('#lesson=');
+// ANATOMIQ_STUDENT_READINESS_2216D: a different student URL in a running
+// PWA must start a fresh student loader (teacherMode is decided at boot).
+const studentRouteAtBoot=location.hash;
+window.addEventListener('hashchange',()=>{
+  const next=location.hash;
+  if(next!==studentRouteAtBoot && (next.startsWith('#lesson=')||next.startsWith('#scene=')||studentRouteAtBoot.startsWith('#lesson=')||studentRouteAtBoot.startsWith('#scene='))){
+    location.reload();
+  }
+});
 const embeddedMode = !teacherMode && new URLSearchParams(location.search).get('embed') === '1';
 document.body.classList.toggle('embed-mode',embeddedMode);
 let publishPermissions = {...STUDY_PERMISSIONS};
@@ -1434,7 +1443,11 @@ async function ensureChapterAssets(chapter){
   for(const type of ['legacyDigestive','detailedDigestive','cardiovascular','respiratory','nervous','urinary','lymphatic','connective'])if(needed[type])await loadNeededAsset(type);
   if(needed.skull && skullGeometry==='detailed' && !skullDetailStats)await loadHighResolutionSkull();
 }
+let studentStartupAttempts=0;
 async function loadAnatomy(){
+  if(!teacherMode){
+    window.__AnatomIQStudentReadiness={stage:'loading',attempt:studentStartupAttempts+1,maxAttempts:3};
+  }
   elements.loader.hidden=false;elements.retry.hidden=true;elements.loadTitle.textContent='Preparing the anatomy viewer';
   elements.loadDesc.textContent='Loading anatomy for this lesson. Additional systems load when needed.';
   elements.loadText.textContent='Connecting to model source…';elements.progress.style.width='3%';
@@ -1442,7 +1455,7 @@ async function loadAnatomy(){
   try{
     // Parse the published lesson before fetching GLBs. A malformed link can
     // now fail immediately without downloading anatomy assets.
-    if(!teacherMode){
+    if(!teacherMode && !studentProjectAtStartup){
       if(location.hash.startsWith('#lesson=')){
         activeLiveLessonRef=parsePublicReference(location.hash);
         elements.loadDesc.textContent='Checking the latest published lesson on GitHub…';
@@ -1511,14 +1524,44 @@ async function loadAnatomy(){
         console.warn('Realistic eyes unavailable; retaining native eye surfaces.',error);
       }
     }
-    elements.loader.hidden=true;
     await initializeStudioScene();
+    if(!sceneRoot||!structures.length)throw new Error('3D anatomy is not yet ready.');
+    if(!teacherMode){
+      window.__AnatomIQStudentReadiness={stage:'ready',attempt:studentStartupAttempts+1,maxAttempts:3,structures:structures.length};
+      // Two animation frames when foregrounded, or a short timeout when the
+      // PWA is backgrounded. Do not strand an iPad on an infinite spinner.
+      await Promise.race([
+        new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))),
+        new Promise(resolve=>setTimeout(resolve,450))
+      ]);
+    }
+    elements.loader.hidden=true;
+    studentStartupAttempts=0;
     setStatus(teacherMode?'Studio ready':'Student view');
     elements.offlineButton.hidden=false;
     if(teacherMode)cacheOffline(); // Student offline prep is opt-in, never a hidden whole-lesson download.
     else elements.offlineButton.textContent='Save lesson offline';
   }catch(err){
-    console.error(err);
+    console.warn('AnatomIQ startup attempt failed',err);
+    const message=String(err?.message||err||'');
+    const permanent=/invalid (?:live |published )?lesson|incompatible anatomical model|anatomical structure changed|malformed live lesson|missing owner|invalid branch|exceeds 160|not a live lesson|could not retrieve github lesson: this lesson has not been published/i.test(message);
+    if(!teacherMode && navigator.onLine!==false && !permanent && studentStartupAttempts<2){
+      studentStartupAttempts++;
+      window.__AnatomIQStudentReadiness={stage:'retrying',attempt:studentStartupAttempts+1,maxAttempts:3};
+      elements.loader.hidden=false;
+      elements.retry.hidden=true;
+      elements.loadTitle.textContent='Preparing your anatomy lesson';
+      elements.loadDesc.textContent='Waiting for the 3D models to become available. No action needed.';
+      elements.loadText.textContent=`Checking anatomy files · attempt ${studentStartupAttempts+1} of 3`;
+      elements.progress.style.width='12%';
+      setStatus('Preparing student lesson');
+      await new Promise(resolve=>setTimeout(resolve,600*studentStartupAttempts));
+      return loadAnatomy();
+    }
+    console.error('AnatomIQ student startup failed',err);
+    if(!teacherMode){
+      window.__AnatomIQStudentReadiness={stage:'error',attempt:studentStartupAttempts+1,maxAttempts:3,error:message};
+    }
     elements.loader.hidden=false;elements.loadTitle.textContent='Unable to open anatomy scene';
     elements.loadDesc.textContent=(!teacherMode&&sceneRoot)
       ? 'This lesson requires anatomy assets that could not be loaded. Check your connection or ask the teacher to verify their GitHub files.'
@@ -1678,7 +1721,7 @@ $('zoom-in').addEventListener('click',()=>{camera.position.lerp(controls.target,
 $('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target).multiplyScalar(1.22).add(controls.target);controls.update();invalidate(2);queueDraft();});
 $('menu-toggle').addEventListener('click',()=>{openDetails(false);elements.sidebar.classList.toggle('open');});
 elements.detailsToggle.addEventListener('click',()=>{elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
-elements.retry.addEventListener('click',loadAnatomy);
+elements.retry.addEventListener('click',()=>{studentStartupAttempts=0;void loadAnatomy();});
 window.addEventListener('keydown',event=>{if(event.key==='Escape'&&(placingLabel||paintMode)){if(placingLabel)cancelPlacing();if(paintMode)cancelPainting();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='f')orient('front');if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
 
 let installPrompt=null;

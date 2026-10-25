@@ -1,6 +1,6 @@
 {
-  "version": "2.2.16c",
+  "version": "2.2.16d",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "View menu reorganized by body system with nested study presets and camera group; Skull Only isolates true skeletal skull, Connective independently controlled, obsolete Show Cartilage checkbox removed. Scene and model IDs unchanged."
+  "notes": "Student lesson startup awaits anatomy and first scene paint, retries transient model loads, and reboots PWA for changed student links. Models and lesson schema unchanged."
 }
