@@ -24,7 +24,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.5</span>
+        <span class="version">STUDIO 2.2.6</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -60,7 +60,7 @@
           <button id="export-project" class="menu-item" role="menuitem" type="button">Export lesson JSON…</button>
           <input id="import-file" type="file" accept=".json,application/json" hidden />
           <div class="menu-separator" role="separator"></div>
-          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Share student link…</button>
+          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Publish / Share lesson…</button>
         </div>
       </div>
       <div class="menu-group" data-menu="edit">
@@ -401,6 +401,36 @@
         <button id="copy-iframe" class="button" type="button">Copy iframe HTML</button>
         <p class="footnote">For Schoology, add a <strong>File/Link/External Tool → Link</strong> and choose <strong>Display in Schoology</strong> using the Schoology link above. HTML iframe snippets may be removed by Schoology’s page editor. Test in Student View.</p>
       </div>
+      <!-- ANATOMIQ_GITHUB_PUBLISHING_20261024 — private per-teacher GitHub publisher -->
+      <details id="cloud-publishing" class="cloud-publishing">
+        <summary>Live lessons · Publish to your GitHub repository</summary>
+        <p class="studio-hint">Publish once, then update the same public lesson file. Students keep one short link. No shared server, GitHub App or teacher credentials built into AnatomIQ Studio.</p>
+        <div class="cloud-grid">
+          <label>GitHub username or organization<input id="cloud-owner" class="text-input" autocomplete="off" placeholder="teacher-account" /></label>
+          <label>Public lesson repository<input id="cloud-repo" class="text-input" autocomplete="off" placeholder="anatomy-lessons" /></label>
+          <label>Publishing branch<input id="cloud-branch" class="text-input" value="main" readonly title="Detected from the repository default branch" /></label>
+          <label>Permanent lesson URL name<input id="cloud-slug" class="text-input" autocomplete="off" maxlength="62" placeholder="skull-anatomy" /></label>
+        </div>
+        <label class="field-label" for="cloud-token">Fine-grained GitHub token (Contents: Read and write; selected repository only)</label>
+        <input id="cloud-token" class="text-input" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" />
+        <p class="studio-hint">Token is held in memory only and forgotten when the tab reloads or closes. Never enter it on a shared student device. The repository and lesson name (not the token) are remembered locally.</p>
+        <div class="cloud-actions">
+          <button id="cloud-connect" type="button" class="button small">Connect GitHub</button>
+          <button id="cloud-disconnect" type="button" class="button small subtle" hidden>Disconnect</button>
+          <button id="cloud-export-json" type="button" class="button small subtle">Download lesson JSON</button>
+        </div>
+        <button id="cloud-publish" type="button" class="button primary full">Publish / Update Live Lesson</button>
+        <p id="cloud-publish-status" class="studio-hint" role="status" aria-live="polite">Connect to a public GitHub repository to publish.</p>
+        <div id="cloud-publish-results" hidden>
+          <label class="field-label" for="cloud-student-url">Permanent live student URL</label>
+          <textarea id="cloud-student-url" class="share-url" rows="2" readonly></textarea>
+          <div class="cloud-actions"><button id="cloud-copy-url" type="button" class="button small">Copy student URL</button><button id="cloud-preview" type="button" class="button small subtle">Open student view ↗</button></div>
+          <label class="field-label" for="cloud-embed-url">Schoology embedded viewer URL</label>
+          <textarea id="cloud-embed-url" class="share-url" rows="2" readonly></textarea>
+          <button id="cloud-copy-embed" type="button" class="button small">Copy Schoology URL</button>
+        </div>
+        <p class="footnote">Published lesson JSON is public and can be inspected by anyone. Do not use this as secure exam access control. Image references must already be publicly hosted. Use Snapshot links above when the lesson must not change.</p>
+      </details>
       <div id="share-feedback" class="studio-hint" aria-live="polite">Choose a preset, then generate the student links.</div>
       <p class="footnote">These controls hide UI, not source model data. An HTML/URL-only app cannot securely prevent technically skilled students from accessing anatomical names or changing the viewer; don't treat this as a locked-down assessment environment.</p>
     </section>

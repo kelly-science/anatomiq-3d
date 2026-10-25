@@ -1,9 +1,9 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.5-smart-focus';
+const VERSION='anatomy-v2.2.6-github-publishing';
 const POLISH_MODELS='anatomiq-models-persistent-v1';
-const SHELL=['./','./index.html','./styles.css','./app.js','./smart-label-focus.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const SHELL=['./','./index.html','./styles.css','./app.js','./smart-label-focus.js','./lesson-publishing.js','./scene-codec.js','./scene-assets.js','./library-store.js','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',

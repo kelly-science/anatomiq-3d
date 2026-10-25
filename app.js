@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
+import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {installSkullGeometry} from './skull-geometry.js';
@@ -29,7 +30,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.5';
+const APP_VERSION = '2.2.6';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -132,7 +133,7 @@ let selectedHighlight = null;
 let activePreset = 'front';
 let currentModelURL = LOCAL_MODEL;
 let offlineReady = false;
-const teacherMode = !location.hash.startsWith('#scene=');
+const teacherMode = !location.hash.startsWith('#scene=') && !location.hash.startsWith('#lesson=');
 const embeddedMode = !teacherMode && new URLSearchParams(location.search).get('embed') === '1';
 document.body.classList.toggle('embed-mode',embeddedMode);
 let publishPermissions = {...STUDY_PERMISSIONS};
@@ -1346,7 +1347,15 @@ async function loadAnatomy(){
   try{
     // Parse the published lesson before fetching GLBs. A malformed link can
     // now fail immediately without downloading anatomy assets.
-    if(!teacherMode)studentProjectAtStartup=await decodeScene(location.hash.slice('#scene='.length));
+    if(!teacherMode){
+      if(location.hash.startsWith('#lesson=')){
+        activeLiveLessonRef=parsePublicReference(location.hash);
+        elements.loadDesc.textContent='Checking the latest published lesson on GitHub…';
+        const live=await fetchPublicLesson(activeLiveLessonRef);
+        studentProjectAtStartup=live.project;
+        if(live.offline)elements.loadDesc.textContent='Offline: using the most recently cached published lesson.';
+      }else studentProjectAtStartup=await decodeScene(location.hash.slice('#scene='.length));
+    }
     let localAvailable=false;
     try{const response=await fetch(LOCAL_MODEL,{method:'HEAD'});localAvailable=response.ok && /model|octet-stream|binary|application/i.test(response.headers.get('content-type')||'application/octet-stream');}catch{}
     const urls=localAvailable?[LOCAL_MODEL,REMOTE_MODEL,SECONDARY_MODEL]:[REMOTE_MODEL,SECONDARY_MODEL];
@@ -1954,7 +1963,7 @@ function polishShowLabelDetails(label){
   $('polish-label-description').textContent=label.d||'';
   $('polish-label-description').hidden=!label.d;
   const photo=$('polish-label-image');photo.hidden=!label.u;
-  if(label.u){photo.src=label.u;photo.alt='Reference image: '+label.t;}
+  if(label.u){photo.src=activeLiveLessonRef?resolveLessonMedia(activeLiveLessonRef,label.u):label.u;photo.alt='Reference image: '+label.t;}
   dialog.hidden=false;
 }
 // ANATOMIQ_SMART_LABEL_FOCUS_20261024: orient label clicks by their real surface.
@@ -2322,8 +2331,7 @@ async function loadProject(data){
 }
 async function initializeStudioScene(){
   if(!teacherMode){
-    const fragment=location.hash.slice('#scene='.length);
-    await loadProject(await decodeScene(fragment));
+    await loadProject(studentProjectAtStartup);
   }else{
     const draft=localStorage.getItem(DRAFT_KEY)||localStorage.getItem(OLD_DRAFT_KEY);
     if(draft){
@@ -2340,6 +2348,118 @@ async function initializeStudioScene(){
     renderChapterUI();renderLabelEditor();resetHistory();
   }
 }
+// ANATOMIQ_GITHUB_PUBLISHING_20261024 — teacher-owned, no server or embedded secrets.
+const CLOUD_PREFS_KEY='anatomiq-cloud-publisher-settings-v1';
+const CLOUD_TARGETS_KEY='anatomiq-cloud-lesson-targets-v1';
+let cloudToken=''; // Memory only. Never written to localStorage, URLs, lessons or a file.
+let cloudVerified=null;
+let cloudBusy=false;
+let activeLiveLessonRef=null;
+function cloudSavedPreferences(){
+  try{return JSON.parse(localStorage.getItem(CLOUD_PREFS_KEY)||'{}')||{};}catch{return {};}
+}
+function cloudSavedTargets(){
+  try{return JSON.parse(localStorage.getItem(CLOUD_TARGETS_KEY)||'{}')||{};}catch{return {};}
+}
+function cloudSetStatus(message,bad=false){
+  const el=$('cloud-publish-status');if(!el)return;
+  el.textContent=message;el.classList.toggle('error',bad);
+}
+function cloudCurrentLessonSlug(){
+  const target=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
+  try{return target?.slug||normalizeSlug($('project-title').value||'lesson');}catch{return 'anatomy-lesson';}
+}
+function cloudOpenPublishing(){
+  const preferences=cloudSavedPreferences();
+  $('cloud-owner').value=cloudVerified?.owner||preferences.owner||'';
+  $('cloud-repo').value=cloudVerified?.repo||preferences.repo||'';
+  $('cloud-branch').value=cloudVerified?.branch||preferences.branch||'main';
+  $('cloud-slug').value=cloudCurrentLessonSlug();
+  $('cloud-token').value='';
+  $('cloud-publish-results').hidden=true;
+  cloudSetStatus(cloudVerified?'Connected for this browser tab. Ready to publish.':'Choose a public repository and connect using your fine-grained token.');
+  $('cloud-connect').textContent=cloudVerified?'Connected ✓':'Connect GitHub';
+  $('cloud-disconnect').hidden=!cloudVerified;
+}
+function cloudSetBusy(active){
+  cloudBusy=active;
+  for(const id of ['cloud-connect','cloud-disconnect','cloud-publish','cloud-export-json'])$(id).disabled=active;
+}
+$('cloud-connect').addEventListener('click',async()=>{
+  if(cloudBusy)return;
+  if(cloudVerified){cloudSetStatus('Already connected. Disconnect to change the repository.');return;}
+  const typed=$('cloud-token').value.trim();
+  cloudSetBusy(true);cloudSetStatus('Verifying repository and token…');
+  try{
+    const verified=await verifyPublishingRepository({owner:$('cloud-owner').value,repo:$('cloud-repo').value,token:typed});
+    cloudToken=typed;cloudVerified=verified;
+    $('cloud-owner').value=verified.owner;$('cloud-repo').value=verified.repo;$('cloud-branch').value=verified.branch;
+    localStorage.setItem(CLOUD_PREFS_KEY,JSON.stringify({owner:verified.owner,repo:verified.repo,branch:verified.branch}));
+    cloudSetStatus(`Connected: ${verified.fullName} (${verified.branch}). Token retained in memory until this tab closes.`);
+    $('cloud-connect').textContent='Connected ✓';$('cloud-disconnect').hidden=false;
+  }catch(error){cloudToken='';cloudVerified=null;cloudSetStatus(error.message,true);}
+  finally{$('cloud-token').value='';cloudSetBusy(false);}
+});
+$('cloud-disconnect').addEventListener('click',()=>{
+  cloudToken='';cloudVerified=null;$('cloud-token').value='';
+  $('cloud-connect').textContent='Connect GitHub';$('cloud-disconnect').hidden=true;
+  cloudSetStatus('Disconnected. Repository name remains saved, but no token is stored.');
+});
+$('cloud-export-json').addEventListener('click',()=>{
+  try{
+    publishPermissions={...currentPublishPermissions()};
+    const project=snapshotProject();
+    triggerJSONDownload(project,normalizeSlug($('cloud-slug').value)+'.json');
+    cloudSetStatus('Local lesson JSON downloaded. Commit it to lessons/ using GitHub Desktop if preferred.');
+  }catch(error){cloudSetStatus(error.message,true);}
+});
+$('cloud-publish').addEventListener('click',async()=>{
+  if(cloudBusy)return;
+  if(!teacherMode||!sceneRoot)return;
+  if(!cloudVerified||!cloudToken){cloudSetStatus('Connect GitHub first. Tokens are session-only.',true);return;}
+  cloudSetBusy(true);cloudSetStatus('Checking the existing lesson on GitHub…');
+  try{
+    const r=lessonRef($('cloud-owner').value,$('cloud-repo').value,$('cloud-branch').value,$('cloud-slug').value);
+    if(r.owner.toLowerCase()!==cloudVerified.owner.toLowerCase()||r.repo.toLowerCase()!==cloudVerified.repo.toLowerCase()||r.branch!==cloudVerified.branch)
+      throw new Error('Repository settings changed. Disconnect and reconnect before publishing.');
+    publishPermissions={...currentPublishPermissions()};
+    const project=snapshotProject();
+    const known=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
+    const safeUpdate=known && known.owner.toLowerCase()===r.owner.toLowerCase() && known.repo.toLowerCase()===r.repo.toLowerCase() && known.branch===r.branch && known.slug===r.slug;
+    const result=await publishToGitHub({ref:r,token:cloudToken,project,
+      confirmOverwrite:()=>safeUpdate||confirm(`This will replace the currently published lesson at ${r.owner}/${r.repo}/lessons/${r.slug}.json. Existing student links will immediately point to your NEW lesson contents. Continue?`)});
+    if(result.cancelled){cloudSetStatus('Publication cancelled. Nothing was changed.');return;}
+    // Save local lesson identity so a later update can safely reuse its URL even if renamed.
+    try{
+      const saved=await saveLesson(project,libraryLessonId);
+      libraryLessonId=saved.id;lastLibrarySnapshot=JSON.stringify(saved.project);saveDraft(false);
+      const targets=cloudSavedTargets();targets[saved.id]=r;
+      localStorage.setItem(CLOUD_TARGETS_KEY,JSON.stringify(targets));
+      noteLibraryState(`✓ Saved and published: ${project.t}`);
+    }catch(error){console.warn('GitHub publish succeeded; local library save failed:',error);}
+    const link=studentLink(location.href,r);
+    $('cloud-student-url').value=link;
+    $('cloud-embed-url').value=studentLink(location.href,r,{embed:true});
+    $('cloud-publish-results').hidden=false;
+    cloudSetStatus(`✓ ${result.updated?'Updated':'Published'} on GitHub. Existing student links remain unchanged. Commit ${result.commit.slice(0,8)}. Students may need to refresh (GitHub raw CDN propagation can take a moment).`);
+  }catch(error){cloudSetStatus(error.message,true);}
+  finally{cloudSetBusy(false);}
+});
+$('cloud-copy-url').addEventListener('click',async()=>{
+  const input=$('cloud-student-url');
+  try{await navigator.clipboard.writeText(input.value);cloudSetStatus('Student link copied.');}
+  catch{input.select();cloudSetStatus('Copy the selected student URL.');}
+});
+$('cloud-preview').addEventListener('click',()=>{
+  const url=$('cloud-student-url').value;
+  if(url)window.open(url,'_blank','noopener');
+});
+$('cloud-copy-embed').addEventListener('click',async()=>{
+  const input=$('cloud-embed-url');
+  try{await navigator.clipboard.writeText(input.value);cloudSetStatus('Schoology embed link copied.');}
+  catch{input.select();cloudSetStatus('Copy the selected Schoology URL.');}
+});
+
 // --- Publishing: one link with explicit lesson-wide student permissions. ---
 const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ex:'publish-explore'};
 let embedLink='';
@@ -2367,6 +2487,7 @@ function publishScene(){
   $('publish-results').hidden=true;
   $('share-feedback').textContent='Choose student controls and click Generate student links.';
   $('share-dialog').hidden=false;
+  cloudOpenPublishing();
   $('publish-preset').focus();
 }
 async function generateStudentLink(){

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.5",
+  "version": "2.2.6",
   "channel": "beta",
   "published": "2026-10-24",
-  "notes": "Smart Label Focus: rotate toward label surface with optional teacher-saved camera angle and zoom; transparent obstruction handling where permitted."
+  "notes": "Live GitHub lesson publishing with public stable student URLs; teacher-owned repositories; local JSON export; no server or stored token."
 }

@@ -310,3 +310,14 @@ body.student-mode.student-explore-enabled .mode-tabs{display:flex!important}
 .smart-focus-actions{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 0;align-items:center}
 .smart-focus-actions>.button{flex:1 1 auto;min-width:90px;padding:7px 8px;font-size:11px}
 @media(max-width:630px){.smart-focus-actions>.button{min-width:110px}}
+
+/* ANATOMIQ_GITHUB_PUBLISHING_20261024 — live lesson publisher */
+.cloud-publishing{margin:18px 0 12px;padding:13px;border:1px solid var(--border,#526171);border-radius:12px}
+.cloud-publishing>summary{cursor:pointer;font-weight:700;margin-bottom:10px}
+.cloud-publishing .text-input{margin-top:5px;width:100%;box-sizing:border-box}
+.cloud-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.cloud-grid label{font-size:12px;min-width:0;display:block}
+.cloud-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.cloud-publishing .error{color:#e99586}
+.cloud-publishing textarea{width:100%;box-sizing:border-box}
+@media(max-width:600px){.cloud-grid{grid-template-columns:1fr}}
