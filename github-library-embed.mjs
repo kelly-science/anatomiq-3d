@@ -1,3 +1,4 @@
+/* ANATOMIQ_GLOBAL_GEOMETRY_LIBRARY_232_20261026 — Open navigates to published lesson, not raw JSON. */
 /* AnatomIQ Studio — optional read-only GitHub library and GitHub publish embeds.
  * No credentials are read, stored, or transmitted by this module.
  */
@@ -118,12 +119,12 @@ function addGitHubLibrary(){
       const links=element('div',{className:'aiq-github-lesson-actions'});
       let url,embedded;
       try {url=buildStudentURL(viewer.value,{...lastSource,slug:file.slug});embedded=buildStudentURL(viewer.value,{...lastSource,slug:file.slug},true);}catch(e){status.textContent=e.message;return;}
-      const open=element('a',{href:url,target:'_blank',rel:'noopener noreferrer',className:'button small subtle'},'Open student view');
+      
       const copyLink=element('button',{type:'button',className:'button small subtle'},'Copy link');copyLink.addEventListener('click',()=>copyValue(url,copyLink));
       const copyFrame=element('button',{type:'button',className:'button small subtle'},'Copy iframe');copyFrame.addEventListener('click',()=>copyValue(iframeHTML(embedded,`AnatomIQ Studio — ${file.slug.replace(/-/g,' ')}`),copyFrame));
-      const raw=`https://raw.githubusercontent.com/${encodeURIComponent(lastSource.owner)}/${encodeURIComponent(lastSource.repo)}/${lastSource.branch.split('/').map(encodeURIComponent).join('/')}/${file.path}`;
-      const json=element('a',{href:raw,target:'_blank',rel:'noopener noreferrer',className:'button small subtle'},'View JSON');
-      links.append(open,copyLink,copyFrame,json);row.append(copy,links);list.append(row);
+      
+      const json=element('a',{href:url,className:'button small subtle','aria-label':`Open ${file.slug.replace(/-/g,' ')} lesson`},'Open');
+      links.append(json,copyLink,copyFrame);row.append(copy,links);list.append(row);
     }
   }
   async function load(){
