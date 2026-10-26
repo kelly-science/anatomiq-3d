@@ -1,6 +1,7 @@
 // ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 import * as THREE from 'three';
+import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -334,7 +335,7 @@ const __labelAudit={
   enabled:__labelAuditOn,mode:'normal',samples:[],lastFrame:0,rayCalls:0,rayMs:0,
   reset(){this.samples=[];this.lastFrame=0;this.rayCalls=0;this.rayMs=0;polishOcclusionAt=0;},
   setMode(mode){
-    if(!['normal','no-occlusion','no-labels'].includes(mode))throw new Error('mode must be normal, no-occlusion, or no-labels');
+    if(!['normal','legacy-occlusion','no-occlusion','no-labels'].includes(mode))throw new Error('mode must be normal, legacy-occlusion, no-occlusion, or no-labels');
     this.mode=mode;this.reset();
     // These changes are for temporary measurements only. Original occlusion resumes in normal mode.
     if(mode==='no-occlusion'){
@@ -374,6 +375,7 @@ if(__labelAuditOn){
     help:()=>console.info('Run mode("normal"), rotate 5–10 s, then report(). Repeat with "no-occlusion" and "no-labels". These are diagnostic modes, not app settings.')
   });
   console.info('AnatomIQ label-performance audit enabled. window.__AnatomIQLabelPerf.help()');
+  window.__AnatomIQOcclusionStats=()=>polishOcclusionIndex.stats();
 }
 // END ANATOMIQ_LABEL_AUDIT_236
 
@@ -2594,6 +2596,7 @@ document.addEventListener('keydown',e=>{
 let polishStudentLabelsVisible=true;
 const polishOcclusionRay=new THREE.Raycaster();
 let polishOcclusionAt=0,polishOccluders=[];
+const polishOcclusionIndex=createOcclusionIndex(THREE); // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 function polishShowLabelDetails(label){
   if(!label?.d && !label?.u)return;
   const dialog=$('polish-label-dialog');if(!dialog)return;
@@ -2860,6 +2863,7 @@ function updateAnnotationPositions(){
   if(refreshOcclusion){
     polishOcclusionAt=performance.now()+110;
     polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
+    polishOcclusionIndex.update(polishOccluders); // ANATOMIQ_LABEL_OCCLUSION_BVH_238
   }
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
@@ -2882,9 +2886,11 @@ function updateAnnotationPositions(){
       // Only a closer, visible mesh can occlude a label; the label's own surface
       // can be encountered at the anchor without counting as an occluder.
       const __lpRayStart=__labelAudit.enabled?performance.now():0;
-      const hits=polishOcclusionRay.intersectObjects(polishOccluders,false);
+      const blocked=(__labelAudit.enabled && __labelAudit.mode==='legacy-occlusion')
+        ? polishOcclusionRay.intersectObjects(polishOccluders,false).length>0
+        : polishOcclusionIndex.isOccluded(polishOcclusionRay); // ANATOMIQ_LABEL_OCCLUSION_BVH_238
       if(__labelAudit.enabled){__labelAudit.rayCalls++;__labelAudit.rayMs+=performance.now()-__lpRayStart;}
-      nodes.marker.dataset.occluded=hits.length?'1':'0';
+      nodes.marker.dataset.occluded=blocked?'1':'0';
     }
     const isOccluded=nodes.marker.dataset.occluded==='1';
     nodes.marker.classList.toggle('polish-occluded',isOccluded);
