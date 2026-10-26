@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="./responsive-chapters-panels.css?rev=233" />
 <link rel="stylesheet" href="./chapter-bar-width-234.css?rev=234" /> <!-- ANATOMIQ_CHAPTER_BAR_WIDTH_234_20261026 --> <!-- ANATOMIQ_RESPONSIVE_CHAPTERS_PANELS_233_20261026 -->
   <link rel="stylesheet" href="./teacher-tools-2240.css?rev=240" />
+  <link rel="stylesheet" href="./workspace-tabs-241.css?rev=241" />
 </head>
 <body>
   <div class="app-shell">
@@ -35,7 +36,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.40</span>
+        <span class="version">STUDIO 2.2.41</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -666,10 +667,11 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=tools240');
+    await import('./app.js?rev=workspace241');
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
-  <script defer src="./interface-2221.js?rev=tools240"></script>
+  <script defer src="./interface-2221.js?rev=workspace241"></script>
+  <script defer src="./workspace-tabs-241.js?rev=241"></script>
   <script defer src="./teacher-tools-2240.js?rev=240"></script>
 <script type="module" src="./github-library-embed.mjs?rev=235"></script> <!-- ANATOMIQ_GITHUB_LIBRARY_EMBED_20261026 -->
 <script defer src="./responsive-chapters-panels.js?rev=233"></script>

@@ -41,7 +41,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.40';
+const APP_VERSION = '2.2.41';
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2173,17 +2173,17 @@ window.addEventListener('keydown',event=>{
   const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable;
   const dialogOpen=[...document.querySelectorAll('.dialog-backdrop:not([hidden])')].some(el=>!el.hidden);
   if(typing||dialogOpen)return;
-  if((event.metaKey||event.ctrlKey)&&!event.altKey&&event.key.toLowerCase()==='f'){
+  if((event.metaKey||event.ctrlKey)&&!event.altKey&&event.shiftKey&&event.key.toLowerCase()==='f'){
     if(!teacherMode && !studentPermissions.ss)return;
     event.preventDefault();elements.sidebar.classList.add('open');elements.search.focus();elements.search.select();
   }else if(teacherMode && !event.metaKey && !event.ctrlKey && !event.altKey &&
            (event.key==='Backspace'||event.key==='Delete') && selected){
     event.preventDefault();hideMultiSelection();
   }else if(teacherMode && (event.metaKey||event.ctrlKey) && !event.altKey &&
-           event.key.toLowerCase()==='i' && selected){
+           event.shiftKey&&event.key.toLowerCase()==='i' && selected){
     event.preventDefault();$('isolate-selected').click();
   }else if(teacherMode && (event.metaKey||event.ctrlKey) && !event.altKey &&
-           (event.key==='-'||event.key==='_') && selected){
+           event.shiftKey && (event.key==='-'||event.key==='_') && selected){
     event.preventDefault();polishToggleSelectedFade();
   }
 },true);
@@ -2467,6 +2467,7 @@ function saveDraft(explicit=true){
     localStorage.setItem(DRAFT_KEY,JSON.stringify(snapshotProject()));
     $('draft-status').textContent=explicit?'Draft saved on this Chromebook.':'Draft autosaved on this Chromebook.';
     if(explicit)showToast('Draft saved locally.');
+    queueMicrotask(()=>window.__AnatomIQWorkspaceTabs?.syncActive?.());
   } catch(err) {$('draft-status').textContent='Could not save draft: '+err.message;}
 }
 // --- Local Scene Library (IndexedDB; separate from the autosaved working draft) ---
@@ -3083,7 +3084,7 @@ async function initializeStudioScene(){
       }
     }else setMode(mode);
     if(!chapters.length){chapters=[snapshotScene()];activeChapter=0;}
-    renderChapterUI();renderLabelEditor();resetHistory();
+    renderChapterUI();renderLabelEditor();resetHistory();window.__AnatomIQWorkspaceBootReady=true;
   }
 }
 // ANATOMIQ_GITHUB_PUBLISHING_20261024 — teacher-owned, no server or embedded secrets.
@@ -3415,6 +3416,52 @@ $('import-file').addEventListener('change',async()=>{
   }catch(err){showToast('Could not import scene: '+err.message);}
   finally{$('import-file').value='';}
 });
+
+/* ANATOMIQ_WORKSPACE_BRIDGE_241: access only existing validated Teacher project workflows. */
+window.__AnatomIQWorkspaceBridge={
+  ready:()=>teacherMode && !!sceneRoot && !!window.__AnatomIQWorkspaceBootReady && !libraryBusy,
+  capture:()=>({
+    project:structuredClone(snapshotProject()),
+    libraryLessonId:libraryLessonId??null,
+    lastLibrarySnapshot:lastLibrarySnapshot??null,
+    githubEditingRef:githubEditingRef?structuredClone(githubEditingRef):null,
+    libraryStatus:$('library-status')?.textContent||'Working draft · Not saved to library'
+  }),
+  async activate(state){
+    if(!teacherMode || !sceneRoot || !state?.project || libraryBusy)throw new Error('Workspace not ready.');
+    verifyProjectModel(state.project);
+    clearTimeout(draftTimeout);clearTimeout(historyTimeout);
+    cancelPlacing();cancelPainting();
+    await loadProject(structuredClone(state.project));
+    githubEditingRef=state.githubEditingRef?structuredClone(state.githubEditingRef):null;
+    libraryLessonId=state.libraryLessonId??null;
+    lastLibrarySnapshot=state.lastLibrarySnapshot??null;
+    noteLibraryState(state.libraryStatus||'Working draft · Not saved to library');
+    resetHistory();saveDraft(false);
+  },
+  blank(){
+    if(!teacherMode||!sceneRoot||libraryBusy)throw new Error('Workspace not ready.');
+    clearTimeout(draftTimeout);clearTimeout(historyTimeout);
+    cancelPlacing();cancelPainting();
+    restoreBonePaint([]);polishRestoreFade([]);
+    githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;
+    noteLibraryState('Not yet saved to the library.');
+    chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
+    publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);
+    labels=[];labelMode='shown';studentExplore=false;
+    $('student-label-mode').value=labelMode;$('student-explore').checked=false;
+    $('project-title').value='New lesson';$('scene-title').value='Chapter 1';
+    Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
+    legacyEyeVisibilityPending=false;
+    elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
+    renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();
+    resetHistory();saveDraft(false);
+    document.title='New lesson • AnatomIQ Studio';
+    return this.capture();
+  },
+  get title(){return $('project-title')?.value.trim()||'Untitled lesson';},
+  isDirty:()=>hasUnsavedLibraryChanges()
+};
 
 // --- Chromebook-friendly desktop menu bar ---
 function closeStudioMenus(returnFocus=false){

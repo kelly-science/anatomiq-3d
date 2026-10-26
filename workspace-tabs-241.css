@@ -1,0 +1,28 @@
+/* AnatomIQ Studio 2.2.41 — multi-project tabs / header draft status. */
+#studio-menubar{display:flex;align-items:center;gap:0;min-width:0}
+#anat-project-tabs{display:flex;align-items:center;flex:1 1 0;min-width:100px;margin-left:12px;max-width:100%;height:42px;overflow:hidden}
+#anat-project-tab-list{display:flex;align-items:stretch;gap:3px;overflow-x:auto;min-width:0;height:100%;scrollbar-width:thin}
+.anat-project-tab{display:flex;align-items:stretch;flex:0 0 auto;max-width:210px;min-width:95px;background:rgba(14,30,40,.48);border:1px solid rgba(145,183,202,.24);border-radius:9px 9px 0 0;margin-top:7px;overflow:hidden;color:inherit}
+.anat-project-tab.active{background:rgba(38,81,100,.58);border-color:rgba(140,218,230,.57)}
+.anat-project-switch{display:flex;align-items:center;gap:5px;min-width:0;flex:1;background:none;border:0;color:inherit;text-align:left;cursor:pointer;padding:5px 5px 6px 10px;font:inherit;font-size:12px}
+.anat-project-switch span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anat-project-dot{color:#80d6e1;font-weight:bold;flex:0 0 auto}
+.anat-project-close{border:0;background:transparent;color:inherit;opacity:.7;cursor:pointer;padding:0 9px;font-size:18px}
+.anat-project-close:hover{background:rgba(210,235,245,.12);opacity:1}
+#anat-new-project-tab{background:transparent;color:inherit;border:1px solid rgba(145,183,202,.32);border-radius:50%;font-size:20px;line-height:22px;width:28px;height:28px;flex:0 0 28px;margin:0 6px 0 9px;cursor:pointer}
+#anat-new-project-tab:hover{background:rgba(128,210,224,.15)}
+.top-actions .anat-draft-header-status{display:inline-flex;max-width:185px;min-width:0;flex:0 1 auto;font-size:11px;color:#adc5cf;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 8px;align-items:center}
+body.student-mode .anat-draft-header-status{display:none!important}
+#anat-lesson-settings-dialog[hidden]{display:none!important}
+#anat-lesson-settings-dialog{position:fixed;inset:0;z-index:10010;display:flex;align-items:center;justify-content:center;background:rgba(3,11,18,.72);padding:18px}
+.anat-lesson-settings-box{background:#16232e;border:1px solid #446578;border-radius:16px;max-height:min(86vh,860px);width:min(640px,100%);color:#e6f0f5;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.48)}
+.anat-lesson-settings-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid rgba(150,195,218,.22)}
+.anat-lesson-settings-header h2{margin:0;font-size:20px}
+#anat-lesson-settings-close{background:none;border:1px solid rgba(150,195,218,.24);color:inherit;font-size:24px;cursor:pointer;border-radius:8px;min-width:36px}
+#anat-lesson-settings-content{padding:12px 20px;overflow-y:auto}
+#anat-lesson-settings-content >section{display:block!important;margin:8px 0 16px;width:100%}
+#anat-lesson-settings-content >section[hidden]{display:block!important}
+#anat-lesson-settings-content details{width:100%}
+.anat-lesson-settings-box footer{padding:12px 20px;border-top:1px solid rgba(150,195,218,.22);color:#abbec9;font-size:12px}
+@media(max-width:1050px){#anat-project-tabs{margin-left:5px}.anat-project-tab{min-width:78px;max-width:145px}.top-actions .anat-draft-header-status{max-width:115px}}
+@media(max-width:730px){#anat-project-tabs{min-width:74px}.anat-project-tab{min-width:68px;max-width:112px}.anat-project-switch{font-size:11px;padding-left:6px}.anat-project-close{padding:0 6px}.top-actions .anat-draft-header-status{max-width:90px}}

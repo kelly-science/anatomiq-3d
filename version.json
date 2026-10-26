@@ -1,6 +1,6 @@
 {
-  "version": "2.2.40",
+  "version": "2.2.41",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Teacher toolbar tools (Orbit, Select, Paint, Labels), rectangle selection, contextual panel; consolidated version metadata. Label BVH 2.2.38 preserved."
+  "notes": "Teacher lesson settings modal; project tabs with independent drafts and close confirmation; updated Cmd/Ctrl+Shift shortcuts. Label occlusion BVH remains unchanged."
 }
