@@ -1,6 +1,6 @@
 {
-  "version": "2.2.47",
+  "version": "2.2.48",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Fix workspace project-tab vertical height and clip-free centered 26px new-tab circle. Preserve full-width menu hover rows, lessons, anatomy, and label BVH."
+  "notes": "Unify menu and label editor body text: Inter 12px/500/1.45. Preserve headings, buttons, footers, icons, 3D labels, geometry, saved lessons and BVH optimization."
 }

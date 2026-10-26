@@ -1,0 +1,146 @@
+/* AnatomIQ Studio 2.2.48 — unified interface body typography.
+   Scoped to menu COMMAND TEXT and descriptive/editor BODY text.
+   Headings, titles, tool glyphs, stand-alone buttons, footers, counters,
+   badges, keyboard shortcuts and 3D callouts deliberately retain their styles.
+   Loaded last to override earlier component-specific sizes. */
+:root {
+  --anat-ui-body-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --anat-ui-body-size: 12px;
+  --anat-ui-body-weight: 500;
+  --anat-ui-body-leading: 1.45;
+}
+
+/* File / Edit / View / Library / Settings / Help, including nested View menus.
+   These happen to be <button>s, but behave as list rows rather than primary
+   UI action buttons; do not affect generic .button or toolbar icons. */
+#studio-menubar .menu-dropdown .menu-item,
+#studio-menubar .menu-dropdown .menu-scene,
+#studio-menubar #menu-view .view-system-button,
+#studio-menubar #menu-view .view-special-option,
+#studio-menubar #menu-view .view-submenu .menu-item,
+.anat-student-menubar .menu-dropdown .menu-item,
+.anat-student-menubar .menu-dropdown .anat-menu-setting select,
+#anatomiq-division-nav .division-menu button {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+/* Prevent nested spans in menu actions from growing independently. The
+   shortcut and saved-scene metadata classes intentionally are not included. */
+#studio-menubar #menu-view .view-system-button > span:not(.menu-shortcut),
+#studio-menubar #menu-view .view-special-option > span:not(.menu-shortcut),
+#studio-menubar #menu-view .view-submenu .menu-item > span:not(.menu-shortcut) {
+  font-family: inherit;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+/* Teacher Label Editor: collapsed label rows, field names, inputs and help
+   prose all use the same typographic token. Number badges and action buttons
+   (Focus, Move, Delete, etc.) are intentionally excluded. */
+#label-list .label-editor-summary,
+#label-list .label-editor-inside label:not(.button):not(.switch-row),
+#label-list .label-editor-inside input:not([type="checkbox"]):not([type="color"]):not([type="range"]),
+#label-list .label-editor-inside textarea,
+#label-list .polish-label-fields label,
+#label-list .polish-label-fields input:not([type="checkbox"]),
+#label-list .polish-label-fields textarea,
+#anat-tool-context .annotation-help,
+#anat-tool-context .paint-editor .field-label,
+#anat-tool-context .annotation-editor .field-label,
+#anat-tool-context .anat-select-options label:not(.button),
+#anat-tool-context .anat-select-options select,
+#anat-tool-context .switch-row,
+#info-sidebar .label-editor-list .label-editor-summary {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+/* Older, non-moved label editor is still present in some installs. */
+#info-sidebar .annotation-editor > .annotation-help,
+#info-sidebar .annotation-editor > .field-label,
+#info-sidebar .label-editor-row input:not([type="checkbox"]):not([type="color"]):not([type="range"]),
+#info-sidebar .polish-label-fields textarea,
+#info-sidebar .polish-label-fields input:not([type="checkbox"]):not([type="color"]):not([type="range"]) {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+
+/* Explorer lists, compact anatomy nested structure menu, and student
+   lesson label list. Header/count rows retain their own hierarchy. */
+#bone-list .bone-item:not(.anat-explorer-restore),
+#bone-list .anat-nav-node > summary .anat-nav-node-label,
+#bone-list .anat-explorer-filter,
+#polish-student-label-list .polish-student-label-item,
+#anatomiq-division-nav .division-filter,
+#anatomiq-division-nav .division-menu button > span:not(.division-menu-count) {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+
+/* Lesson Settings, app settings and publisher: body copy, labels, form
+   fields, select options. Preserve headings and smaller hint/footer text. */
+#anat-lesson-settings-content .switch-row,
+#anat-lesson-settings-content .field-label,
+#anat-lesson-settings-content .text-input,
+#anat-lesson-settings-content .practical-candidate-text,
+#anat-lesson-settings-content .cloud-grid label,
+#anat-lesson-settings-content .cloud-remember-choice,
+#anat-lesson-settings-content .practical-config label:not(.button),
+#anat-lesson-settings-content select,
+#anat-lesson-settings-content textarea,
+#settings-dialog .render-settings-group select,
+#settings-dialog .render-settings-group label:not(.studio-hint),
+#settings-dialog .cloud-grid label,
+#share-dialog .cloud-grid label,
+#share-dialog .text-input,
+#share-dialog textarea {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+
+/* General descriptive text in the teaching sidebars and modal dialogs,
+   excluding footnotes, metadata and headings. */
+#info-sidebar .structure-description,
+#info-sidebar .no-selection > p,
+#info-sidebar .selection-content > p:not(.studio-hint):not(.footnote),
+#left-sidebar .studio-card > p:not(.studio-hint):not(.footnote),
+#help-dialog .share-dialog > p:not(.footnote),
+#library-dialog .share-dialog > p:not(.footnote),
+#share-dialog .share-dialog > p:not(.footnote),
+#settings-dialog .share-dialog > p:not(.footnote),
+.library-empty,
+.polish-label-dialog p:not(.footnote) {
+  font-family: var(--anat-ui-body-font) !important;
+  font-size: var(--anat-ui-body-size) !important;
+  font-weight: var(--anat-ui-body-weight) !important;
+  font-style: normal !important;
+  letter-spacing: normal !important;
+  line-height: var(--anat-ui-body-leading) !important;
+}
+
+/* Do not style descendants indiscriminately: icons, inline monospace codes,
+   headers, captions, numeric badges, tool buttons, keyboard shortcuts and
+   color swatches must preserve their existing semantics and sizes. */
