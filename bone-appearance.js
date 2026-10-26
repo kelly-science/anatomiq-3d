@@ -1,13 +1,13 @@
-/** AnatomIQ bone material comparison — Satin vs experimental cortical microrelief.
- * Three appearance modes are device-only and NEVER alter geometry or saved scenes.
+/** AnatomIQ Natural Bone — approved satin cortical microrelief.
+ * Two appearance modes are device-only and NEVER alter geometry or saved scenes.
  * The Detail mode uses screen-filtered procedural shading normals, not displacement.
  * NOTE: relief is artistically simulated, not a medically validated bone scan.
  */
-export const BONE_APPEARANCE_MODES = Object.freeze(['natural','detail','classic']);
+export const BONE_APPEARANCE_MODES = Object.freeze(['natural','classic']);
 export const BONE_APPEARANCE_STORAGE_KEY = 'anatomiq-bone-appearance-v1';
-export const BONE_APPEARANCE_MARKER = 'ANATOMIQ_BONE_DETAIL_TEST_1';
+export const BONE_APPEARANCE_MARKER = 'ANATOMIQ_NATURAL_BONE_PROMOTED_V1';
 export function normalizeBoneAppearance(mode){
-  return mode==='classic' || mode==='detail' ? mode : 'natural';
+  return mode==='classic' ? 'classic' : 'natural'; // Legacy 'detail' and 'natural' both use approved microrelief.
 }
 
 /** The original skeletal collection contains cartilage and discs, which are excluded. */
@@ -128,15 +128,15 @@ export function detailedBoneMaterial(source,THREE){
   return material;
 }
 
-/** Shared variants; no per-mesh textures/UVs, exact Classic material retained. */
+/** Shared variants; approved detail is Natural, exact source material is Classic. */
 export function createBoneAppearanceController(root,THREE,initialMode='natural'){
   const entries=new Map(),variants=new Map();
   let mode=normalizeBoneAppearance(initialMode);
   function variant(original){
     if(Array.isArray(original)){
-      return {classic:original,natural:original.map(m=>variant(m).natural),detail:original.map(m=>variant(m).detail)};
+      return {classic:original,natural:original.map(m=>variant(m).natural)};
     }
-    if(!variants.has(original))variants.set(original,{classic:original,natural:naturalBoneMaterial(original,THREE),detail:detailedBoneMaterial(original,THREE)});
+    if(!variants.has(original))variants.set(original,{classic:original,natural:detailedBoneMaterial(original,THREE)});
     return variants.get(original);
   }
   function register(mesh,classicMaterial,{force=false}={}){
@@ -163,12 +163,12 @@ export function createBoneAppearanceController(root,THREE,initialMode='natural')
       if(mesh.material===choices[mode])active++;
       const classics=Array.isArray(choices.classic)?choices.classic:[choices.classic];
       const naturals=Array.isArray(choices.natural)?choices.natural:[choices.natural];
-      const details=Array.isArray(choices.detail)?choices.detail:[choices.detail];
+      const details=Array.isArray(choices.natural)?choices.natural:[choices.natural];
       for(let i=0;i<classics.length;i++){
         if(details[i]?.userData?.anatomiqBoneAppearance==='detail-test-1')detailSlots++;
         if(naturals[i]!==classics[i])enhanced++;
       }
-      if(samples.length<3)samples.push({name:String(mesh.userData?.name||mesh.name||'bone'),satinRoughness:naturals[0]?.roughness??null,detailRoughness:details[0]?.roughness??null,detailMaterial:details[0]!==naturals[0]});
+      if(samples.length<3)samples.push({name:String(mesh.userData?.name||mesh.name||'bone'),naturalRoughness:naturals[0]?.roughness??null,detailMaterial:details[0]!==classics[0]});
     }
     return {mode,boneCount:entries.size,uniqueSourceMaterials:variants.size,enhancedMaterialSlots:enhanced,detailMaterialSlots:detailSlots,currentlyAssigned:active,examples:samples};
   }

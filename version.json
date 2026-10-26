@@ -1,6 +1,6 @@
 {
-  "version": "2.2.28",
+  "version": "2.2.29",
   "channel": "beta",
-  "published": "2026-10-25",
-  "notes": "Opt-in Natural Bone Detail Test: screen-filtered irregular shading microrelief. Satin and Classic unchanged. No model, lesson, structure ID, geometry or taxonomy changes."
+  "published": "2026-10-26",
+  "notes": "Promote approved Natural Bone cortical microrelief to default; Classic alternative. Preserves shader, models, labels, scenes and anatomy geometry."
 }
