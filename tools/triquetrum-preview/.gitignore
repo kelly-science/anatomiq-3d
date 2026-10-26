@@ -1,0 +1,4 @@
+# Review-only third-party source anatomy; never publish unregistered meshes.
+assets/
+_upstream/
+__pycache__/

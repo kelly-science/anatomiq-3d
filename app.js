@@ -3,6 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import * as THREE from 'three';
+import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=244'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -43,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.42';
+const APP_VERSION = '2.2.44'; // ANATOMIQ_TRIQUETRUM_244
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -153,6 +154,7 @@ let isolated = false;
 // ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
 let structures = [];
+let triquetrumEntries = []; // ANATOMIQ_TRIQUETRUM_244
 let eyeStructures=[];
 let legacyEyeVisibilityPending=true;
 let legacyStructureCount = 0;
@@ -1337,7 +1339,18 @@ renderer.domElement.addEventListener('pointerup',event=>{
     showToast('Label anchored. Drag its callout to reposition it.');
   } else {isolated=false;setSelection(s);} 
 });
+// ANATOMIQ_TRIQUETRUM_244 — The only added skeletal assets are two approved triquetra.
+async function loadTriquetrumExtension(){
+  const r=await fetch('./models/triquetrum-extension.json?rev=244',{cache:'no-cache'});
+  if(!r.ok||/text\/html/i.test(r.headers.get('content-type')||''))throw new Error('Missing models/triquetrum-extension.json. Publish this asset with app.js before opening lessons.');
+  const data=await r.json();
+  triquetrumEntries=createTriquetrumEntries(THREE,scene,data,applySurfaceFinish,surfaceMode,boneSurfaceController,materials);
+  if(triquetrumEntries.length!==2)throw new Error('Triquetrum extension did not register both sides.');
+  window.__AnatomIQTriquetrumStatus={loaded:true,sourceIds:triquetrumEntries.map(s=>s.sourceName),count:triquetrumEntries.length};
+  console.info('AnatomIQ: left/right triquetra registered as append-only skeletal structures.');
+}
 function prepareStructures(root){
+  // Triquetra join the shared catalog at the end, never inside the sorted legacy skeleton.
   const found=[];
   eyeStructures=[];
   root.traverse(obj=>{
@@ -1363,7 +1376,7 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList,...eyeStructures]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList,...eyeStructures,...triquetrumEntries]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
@@ -1895,6 +1908,7 @@ async function loadAnatomy(){
       if(requirements.lymphatic)await loadLymphatic();
        if(requirements.connective)await loadConnective();
     }
+    await loadTriquetrumExtension();
     prepareStructures(sceneRoot);
     if(!teacherMode){
       // The published schema has not changed; metadata-only meshes must

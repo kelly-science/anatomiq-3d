@@ -1,6 +1,6 @@
 {
-  "version": "2.2.42",
+  "version": "2.2.44",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Menu layering and Teacher label-list drag reorder; original annotation anchors and 2.2.38 occlusion BVH preserved. Upstream Écorché triquetrum absence documented."
+  "notes": "Add verified left/right BodyParts3D triquetra (append-only skeletal metadata), preserve legacy structure IDs, approved Natural Bone surface and label occlusion BVH."
 }

@@ -4,7 +4,8 @@ const sort=(a,b)=>key(a).localeCompare(key(b));
 // Fixed, original 1.5.1 cardiovascular structure order. Do not reorder!
 export const ORIGINAL_CARDIO_IDS=['FJ1682M','FJ2428','FJ2438','FJ2439','FJ2966','FJ3411','FJ3413','FJ3427','FJ3441','FJ3485','FJ3564','FJ3585','FJ3645','FJ3659','FJ4986'];
 export function catalogAnatomy(entries){
-  const bones=entries.filter(s=>s.system==='skeletal').sort(sort);
+  const bones=entries.filter(s=>s.system==='skeletal'&&s.layer!=='triquetrum-extension').sort(sort);
+  const skeletalExtension=entries.filter(s=>s.system==='skeletal'&&s.layer==='triquetrum-extension').sort((a,b)=>a.side.localeCompare(b.side)); // ANATOMIQ_TRIQUETRUM_244
   const muscles=entries.filter(s=>s.system==='muscular').sort(sort);
   const digestiveOld=entries.filter(s=>s.system==='digestive'&&s.layer!=='digestive-detail').sort(sort);
   const digestiveNew=entries.filter(s=>s.system==='digestive'&&s.layer==='digestive-detail').sort((a,b)=>a.sourceName.localeCompare(b.sourceName,undefined,{numeric:true}));
@@ -28,7 +29,7 @@ export function catalogAnatomy(entries){
   const lymphatic=entries.filter(s=>s.system==='lymphatic');
   const connective=entries.filter(s=>s.system==='connective');
   const ocular=entries.filter(s=>s.system==='ocular');
-  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic,...connective,...ocular];
+  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic,...connective,...ocular,...skeletalExtension];
   const originalCardio=[...preCardio,...legacyCv];
   return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
     baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),
