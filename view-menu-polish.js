@@ -1,3 +1,4 @@
+// ANATOMIQ_FADE_DETAILS_239_20261026: Fade resides in Structure Details, not the View menu.
 /* AnatomIQ 2.2.16c — single-source teacher View menu.
    All actions delegate to existing UI buttons; no shadow visibility state. */
 const SYSTEM_NAMES = Object.freeze({
@@ -77,10 +78,6 @@ function buildMenu(root){
     root.append(group);
   }
   root.append(el('div','menu-separator'));
-  // ANATOMIQ_VIEW_FADE_237_20261026: the single shared teacher View menu.
-  root.append(el('div','view-menu-caption','SELECTION'));
-  root.append(option('Fade / Restore Selected',{viewFade:'toggle'}));
-  root.append(el('div','menu-separator'));
   root.append(el('div','view-menu-caption','CAMERA'));
   for(const [name,value] of [['Front','front'],['Back','back'],['Left','left'],['Right','right']])root.append(option(name,{menuView:value}));
   root.append(option('Reset Camera',{menuClick:'reset-camera'}));
@@ -127,7 +124,6 @@ export function installViewMenuPolish(){
       document.getElementById('toggle-teeth')?.click();
     }
     if(action.dataset.viewProxy)activateProxy(action.dataset.viewProxy);
-    if(action.dataset.viewFade)window.dispatchEvent(new Event('anatomiq:toggle-selected-fade'));
   },true);
   const trigger=root.closest('.menu-group')?.querySelector('.menu-trigger');
   trigger?.addEventListener('click',()=>buildMenu(root),true);

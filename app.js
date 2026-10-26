@@ -766,11 +766,25 @@ function polishRefreshFade(s){
     polishFadedMaterials.set(s.mesh,Array.isArray(base)?base.map(dim):dim(base));
   }
 }
+// ANATOMIQ_FADE_DETAILS_239_20261026 — right-panel Fade uses existing saved/student history state.
+function syncFadeDetailsControl(){
+  const button=$('fade-selected');
+  if(!button)return;
+  const allowed=teacherMode||studentExplore;
+  const targets=multiTargets();
+  const allFaded=targets.length>0&&targets.every(s=>polishFadedIndices.has(s.index));
+  button.hidden=!allowed;
+  button.disabled=!allowed||!targets.length;
+  button.textContent=allFaded?'◐   Restore structure':'◐   Fade structure';
+  button.setAttribute('aria-pressed',String(allFaded));
+  button.title=allFaded?'Restore full opacity to the selected structure':'Fade selected structure to 26% opacity';
+}
 function polishRestoreFade(indices=[]){
   const changed=new Set([...polishFadedIndices,...indices]);
   polishFadedIndices.clear();
   for(const i of indices)if(Number.isInteger(i)&&structures[i])polishFadedIndices.add(i);
   for(const i of changed)if(structures[i])updateBoneMaterial(structures[i]);
+  syncFadeDetailsControl();
 }
 function polishToggleSelectedFade(){
   if((!teacherMode && !studentExplore) || !multiTargets().length){
@@ -784,7 +798,7 @@ function polishToggleSelectedFade(){
     else polishFadedIndices.add(s.index);
     updateBoneMaterial(s);
   }
-  renderList();syncMultiHighlights();
+  renderList();syncMultiHighlights();syncFadeDetailsControl();
   if(teacherMode)queueDraft();else studentHistoryQueue();
   showToast(`${targets.length} structure${targets.length===1?'':'s'} ${allFaded?'restored':'faded to 26%'}.`);
 }
@@ -959,7 +973,7 @@ function setSelection(s,preserveMulti=false){
   }
   refreshVisibility();
   updatePaintControls();
-  syncMultiHighlights();
+  syncMultiHighlights();syncFadeDetailsControl();
   if (s && matchMedia('(max-width:850px)').matches && !placingLabel && !paintMode) openDetails(true);
 }
 function updateLayerHeading(){
@@ -2037,6 +2051,7 @@ elements.cartilage.addEventListener('change',refreshVisibility);
 $('reset-camera').addEventListener('click',()=>frameVisible('front'));
 $('restore-all').addEventListener('click',()=>{divisionNavReset(false);if(!teacherMode&&!studentExplore)return;hidden.clear();isolated=false;refreshVisibility();frameVisible('front');});
 $('focus-selected').addEventListener('click',focusSelected);
+$('fade-selected').addEventListener('click',polishToggleSelectedFade);
 $('isolate-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;isolated=!isolated;refreshVisibility();$('isolate-selected').textContent=isolated?'◈   Show all structures':'◈   Isolate structure';if(isolated)focusSelected();else frameVisible('front');});
 $('hide-selected').addEventListener('click',()=>{if((!teacherMode&&!studentExplore)||!selected)return;if(teacherMode){hideMultiSelection();return;}hidden.add(selected.mesh);isolated=false;setSelection(null);});
 $('clear-selection').addEventListener('click',()=>{isolated=false;setSelection(null);});
