@@ -1,5 +1,7 @@
 // ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
+// ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
+import {reorderLabels} from './label-reorder-242.js?rev=242';
 import * as THREE from 'three';
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
@@ -41,7 +43,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.41';
+const APP_VERSION = '2.2.42';
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2837,15 +2839,73 @@ $('polish-label-dialog')?.addEventListener('click',event=>{
 });
 
 let practicalNewLabelExpand=null;
+let anatDraggedLabelId=null;
 function renderLabelEditor(){
   const list=$('label-list');list.replaceChildren();
   if(!labels.length){const p=document.createElement('p');p.className='studio-hint';p.textContent='No labels yet. Add your first callout above.';list.appendChild(p);return;}
   labels.forEach((label,i)=>{
-    const row=document.createElement('details');row.className='label-editor-row';row.open=label.id===practicalNewLabelExpand;
-    const summary=document.createElement('summary');summary.className='label-editor-summary';summary.textContent=label.t||`Label ${i+1}`;
+    const row=document.createElement('details');row.className='label-editor-row';row.open=label.id===practicalNewLabelExpand;row.dataset.anatLabelId=String(label.id);
+    const summary=document.createElement('summary');summary.className='label-editor-summary';
+    const anatTitle=document.createElement('span');anatTitle.className='anat-label-title';anatTitle.textContent=label.t||`Label ${i+1}`;
+    const grip=document.createElement('span');grip.className='anat-label-grip';grip.textContent='⠿';
+    grip.draggable=true;grip.tabIndex=0;grip.setAttribute('role','button');
+    grip.dataset.anatGrip=String(label.id);
+    grip.setAttribute('aria-label',`Reorder label ${i+1}. Drag, or use Up and Down arrow keys.`);
+    grip.title='Drag to reorder labels (or use ↑ and ↓)';
+    summary.append(grip,anatTitle);
+    const moveLabel=(targetId,after=false)=>{
+      if(!teacherMode||targetId===label.id)return false;
+      const result=reorderLabels(labels,label.id,targetId,after);
+      if(!result.changed)return false;
+      labels=result.items;
+      renderLabelEditor();renderAnnotations();queueDraft();
+      return true;
+    };
+    grip.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();});
+    grip.addEventListener('pointerdown',event=>event.stopPropagation());
+    grip.addEventListener('dragstart',event=>{
+      if(!teacherMode){event.preventDefault();return;}
+      anatDraggedLabelId=label.id;
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('text/plain',String(label.id));
+      row.classList.add('anat-label-dragging');
+    });
+    grip.addEventListener('dragend',()=>{
+      anatDraggedLabelId=null;
+      document.querySelectorAll('#label-list .anat-label-dragover,#label-list .anat-label-dragging')
+        .forEach(el=>el.classList.remove('anat-label-dragover','anat-label-dragging'));
+    });
+    row.addEventListener('dragover',event=>{
+      if(!teacherMode||anatDraggedLabelId==null||anatDraggedLabelId===label.id)return;
+      event.preventDefault();event.dataTransfer.dropEffect='move';row.classList.add('anat-label-dragover');
+    });
+    row.addEventListener('dragleave',event=>{if(!row.contains(event.relatedTarget))row.classList.remove('anat-label-dragover');});
+    row.addEventListener('drop',event=>{
+      if(!teacherMode||anatDraggedLabelId==null)return;
+      event.preventDefault();event.stopPropagation();
+      const src=anatDraggedLabelId;anatDraggedLabelId=null;
+      if(src===label.id){row.classList.remove('anat-label-dragover');return;}
+      const box=row.getBoundingClientRect(),after=event.clientY>=box.top+box.height/2;
+      const result=reorderLabels(labels,src,label.id,after);
+      row.classList.remove('anat-label-dragover');
+      if(!result.changed)return;
+      labels=result.items;renderLabelEditor();renderAnnotations();queueDraft();
+    });
+    grip.addEventListener('keydown',event=>{
+      if(!teacherMode||!['ArrowUp','ArrowDown'].includes(event.key))return;
+      event.preventDefault();event.stopPropagation();
+      const pos=labels.findIndex(x=>x.id===label.id);
+      const next=pos+(event.key==='ArrowUp'?-1:1);
+      if(next<0||next>=labels.length)return;
+      const nextId=labels[next].id;
+      if(moveLabel(nextId,event.key==='ArrowDown')){
+        [...document.querySelectorAll('#label-list .anat-label-grip')]
+          .find(el=>el.dataset.anatGrip===String(label.id))?.focus();
+      }
+    });
     const number=document.createElement('span');number.textContent=`${i+1}.`;number.className='label-index';
     const input=document.createElement('input');input.type='text';input.maxLength=100;input.value=label.t;input.setAttribute('aria-label',`Edit label ${i+1}`);
-    input.addEventListener('input',()=>{label.t=input.value;summary.textContent=input.value||`Label ${i+1}`;renderAnnotations();queueDraft();});
+    input.addEventListener('input',()=>{label.t=input.value;anatTitle.textContent=input.value||`Label ${i+1}`;renderAnnotations();queueDraft();});
     const remove=document.createElement('button');remove.textContent='×';remove.className='icon-button';remove.title='Remove label';remove.setAttribute('aria-label',`Remove label ${i+1}`);
     remove.addEventListener('click',()=>{labels=labels.filter(l=>l.id!==label.id);renderAnnotations();renderLabelEditor();queueDraft();});
     const more=document.createElement('div');more.className='polish-label-fields';

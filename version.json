@@ -1,6 +1,6 @@
 {
-  "version": "2.2.41",
+  "version": "2.2.42",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Teacher lesson settings modal; project tabs with independent drafts and close confirmation; updated Cmd/Ctrl+Shift shortcuts. Label occlusion BVH remains unchanged."
+  "notes": "Menu layering and Teacher label-list drag reorder; original annotation anchors and 2.2.38 occlusion BVH preserved. Upstream Écorché triquetrum absence documented."
 }
