@@ -1,3 +1,4 @@
+/* ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026: Preview + Edit published lesson; no automatic publish. */
 /* ANATOMIQ_GLOBAL_GEOMETRY_LIBRARY_232_20261026 — Open navigates to published lesson, not raw JSON. */
 /* AnatomIQ Studio — optional read-only GitHub library and GitHub publish embeds.
  * No credentials are read, stored, or transmitted by this module.
@@ -123,8 +124,13 @@ function addGitHubLibrary(){
       const copyLink=element('button',{type:'button',className:'button small subtle'},'Copy link');copyLink.addEventListener('click',()=>copyValue(url,copyLink));
       const copyFrame=element('button',{type:'button',className:'button small subtle'},'Copy iframe');copyFrame.addEventListener('click',()=>copyValue(iframeHTML(embedded,`AnatomIQ Studio — ${file.slug.replace(/-/g,' ')}`),copyFrame));
       
-      const json=element('a',{href:url,className:'button small subtle','aria-label':`Open ${file.slug.replace(/-/g,' ')} lesson`},'Open');
-      links.append(json,copyLink,copyFrame);row.append(copy,links);list.append(row);
+      const preview=element('a',{href:url,target:'_blank',rel:'noopener noreferrer',className:'button small subtle','aria-label':`Open student preview of ${file.slug.replace(/-/g,' ')}`},'Open Preview');
+      const edit=element('button',{type:'button',className:'button small','aria-label':`Edit ${file.slug.replace(/-/g,' ')} in Teacher View`},'Edit');
+      edit.addEventListener('click',()=>{
+        status.textContent=`Opening ${file.slug.replace(/-/g,' ')} in Teacher View…`;
+        document.dispatchEvent(new CustomEvent('anatomiq:edit-github-lesson',{detail:{...lastSource,slug:file.slug}}));
+      });
+      links.append(preview,edit,copyLink,copyFrame);row.append(copy,links);list.append(row);
     }
   }
   async function load(){
@@ -145,6 +151,10 @@ function addGitHubLibrary(){
     }catch(error){if(current===requestId){status.textContent=error.message||'Could not load GitHub lessons.';list.replaceChildren();}}
     finally{if(current===requestId)refresh.disabled=false;}
   }
+  document.addEventListener('anatomiq:github-edit-result',event=>{
+    const result=event.detail||{};
+    if(result.message)status.textContent=result.message;
+  });
   refresh.addEventListener('click',load);search.addEventListener('input',render);
   viewer.addEventListener('change',()=>{if(data.length)render();});
 }

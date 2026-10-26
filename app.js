@@ -1,3 +1,4 @@
+// ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 import * as THREE from 'three';
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
@@ -2397,6 +2398,42 @@ async function openLibrary(){
   $('library-search').focus();
 }
 function closeLibrary(){$('library-dialog').hidden=true;}
+// ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235: load public JSON into the existing teacher editor.
+async function editPublishedGitHubLesson(input){
+  const finish=(ok,message)=>document.dispatchEvent(new CustomEvent('anatomiq:github-edit-result',{detail:{ok,message}}));
+  if(!teacherMode){finish(false,'Editing is available only in Teacher View.');return;}
+  if(libraryBusy || !sceneRoot){finish(false,'Wait for the current lesson and anatomy model to finish loading.');return;}
+  let ref;
+  try{ref=lessonRef(input?.owner,input?.repo,input?.branch,input?.slug);}
+  catch(error){finish(false,error.message);return;}
+  if(!protectCurrentEdits('edit this GitHub lesson')){finish(false,'Edit cancelled. Your current lesson was preserved.');return;}
+  libraryBusy=true;
+  try{
+    const live=await fetchPublicLesson(ref);
+    if(live.offline)throw new Error('Cannot edit an offline cached lesson. Reconnect and refresh the published version.');
+    verifyProjectModel(live.project);
+    clearTimeout(draftTimeout);clearTimeout(historyTimeout);
+    cancelPlacing();cancelPainting();
+    await loadProject(structuredClone(live.project));
+    resetHistory();
+    // Treat this as an unsaved local working copy, not an IndexedDB lesson.
+    libraryLessonId=null;
+    lastLibrarySnapshot=JSON.stringify(snapshotProject());
+    githubEditingRef=ref;
+    saveDraft(false);
+    const target=`${ref.owner}/${ref.repo}/lessons/${ref.slug}.json`;
+    noteLibraryState(`Editing published lesson: ${target} · Not yet republished`);
+    closeLibrary();
+    showToast('GitHub lesson opened for editing. Publish explicitly to update student links.');
+    finish(true,`Editing ${target} in Teacher View.`);
+  }catch(error){
+    console.warn('Could not open published lesson for editing:',error);
+    finish(false,`Could not edit GitHub lesson: ${error.message}`);
+    showToast('Could not edit GitHub lesson: '+error.message);
+  }finally{libraryBusy=false;}
+}
+document.addEventListener('anatomiq:edit-github-lesson',event=>{void editPublishedGitHubLesson(event.detail);});
+
 async function saveToLibrary(asNew=false){
   if(!teacherMode || !sceneRoot || libraryBusy)return;
   libraryBusy=true;
@@ -2425,7 +2462,7 @@ async function openLibraryLesson(id){
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     await loadProject(structuredClone(record.project));
     resetHistory();
-    libraryLessonId=id;lastLibrarySnapshot=JSON.stringify(record.project);
+    githubEditingRef=null;libraryLessonId=id;lastLibrarySnapshot=JSON.stringify(record.project);
     noteLibraryState(`✓ Editing: ${record.title} · Saved ${formatLibraryDate(record.updatedAt)}`);
     saveDraft(false);closeLibrary();showToast(`Opened ${record.title}`);
   }catch(err){showToast('Could not open lesson: '+err.message);}
@@ -2497,7 +2534,7 @@ function polishShowLabelDetails(label){
   $('polish-label-description').textContent=label.d||'';
   $('polish-label-description').hidden=!label.d;
   const photo=$('polish-label-image');photo.hidden=!label.u;
-  if(label.u){photo.src=activeLiveLessonRef?resolveLessonMedia(activeLiveLessonRef,label.u):label.u;photo.alt='Reference image: '+label.t;}
+  if(label.u){photo.src=(activeLiveLessonRef||githubEditingRef)?resolveLessonMedia(activeLiveLessonRef||githubEditingRef,label.u):label.u;photo.alt='Reference image: '+label.t;}
   dialog.hidden=false;
 }
 // ANATOMIQ_SMART_LABEL_FOCUS_20261024: orient label clicks by their real surface.
@@ -2903,6 +2940,7 @@ let cloudToken=''; // Memory only. Never written to localStorage, URLs, lessons 
 let cloudVerified=null;
 let cloudBusy=false;
 let activeLiveLessonRef=null;
+let githubEditingRef=null; // Current published source, held in memory only.
 function cloudSavedPreferences(){
   try{return JSON.parse(localStorage.getItem(CLOUD_PREFS_KEY)||'{}')||{};}catch{return {};}
 }
@@ -2915,17 +2953,23 @@ function cloudSetStatus(message,bad=false){
 }
 function cloudCurrentLessonSlug(){
   const target=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
-  try{return target?.slug||normalizeSlug($('project-title').value||'lesson');}catch{return 'anatomy-lesson';}
+  try{return githubEditingRef?.slug||target?.slug||normalizeSlug($('project-title').value||'lesson');}catch{return 'anatomy-lesson';}
 }
 function cloudOpenPublishing(){
   const preferences=cloudSavedPreferences();
-  $('cloud-owner').value=cloudVerified?.owner||preferences.owner||'';
-  $('cloud-repo').value=cloudVerified?.repo||preferences.repo||'';
-  $('cloud-branch').value=cloudVerified?.branch||preferences.branch||'main';
+  $('cloud-owner').value=githubEditingRef?.owner||cloudVerified?.owner||preferences.owner||'';
+  $('cloud-repo').value=githubEditingRef?.repo||cloudVerified?.repo||preferences.repo||'';
+  $('cloud-branch').value=githubEditingRef?.branch||cloudVerified?.branch||preferences.branch||'main';
   $('cloud-slug').value=cloudCurrentLessonSlug();
   $('cloud-token').value='';
   $('cloud-publish-results').hidden=true;
-  cloudSetStatus(cloudVerified?'Connected and ready to publish.':'Choose a public repository and connect using your fine-grained token.');
+  const mismatch=githubEditingRef && cloudVerified &&
+      (githubEditingRef.owner.toLowerCase()!==cloudVerified.owner.toLowerCase() ||
+       githubEditingRef.repo.toLowerCase()!==cloudVerified.repo.toLowerCase() ||
+       githubEditingRef.branch!==cloudVerified.branch);
+  cloudSetStatus(mismatch?'Published lesson source differs from connected repository. Disconnect and connect to its repository before publishing.':
+    githubEditingRef?'Editing a published lesson. Publishing to the same slug will ask before replacing the live copy.':
+    cloudVerified?'Connected and ready to publish.':'Choose a public repository and connect using your fine-grained token.');
   $('cloud-connect').textContent=cloudVerified?'Connected ✓':'Connect GitHub';
   $('cloud-disconnect').hidden=!cloudVerified;
   cloudUpdateCredentialControls();
@@ -2990,6 +3034,7 @@ $('cloud-publish').addEventListener('click',async()=>{
     const result=await publishToGitHub({ref:r,token:cloudToken,project,
       confirmOverwrite:()=>safeUpdate||confirm(`This will replace the currently published lesson at ${r.owner}/${r.repo}/lessons/${r.slug}.json. Existing student links will immediately point to your NEW lesson contents. Continue?`)});
     if(result.cancelled){cloudSetStatus('Publication cancelled. Nothing was changed.');return;}
+    githubEditingRef=r;
     // Save local lesson identity so a later update can safely reuse its URL even if renamed.
     try{
       const saved=await saveLesson(project,libraryLessonId);
@@ -3186,7 +3231,7 @@ $('new-project').addEventListener('click',()=>{
   if(!protectCurrentEdits('start a new lesson'))return;
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
   restoreBonePaint([]);polishRestoreFade([]);
-  libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
+  githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
   chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
   publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
@@ -3212,7 +3257,7 @@ $('import-file').addEventListener('change',async()=>{
     if(file.size>160000)throw new Error('JSON lesson is too large.');
     const data=JSON.parse(await file.text());verifyProjectModel(validateProject(data));
     if(!protectCurrentEdits('import this lesson'))return;
-    await loadProject(data);libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Imported lesson — use Save to Library to keep it.');
+    await loadProject(data);githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Imported lesson — use Save to Library to keep it.');
     saveDraft(false);resetHistory();showToast('Lesson imported with all chapters.');
   }catch(err){showToast('Could not import scene: '+err.message);}
   finally{$('import-file').value='';}
