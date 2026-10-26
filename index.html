@@ -587,7 +587,7 @@
       <div class="render-settings-group" data-feature="anatomiq-natural-bone-phase1">
         <label for="settings-bone-appearance"><strong>Skeletal bone appearance</strong></label>
         <select id="settings-bone-appearance" class="text-input" aria-label="Skeletal bone appearance">
-          \1Natural Bone — neutral satin with controlled bone highlights\2
+          <option value="natural">Natural Bone — satin finish with soft highlights</option>
           <option value="classic">Classic Bone — original model bone finish</option>
         </select>
         <p class="studio-hint">Changes immediately. Cosmetic only: no new ridges, grooves, displacement or normal maps. Cartilage, discs, teeth and teacher paint remain separate. This preference is local to this device and is not part of saved lessons.</p>
@@ -659,7 +659,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=2.2.26-natural-bone-v3');
+    await import('./app.js?rev=2.2.27-natural-bone-v3-selector-r4');
   </script>
   <script type="module" src="./view-menu-polish.js?rev=2217"></script>
   <script defer src="./interface-2221.js?rev=2222"></script>

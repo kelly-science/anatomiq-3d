@@ -1,6 +1,6 @@
 {
-  "version": "2.2.26",
+  "version": "2.2.27",
   "channel": "beta",
   "published": "2026-10-25",
-  "notes": "Natural Bone satin v3: neutral bone tint with soft specular highlights, less yellow and less matte. No model/geometry/normal changes; Classic remains original."
+  "notes": "Satin v3 selector repair: restore Natural Bone alongside Classic Bone in App Settings. Satin bone shader/material and all models remain unchanged."
 }

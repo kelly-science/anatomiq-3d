@@ -39,7 +39,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.26';
+const APP_VERSION = '2.2.27';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -1729,7 +1729,7 @@ async function loadAnatomy(){
     finishSourceAnatomy(sceneRoot,surfaceMode);
     boneSurfaceController=createBoneAppearanceController(sceneRoot,THREE,boneAppearance);
     window.__AnatomIQBoneStatus=()=>boneSurfaceController?.status?.()||{ready:false};
-    console.info('AnatomIQ Natural Bone satin v3 status:',window.__AnatomIQBoneStatus()); // ANATOMIQ_NATURAL_BONE_SATIN_20261025
+    console.info('AnatomIQ Natural Bone satin v3 status:',window.__AnatomIQBoneStatus()); // ANATOMIQ_NATURAL_BONE_SATIN_20261025 // ANATOMIQ_BONE_SATIN_SELECTOR_REPAIR_R4
     configureAnatomyShadows(sceneRoot,shadows.profile.enabled);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.
