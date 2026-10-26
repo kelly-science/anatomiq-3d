@@ -99,6 +99,8 @@
       view.append(button(label,()=>activateView(direction)));
     }
     view.append(divider(),button('Reset Chapter',resetStudentChapter,{id:'anat-student-reset-chapter'}),divider(),button('Show / Hide Labels',toggleLabels,{id:'anat-student-toggle-labels'}));
+    // ANATOMIQ_VIEW_FADE_237_20261026: respects Student Controls > structure exploration permission.
+    view.append(button('Fade / Restore Selected',()=>window.dispatchEvent(new Event('anatomiq:toggle-selected-fade')),{id:'anat-student-fade'}));
     view.append(button('Enter Full Screen',toggleFullscreen,{id:'anat-student-fullscreen'}));
     const settings=createStudentGroup('Settings');
     settings.append(createQuickQuality('student'));
@@ -330,6 +332,11 @@
   }
   function maintain(){
     syncStudentOffline();syncLabelMenus();syncQuality();syncHistoryTools();
+    const fade=$('anat-student-fade');
+    if(fade){
+      fade.disabled=!document.body.classList.contains('student-explore-enabled');
+      fade.title=fade.disabled?'Structure exploration is disabled for this lesson.':'Fade or restore the selected structure';
+    }
     if(studentMenu)studentMenu.hidden=!activeStudent();
     // Viewer type belongs in File > About, not in either viewer header.
     const brand=document.querySelector('.brand-label strong');

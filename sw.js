@@ -1,3 +1,4 @@
+// ANATOMIQ_VIEW_FADE_237_20261026 — presentation-only UI controls; model caches unchanged.
 /* ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026 */
 /* ANATOMIQ_CHAPTER_BAR_WIDTH_234_20261026 — width-only UI update */
 /* ANATOMIQ_RESPONSIVE_CHAPTERS_PANELS_233_20261026 — UI-only assets */
@@ -5,9 +6,9 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-v2.2.29-natural-bone-approved-v1-github-library-embed-20261026-global-geometry-232-panels233-chapterbar234-github-preview-edit-235';
+const VERSION='anatomy-fade237';
 const POLISH_MODELS='anatomiq-models-persistent-v1';
-const SHELL=['./chapter-bar-width-234.css?rev=234','./chapter-bar-width-234.js?rev=234','./responsive-chapters-panels.css?rev=233','./responsive-chapters-panels.js?rev=233','./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./skeletal-views-2217.mjs','./selection-2217.css','./anatomy-divisions-2218.mjs','./anatomy-divisions-2218.css','./anatomy-sidebar-2219.mjs','./anatomy-sidebar-2219.css','./app.js','./app.js?rev=2.2.29-natural-bone-approved-v1','./bone-appearance.js','./bone-appearance.js?rev=natural-bone-approved-detail-v1',
+const SHELL=['./app.js?rev=fade237','./view-menu-polish.js?rev=fade237','./interface-2221.js?rev=fade237','./chapter-bar-width-234.css?rev=234','./chapter-bar-width-234.js?rev=234','./responsive-chapters-panels.css?rev=233','./responsive-chapters-panels.js?rev=233','./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./skeletal-views-2217.mjs','./selection-2217.css','./anatomy-divisions-2218.mjs','./anatomy-divisions-2218.css','./anatomy-sidebar-2219.mjs','./anatomy-sidebar-2219.css','./app.js','./app.js?rev=2.2.29-natural-bone-approved-v1','./bone-appearance.js','./bone-appearance.js?rev=natural-bone-approved-detail-v1',
   './practical-quiz.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./github-library-embed.mjs?rev=20261026','./github-library-embed.css?rev=20261026','./github-library-embed.mjs?rev=235','./app.js?rev=2.2.29-natural-bone-approved-v1-github-preview-edit-235','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./connective-model.js','./connective-model.js?rev=cartilage-20261025','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./global-geometry-quality.js?rev=232','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',

@@ -328,7 +328,57 @@ function invalidate(frames=1){
   drawFrames=Math.max(drawFrames,frames);
   if(!document.hidden && !frameRequest)frameRequest=requestAnimationFrame(draw);
 }
+// ANATOMIQ_LABEL_AUDIT_236 — temporary, opt-in teacher-only profiler; remove after audit.
+const __labelAuditOn=teacherMode && new URLSearchParams(location.search).get('labelperf')==='1';
+const __labelAudit={
+  enabled:__labelAuditOn,mode:'normal',samples:[],lastFrame:0,rayCalls:0,rayMs:0,
+  reset(){this.samples=[];this.lastFrame=0;this.rayCalls=0;this.rayMs=0;polishOcclusionAt=0;},
+  setMode(mode){
+    if(!['normal','no-occlusion','no-labels'].includes(mode))throw new Error('mode must be normal, no-occlusion, or no-labels');
+    this.mode=mode;this.reset();
+    // These changes are for temporary measurements only. Original occlusion resumes in normal mode.
+    if(mode==='no-occlusion'){
+      for(const entry of markers.values()){
+        entry.marker.dataset.occluded='0';entry.marker.classList.remove('polish-occluded');
+        entry.line.style.opacity='1';entry.dot.style.opacity='1';
+      }
+    }
+    invalidate(2);
+    return 'Label audit: '+mode+'; rotate the model for 5–10 seconds, then call report()';
+  },
+  report(){
+    const moving=this.samples.filter(s=>s.moved);
+    const metrics=rows=>{
+      if(!rows.length)return {mean:0,p95:0,max:0};
+      const a=rows.slice().sort((x,y)=>x-y),mean=rows.reduce((x,y)=>x+y,0)/rows.length;
+      return {mean:+mean.toFixed(2),p95:+a[Math.ceil(a.length*0.95)-1].toFixed(2),max:+a[a.length-1].toFixed(2)};
+    };
+    const selected=moving.length?moving:this.samples;
+    const gaps=selected.filter(s=>s.gap>0 && s.gap<1000).map(s=>s.gap);
+    const result={mode:this.mode,labels:labels.length,frames:this.samples.length,movingFrames:moving.length,
+      frameIntervalMs:metrics(gaps),approxFPS:gaps.length?+(1000/(gaps.reduce((a,b)=>a+b,0)/gaps.length)).toFixed(1):null,
+      orbitControlsMs:metrics(selected.map(s=>s.controls)),shadowUpdateMs:metrics(selected.map(s=>s.shadows)),
+      rendererCPUms:metrics(selected.map(s=>s.render)),labelUpdateMs:metrics(selected.map(s=>s.labels)),
+      raycasts:this.rayCalls,raycastTotalMs:+this.rayMs.toFixed(2),
+      raycastMeanMs:this.rayCalls?+(this.rayMs/this.rayCalls).toFixed(3):0,
+      occludingMeshes:polishOccluders.length,
+      note:'Renderer CPU is not GPU time. Compare the same rotation in all three modes.'};
+    console.table(result);return result;
+  }
+};
+if(__labelAuditOn){
+  window.__AnatomIQLabelPerf=Object.freeze({
+    mode:name=>__labelAudit.setMode(name),
+    reset:()=>__labelAudit.reset(),
+    report:()=>__labelAudit.report(),
+    help:()=>console.info('Run mode("normal"), rotate 5–10 s, then report(). Repeat with "no-occlusion" and "no-labels". These are diagnostic modes, not app settings.')
+  });
+  console.info('AnatomIQ label-performance audit enabled. window.__AnatomIQLabelPerf.help()');
+}
+// END ANATOMIQ_LABEL_AUDIT_236
+
 function draw(){
+  const __lpStart=__labelAudit.enabled?performance.now():0;
   frameRequest=0;
   if(document.hidden)return;
   updatingControls=true;
@@ -336,9 +386,19 @@ function draw(){
   // A change fired *inside* this update must not restart the render loop.
   let moved=false;
   try { moved=controls.update(); } finally {updatingControls=false;}
+  const __lpC=__labelAudit.enabled?performance.now():0;
   shadows.update(camera,controls.target,moved);
+  const __lpS=__labelAudit.enabled?performance.now():0;
   renderer.render(scene,camera);
+  const __lpR=__labelAudit.enabled?performance.now():0;
   updateAnnotationPositions();
+  if(__labelAudit.enabled){
+    const end=performance.now(),last=__labelAudit.lastFrame;
+    __labelAudit.samples.push({moved,gap:last?__lpStart-last:0,controls:__lpC-__lpStart,
+      shadows:__lpS-__lpC,render:__lpR-__lpS,labels:end-__lpR});
+    __labelAudit.lastFrame=__lpStart;
+    if(__labelAudit.samples.length>1800)__labelAudit.samples.shift();
+  }
   drawFrames=Math.max(0,drawFrames-1);
   if(moved || drawFrames>0)frameRequest=requestAnimationFrame(draw);
 }
@@ -711,7 +771,10 @@ function polishRestoreFade(indices=[]){
   for(const i of changed)if(structures[i])updateBoneMaterial(structures[i]);
 }
 function polishToggleSelectedFade(){
-  if(!teacherMode || !multiTargets().length)return;
+  if((!teacherMode && !studentExplore) || !multiTargets().length){
+    showToast(!teacherMode && !studentExplore?'This lesson does not allow structure editing.':'Select a structure to fade.');
+    return;
+  }
   const targets=multiTargets(),allFaded=targets.every(s=>polishFadedIndices.has(s.index));
   clearMultiHighlights();
   for(const s of targets){
@@ -719,9 +782,13 @@ function polishToggleSelectedFade(){
     else polishFadedIndices.add(s.index);
     updateBoneMaterial(s);
   }
-  renderList();syncMultiHighlights();queueDraft();
+  renderList();syncMultiHighlights();
+  if(teacherMode)queueDraft();else studentHistoryQueue();
   showToast(`${targets.length} structure${targets.length===1?'':'s'} ${allFaded?'restored':'faded to 26%'}.`);
 }
+
+// ANATOMIQ_VIEW_FADE_237_20261026: menu commands use existing chapter fade and student history.
+window.addEventListener('anatomiq:toggle-selected-fade',()=>polishToggleSelectedFade());
 
 function makePaintedMaterial(original,hex){
   const paintOne=m=>{
@@ -2782,13 +2849,14 @@ function renderAnnotations(){
   invalidate(2);
 }
 function updateAnnotationPositions(){
+  if(__labelAudit.enabled && __labelAudit.mode==='no-labels')return;
   // View > Labels: avoid costly occlusion raycasts when teacher labels are off.
   if(document.body.classList.contains('anat-labels-hidden'))return;
   if(!sceneRoot || !labels.length)return;
   // The scene renderer already updates matrices; avoid a second full traversal
   // of hundreds of muscle meshes for each annotation refresh.
   const width=stageWidth,height=stageHeight;
-  const refreshOcclusion=performance.now()>polishOcclusionAt;
+  const refreshOcclusion=performance.now()>polishOcclusionAt && !(__labelAudit.enabled && __labelAudit.mode==='no-occlusion');
   if(refreshOcclusion){
     polishOcclusionAt=performance.now()+110;
     polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
@@ -2813,7 +2881,9 @@ function updateAnnotationPositions(){
       polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
       // Only a closer, visible mesh can occlude a label; the label's own surface
       // can be encountered at the anchor without counting as an occluder.
+      const __lpRayStart=__labelAudit.enabled?performance.now():0;
       const hits=polishOcclusionRay.intersectObjects(polishOccluders,false);
+      if(__labelAudit.enabled){__labelAudit.rayCalls++;__labelAudit.rayMs+=performance.now()-__lpRayStart;}
       nodes.marker.dataset.occluded=hits.length?'1':'0';
     }
     const isOccluded=nodes.marker.dataset.occluded==='1';
