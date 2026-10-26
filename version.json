@@ -1,6 +1,6 @@
 {
-  "version": "2.2.44",
+  "version": "2.2.45",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Add verified left/right BodyParts3D triquetra (append-only skeletal metadata), preserve legacy structure IDs, approved Natural Bone surface and label occlusion BVH."
+  "notes": "Conservative 4x triquetrum surface subdivision; native wrist-color PBR matching; strict prefix-fingerprint compatibility for pre-cardiovascular and older scenes. Existing indices and registered positions unchanged."
 }

@@ -46,8 +46,11 @@ export function sceneModelCompatible(scene,currentCount,currentFingerprint,oldCo
   if(known.some(([count,fingerprint])=>Number.isInteger(count)&&scene.n===count&&scene.f===fingerprint))return true;
   // Additional source-backed vessels are appended. Validate the EXACT saved
   // prefix fingerprint before migrating 1.8 lessons; never accept by count only.
-  return Array.isArray(appendStructures)&&Number.isInteger(scene.n)&&
-    scene.n>=originalCardioCount&&scene.n<appendStructures.length&&
+  // ANATOMIQ_TRIQUETRUM_REFINEMENT_245: accept ANY authentic, unchanged
+  // historical prefix, including skeletal-only lessons from before the cardio
+  // catalog existed. Never accept solely because the count happens to match.
+  return Array.isArray(appendStructures)&&Number.isSafeInteger(scene.n)&&
+    scene.n>0&&scene.n<=appendStructures.length&&
     scene.f===hashForStructures(appendStructures.slice(0,scene.n).map(key));
 }
 export function upgradeLegacyScene(scene,currentCount,currentFingerprint){

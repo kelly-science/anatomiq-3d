@@ -3,7 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import * as THREE from 'three';
-import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=244'; // ANATOMIQ_TRIQUETRUM_244
+import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.44'; // ANATOMIQ_TRIQUETRUM_244
+const APP_VERSION = '2.2.45'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -1341,7 +1341,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
 });
 // ANATOMIQ_TRIQUETRUM_244 — The only added skeletal assets are two approved triquetra.
 async function loadTriquetrumExtension(){
-  const r=await fetch('./models/triquetrum-extension.json?rev=244',{cache:'no-cache'});
+  const r=await fetch('./models/triquetrum-extension.json?rev=245',{cache:'no-cache'});
   if(!r.ok||/text\/html/i.test(r.headers.get('content-type')||''))throw new Error('Missing models/triquetrum-extension.json. Publish this asset with app.js before opening lessons.');
   const data=await r.json();
   triquetrumEntries=createTriquetrumEntries(THREE,scene,data,applySurfaceFinish,surfaceMode,boneSurfaceController,materials);
@@ -2362,9 +2362,18 @@ function snapshotProject(){
   return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:normalPractical(practicalConfig)});
 }
 function verifyProjectModel(project){
-  const sample = project.v === 1 ? project : project.chapters[0];
-  if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures))
-    throw new Error(sample?.m==='digestive'?'Digestive model unavailable. Upload models/anatomy-organs.glb and the local Draco decoder before opening this lesson.':'This lesson uses an incompatible anatomical model.');
+  // ANATOMIQ_TRIQUETRUM_REFINEMENT_245: Every historical chapter must be an
+  // exact index-prefix match before it is upgraded. Never migrate by count alone.
+  const scenes=project.v===1?[project]:project.chapters;
+  for(const sample of scenes){
+    if(!sceneModelCompatible(sample,structures.length,sceneFingerprint,legacyStructureCount,legacyFingerprint,baseStructureCount,baseFingerprint,previousStructureCount,previousFingerprint,preCardioStructureCount,preCardioFingerprint,originalCardioStructureCount,originalCardioFingerprint,structures)){
+      console.warn('AnatomIQ lesson catalog fingerprint mismatch',{
+        savedCount:sample.n,savedFingerprint:sample.f,currentCount:structures.length,
+        prefixFingerprint:sample.n<=structures.length?hashForStructures(structures.slice(0,sample.n).map(s=>`${s.name}|${s.side}|${s.tissue}|${s.mesh.name}`)):null
+      });
+      throw new Error('This lesson uses a different anatomical structure catalog. Your original is preserved; open a matching older AnatomIQ version or provide its JSON for safe migration.');
+    }
+  }
 }
 function renderChapterUI(){
   const count=chapters.length;
