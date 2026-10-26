@@ -1,0 +1,35 @@
+/* AnatomIQ 2.2.34 — match chapter picker width to the unified camera toolbar.
+   Existing chapter scrolling, arrows, and responsive side-panel controls remain owned by 2.2.33. */
+body.anat-responsive-panels .viewer-panel #chapter-nav {
+  box-sizing: border-box;
+  width: min(var(--anat-chapter-toolbar-width, 660px), calc(100% - 28px)) !important;
+  max-width: calc(100% - 28px) !important;
+  min-width: 0;
+  margin-inline: 0;
+}
+body.anat-responsive-panels #chapter-nav .chapter-nav-content {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+body.anat-responsive-panels #chapter-nav #chapter-tabs {
+  min-width: 0;
+  max-width: 100% !important;
+  width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+body.anat-responsive-panels #chapter-nav .chapter-arrow {
+  flex-shrink: 0;
+}
+@media (max-width: 630px) {
+  body.anat-responsive-panels .viewer-panel #chapter-nav {
+    width: min(var(--anat-chapter-toolbar-width, 660px), calc(100% - 16px)) !important;
+    max-width: calc(100% - 16px) !important;
+  }
+}
