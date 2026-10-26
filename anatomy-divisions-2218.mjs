@@ -1,6 +1,7 @@
 /* AnatomIQ 2.2.18 | Data-backed, non-destructive anatomical division navigation.
    Every loaded mesh belongs to one path; unrecognized names stay discoverable. */
 import {skeletalDivision} from './skeletal-views-2217.mjs';
+import {isBaseConnective} from './connective-model.js'; // ANATOMIQ_COSTAL_CARTILAGE_TAXONOMY_20261025
 export const SYSTEM_LABELS={skeletal:'Skeletal',connective:'Connective',muscular:'Muscular',cardiovascular:'Cardiovascular',respiratory:'Respiratory',digestive:'Digestive',nervous:'Nervous',urinary:'Urinary',lymphatic:'Lymphatic',endocrine:'Endocrine',integumentary:'Integumentary',reproductive:'Reproductive'};
 const has=(n,re)=>re.test(n);
 const tidy=s=>String(s||'').trim().replace(/\s+/g,' ');
@@ -125,7 +126,7 @@ function lymphaticParts(s,n){
 }
 const DIVIDERS={skeletal:skeletalParts,muscular:muscularParts,connective:connectiveParts,cardiovascular:cardiovascularParts,respiratory:respiratoryParts,digestive:digestiveParts,nervous:nervousParts,urinary:urinaryParts,lymphatic:lymphaticParts};
 export function anatomyPath(s){
- const system=lc(s?.system)||'other';
+ const system=(isBaseConnective(s)?'connective':lc(s?.system))||'other';
  const name=lc(s?.name||s?.sourceName||'Unnamed structure');
  const parts=(DIVIDERS[system]||((x)=>['Other Structures',tidy(x.name)]))(s,name);
  return [SYSTEM_LABELS[system]||system[0].toUpperCase()+system.slice(1),...parts];

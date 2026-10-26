@@ -45,6 +45,51 @@ export function connectiveEntries(root,data){
       provenance:'BodyParts3D 4.3',side:/\bleft\b/i.test(s.name)?'left':/\bright\b/i.test(s.name)?'right':'midline',fma:s.fma_id||''};
   });
 }
+
+// ANATOMIQ_COSTAL_CARTILAGE_TAXONOMY_20261025
+// The Écorché 1–7 costal cartilages carry per-vertex color and baked shading.
+// Sample their source appearance to tint the newer 8–10 GLB meshes consistently.
+// Geometry, IDs, author paint, and historical structure order remain unchanged.
+export function sourceCostalCartilageAppearance(root, THREE){
+  if(!root || typeof root.traverse !== 'function')return null;
+  const samples=[];
+  const roughnesses=[];
+  root.traverse(mesh=>{
+    if(!mesh?.isMesh)return;
+    const name=String(mesh.userData?.name||mesh.name||'');
+    const tissue=String(mesh.userData?.tissue||'').toLowerCase();
+    if(!/\bcostal cartilage\b/i.test(name) || (tissue && tissue!=='cartilage'))return;
+    const raw=mesh.material;
+    const material=Array.isArray(raw)?raw.find(m=>m?.color)||raw[0]:raw;
+    if(Number.isFinite(material?.roughness))roughnesses.push(material.roughness);
+    const tint=material?.color?.isColor?material.color:null;
+    const vertexColor=mesh.geometry?.getAttribute?.('color');
+    if(vertexColor?.itemSize>=3 && vertexColor.count>0 && material?.vertexColors!==false){
+      const stride=Math.max(1,Math.floor(vertexColor.count/250));
+      for(let i=0;i<vertexColor.count;i+=stride){
+        let r=vertexColor.getX(i),g=vertexColor.getY(i),b=vertexColor.getZ(i);
+        if(tint){r*=tint.r;g*=tint.g;b*=tint.b;}
+        if(Number.isFinite(r)&&Number.isFinite(g)&&Number.isFinite(b))samples.push([r,g,b]);
+      }
+    }else if(tint){
+      // Fallback for flat-color model variants without a COLOR_0 attribute.
+      samples.push([tint.r,tint.g,tint.b]);
+    }
+  });
+  if(!samples.length)return null;
+  // Reject the darker, baked ambient-occlusion samples. Match the visibly lit
+  // material rather than making the new cartilages artificially blue or dark.
+  samples.sort((a,b)=>(a[0]*0.2126+a[1]*0.7152+a[2]*0.0722)
+    -(b[0]*0.2126+b[1]*0.7152+b[2]*0.0722));
+  const bright=samples.slice(Math.floor(samples.length*0.5));
+  const avg=[0,0,0];
+  for(const item of bright)for(let j=0;j<3;j++)avg[j]+=item[j];
+  const color=new THREE.Color();
+  color.setRGB(...avg.map(v=>Math.max(0,Math.min(1,v/bright.length))));
+  const roughness=roughnesses.length?roughnesses.reduce((a,b)=>a+b,0)/roughnesses.length:0.65;
+  return {color,roughness,sourceMeshSamples:samples.length};
+}
+
 export function connectiveColor(s){return ({cartilage:'#95c8d3',tendon_retinaculum:'#e6d5a4',joint_ligament:'#e8c893',membrane_fascia:'#b6c8c3'})[s.organId]||'#cbd5db';}
 export function connectiveVisibleInPreset(s,preset){
   if(!Object.hasOwn(CONNECTIVE_PRESETS,preset))throw Error('Unknown connective preset');

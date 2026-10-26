@@ -1,6 +1,6 @@
 {
-  "version": "2.2.22",
+  "version": "2.2.23",
   "channel": "beta",
-  "published": "2026-10-24",
-  "notes": "Fullscreen floating student details, reset chapter, student undo/redo and updated toolbar icons."
+  "published": "2026-10-25",
+  "notes": "Connective source cartilage now displays under Connective rather than Skeletal; the Skeletal preset excludes cartilage and intervertebral discs. New ribs 8–10 match source ribs 1–7 cartilage appearance. No model, source ID, chapter, or saved-scene changes."
 }

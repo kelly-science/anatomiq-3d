@@ -15,7 +15,7 @@ import {cardiovascularEntries,cardiovascularColor} from './cardiovascular-model.
 import {respiratoryEntries,validateRespiratoryManifest,respiratoryColor,RESPIRATORY_PRESETS,respiratoryVisibleInPreset,pulmonaryOverlayVisible,respiratoryCoverage} from './respiratory-model.js';
 import {nervousEntries,validateNervousManifest,nervousColor,NERVOUS_PRESETS,nervousVisibleInPreset,nervousMaterialOverrides} from './nervous-model.js';
 import {urinaryEntries,validateUrinaryManifest,urinaryColor,URINARY_PRESETS,urinaryVisibleInPreset,isRenalVessel} from './urinary-model.js';
-import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset,recoverLegacyConnectiveHidden} from './connective-model.js?rev=2211';
+import {connectiveEntries,validateConnectiveManifest,connectiveColor,CONNECTIVE_PRESETS,connectiveVisibleInPreset,isBaseConnective,baseConnectiveVisibleInPreset,recoverLegacyConnectiveHidden,sourceCostalCartilageAppearance} from './connective-model.js?rev=cartilage-20261025';
 import {lymphaticEntries,validateLymphaticManifest,lymphaticColor,LYMPHATIC_PRESETS,lymphaticVisibleInPreset} from './lymphatic-model.js';
 import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,cardioIsCavity} from './cardio-presentation.js';
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
@@ -38,7 +38,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.22';
+const APP_VERSION = '2.2.23';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -836,7 +836,7 @@ function applySkeletonDivision(division){
   if(!teacherMode||!sceneRoot||!['axial','appendicular'].includes(division))return;
   Object.assign(systemLayers,Object.fromEntries(Object.keys(systemLayers).map(key=>[key,key==='skeletal'])));
   setMode('skeleton'); // Reset to Skeletal-only, never enable Connective.
-  for(const s of structures)if(s.system==='skeletal'&&skeletalDivision(s)!==division)hidden.add(s.mesh);
+  for(const s of structures)if(s.system==='skeletal'&&!isBaseConnective(s)&&skeletalDivision(s)!==division)hidden.add(s.mesh);
   refreshVisibility();frameVisible('front');
   showToast(division==='axial'?'Axial skeleton only':'Appendicular skeleton only');
 }
@@ -1491,11 +1491,17 @@ async function loadConnective(){
     const alignment=correctedDetailTransform(sourceRegistration(new THREE.Box3().setFromObject(sceneRoot)));
     gltf.scene.scale.set(...alignment.scale);gltf.scene.position.set(...alignment.position);
     scene.add(gltf.scene);connectiveRoot=gltf.scene;
+    const costalAppearance=sourceCostalCartilageAppearance(sceneRoot,THREE);
+    if(costalAppearance)console.info("AnatomIQ: matched rib 8–10 cartilage appearance to Écorché rib 1–7 (",costalAppearance.sourceMeshSamples,"source vertex samples).");
     for(const entry of entries){
       const mesh=entry.mesh;
       if(mesh.geometry?.attributes?.position&&!mesh.geometry.attributes.normal)mesh.geometry.computeVertexNormals();
       const original=mesh.material;
-      mesh.material=new THREE.MeshStandardMaterial({color:connectiveColor(entry),roughness:0.65,metalness:0,side:THREE.DoubleSide});
+      mesh.material=new THREE.MeshStandardMaterial({
+        color:entry.organId==='cartilage' && costalAppearance ? costalAppearance.color : connectiveColor(entry),
+        roughness:entry.organId==='cartilage' && costalAppearance ? costalAppearance.roughness : 0.65,
+        metalness:0,side:THREE.DoubleSide
+      });
       applySurfaceFinish(mesh.material,'skeletal',surfaceMode);
       if(Array.isArray(original))original.forEach(m=>m?.dispose());else original?.dispose();
       materials.set(mesh,mesh.material);mesh.visible=false;
