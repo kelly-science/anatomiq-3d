@@ -1,0 +1,94 @@
+/* AnatomIQ Studio 2.2.46 · menu and workspace tab polish.
+   CSS only: no changes to lesson state, chapter JSON, labels, or 3D rendering.
+   Loaded after workspace-tabs-241.css so the late override wins. */
+
+/* Give File/Edit/View/Library/etc. their full clickable menu-row height.
+   Prevent the old short, text-height pill in a vertically stretched tab bar. */
+#studio-menubar > .menu-group {
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+}
+#studio-menubar > .menu-group > .menu-trigger {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  height: 100%;
+  min-height: 0;
+  margin-block: 0;
+  white-space: nowrap;
+}
+
+/* The workspace tab strip retains its original bottom-connected tab styling.
+   Match the add-circle vertical offset to the tabs' 7px top margin. */
+#studio-menubar #anat-project-tabs {
+  align-self: stretch;
+  height: 100%;
+  min-height: 0;
+  align-items: center;
+}
+#studio-menubar #anat-project-tab-list {
+  align-self: stretch;
+  height: 100%;
+}
+#studio-menubar #anat-new-project-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  position: relative;
+  box-sizing: border-box;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  padding: 0;
+  margin: 7px 6px 0 9px;
+  /* The built-in + character remains the accessible text label; draw the
+     visual glyph with symmetric strokes to avoid font baseline offsets. */
+  font-size: 0;
+  line-height: 1;
+}
+#studio-menubar #anat-new-project-tab::before,
+#studio-menubar #anat-new-project-tab::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: currentColor;
+  border-radius: 1px;
+  pointer-events: none;
+}
+#studio-menubar #anat-new-project-tab::before {
+  width: 14px;
+  height: 2px;
+}
+#studio-menubar #anat-new-project-tab::after {
+  width: 2px;
+  height: 14px;
+}
+
+/* Restore full-width selection surfaces to teacher dropdown items,
+   including local-library entries created at runtime. */
+#studio-menubar .menu-dropdown .menu-item,
+#studio-menubar .menu-dropdown .menu-scene {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+}
+#studio-menubar .menu-dropdown .menu-item:hover:not(:disabled),
+#studio-menubar .menu-dropdown .menu-item:focus-visible,
+#studio-menubar .menu-dropdown .menu-scene:hover,
+#studio-menubar .menu-dropdown .menu-scene:focus-visible {
+  background: #2e505d;
+  color: #fff;
+}
+#studio-menubar .menu-dropdown .menu-item[disabled]:hover {
+  background: transparent;
+}

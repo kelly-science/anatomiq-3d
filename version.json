@@ -1,6 +1,6 @@
 {
-  "version": "2.2.45",
+  "version": "2.2.46",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Conservative 4x triquetrum surface subdivision; native wrist-color PBR matching; strict prefix-fingerprint compatibility for pre-cardiovascular and older scenes. Existing indices and registered positions unchanged."
+  "notes": "CSS-only UI polish: center new-tab plus with workspace tabs; restore full-height menu triggers and full-width dropdown hover rows. No changes to anatomy, lessons, or label BVH."
 }
