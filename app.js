@@ -41,7 +41,9 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.29';
+const APP_VERSION = '2.2.40';
+window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
+
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -976,6 +978,66 @@ function setSelection(s,preserveMulti=false){
   syncMultiHighlights();syncFadeDetailsControl();
   if (s && matchMedia('(max-width:850px)').matches && !placingLabel && !paintMode) openDetails(true);
 }
+// ANATOMIQ_TEACHER_BOX_SELECTION_240 — teacher-only transient selection; no lesson serialization.
+window.addEventListener('anatomiq:teacher-box-select',event=>{
+  if(!teacherMode||!sceneRoot)return;
+  const d=event.detail||{};
+  if(![d.x0,d.x1,d.y0,d.y1].every(Number.isFinite))return;
+  const x0=Math.max(0,Math.min(1,d.x0)),x1=Math.max(0,Math.min(1,d.x1));
+  const y0=Math.max(0,Math.min(1,d.y0)),y1=Math.max(0,Math.min(1,d.y1));
+  camera.updateMatrixWorld();sceneRoot.updateMatrixWorld(true);
+  const picked=[];
+  if(d.point){
+    const target=new THREE.Vector2((x0+x1)-1,1-(y0+y1));
+    raycaster.setFromCamera(target,camera);
+    const hit=raycaster.intersectObjects(currentlyVisible().filter(s=>s.mesh.visible).map(s=>s.mesh),false)[0];
+    const one=hit&&structures.find(s=>s.mesh===hit.object);
+    if(one)picked.push(one);
+  }else{
+    const pt=new THREE.Vector3();
+    for(const s of currentlyVisible()){
+      const mesh=s.mesh,geo=mesh.geometry;
+      if(!mesh.visible||!geo?.attributes?.position)continue;
+      if(!geo.boundingBox)geo.computeBoundingBox();
+      if(!geo.boundingBox||geo.boundingBox.isEmpty())continue;
+      mesh.updateWorldMatrix(true,false);
+      const b=geo.boundingBox;
+      let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,front=0;
+      for(const xx of [b.min.x,b.max.x])for(const yy of [b.min.y,b.max.y])for(const zz of [b.min.z,b.max.z]){
+        pt.set(xx,yy,zz).applyMatrix4(mesh.matrixWorld).project(camera);
+        if(pt.z< -1||pt.z>1)continue;
+        front++;
+        const xp=(pt.x+1)/2,yp=(1-pt.y)/2;
+        minX=Math.min(minX,xp);maxX=Math.max(maxX,xp);minY=Math.min(minY,yp);maxY=Math.max(maxY,yp);
+      }
+      if(!front||maxX<x0||minX>x1||maxY<y0||minY>y1)continue;
+      if(d.contained){
+        if(minX>=x0&&maxX<=x1&&minY>=y0&&maxY<=y1)picked.push(s);
+        continue;
+      }
+      // Geometry samples reduce false positives from large oriented mesh bounds.
+      // This is intentionally a single pointer-up computation, never animation-frame work.
+      const position=geo.attributes.position,count=position.count,stride=Math.max(1,Math.ceil(count/384));
+      let touches=false;
+      for(let i=0;i<count;i+=stride){
+        pt.fromBufferAttribute(position,i).applyMatrix4(mesh.matrixWorld).project(camera);
+        if(pt.z>=-1&&pt.z<=1&&(pt.x+1)/2>=x0&&(pt.x+1)/2<=x1&&(1-pt.y)/2>=y0&&(1-pt.y)/2<=y1){touches=true;break;}
+      }
+      if(!touches){
+        // Include broad surfaces that completely enclose a small drag region.
+        const cx=(x0+x1)/2,cy=(y0+y1)/2;
+        touches=cx>=minX&&cx<=maxX&&cy>=minY&&cy<=maxY;
+      }
+      if(touches)picked.push(s);
+    }
+  }
+  if(!d.additive)multiSelectedIndices.clear();
+  for(const s of picked)multiSelectedIndices.add(s.index);
+  const current=picked.at(-1)||[...multiSelectedIndices].map(i=>structures[i]).find(Boolean)||null;
+  isolated=false;setSelection(current,true);renderList();
+  if(picked.length)showToast(`${multiSelectedIndices.size} structure${multiSelectedIndices.size===1?'':'s'} selected.`);
+});
+
 function updateLayerHeading(){
   const layers=effectiveSystemLayers(mode,systemLayers);
   const enabled=[layers.skeletal?'Skeletal':null,layers.superficial||layers.deep?'Muscular':null,layers.digestive?'Digestive':null,layers.cardiovascular?'Cardiovascular':null,layers.respiratory?'Respiratory':null,layers.nervous?'Nervous':null,layers.urinary?'Urinary':null,layers.lymphatic?'Lymphatic':null,layers.connective?'Connective':null,null].filter(Boolean);

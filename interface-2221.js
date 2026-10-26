@@ -3,7 +3,7 @@
    The new menu and toolbar proxy existing app handlers rather than reimplement them. */
 (() => {
   'use strict';
-  const VERSION='2.2.22';
+  const VERSION='2.2.40';
   const $ = id => document.getElementById(id);
   const teacher = () => !document.body.classList.contains('student-mode') && !/^#(?:scene|lesson)=/.test(location.hash);
   const button = (label, action, extra={}) => {
@@ -245,7 +245,7 @@
   function openAbout(){
     if(!aboutModal)return;
     $('anat-about-viewer').textContent=teacher()?'Teacher Studio':'Student View';
-    $('anat-about-version').textContent=VERSION;
+    $('anat-about-version').textContent=window.__AnatomIQBuildVersion||VERSION;
     aboutModal.hidden=false;
     aboutModal.querySelector('.anat-about-close')?.focus();
   }

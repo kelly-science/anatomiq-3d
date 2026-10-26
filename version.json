@@ -1,6 +1,6 @@
 {
-  "version": "2.2.29",
+  "version": "2.2.40",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Promote approved Natural Bone cortical microrelief to default; Classic alternative. Preserves shader, models, labels, scenes and anatomy geometry."
+  "notes": "Teacher toolbar tools (Orbit, Select, Paint, Labels), rectangle selection, contextual panel; consolidated version metadata. Label BVH 2.2.38 preserved."
 }
