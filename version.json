@@ -1,6 +1,6 @@
 {
-  "version": "2.2.24",
+  "version": "2.2.25",
   "channel": "beta",
   "published": "2026-10-25",
-  "notes": "Phase 1 Natural Bone appearance: UV-independent subtle ivory and roughness variation; no new bone geometry, normals or landmarks. Device-local Classic/Natural toggle."
+  "notes": "Natural Bone visibility and diagnostics: more visible ivory/roughness color-only finish; geometry, normals, structure IDs and saved lessons unchanged."
 }

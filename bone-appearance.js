@@ -1,71 +1,61 @@
-/** AnatomIQ Natural Bone v1: conservative, geometry-preserving surface finish.
- * Physically based tint + roughness with low-amplitude, isotropic position-based
- * albedo/roughness modulation. NO normals, height, displacement, or geometry edits.
- * Appearance stays device-local; not serialized in scenes or lessons.
+/** AnatomIQ Natural Bone — visible, geometry-preserving material finish.
+ * Zero geometry, normals, displacement, bump, metalness or label changes.
+ * Material variants are shared by source material; classics remain untouched.
  */
 export const BONE_APPEARANCE_MODES = Object.freeze(['natural','classic']);
 export const BONE_APPEARANCE_STORAGE_KEY = 'anatomiq-bone-appearance-v1';
-export const BONE_APPEARANCE_MARKER = 'ANATOMIQ_NATURAL_BONE_PHASE1_20261025';
+export const BONE_APPEARANCE_MARKER = 'ANATOMIQ_NATURAL_BONE_VISIBILITY_20261025';
+export function normalizeBoneAppearance(mode){return mode === 'classic' ? 'classic' : 'natural';}
 
-export function normalizeBoneAppearance(mode){
-  return mode === 'classic' ? 'classic' : 'natural';
-}
-
-/** Base Écorché metadata, not the enclosing system tab: separates bone from cartilage. */
+/** Source anatomy metadata, not user-facing UI names or system-wide switches. */
 export function isAnatomicalBone(mesh){
   if(!mesh?.isMesh || mesh.userData?.layer !== 'skeleton')return false;
   const tissue=String(mesh.userData?.tissue||'bone').trim().toLowerCase();
   const name=String(mesh.userData?.name||mesh.name||'');
   return tissue==='bone' && !/(cartilage|intervertebral\s+disc|intervertebral\s+disk|ligament|tendon|meniscus|tooth|teeth)/i.test(name);
 }
+const VARYING='vAnatomIQBoneLocalPos';
+const VERTEX='#include <begin_vertex>';
+const COLOR='#include <color_fragment>';
+const ROUGH='#include <roughnessmap_fragment>';
 
-const VARYING = 'vAnatomIQBoneLocalPos';
-const VERTEX_INCLUDE = '#include <begin_vertex>';
-const COLOR_INCLUDE = '#include <color_fragment>';
-const ROUGHNESS_INCLUDE = '#include <roughnessmap_fragment>';
-
-/** Only compiler-supported, source-owned standard/physical GLTF materials are enhanced. */
+/** A stronger ivory response, with very gentle COLOR variation only.
+ * There is no relief, fake ridge, fake suture, normal map or deformation.
+ */
 export function naturalBoneMaterial(source,THREE){
   if(!source || !(source.isMeshStandardMaterial || source.isMeshPhysicalMaterial))return source;
-  const finish=source.clone();
-  finish.roughness=0.62; // Dry cortical bone, wider and softer highlights than 0.38 Studio shine.
-  if('metalness' in finish)finish.metalness=0;
-  if(finish.color?.isColor)finish.color.multiply(new THREE.Color(0xfff9ef));
-  finish.userData={...finish.userData,anatomiqNaturalBone:true};
-  const previousHook=finish.onBeforeCompile;
-  finish.onBeforeCompile=function(shader,renderer){
+  const material=source.clone();
+  material.roughness=0.78;
+  if('metalness' in material)material.metalness=0;
+  // A measured, visibly different ivory finish, rather than v1's almost-white tint.
+  // Preserve the model's base shade and any authored diffuse/vertex texture maps.
+  if(material.color?.isColor)material.color.lerp(new THREE.Color(0xe8d4ba),0.42);
+  material.userData={...material.userData,anatomiqNaturalBone:true,anatomiqBoneAppearance:'natural-v2'};
+  const previousHook=material.onBeforeCompile;
+  material.onBeforeCompile=function(shader,renderer){
     if(typeof previousHook==='function')previousHook.call(this,shader,renderer);
-    // If the Three.js shader layout changes, fall back to the PBR tint/roughness.
-    if(!shader.vertexShader.includes(VERTEX_INCLUDE)||
-       !shader.fragmentShader.includes(COLOR_INCLUDE)||
-       !shader.fragmentShader.includes(ROUGHNESS_INCLUDE))return;
-    shader.vertexShader = `varying vec3 ${VARYING};\n` + shader.vertexShader.replace(
-      VERTEX_INCLUDE, `${VERTEX_INCLUDE}\n${VARYING} = position;`);
-    shader.fragmentShader = `varying vec3 ${VARYING};\n` + shader.fragmentShader;
-    shader.fragmentShader=shader.fragmentShader.replace(COLOR_INCLUDE,`${COLOR_INCLUDE}
-      // Very low-contrast diffuse mineral variation, not relief or a landmark.
-      float boneGrainA = sin(dot(${VARYING},vec3(33.1,41.7,27.3)));
-      float boneGrainB = sin(dot(${VARYING},vec3(53.9,-22.7,48.1)));
-      float boneGrain = boneGrainA * boneGrainB;
-      diffuseColor.rgb *= 0.990 + 0.014 * boneGrain;
+    if(!shader.vertexShader.includes(VERTEX) || !shader.fragmentShader.includes(COLOR) || !shader.fragmentShader.includes(ROUGH))return;
+    shader.vertexShader=`varying vec3 ${VARYING};\n`+shader.vertexShader.replace(VERTEX,`${VERTEX}\n${VARYING}=position;`);
+    shader.fragmentShader=`varying vec3 ${VARYING};\n`+shader.fragmentShader;
+    shader.fragmentShader=shader.fragmentShader.replace(COLOR,`${COLOR}
+      // Extremely fine mineral-tone variation in diffuse color only.
+      float boneToneA = sin(dot(${VARYING},vec3(31.7,41.3,29.9)));
+      float boneToneB = sin(dot(${VARYING},vec3(-47.1,23.3,53.7)));
+      float boneTone = boneToneA * boneToneB;
+      diffuseColor.rgb *= 0.977 + 0.020 * boneTone;
     `);
-    shader.fragmentShader=shader.fragmentShader.replace(ROUGHNESS_INCLUDE,`${ROUGHNESS_INCLUDE}
-      roughnessFactor = clamp(roughnessFactor + 0.035 * boneGrain, 0.49, 0.80);
+    shader.fragmentShader=shader.fragmentShader.replace(ROUGH,`${ROUGH}
+      roughnessFactor=clamp(roughnessFactor+0.018*boneTone,0.65,0.89);
     `);
   };
-  finish.customProgramCacheKey=()=>'anatomiq-natural-bone-albedo-roughness-v1';
-  finish.needsUpdate=true;
-  return finish;
+  material.customProgramCacheKey=()=>'anatomiq-natural-bone-v2-ivory-roughness-color-only';
+  material.needsUpdate=true;
+  return material;
 }
 
-/**
- * One variant per *source material*, not per bone: bounded memory and programs.
- * Originals are kept for exact Classic restoration. register() supports a later
- * high-detail skull material replacement without changing mesh IDs or geometry.
- */
+/** Keeps originals for an exact Classic toggle, and exposes a non-invasive audit. */
 export function createBoneAppearanceController(root,THREE,initialMode='natural'){
-  const entries=new Map();
-  const variants=new Map();
+  const entries=new Map(),variants=new Map();
   let mode=normalizeBoneAppearance(initialMode);
   function variant(original){
     if(Array.isArray(original))return original.map(variant);
@@ -73,22 +63,35 @@ export function createBoneAppearanceController(root,THREE,initialMode='natural')
     return variants.get(original);
   }
   function register(mesh,classicMaterial,{force=false}={}){
-    if(!force && !isAnatomicalBone(mesh))return false;
+    if(!force&&!isAnatomicalBone(mesh))return false;
     if(!classicMaterial)return false;
-    const naturalMaterial=variant(classicMaterial);
-    entries.set(mesh,{classic:classicMaterial,natural:naturalMaterial});
-    mesh.material=mode==='natural'?naturalMaterial:classicMaterial;
+    const natural=variant(classicMaterial);
+    entries.set(mesh,{classic:classicMaterial,natural});
+    mesh.material=mode==='natural'?natural:classicMaterial;
     return true;
   }
   root?.traverse?.(mesh=>{if(isAnatomicalBone(mesh))register(mesh,mesh.material);});
   function setMode(next,notify){
     mode=normalizeBoneAppearance(next);
     for(const [mesh,choices] of entries){
-      const material=choices[mode];
-      mesh.material=material;
-      if(typeof notify==='function')notify(mesh,material);
+      mesh.material=choices[mode];
+      if(typeof notify==='function')notify(mesh,choices[mode]);
     }
     return mode;
   }
-  return {register,setMode,get mode(){return mode;},get count(){return entries.size;},get variantCount(){return variants.size;}};
+  function status(){
+    let standard=0,active=0,eligible=0;
+    const samples=[];
+    for(const [mesh,choices] of entries){
+      if(mesh.material===choices[mode])active++;
+      const originals=Array.isArray(choices.classic)?choices.classic:[choices.classic];
+      const naturals=Array.isArray(choices.natural)?choices.natural:[choices.natural];
+      for(let i=0;i<originals.length;i++){
+        if(originals[i]?.isMeshStandardMaterial||originals[i]?.isMeshPhysicalMaterial){eligible++;if(naturals[i]!==originals[i])standard++;}
+      }
+      if(samples.length<3)samples.push({name:String(mesh.userData?.name||mesh.name||'bone'),classicRoughness:originals[0]?.roughness??null,naturalRoughness:naturals[0]?.roughness??null,differentMaterial:naturals[0]!==originals[0]});
+    }
+    return {mode,boneCount:entries.size,uniqueSourceMaterials:variants.size,pbrMaterialSlots:eligible,enhancedMaterialSlots:standard,currentlyAssigned:active,examples:samples};
+  }
+  return {register,setMode,status,get mode(){return mode;},get count(){return entries.size;},get variantCount(){return variants.size;}};
 }
