@@ -1,6 +1,6 @@
 {
-  "version": "2.2.25",
+  "version": "2.2.26",
   "channel": "beta",
   "published": "2026-10-25",
-  "notes": "Natural Bone visibility and diagnostics: more visible ivory/roughness color-only finish; geometry, normals, structure IDs and saved lessons unchanged."
+  "notes": "Natural Bone satin v3: neutral bone tint with soft specular highlights, less yellow and less matte. No model/geometry/normal changes; Classic remains original."
 }
