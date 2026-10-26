@@ -27,6 +27,7 @@ import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
 import {normalizeMode, resolveRenderProfile, cappedPixelRatio} from './render-performance.js';
 import {normalizeSurfaceMode, applySurfaceFinish, finishSourceAnatomy, installSurfaceLighting} from './surface-lighting.js';
+import {normalizeBoneAppearance,createBoneAppearanceController,isAnatomicalBone,BONE_APPEARANCE_STORAGE_KEY} from './bone-appearance.js?rev=natural-bone-phase1'; // ANATOMIQ_NATURAL_BONE_PHASE1_20261025
 import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from './dynamic-shadows.js';
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {skeletalDivision,parseStudioVersion,compareStudioVersions} from './skeletal-views-2217.mjs';
@@ -38,7 +39,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.23';
+const APP_VERSION = '2.2.24';
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
 const MIRROR_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
 const SECONDARY_MODEL = 'https://charleeh.github.io/ecorche/model/ecorche.glb';
@@ -236,6 +237,9 @@ camera.position.set(0, 1.7, 0.85);
 // in content but can render at different resolutions on slower Chromebooks.
 const RENDER_MODE_KEY='anatomy-studio-render-quality-v1';
 const SURFACE_MODE_KEY='anatomiq-surface-lighting-v1';
+let boneAppearance='natural';
+try{boneAppearance=normalizeBoneAppearance(localStorage.getItem(BONE_APPEARANCE_STORAGE_KEY));}catch{}
+let boneSurfaceController=null;
 const SHADOW_MODE_KEY='anatomiq-dynamic-shadows-v1';
 let shadowMode='auto';
 try{shadowMode=normalizeShadowMode(localStorage.getItem(SHADOW_MODE_KEY));}catch{}
@@ -269,6 +273,24 @@ $('settings-render-quality').addEventListener('change',e=>setRenderQuality(e.tar
 // appearance choice and is deliberately never embedded in shared lessons.
 const studioLighting=installSurfaceLighting(THREE,scene,renderer,surfaceMode);
 const shadows=createDynamicShadows(THREE,renderer,studioLighting.key,{mode:shadowMode,quality:renderProfile.effective});
+$('settings-bone-appearance').value=boneAppearance;
+$('settings-bone-appearance').addEventListener('change',()=>{
+  const next=normalizeBoneAppearance($('settings-bone-appearance').value);
+  if(next===boneAppearance)return;
+  boneAppearance=next;
+  try{localStorage.setItem(BONE_APPEARANCE_STORAGE_KEY,next);}catch{}
+  if(boneSurfaceController){
+    clearMultiHighlights();
+    const lookup=new Map(structures.map(s=>[s.mesh,s]));
+    boneSurfaceController.setMode(next,(mesh,baseMaterial)=>{
+      materials.set(mesh,baseMaterial);
+      const s=lookup.get(mesh);
+      if(s)updateBoneMaterial(s); // Rebuild teacher paint/fade/highlight from new base.
+    });
+    syncMultiHighlights();
+  }
+  invalidate(3);
+});
 $('settings-surface-lighting').value=surfaceMode;
 $('settings-shadow-mode').value=shadowMode;
 $('settings-surface-lighting').addEventListener('change',()=>{
@@ -1534,7 +1556,8 @@ async function loadHighResolutionSkull(){
       // The paint/selection system caches source materials separately from the
       // mesh. Keep that cache in sync when replacing a bone's textured material.
       applySurfaceFinish(newMaterial,'skeletal',surfaceMode);
-      materials.set(structure.mesh,newMaterial);
+      if(boneSurfaceController && isAnatomicalBone(structure.mesh))boneSurfaceController.register(structure.mesh,newMaterial);
+      materials.set(structure.mesh,structure.mesh.material);
     });
     skullDetailStats=stats;
     console.info(`Anatomy Studio: high-resolution skull upgraded ${stats.upgraded}/${stats.total} bones.`,stats);
@@ -1703,6 +1726,8 @@ async function loadAnatomy(){
     // Adjust the original GLB's shared bone material without generating a
     // unique material for every anatomical mesh or altering paint overrides.
     finishSourceAnatomy(sceneRoot,surfaceMode);
+    boneSurfaceController=createBoneAppearanceController(sceneRoot,THREE,boneAppearance);
+    console.info('AnatomIQ Natural Bone:',boneSurfaceController.count,'source bones; shared material variants:',boneSurfaceController.variantCount);
     configureAnatomyShadows(sceneRoot,shadows.profile.enabled);
     if(teacherMode){
       // Teacher editing retains all systems for editing and publishing.

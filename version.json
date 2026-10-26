@@ -1,6 +1,6 @@
 {
-  "version": "2.2.23",
+  "version": "2.2.24",
   "channel": "beta",
   "published": "2026-10-25",
-  "notes": "Connective source cartilage now displays under Connective rather than Skeletal; the Skeletal preset excludes cartilage and intervertebral discs. New ribs 8–10 match source ribs 1–7 cartilage appearance. No model, source ID, chapter, or saved-scene changes."
+  "notes": "Phase 1 Natural Bone appearance: UV-independent subtle ivory and roughness variation; no new bone geometry, normals or landmarks. Device-local Classic/Natural toggle."
 }
