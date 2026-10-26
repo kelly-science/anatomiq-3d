@@ -588,9 +588,10 @@
         <label for="settings-bone-appearance"><strong>Skeletal bone appearance</strong></label>
         <select id="settings-bone-appearance" class="text-input" aria-label="Skeletal bone appearance">
           <option value="natural">Natural Bone — satin finish with soft highlights</option>
+          <option value="detail">Natural Bone — Detail Test (experimental microrelief)</option>
           <option value="classic">Classic Bone — original model bone finish</option>
         </select>
-        <p class="studio-hint">Changes immediately. Cosmetic only: no new ridges, grooves, displacement or normal maps. Cartilage, discs, teeth and teacher paint remain separate. This preference is local to this device and is not part of saved lessons.</p>
+        <p class="studio-hint">Changes immediately. Satin preserves the approved smooth finish. Detail Test adds subtle simulated, screen-filtered microrelief to shading only; no geometry displacement, vertex-normal edits or altered anatomical landmarks. Cartilage, discs, teeth and teacher paint remain separate. This preference is local to this device and is not part of saved lessons.</p>
       </div>
       <div class="render-settings-group">
         <label for="settings-surface-lighting"><strong>Anatomical surface lighting</strong></label>
@@ -659,7 +660,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=2.2.27-natural-bone-v3-selector-r4');
+    await import('./app.js?rev=2.2.28-bone-detail-test-1');
   </script>
   <script type="module" src="./view-menu-polish.js?rev=2217"></script>
   <script defer src="./interface-2221.js?rev=2222"></script>

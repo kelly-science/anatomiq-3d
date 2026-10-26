@@ -1,6 +1,6 @@
 {
-  "version": "2.2.27",
+  "version": "2.2.28",
   "channel": "beta",
   "published": "2026-10-25",
-  "notes": "Satin v3 selector repair: restore Natural Bone alongside Classic Bone in App Settings. Satin bone shader/material and all models remain unchanged."
+  "notes": "Opt-in Natural Bone Detail Test: screen-filtered irregular shading microrelief. Satin and Classic unchanged. No model, lesson, structure ID, geometry or taxonomy changes."
 }
