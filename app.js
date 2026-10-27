@@ -2,6 +2,7 @@
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
+import {chapterIrisEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=254'; // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
@@ -44,7 +45,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.53'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.54'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2566,9 +2567,11 @@ function polishRevealChapter(layer){
   requestAnimationFrame(()=>{layer.classList.add('is-fading');});
   setTimeout(()=>layer.remove(),580);
 }
+ let __anat254IrisBusy=false;
+ installChapterTransitionMenus();
 
 async function switchChapter(index){
-  if(!sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
+  if(__anat254IrisBusy || !sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
   if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
   if(!teacherMode){
@@ -2578,14 +2581,23 @@ async function switchChapter(index){
     catch(error){showToast(error.message);setStatus('Student view');return;}
     finally{studentAssetBusy=false;}
   }
-  const polishSnapshot=polishCaptureChapter();
+  const iris=chapterIrisEnabled()?createIrisTransition(elements.stage):null; // ANATOMIQ_CHAPTER_IRIS_254
+  if(iris)__anat254IrisBusy=true;
+  let polishSnapshot=null;
+  try{
+    if(iris)await iris.close();
+    else polishSnapshot=polishCaptureChapter();
   try{
     polishCancelCamera();
     activeChapter=index;
     await applyScene(chapters[activeChapter]);
     renderChapterUI();
     if(!teacherMode)studentHistoryBegin();
-  }finally{polishRevealChapter(polishSnapshot);}
+  }finally{
+    if(iris){renderer.render(scene,camera);invalidate(3);await iris.open();}
+    else polishRevealChapter(polishSnapshot);
+  }
+  }finally{__anat254IrisBusy=false;}
   if(teacherMode)queueDraft();else setStatus('Student view');
 }
 function createChapter(duplicate){

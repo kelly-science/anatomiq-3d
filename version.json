@@ -1,6 +1,6 @@
 {
-  "version": "2.2.53",
+  "version": "2.2.54",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Chapter transitions: preserve transparent WebGL snapshot in PNG format, eliminating black JPEG flattening while retaining the existing scene crossfade."
+  "notes": "Optional B Cell Defender-style closing/opening chapter iris; original crossfade remains default and accessible in View menus."
 }
