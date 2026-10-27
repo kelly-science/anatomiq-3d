@@ -1,6 +1,6 @@
 {
-  "version": "2.2.54",
+  "version": "2.2.55",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Optional B Cell Defender-style closing/opening chapter iris; original crossfade remains default and accessible in View menus."
+  "notes": "Optional direction-aware chapter carousel; previous Crossfade and Iris remain available. No scene or model changes."
 }

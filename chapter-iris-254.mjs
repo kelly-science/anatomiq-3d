@@ -3,7 +3,7 @@
    UI-only: geometry, chapter contents and rendering/occlusion are unchanged. */
 export const TRANSITION_KEY = 'anatomiq.chapter.transition.mode';
 const NS = 'http://www.w3.org/2000/svg';
-const MODES = new Set(['crossfade', 'iris']);
+const MODES = new Set(['crossfade', 'iris', 'carousel']);
 const smoothstep = x => { const p=Math.max(0,Math.min(1,x));return p*p*(3-2*p); };
 let fallbackMode='crossfade';
 try { const stored=window.localStorage.getItem(TRANSITION_KEY);if(MODES.has(stored))fallbackMode=stored; }catch{}
@@ -18,6 +18,9 @@ export function setChapterTransitionMode(mode){
 }
 export function chapterIrisEnabled(){
   return getChapterTransitionMode()==='iris' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+export function chapterCarouselEnabled(){
+  return getChapterTransitionMode()==='carousel' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 const svgElement=(tag,attrs={})=>{
@@ -115,7 +118,7 @@ function makeMenuOptions(menu){
   const rule=document.createElement('div');rule.className='menu-separator';rule.setAttribute('role','separator');
   const header=document.createElement('div');header.className='menu-caption';header.textContent='CHAPTER TRANSITION';
   menu.append(rule,header);
-  for(const [mode,title] of [['crossfade','Crossfade'],['iris','Iris (Experimental)']]){
+  for(const [mode,title] of [['crossfade','Crossfade'],['iris','Iris (Experimental)'],['carousel','Carousel (Experimental)']]){
     const item=document.createElement('button');item.type='button';item.className='menu-item';item.setAttribute('role','menuitemradio');
     item.dataset.anat254Transition=mode;
     item.addEventListener('click',()=>{
@@ -132,7 +135,7 @@ function syncMenuOptions(){
   document.querySelectorAll('[data-anat254-transition]').forEach(item=>{
     const checked=item.dataset.anat254Transition===active;
     item.setAttribute('aria-checked',String(checked));
-    item.textContent=`${checked?'✓  ':''}${item.dataset.anat254Transition==='iris'?'Iris (Experimental)':'Crossfade'}`;
+    item.textContent=`${checked?'✓  ':''}${({crossfade:'Crossfade',iris:'Iris (Experimental)',carousel:'Carousel (Experimental)'})[item.dataset.anat254Transition]}`;
   });
 }
 export function installChapterTransitionMenus(){
