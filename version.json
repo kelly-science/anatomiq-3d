@@ -1,6 +1,6 @@
 {
-  "version": "2.2.56",
+  "version": "2.2.57",
   "channel": "beta",
-  "published": "2026-10-26",
-  "notes": "Experimental carousel now renders two live Three.js scenes in one WebGL canvas; CSS viewer background and toolbars stay fixed. Snapshot fallback remains."
+  "published": "2026-10-27",
+  "notes": "Live carousel shadows active from entry; chapter labels fade in after centering"
 }

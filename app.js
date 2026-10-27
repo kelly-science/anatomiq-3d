@@ -4,7 +4,7 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=255';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=255';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=256'; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=257'; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
@@ -2589,7 +2589,19 @@ async function switchChapter(index){
   const __anat256Direction=chapterSlideDirection(activeChapter,index,chapters.length);
   let liveCarousel=null;
   if(chapterCarouselEnabled()){
-    try{liveCarousel=createLiveChapterCarousel({THREE,scene,camera,renderer,stage:elements.stage,direction:__anat256Direction});}
+    try{
+      // Synchronize outgoing camera/light before snapshotting the live scene.
+      shadows.update(camera,controls.target,true);
+      liveCarousel=createLiveChapterCarousel({
+        THREE,scene,camera,renderer,stage:elements.stage,direction:__anat256Direction,
+        onSettled:()=>{
+          // Restore the normal full-size render BEFORE showing annotations.
+          shadows.update(camera,controls.target,true);
+          renderer.render(scene,camera);
+          updateAnnotationPositions();
+        }
+      }); // ANATOMIQ_CAROUSEL_LIGHT_LABEL_257
+    }
     catch(error){console.warn('Live chapter carousel unavailable; using snapshot animation',error);}
   }
   const carousel=chapterCarouselEnabled()?(liveCarousel||createChapterCarousel(elements.stage,renderer.domElement,__anat256Direction)):null; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256
@@ -2609,7 +2621,12 @@ async function switchChapter(index){
   }finally{
     if(iris){renderer.render(scene,camera);invalidate(3);await iris.open();}
     else if(carousel){
-      if(liveCarousel)await liveCarousel.play(scene,camera);
+      if(liveCarousel){
+         // applyScene changes both camera target and visible meshes. Normally
+         // draw() updates the shadow frustum, but draw() is paused mid-carousel.
+         shadows.update(camera,controls.target,true);
+         await liveCarousel.play(scene,camera);
+       }
       else {renderer.render(scene,camera);invalidate(3);await carousel.play(renderer.domElement);}
     }
     else polishRevealChapter(polishSnapshot);
