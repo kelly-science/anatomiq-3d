@@ -1,6 +1,6 @@
 {
-  "version": "2.2.65d",
+  "version": "2.2.65e",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Consistent warm detailed-bone tone with device-local color adjustment; no skeletal geometry changes."
+  "notes": "Opt-in vertex-normal smoothing and bounded Taubin surface refinement for detailed vertebrae; original geometry unchanged."
 }

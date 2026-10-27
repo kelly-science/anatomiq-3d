@@ -1,8 +1,10 @@
-/* AnatomIQ 2.2.65d: selective detailed geometry, calibrated bone tone, on-demand performance audit.
+import {isVertebra,refineVertebraGeometry,SURFACE_MODES} from './bone-smoothing-265e.mjs';
+/* AnatomIQ 2.2.65e: selective detailed geometry, calibrated bone tone, on-demand performance audit.
    Original bones/IDs/materials/metadata stay in the scene. Any missing or
    unsafe asset falls back to the standard geometry. No changes to anatomy
    catalogue, lesson serialization, camera, overlays or carousel. */
-export const SKELETAL_DETAIL_VERSION = '2.2.65d';
+export const SKELETAL_DETAIL_VERSION = '2.2.65e';
+export const SURFACE_STORAGE_KEY='anatomiq-vertebra-surface-265e';
 const DETAIL_ASSET_VERSION='2.2.65c'; // 2.2.65d changes materials only; asset/report unchanged
 export const BONE_TONE_KEY='anatomiq-detailed-bone-tone-265d';
 // Starting calibration: deliberately darker/warmer than the prior white 2.2.65c tint.
@@ -95,10 +97,31 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
   let boneTone=DEFAULT_DETAILED_BONE_TONE;
   try{boneTone=normalizeBoneTone(storage.getItem(BONE_TONE_KEY));}catch{}
   const detailedMaterials=new Map();
+  const surfaceVariants=new WeakMap();
+  let surfaceMode='original';
+  try{const value=storage.getItem(SURFACE_STORAGE_KEY);if(SURFACE_MODES.includes(value))surfaceMode=value;}catch{}
+  function surfaceFor(name,geometry){
+    if(surfaceMode==='original'||!isVertebra(name))return geometry;
+    let cached=surfaceVariants.get(geometry);
+    if(!cached){cached=new Map();surfaceVariants.set(geometry,cached)}
+    if(!cached.has(surfaceMode)){
+      try{cached.set(surfaceMode,refineVertebraGeometry(geometry,surfaceMode));}
+      catch(error){console.warn('AnatomIQ vertebra surface fallback:',name,error);cached.set(surfaceMode,geometry)}
+    }
+    return cached.get(surfaceMode);
+  }
+  function setSurfaceMode(value){
+    if(!SURFACE_MODES.includes(value))return false;
+    surfaceMode=value;
+    try{storage.setItem(SURFACE_STORAGE_KEY,value);}catch{}
+    if(mode==='detailed')for(const {entry,geometry} of replacements||[]){entry.mesh.geometry=surfaceFor(entry.name,geometry)}
+    invalidate(3);emit();return true;
+  }
+
   let reportMetadata=null,lastProfile=null;
   try {if(storage.getItem(key)==='detailed')mode='detailed';}catch{}
   const status={version:SKELETAL_DETAIL_VERSION,mode:'standard',available:false,replacements:0,matched:0,error:null};
-  function emit(){status.mode=mode;window.__AnatomIQSkeletalDetail={...status,boneTone,apply,setBoneTone,resetBoneTone:()=>setBoneTone(DEFAULT_DETAILED_BONE_TONE),reset:()=>apply('standard'),audit,profileRender,downloadAudit};}
+  function emit(){status.mode=mode;window.__AnatomIQSkeletalDetail={...status,boneTone,surfaceMode,apply,setBoneTone,setSurfaceMode,resetBoneTone:()=>setBoneTone(DEFAULT_DETAILED_BONE_TONE),reset:()=>apply('standard'),audit,profileRender,downloadAudit};}
   async function prepare(){
     if(replacements)return replacements;
     if(pending)return pending;
@@ -182,7 +205,7 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
           if(!detailedMaterials.has(mesh)){
             detailedMaterials.set(mesh,makeCompatibleBoneMaterial(original.material,THREE,new THREE.Color(boneTone)));
           }
-          mesh.geometry=geometry;
+          mesh.geometry=surfaceFor(entry.name,geometry);
           updateMaterial(entry,detailedMaterials.get(mesh));
         }
         mode='detailed';
@@ -206,7 +229,7 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
         oldGeometryBytes:geometryBytes(old),detailedGeometryBytes:geometryBytes(geometry),
         visible:entry.mesh.visible,castShadow:!!entry.mesh.castShadow};
     });
-    return {version:'2.2.65d',boneTone,timestamp:new Date().toISOString(),mode,enhancedBones:parts.length,
+    return {version:'2.2.65e',boneTone,surfaceMode,smoothedVertebrae:parts.filter(p=>isVertebra(p.name)).length,timestamp:new Date().toISOString(),mode,enhancedBones:parts.length,
       excluded:reportMetadata?.excluded||[],originalAssetBytes:reportMetadata?.originalGlbBytes||null,
       detailedAssetBytes:reportMetadata?.prunedGlbBytes||null,
       activeDetailedTriangles:parts.reduce((s,p)=>s+p.detailedTriangles,0),
@@ -277,7 +300,16 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
     toneReset.addEventListener('click',()=>setBoneTone(DEFAULT_DETAILED_BONE_TONE));
     const toneHint=document.createElement('p');toneHint.className='studio-hint';
     toneHint.textContent='Adjusts the diffuse color of new bones only. Lighting, shadows, original skull/ribs/sternum, saved lessons and bone painting remain unchanged.';
-    group.append(label,select,hint,toneLabel,tonePicker,toneReset,toneHint,auditButton,profileButton);
+    const surfaceLabel=document.createElement('label');surfaceLabel.htmlFor='aiq-vertebra-surface-265e';surfaceLabel.textContent='Detailed vertebra surface';
+    const surfaceSelect=document.createElement('select');surfaceSelect.id='aiq-vertebra-surface-265e';surfaceSelect.className='text-input';
+    for(const [value,name] of [['original','Original — unchanged'],['normals','Smooth shading — same geometry'],['gentle','Gentle surface smoothing — same triangles']]){
+      const opt=document.createElement('option');opt.value=value;opt.textContent=name;surfaceSelect.add(opt);
+    }
+    surfaceSelect.value=surfaceMode;
+    const surfaceHint=document.createElement('p');surfaceHint.className='studio-hint';
+    surfaceHint.textContent='Experimental: only vertebrae change. No extra triangles, draw calls, or per-frame smoothing. Gentle mode shifts vertices at most 0.35% of each bone’s size; verify anatomical landmarks and label anchors.';
+    surfaceSelect.addEventListener('change',()=>{setSurfaceMode(surfaceSelect.value);hint.textContent='Vertebra surface updated. Rotate and compare while profiling.';});
+    group.append(label,select,hint,surfaceLabel,surfaceSelect,surfaceHint,toneLabel,tonePicker,toneReset,toneHint,auditButton,profileButton);
     if(previous)previous.after(group);else anchor.after(group);
   }
   emit();
@@ -288,5 +320,5 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
   if(mode==='detailed'){
     mode='standard';apply('detailed').then(()=>{const select=document.getElementById('aiq-skeletal-mode-265');if(select)select.value=mode;});
   }
-  return {apply,setBoneTone,status};
+  return {apply,setBoneTone,setSurfaceMode,status};
 }
