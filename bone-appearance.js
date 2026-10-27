@@ -172,5 +172,5 @@ export function createBoneAppearanceController(root,THREE,initialMode='natural')
     }
     return {mode,boneCount:entries.size,uniqueSourceMaterials:variants.size,enhancedMaterialSlots:enhanced,detailMaterialSlots:detailSlots,currentlyAssigned:active,examples:samples};
   }
-  return {register,setMode,status,get mode(){return mode;},get count(){return entries.size;},get variantCount(){return variants.size;}};
+  return {register,setMode,status,classicFor(mesh){return entries.get(mesh)?.classic??null;},get mode(){return mode;},get count(){return entries.size;},get variantCount(){return variants.size;}};
 }

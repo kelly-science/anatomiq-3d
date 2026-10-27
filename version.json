@@ -1,6 +1,6 @@
 {
-  "version": "2.2.65",
+  "version": "2.2.65b",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Optional source-geometry skeletal LOD; original bones retained for unmatched meshes and saved lesson stability."
+  "notes": "Fix detailed skeletal material/UV incompatibility, preserving Standard geometry and original appearance."
 }
