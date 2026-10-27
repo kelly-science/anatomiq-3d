@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.49'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.50'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2467,6 +2467,31 @@ function verifyProjectModel(project){
     }
   }
 }
+// ANATOMIQ_LESSON_RENAME_250 — inline chapter title, no changes to chapter identity.
+function anat250EditChapterTitle(index,button){
+  if(!teacherMode||index<0||index>=chapters.length||!button?.isConnected)return;
+  const before=chapters[index].t;
+  const editor=document.createElement('input');
+  editor.type='text';editor.className='anat250-chapter-input';editor.maxLength=90;
+  editor.value=before;editor.setAttribute('aria-label',`Rename chapter ${index+1}`);
+  button.replaceWith(editor);editor.focus();editor.select();
+  let finished=false;
+  const finish=(save)=>{
+    if(finished)return;finished=true;
+    const next=editor.value.trim();
+    if(save&&next&&next!==before){
+      chapters[index].t=next;
+      if(index===activeChapter)$('scene-title').value=next;
+      renderChapterUI();queueDraft();
+    }else renderChapterUI();
+  };
+  editor.addEventListener('keydown',event=>{
+    if(event.key==='Enter'){event.preventDefault();event.stopPropagation();finish(true);}
+    else if(event.key==='Escape'){event.preventDefault();event.stopPropagation();finish(false);}
+  });
+  editor.addEventListener('blur',()=>finish(true),{once:true});
+}
+
 function renderChapterUI(){
   const count=chapters.length;
   if(!count)return;
@@ -2490,10 +2515,14 @@ function renderChapterUI(){
   const list=$('teacher-chapter-list');list.replaceChildren();
   chapters.forEach((ch,i)=>{
     const row=document.createElement('div');row.className='teacher-chapter-row'+(i===activeChapter?' active':'');
-    const choose=document.createElement('button');choose.type='button';choose.className='chapter-choose';
-    choose.textContent=`${i+1}. ${ch.t}`;choose.title=`Edit ${ch.t}`;
-    choose.setAttribute('aria-current',i===activeChapter?'step':'false');choose.addEventListener('click',()=>switchChapter(i));
-    row.append(choose);
+    const choose=document.createElement('button');choose.type='button';choose.className='chapter-choose';choose.textContent=`${i+1}.`;choose.title=`Open chapter ${i+1}: ${ch.t}`;
+    choose.setAttribute('aria-label',`Open chapter ${i+1}: ${ch.t}`);
+    choose.setAttribute('aria-current',i===activeChapter?'step':'false');
+    choose.addEventListener('click',()=>switchChapter(i));row.append(choose);
+    const rename=document.createElement('button');rename.type='button';rename.className='anat250-chapter-name';
+    rename.textContent=ch.t;rename.title=`Rename ${ch.t}`;
+    rename.setAttribute('aria-label',`Rename chapter ${i+1}: ${ch.t}`);
+    rename.addEventListener('click',()=>anat250EditChapterTitle(i,rename));row.append(rename);
     const up=document.createElement('button');up.type='button';up.textContent='↑';up.title='Move chapter up';up.setAttribute('aria-label',`Move ${ch.t} up`);up.disabled=i===0;
     up.addEventListener('click',()=>moveChapter(i,-1));row.append(up);
     const down=document.createElement('button');down.type='button';down.textContent='↓';down.title='Move chapter down';down.setAttribute('aria-label',`Move ${ch.t} down`);down.disabled=i===count-1;

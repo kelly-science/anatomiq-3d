@@ -21,6 +21,44 @@
     catch(e){console.warn('Workspace snapshot failed',e);}
   }
   function syncActive(){if(!started||switching)return;capture();persist();render();}
+  // ANATOMIQ_LESSON_RENAME_250 — one editor shared by the tab title and File menu.
+  function renameLesson(){
+    if(student()||switching||!bridge()?.ready()||!current())return;
+    const tab=tabStrip?.querySelector('.anat-project-tab.active');
+    const button=tab?.querySelector('.anat-project-switch');
+    const label=button?.querySelector('span:nth-child(2)');
+    if(!label||tab.querySelector('.anat250-tab-title-input'))return;
+    const source=$('project-title');if(!source)return;
+    const before=source.value.trim()||current().name||'Untitled lesson';
+    const editor=document.createElement('input');
+    editor.type='text';editor.className='anat250-tab-title-input';
+    editor.maxLength=90;editor.value=before;
+    editor.setAttribute('aria-label','Rename lesson');
+    label.replaceWith(editor);editor.focus();editor.select();
+    let finished=false;
+    const finish=commit=>{
+      if(finished)return;finished=true;
+      const next=editor.value.trim();
+      if(commit&&next&&next!==before){
+        source.value=next;
+        source.dispatchEvent(new Event('input',{bubbles:true}));
+        document.title=next+' • AnatomIQ Studio';
+        syncActive();
+      }else render();
+    };
+    editor.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();e.stopPropagation();finish(true);}
+      else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish(false);}
+      else e.stopPropagation();
+    });
+    editor.addEventListener('click',e=>e.stopPropagation());
+    editor.addEventListener('blur',()=>finish(true),{once:true});
+  }
+  async function titleClick(target){
+    if(target!==active)await switchTab(target);
+    if(target===active)renameLesson();
+  }
+
   function render(){
     if(!tabStrip)return;
     tabStrip.replaceChildren();
@@ -32,6 +70,8 @@
       const name=document.createElement('span');name.textContent=w.name||'Untitled lesson';
       const dot=document.createElement('span');dot.className='anat-project-dot';dot.textContent=w.state?.lastLibrarySnapshot && JSON.stringify(w.state?.project)===w.state?.lastLibrarySnapshot?'':'•';
       open.append(dot,name);open.addEventListener('click',()=>void switchTab(w.id));
+      name.className='anat250-tab-title';name.title='Rename lesson';
+      name.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();void titleClick(w.id);});
       const close=document.createElement('button');close.type='button';close.textContent='×';close.className='anat-project-close';
       close.setAttribute('aria-label',`Close ${w.name}`);close.title='Close project';
       close.addEventListener('click',()=>void closeTab(w.id));tab.append(open,close);tabStrip.append(tab);
@@ -136,6 +176,12 @@
     tabStrip=document.createElement('div');tabStrip.id='anat-project-tab-list';tabStrip.setAttribute('role','tablist');
     const add=document.createElement('button');add.id='anat-new-project-tab';add.type='button';add.textContent='+';add.title='New project tab';add.setAttribute('aria-label','New project tab');
     add.addEventListener('click',()=>void newTab());bar.append(tabStrip,add);menubar.append(bar);
+    const file=$('menu-file'),newLesson=$('new-project');
+    if(!file||!newLesson)throw new Error('File menu unavailable for rename');
+    const rename=document.createElement('button');rename.type='button';rename.id='anat250-rename-lesson';
+    rename.className='menu-item';rename.setAttribute('role','menuitem');rename.textContent='Rename Lesson…';
+    newLesson.insertAdjacentElement('afterend',rename);
+    rename.addEventListener('click',()=>{document.querySelector('.studio-menubar .menu-group.is-open .menu-trigger')?.click();renameLesson();});
     $('new-project')?.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();void newTab();},true);
   }
   function begin(){
@@ -151,7 +197,7 @@
     else{
       switching=true;void bridge().activate(clone(current().state)).then(()=>{render();}).catch(e=>{console.error('Workspace restore failed:',e);toast('Could not restore project tabs. Your existing single working draft remains available.');workspaces=[{id:id(),name:bridge().title,state:bridge().capture(),updated:Date.now()}];active=workspaces[0].id;persist();render();}).finally(()=>switching=false);
     }
-    window.__AnatomIQWorkspaceTabs={syncActive,newTab,switchTab,closeTab,get count(){return workspaces.length;}};
+    window.__AnatomIQWorkspaceTabs={syncActive,newTab,switchTab,closeTab,renameLesson,get count(){return workspaces.length;}};
     window.addEventListener('beforeunload',()=>{if(!switching){capture();persist();}});
     $('project-title')?.addEventListener('input',()=>{if(current()){current().name=$('project-title').value.trim()||'Untitled lesson';render();}});
   }

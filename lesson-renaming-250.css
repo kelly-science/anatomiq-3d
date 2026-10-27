@@ -1,0 +1,28 @@
+/* AnatomIQ Studio 2.2.50 — presentation-only rename controls. */
+/* Required hidden values remain in the DOM for old draft/lesson code. */
+section.studio-card[aria-label="Scene setup"],
+section.studio-card[aria-label="Legacy scene controls"]{display:none!important}
+.anat250-tab-title{cursor:text}
+.anat-project-switch .anat250-tab-title:hover{text-decoration:underline;text-decoration-color:rgba(133,212,225,.6);text-underline-offset:3px}
+.anat-project-tab .anat250-tab-title-input{
+  box-sizing:border-box;flex:1;min-width:60px;max-width:150px;
+  padding:4px 6px;margin:0;background:#0c1e29;color:#e8fdff;
+  border:1px solid #69bfce;border-radius:5px;outline:0;
+  font:500 12px/1.4 Inter,ui-sans-serif,system-ui,sans-serif;
+}
+.teacher-chapter-row .chapter-choose{
+  flex:0 0 auto;min-width:24px;padding:6px 4px;text-align:center;
+}
+.teacher-chapter-row>button.anat250-chapter-name{
+  flex:1 1 auto;min-width:0;max-width:100%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+  text-align:left;color:#d2e5ea;background:transparent;
+  font:500 12px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;
+  padding:6px 5px;
+}
+.teacher-chapter-row>button.anat250-chapter-name:hover{text-decoration:underline;text-underline-offset:3px}
+.teacher-chapter-row .anat250-chapter-input{
+  box-sizing:border-box;flex:1 1 auto;min-width:36px;width:100%;
+  color:#e8fdff;background:#102531;border:1px solid #69bfce;
+  border-radius:5px;padding:5px;font:500 12px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;
+}

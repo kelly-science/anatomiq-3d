@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="./tab-menu-polish-246.css?rev=247" /> <!-- ANATOMIQ_TAB_MENU_POLISH_246 -->
   <link rel="stylesheet" href="./typography-248.css?rev=248" /> <!-- ANATOMIQ_TYPOGRAPHY_248 -->
   <link rel="stylesheet" href="./lesson-experience-249.css?rev=249" /> <!-- ANATOMIQ_LESSON_EXPERIENCE_249 -->
+  <link rel="stylesheet" href="./lesson-renaming-250.css?rev=250" /> <!-- ANATOMIQ_LESSON_RENAME_250 -->
 </head>
 <body>
   <div class="app-shell">
@@ -40,7 +41,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.49</span>
+        <span class="version">STUDIO 2.2.50</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -152,7 +153,7 @@
           <input id="search" type="search" placeholder="Search anatomical structures…" autocomplete="off" aria-label="Search anatomical structures" />
           <button id="clear-search" class="clear-search" aria-label="Clear search" hidden>×</button>
         </div>
-        <section class="studio-card teacher-only" aria-label="Scene setup">
+        <section class="studio-card teacher-only" aria-label="Scene setup" hidden aria-hidden="true">
           <span class="eyebrow">TEACHER STUDIO</span>
           <label class="field-label" for="project-title">Lesson title</label>
           <input class="text-input" id="project-title" maxlength="90" value="Skull exploration" placeholder="Name your full lesson" />
@@ -671,11 +672,11 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=lesson249'); // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=lesson250'); // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
   <script defer src="./interface-2221.js?rev=workspace241"></script>
-  <script defer src="./workspace-tabs-241.js?rev=241"></script>
+  <script defer src="./workspace-tabs-241.js?rev=250"></script>
   <script defer src="./teacher-tools-2240.js?rev=240"></script>
 <script type="module" src="./github-library-embed.mjs?rev=235"></script> <!-- ANATOMIQ_GITHUB_LIBRARY_EMBED_20261026 -->
 <script defer src="./responsive-chapters-panels.js?rev=233"></script>
