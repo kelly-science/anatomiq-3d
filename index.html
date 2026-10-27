@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="./label-groups-260.css?rev=260" /> <!-- ANATOMIQ_SINGLE_GROUP_LABEL_260 -->
   <link rel="stylesheet" href="./label-inline-261.css?rev=261" />
   <link rel="stylesheet" href="./label-callouts-262.css?rev=262" /> <!-- ANATOMIQ_TEACHER_CALLOUT_262 --> <!-- ANATOMIQ_INLINE_LABELS_EASE_261 -->
+  <link rel="stylesheet" href="./chapter-start-263.css?rev=263" /> <!-- ANATOMIQ_CHAPTER_START_263 -->
 </head>
 <body>
   <div class="app-shell">
@@ -172,7 +173,11 @@
           <div class="chapters-heading"><span class="eyebrow">LESSON CHAPTERS</span><span id="chapter-count" class="chapter-count">1 chapter</span></div>
           <p class="studio-hint">Each chapter keeps its own bones, camera view, labels and student settings.</p>
           <div id="teacher-chapter-list" class="teacher-chapter-list"></div>
-          <div class="chapter-create-actions">
+          <div class="chapter-create-actions anat263-start-actions" aria-label="Chapter starting view">
+             <button id="capture-chapter-start" class="button small" type="button" title="Save the current camera view as this chapter's starting view">◎ Capture starting position</button>
+             <button id="restore-chapter-start" class="button small subtle" type="button" title="Animate back to this chapter's captured starting view">↶ Return to start</button>
+           </div>
+           <div class="chapter-create-actions">
             <button id="add-chapter" class="button small" type="button">＋ Add chapter</button>
             <button id="duplicate-chapter" class="button small subtle" type="button">⧉ Duplicate</button>
           </div>
@@ -690,7 +695,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=labels262'); // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=chapter263'); // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
   <script defer src="./interface-2221.js?rev=workspace241"></script>

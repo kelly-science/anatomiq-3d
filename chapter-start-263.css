@@ -1,0 +1,13 @@
+/* AnatomIQ 2.2.63: teacher-only chapter camera controls */
+.chapters-manager .anat263-start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 8px;
+}
+.chapters-manager .anat263-start-actions .button {
+  flex: 1 1 135px;
+  min-width: 0;
+  line-height: 1.35;
+  white-space: normal;
+}

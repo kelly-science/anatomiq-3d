@@ -1,0 +1,6 @@
+{
+  "version": "2.2.62",
+  "channel": "beta",
+  "published": "2026-10-27",
+  "notes": "Only teacher-authored label.d appears beneath a multiline title; built-in anatomy descriptions stay in structure details. ANATOMIQ_TEACHER_CALLOUT_262"
+}

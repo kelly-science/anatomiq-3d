@@ -47,7 +47,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.62'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.63'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2344,6 +2344,93 @@ function queueDraft(){
       noteLibraryState('● Unsaved changes · File → Save to Library to update.');
   },650);
 }
+// ANATOMIQ_CHAPTER_START_263 — an explicit per-chapter starting view.
+// Reuse the existing scene.cam field so shared links, library saves and offline
+// lessons do not require a new format or a new API.
+function anat263ReadCamera(){
+  return [...camera.position.toArray(),...controls.target.toArray()].map(n=>round(n,5));
+}
+function anat263StartForScene(){
+  // A capture is persistent. Orbiting/zooming later must not silently change it.
+  const stored=teacherMode&&chapters[activeChapter]?.cam;
+  return Array.isArray(stored)&&stored.length===6&&stored.every(Number.isFinite)
+    ? stored.slice() : anat263ReadCamera();
+}
+async function anat263AnimateChapterRestore(from,to){
+  if(!Array.isArray(from)||!Array.isArray(to)||from.length!==6||to.length!==6||
+    ![...from,...to].every(Number.isFinite))return;
+  polishCancelCamera();
+  const set=(c)=>{
+    camera.position.fromArray(c.slice(0,3));
+    controls.target.fromArray(c.slice(3,6));
+    camera.updateProjectionMatrix();controls.update();invalidate(2);
+  };
+  if(from.every((n,i)=>Math.abs(n-to[i])<0.00001)){
+    set(to);return;
+  }
+  if(document.hidden||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    set(to);return;
+  }
+  // Restore the incoming viewpoint before the next paint after applyScene().
+  set(from);
+  const token=++polishCameraToken;
+  const startPoint=new THREE.Vector3(...from.slice(0,3));
+  const startTarget=new THREE.Vector3(...from.slice(3,6));
+  const endPoint=new THREE.Vector3(...to.slice(0,3));
+  const endTarget=new THREE.Vector3(...to.slice(3,6));
+  const startVector=startPoint.clone().sub(startTarget);
+  const endVector=endPoint.clone().sub(endTarget);
+  const r0=Math.max(0.001,startVector.length()),r1=Math.max(0.001,endVector.length());
+  const d0=startVector.normalize(),d1=endVector.normalize();
+  const turn=new THREE.Quaternion();
+  if(d0.dot(d1)<-0.999)turn.setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI);
+  else turn.setFromUnitVectors(d0,d1);
+  const duration=700;
+  await new Promise(resolve=>{
+    const began=performance.now();
+    const tick=now=>{
+      if(token!==polishCameraToken||document.hidden){resolve();return;}
+      const k=Math.min(1,(now-began)/duration);
+      // Identical cubic in/out to polishMoveCamera (label focus); no overshoot.
+      const ease=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+      const aim=startTarget.clone().lerp(endTarget,ease);
+      const orientation=new THREE.Quaternion().slerp(turn,ease);
+      const heading=d0.clone().applyQuaternion(orientation);
+      controls.target.copy(aim);
+      camera.position.copy(aim).addScaledVector(heading,r0+(r1-r0)*ease);
+      camera.updateProjectionMatrix();controls.update();invalidate(2);
+      if(k<1)requestAnimationFrame(tick);
+      else {set(to);resolve();}
+    };
+    requestAnimationFrame(tick);
+  });
+}
+function anat263CaptureStartingPosition(){
+  if(!teacherMode||!sceneRoot||restoringScene||__anat254IrisBusy)return;
+  if(divisionScope||cardioPreviewIDs){
+    showToast('Close the temporary inspection view before capturing the chapter start.');
+    return;
+  }
+  const chapter=chapters[activeChapter];
+  if(!chapter)return;
+  chapter.cam=anat263ReadCamera();
+  queueDraft();
+  showToast('Starting position captured for this chapter. Save your lesson to publish it.');
+}
+function anat263RestoreStartingPosition(){
+  if(!teacherMode||!sceneRoot||restoringScene||__anat254IrisBusy)return;
+  const target=chapters[activeChapter]?.cam;
+  if(!target){showToast('Capture a starting position first.');return;}
+  void anat263AnimateChapterRestore(anat263ReadCamera(),target);
+}
+function anat263InstallChapterCommands(){
+  if(!teacherMode)return;
+  $('capture-chapter-start')?.addEventListener('click',anat263CaptureStartingPosition);
+  $('restore-chapter-start')?.addEventListener('click',anat263RestoreStartingPosition);
+}
+// Existing DOM is ready by the time the module runs.
+anat263InstallChapterCommands();
+
 function snapshotScene(){
   if(!sceneRoot)throw new Error('Model not loaded.');
   const visible=structures.map(s=>divisionScope ? divisionUnderlyingVisible(s) : (cardioPreviewIDs&&s.system==='cardiovascular' ? layerEnabled(s)&&tissueVisible(s)&&!hidden.has(s.mesh) : s.mesh.visible));
@@ -2354,7 +2441,7 @@ function snapshotScene(){
     lm:$('student-label-mode').value,x:$('student-explore').checked,
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ey:systemLayers.nervous,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
-    cam:(cardioPreviewCamera||(divisionScope&&divisionSavedCamera?divisionSavedCamera:[...camera.position.toArray(),...controls.target.toArray()])).map(n=>round(n,5)),
+    cam:(teacherMode ? anat263StartForScene() : (cardioPreviewCamera||(divisionScope&&divisionSavedCamera?divisionSavedCamera:[...camera.position.toArray(),...controls.target.toArray()]))).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),
       ...(Array.isArray(l.g)?{g:l.g.map(a=>({s:a.s,p:a.p.map(n=>round(n,5)),...(a.ln?{ln:a.ln.map(n=>round(n,5))}:{})})),gn:l.gn}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
@@ -2506,8 +2593,12 @@ async function studentHistoryCommand(action){
   studentHistoryApplying=true;
   clearTimeout(studentHistoryTimer);studentHistoryTimer=0;
   try{
+    const __anat263From=action==='reset'?anat263ReadCamera():null;
     await applyScene(target);
-    if(action==='reset')studentHistoryBegin();
+    if(action==='reset'){
+      await anat263AnimateChapterRestore(__anat263From,target.cam);
+      studentHistoryBegin();
+    }
     showToast(action==='reset'?'Chapter restored to its original view.':action==='undo'?'Undone.':'Redone.');
   }catch(error){
     // If a history restore failed, fall back to the published chapter scene.
@@ -2746,6 +2837,7 @@ function createChapter(duplicate){
   try{
     chapters[activeChapter]=snapshotScene();
     const fresh=structuredClone(chapters[activeChapter]);
+    if(!duplicate)fresh.cam=anat263ReadCamera();
     fresh.t=`Chapter ${chapters.length+1}`;
     if(!duplicate)fresh.labels=[];
     chapters.splice(activeChapter+1,0,fresh);
