@@ -1,10 +1,10 @@
 /* AnatomIQ 2.2.55 — experimental directional chapter carousel.
    Only 2D chapter snapshots move; WebGL geometry, camera, labels,
    published lesson data and the 2.2.38 occlusion BVH are untouched. */
-export const CAROUSEL_MS = 560;
+export const CAROUSEL_MS = 620; // ANATOMIQ_CAROUSEL_EASE_DEFAULT_258
 const easeInOut = value => {
   const x = Math.max(0,Math.min(1,value));
-  return x < 0.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+  return x*x*(3-2*x); // Match the default live scene motion
 };
 
 /** Numeric chapter order, with explicit wrap-around behavior. */

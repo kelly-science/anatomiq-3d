@@ -4,10 +4,13 @@
  * The CSS viewer background and all menus/toolbars remain stationary.
  * BVH occlusion and label rendering are deliberately not invoked during slides.
  */
-export const LIVE_CAROUSEL_DURATION_MS = 560;
+// The additional travel time and smooth deceleration preserve a sense of
+// momentum without a snap or overshoot when the model reaches the center.
+export const LIVE_CAROUSEL_DURATION_MS = 620; // ANATOMIQ_CAROUSEL_EASE_DEFAULT_258
 export const slideEase = t => {
   const x = Math.max(0, Math.min(1, t));
-  return x < 0.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+  // Smoothstep: the last third visibly slows, without overshooting center.
+  return x*x*(3-2*x);
 };
 
 /** Render two entire live 3D scenes into adjacent sliding scissor viewports.
