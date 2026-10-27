@@ -1,0 +1,1273 @@
+{
+  "version": "2.2.65",
+  "status": "generated",
+  "base_glb": "ecorche.glb",
+  "source_meshes": 159,
+  "source": "Full-resolution BodyParts3D 3.0, pinned OrganUI STL subset (DBCLS)",
+  "license": "Respect source BodyParts3D CC BY-SA 2.1 JP and \u00c9corch\u00e9 CC BY-SA 4.0 notices",
+  "accepted": 103,
+  "considered": 136,
+  "rows": [
+    {
+      "name": "Atlas",
+      "matched_source": "atlas.stl",
+      "old_triangles": 1864,
+      "status": "accepted",
+      "alignment_p95_mm": 1.608,
+      "alignment_median_mm": 0.609,
+      "extra_motion_mm": 0.859,
+      "source_triangles": 6172
+    },
+    {
+      "name": "Axis",
+      "matched_source": "axis.stl",
+      "old_triangles": 2038,
+      "status": "accepted",
+      "alignment_p95_mm": 2.04,
+      "alignment_median_mm": 0.677,
+      "extra_motion_mm": 1.148,
+      "source_triangles": 6870
+    },
+    {
+      "name": "Body of sternum",
+      "matched_source": "body of sternum.stl",
+      "old_triangles": 3482,
+      "status": "accepted",
+      "alignment_p95_mm": 2.298,
+      "alignment_median_mm": 0.893,
+      "extra_motion_mm": 0.4,
+      "source_triangles": 19916
+    },
+    {
+      "name": "Eighth thoracic vertebra",
+      "matched_source": "eighth thoracic vertebra.stl",
+      "old_triangles": 2404,
+      "status": "accepted",
+      "alignment_p95_mm": 1.444,
+      "alignment_median_mm": 0.7,
+      "extra_motion_mm": 0.352,
+      "source_triangles": 5206
+    },
+    {
+      "name": "Eleventh thoracic vertebra",
+      "matched_source": "eleventh thoracic vertebra.stl",
+      "old_triangles": 2440,
+      "status": "accepted",
+      "alignment_p95_mm": 1.542,
+      "alignment_median_mm": 0.759,
+      "extra_motion_mm": 1.276,
+      "source_triangles": 5652
+    },
+    {
+      "name": "Ethmoid",
+      "matched_source": "ethmoid.stl",
+      "old_triangles": 11746,
+      "status": "skipped",
+      "reason": "No meaningful detail gain: 7774 vs 11746 triangles"
+    },
+    {
+      "name": "Fifth cervical vertebra",
+      "matched_source": "fifth cervical vertebra.stl",
+      "old_triangles": 1938,
+      "status": "accepted",
+      "alignment_p95_mm": 1.723,
+      "alignment_median_mm": 0.647,
+      "extra_motion_mm": 0.811,
+      "source_triangles": 4754
+    },
+    {
+      "name": "Fifth lumbar vertebra",
+      "matched_source": "fifth lumbar vertebra.stl",
+      "old_triangles": 3502,
+      "status": "accepted",
+      "alignment_p95_mm": 3.123,
+      "alignment_median_mm": 0.973,
+      "extra_motion_mm": 0.526,
+      "source_triangles": 17282
+    },
+    {
+      "name": "Fifth thoracic vertebra",
+      "matched_source": "fifth thoracic vertebra.stl",
+      "old_triangles": 1974,
+      "status": "accepted",
+      "alignment_p95_mm": 2.509,
+      "alignment_median_mm": 0.922,
+      "extra_motion_mm": 1.795,
+      "source_triangles": 9834
+    },
+    {
+      "name": "First lumbar vertebra",
+      "matched_source": "first lumbar vertebra.stl",
+      "old_triangles": 2906,
+      "status": "accepted",
+      "alignment_p95_mm": 2.053,
+      "alignment_median_mm": 0.845,
+      "extra_motion_mm": 0.655,
+      "source_triangles": 12946
+    },
+    {
+      "name": "First thoracic vertebra",
+      "matched_source": "first thoracic vertebra.stl",
+      "old_triangles": 1664,
+      "status": "accepted",
+      "alignment_p95_mm": 1.562,
+      "alignment_median_mm": 0.639,
+      "extra_motion_mm": 0.501,
+      "source_triangles": 5614
+    },
+    {
+      "name": "Fourth cervical vertebra",
+      "matched_source": "fourth cervical vertebra.stl",
+      "old_triangles": 1826,
+      "status": "accepted",
+      "alignment_p95_mm": 1.819,
+      "alignment_median_mm": 0.71,
+      "extra_motion_mm": 1.752,
+      "source_triangles": 4224
+    },
+    {
+      "name": "Fourth lumbar vertebra",
+      "matched_source": "fourth lumbar vertebra.stl",
+      "old_triangles": 3250,
+      "status": "accepted",
+      "alignment_p95_mm": 2.089,
+      "alignment_median_mm": 0.979,
+      "extra_motion_mm": 1.261,
+      "source_triangles": 15426
+    },
+    {
+      "name": "Fourth thoracic vertebra",
+      "matched_source": "fourth thoracic vertebra.stl",
+      "old_triangles": 1954,
+      "status": "accepted",
+      "alignment_p95_mm": 1.586,
+      "alignment_median_mm": 0.649,
+      "extra_motion_mm": 0.528,
+      "source_triangles": 8930
+    },
+    {
+      "name": "Frontal bone",
+      "matched_source": "frontal bone.stl",
+      "old_triangles": 23216,
+      "status": "skipped",
+      "reason": "Alignment p95 4.20 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left calcaneus",
+      "matched_source": "left calcaneus.stl",
+      "old_triangles": 1494,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left capitate",
+      "matched_source": "left capitate.stl",
+      "old_triangles": 344,
+      "status": "accepted",
+      "alignment_p95_mm": 0.858,
+      "alignment_median_mm": 0.434,
+      "extra_motion_mm": 0.211,
+      "source_triangles": 1278
+    },
+    {
+      "name": "Left clavicle",
+      "matched_source": "left clavicle.stl",
+      "old_triangles": 1376,
+      "status": "accepted",
+      "alignment_p95_mm": 3.192,
+      "alignment_median_mm": 0.89,
+      "extra_motion_mm": 0.72,
+      "source_triangles": 5140
+    },
+    {
+      "name": "Left cuboid bone",
+      "matched_source": "left cuboid bone.stl",
+      "old_triangles": 798,
+      "status": "accepted",
+      "alignment_p95_mm": 1.399,
+      "alignment_median_mm": 0.661,
+      "extra_motion_mm": 0.425,
+      "source_triangles": 3804
+    },
+    {
+      "name": "Left eighth rib",
+      "matched_source": "left eighth rib.stl",
+      "old_triangles": 6296,
+      "status": "accepted",
+      "alignment_p95_mm": 2.659,
+      "alignment_median_mm": 1.129,
+      "extra_motion_mm": 2.21,
+      "source_triangles": 37134
+    },
+    {
+      "name": "Left eleventh rib",
+      "matched_source": "left eleventh rib.stl",
+      "old_triangles": 3656,
+      "status": "skipped",
+      "reason": "Alignment p95 5.03 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left femur",
+      "matched_source": "left femur.stl",
+      "old_triangles": 4920,
+      "status": "skipped",
+      "reason": "Alignment p95 11.29 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left fibula",
+      "matched_source": "left fibula.stl",
+      "old_triangles": 1468,
+      "status": "skipped",
+      "reason": "Alignment p95 12.21 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left fifth metacarpal bone",
+      "matched_source": "left fifth metacarpal bone.stl",
+      "old_triangles": 502,
+      "status": "accepted",
+      "alignment_p95_mm": 0.731,
+      "alignment_median_mm": 0.399,
+      "extra_motion_mm": 0.085,
+      "source_triangles": 2146
+    },
+    {
+      "name": "Left fifth metatarsal bone",
+      "matched_source": "left fifth metatarsal bone.stl",
+      "old_triangles": 714,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left fifth rib",
+      "matched_source": "left fifth rib.stl",
+      "old_triangles": 7348,
+      "status": "accepted",
+      "alignment_p95_mm": 1.597,
+      "alignment_median_mm": 0.827,
+      "extra_motion_mm": 1.662,
+      "source_triangles": 41568
+    },
+    {
+      "name": "Left first metacarpal bone",
+      "matched_source": "left first metacarpal bone.stl",
+      "old_triangles": 552,
+      "status": "accepted",
+      "alignment_p95_mm": 0.736,
+      "alignment_median_mm": 0.393,
+      "extra_motion_mm": 0.067,
+      "source_triangles": 2480
+    },
+    {
+      "name": "Left first metatarsal bone",
+      "matched_source": "left first metatarsal bone.stl",
+      "old_triangles": 886,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left first rib",
+      "matched_source": "left first rib.stl",
+      "old_triangles": 2472,
+      "status": "accepted",
+      "alignment_p95_mm": 1.437,
+      "alignment_median_mm": 0.524,
+      "extra_motion_mm": 0.309,
+      "source_triangles": 15464
+    },
+    {
+      "name": "Left fourth metacarpal bone",
+      "matched_source": "left fourth metacarpal bone.stl",
+      "old_triangles": 542,
+      "status": "accepted",
+      "alignment_p95_mm": 0.772,
+      "alignment_median_mm": 0.411,
+      "extra_motion_mm": 0.164,
+      "source_triangles": 2270
+    },
+    {
+      "name": "Left fourth metatarsal bone",
+      "matched_source": "left fourth metatarsal bone.stl",
+      "old_triangles": 630,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left fourth rib",
+      "matched_source": "left fourth rib.stl",
+      "old_triangles": 6698,
+      "status": "accepted",
+      "alignment_p95_mm": 2.841,
+      "alignment_median_mm": 0.888,
+      "extra_motion_mm": 1.675,
+      "source_triangles": 37922
+    },
+    {
+      "name": "Left hamate",
+      "matched_source": "left hamate.stl",
+      "old_triangles": 366,
+      "status": "accepted",
+      "alignment_p95_mm": 0.676,
+      "alignment_median_mm": 0.358,
+      "extra_motion_mm": 0.085,
+      "source_triangles": 1130
+    },
+    {
+      "name": "Left hip bone",
+      "matched_source": "left hip bone.stl",
+      "old_triangles": 3862,
+      "status": "skipped",
+      "reason": "Alignment p95 5.00 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left humerus",
+      "matched_source": "left humerus.stl",
+      "old_triangles": 3668,
+      "status": "accepted",
+      "alignment_p95_mm": 2.023,
+      "alignment_median_mm": 0.966,
+      "extra_motion_mm": 0.059,
+      "source_triangles": 16492
+    },
+    {
+      "name": "Left intermediate cuneiform bone",
+      "matched_source": "left intermediate cuneiform bone.stl",
+      "old_triangles": 356,
+      "status": "accepted",
+      "alignment_p95_mm": 0.987,
+      "alignment_median_mm": 0.492,
+      "extra_motion_mm": 0.529,
+      "source_triangles": 2106
+    },
+    {
+      "name": "Left lacrimal bone",
+      "matched_source": "left lacrimal bone.stl",
+      "old_triangles": 370,
+      "status": "accepted",
+      "alignment_p95_mm": 0.656,
+      "alignment_median_mm": 0.349,
+      "extra_motion_mm": 0.052,
+      "source_triangles": 1152
+    },
+    {
+      "name": "Left lateral cuneiform bone",
+      "matched_source": "left lateral cuneiform bone.stl",
+      "old_triangles": 516,
+      "status": "accepted",
+      "alignment_p95_mm": 1.036,
+      "alignment_median_mm": 0.538,
+      "extra_motion_mm": 0.649,
+      "source_triangles": 2968
+    },
+    {
+      "name": "Left lunate",
+      "matched_source": "left lunate.stl",
+      "old_triangles": 270,
+      "status": "accepted",
+      "alignment_p95_mm": 0.692,
+      "alignment_median_mm": 0.4,
+      "extra_motion_mm": 0.07,
+      "source_triangles": 866
+    },
+    {
+      "name": "Left maxilla",
+      "matched_source": "left maxilla.stl",
+      "old_triangles": 8312,
+      "status": "accepted",
+      "alignment_p95_mm": 1.74,
+      "alignment_median_mm": 0.888,
+      "extra_motion_mm": 0.28,
+      "source_triangles": 14506
+    },
+    {
+      "name": "Left medial cuneiform bone",
+      "matched_source": "left medial cuneiform bone.stl",
+      "old_triangles": 748,
+      "status": "accepted",
+      "alignment_p95_mm": 1.28,
+      "alignment_median_mm": 0.59,
+      "extra_motion_mm": 0.549,
+      "source_triangles": 4210
+    },
+    {
+      "name": "Left nasal bone",
+      "matched_source": "left nasal bone.stl",
+      "old_triangles": 696,
+      "status": "accepted",
+      "alignment_p95_mm": 0.628,
+      "alignment_median_mm": 0.283,
+      "extra_motion_mm": 0.107,
+      "source_triangles": 1124
+    },
+    {
+      "name": "Left ninth rib",
+      "matched_source": "left ninth rib.stl",
+      "old_triangles": 5696,
+      "status": "skipped",
+      "reason": "Alignment p95 4.67 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left palatine bone",
+      "matched_source": "left palatine bone.stl",
+      "old_triangles": 1138,
+      "status": "skipped",
+      "reason": "Anatomical scale mismatch: 0.861"
+    },
+    {
+      "name": "Left parietal bone",
+      "matched_source": "left parietal bone.stl",
+      "old_triangles": 21136,
+      "status": "accepted",
+      "alignment_p95_mm": 3.952,
+      "alignment_median_mm": 1.515,
+      "extra_motion_mm": 2.717,
+      "source_triangles": 30250
+    },
+    {
+      "name": "Left patella",
+      "matched_source": "left patella.stl",
+      "old_triangles": 430,
+      "status": "accepted",
+      "alignment_p95_mm": 1.123,
+      "alignment_median_mm": 0.599,
+      "extra_motion_mm": 0.12,
+      "source_triangles": 1338
+    },
+    {
+      "name": "Left pisiform",
+      "matched_source": "left pisiform.stl",
+      "old_triangles": 228,
+      "status": "accepted",
+      "alignment_p95_mm": 0.48,
+      "alignment_median_mm": 0.29,
+      "extra_motion_mm": 0.067,
+      "source_triangles": 396
+    },
+    {
+      "name": "Left radius",
+      "matched_source": "left radius.stl",
+      "old_triangles": 962,
+      "status": "accepted",
+      "alignment_p95_mm": 1.41,
+      "alignment_median_mm": 0.725,
+      "extra_motion_mm": 0.237,
+      "source_triangles": 2714
+    },
+    {
+      "name": "Left scaphoid",
+      "matched_source": "left scaphoid.stl",
+      "old_triangles": 352,
+      "status": "accepted",
+      "alignment_p95_mm": 0.75,
+      "alignment_median_mm": 0.403,
+      "extra_motion_mm": 0.116,
+      "source_triangles": 1070
+    },
+    {
+      "name": "Left scapula",
+      "matched_source": "left scapula.stl",
+      "old_triangles": 14838,
+      "status": "accepted",
+      "alignment_p95_mm": 2.316,
+      "alignment_median_mm": 1.156,
+      "extra_motion_mm": 2.009,
+      "source_triangles": 121816
+    },
+    {
+      "name": "Left second metacarpal bone",
+      "matched_source": "left second metacarpal bone.stl",
+      "old_triangles": 642,
+      "status": "accepted",
+      "alignment_p95_mm": 0.84,
+      "alignment_median_mm": 0.457,
+      "extra_motion_mm": 0.291,
+      "source_triangles": 3264
+    },
+    {
+      "name": "Left second metatarsal bone",
+      "matched_source": "left second metatarsal bone.stl",
+      "old_triangles": 706,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left second rib",
+      "matched_source": "left second rib.stl",
+      "old_triangles": 4232,
+      "status": "accepted",
+      "alignment_p95_mm": 2.255,
+      "alignment_median_mm": 0.736,
+      "extra_motion_mm": 1.256,
+      "source_triangles": 25304
+    },
+    {
+      "name": "Left seventh rib",
+      "matched_source": "left seventh rib.stl",
+      "old_triangles": 7558,
+      "status": "accepted",
+      "alignment_p95_mm": 3.733,
+      "alignment_median_mm": 1.081,
+      "extra_motion_mm": 2.329,
+      "source_triangles": 44062
+    },
+    {
+      "name": "Left sixth rib",
+      "matched_source": "left sixth rib.stl",
+      "old_triangles": 7742,
+      "status": "accepted",
+      "alignment_p95_mm": 1.757,
+      "alignment_median_mm": 0.899,
+      "extra_motion_mm": 1.901,
+      "source_triangles": 44434
+    },
+    {
+      "name": "Left talus",
+      "matched_source": "left talus.stl",
+      "old_triangles": 1316,
+      "status": "accepted",
+      "alignment_p95_mm": 2.895,
+      "alignment_median_mm": 0.924,
+      "extra_motion_mm": 1.779,
+      "source_triangles": 5924
+    },
+    {
+      "name": "Left temporal bone",
+      "matched_source": "left temporal bone.stl",
+      "old_triangles": 7448,
+      "status": "accepted",
+      "alignment_p95_mm": 1.987,
+      "alignment_median_mm": 0.938,
+      "extra_motion_mm": 0.958,
+      "source_triangles": 11208
+    },
+    {
+      "name": "Left tenth rib",
+      "matched_source": "left tenth rib.stl",
+      "old_triangles": 5146,
+      "status": "skipped",
+      "reason": "Alignment p95 5.80 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left third metacarpal bone",
+      "matched_source": "left third metacarpal bone.stl",
+      "old_triangles": 662,
+      "status": "accepted",
+      "alignment_p95_mm": 0.767,
+      "alignment_median_mm": 0.406,
+      "extra_motion_mm": 0.194,
+      "source_triangles": 3040
+    },
+    {
+      "name": "Left third metatarsal bone",
+      "matched_source": "left third metatarsal bone.stl",
+      "old_triangles": 654,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left third rib",
+      "matched_source": "left third rib.stl",
+      "old_triangles": 5490,
+      "status": "accepted",
+      "alignment_p95_mm": 3.777,
+      "alignment_median_mm": 0.868,
+      "extra_motion_mm": 1.03,
+      "source_triangles": 31212
+    },
+    {
+      "name": "Left tibia",
+      "matched_source": "left tibia.stl",
+      "old_triangles": 2528,
+      "status": "skipped",
+      "reason": "Alignment p95 15.82 mm exceeds 4 mm"
+    },
+    {
+      "name": "Left trapezium",
+      "matched_source": "left trapezium.stl",
+      "old_triangles": 330,
+      "status": "accepted",
+      "alignment_p95_mm": 0.714,
+      "alignment_median_mm": 0.361,
+      "extra_motion_mm": 0.139,
+      "source_triangles": 1058
+    },
+    {
+      "name": "Left trapezoid",
+      "matched_source": "left trapezoid.stl",
+      "old_triangles": 298,
+      "status": "accepted",
+      "alignment_p95_mm": 0.537,
+      "alignment_median_mm": 0.289,
+      "extra_motion_mm": 0.057,
+      "source_triangles": 612
+    },
+    {
+      "name": "Left twelfth rib",
+      "matched_source": "left twelfth rib.stl",
+      "old_triangles": 2122,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Left ulna",
+      "matched_source": "left ulna.stl",
+      "old_triangles": 1088,
+      "status": "accepted",
+      "alignment_p95_mm": 1.449,
+      "alignment_median_mm": 0.752,
+      "extra_motion_mm": 0.211,
+      "source_triangles": 3538
+    },
+    {
+      "name": "Left zygomatic bone",
+      "matched_source": "left zygomatic bone.stl",
+      "old_triangles": 2288,
+      "status": "accepted",
+      "alignment_p95_mm": 1.051,
+      "alignment_median_mm": 0.477,
+      "extra_motion_mm": 0.148,
+      "source_triangles": 4560
+    },
+    {
+      "name": "Mandible",
+      "matched_source": "mandible.stl",
+      "old_triangles": 8920,
+      "status": "accepted",
+      "alignment_p95_mm": 3.345,
+      "alignment_median_mm": 1.273,
+      "extra_motion_mm": 2.506,
+      "source_triangles": 21658
+    },
+    {
+      "name": "Ninth thoracic vertebra",
+      "matched_source": "ninth thoracic vertebra.stl",
+      "old_triangles": 2364,
+      "status": "accepted",
+      "alignment_p95_mm": 1.616,
+      "alignment_median_mm": 0.741,
+      "extra_motion_mm": 1.732,
+      "source_triangles": 11286
+    },
+    {
+      "name": "Occipital bone",
+      "matched_source": "occipital bone.stl",
+      "old_triangles": 19920,
+      "status": "accepted",
+      "alignment_p95_mm": 3.99,
+      "alignment_median_mm": 1.523,
+      "extra_motion_mm": 3.232,
+      "source_triangles": 27812
+    },
+    {
+      "name": "Right calcaneus",
+      "matched_source": "right calcaneus.stl",
+      "old_triangles": 1474,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right capitate",
+      "matched_source": "right capitate.stl",
+      "old_triangles": 378,
+      "status": "accepted",
+      "alignment_p95_mm": 0.734,
+      "alignment_median_mm": 0.389,
+      "extra_motion_mm": 0.151,
+      "source_triangles": 1284
+    },
+    {
+      "name": "Right clavicle",
+      "matched_source": "right clavicle.stl",
+      "old_triangles": 1390,
+      "status": "accepted",
+      "alignment_p95_mm": 3.112,
+      "alignment_median_mm": 0.845,
+      "extra_motion_mm": 0.657,
+      "source_triangles": 5112
+    },
+    {
+      "name": "Right cuboid bone",
+      "matched_source": "right cuboid bone.stl",
+      "old_triangles": 750,
+      "status": "accepted",
+      "alignment_p95_mm": 1.449,
+      "alignment_median_mm": 0.659,
+      "extra_motion_mm": 0.418,
+      "source_triangles": 3634
+    },
+    {
+      "name": "Right eighth rib",
+      "matched_source": "right eighth rib.stl",
+      "old_triangles": 6290,
+      "status": "accepted",
+      "alignment_p95_mm": 2.755,
+      "alignment_median_mm": 1.15,
+      "extra_motion_mm": 2.02,
+      "source_triangles": 36646
+    },
+    {
+      "name": "Right eleventh rib",
+      "matched_source": "right eleventh rib.stl",
+      "old_triangles": 3676,
+      "status": "skipped",
+      "reason": "Alignment p95 5.37 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right femur",
+      "matched_source": "right femur.stl",
+      "old_triangles": 4768,
+      "status": "skipped",
+      "reason": "Alignment p95 11.21 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right fibula",
+      "matched_source": "right fibula.stl",
+      "old_triangles": 1448,
+      "status": "skipped",
+      "reason": "Alignment p95 12.30 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right fifth metacarpal bone",
+      "matched_source": "right fifth metacarpal bone.stl",
+      "old_triangles": 486,
+      "status": "accepted",
+      "alignment_p95_mm": 0.757,
+      "alignment_median_mm": 0.41,
+      "extra_motion_mm": 0.069,
+      "source_triangles": 2178
+    },
+    {
+      "name": "Right fifth metatarsal bone",
+      "matched_source": "right fifth metatarsal bone.stl",
+      "old_triangles": 732,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right fifth rib",
+      "matched_source": "right fifth rib.stl",
+      "old_triangles": 7346,
+      "status": "accepted",
+      "alignment_p95_mm": 1.551,
+      "alignment_median_mm": 0.813,
+      "extra_motion_mm": 1.77,
+      "source_triangles": 41634
+    },
+    {
+      "name": "Right first metacarpal bone",
+      "matched_source": "right first metacarpal bone.stl",
+      "old_triangles": 454,
+      "status": "accepted",
+      "alignment_p95_mm": 0.825,
+      "alignment_median_mm": 0.437,
+      "extra_motion_mm": 0.166,
+      "source_triangles": 2434
+    },
+    {
+      "name": "Right first metatarsal bone",
+      "matched_source": "right first metatarsal bone.stl",
+      "old_triangles": 862,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right first rib",
+      "matched_source": "right first rib.stl",
+      "old_triangles": 2472,
+      "status": "accepted",
+      "alignment_p95_mm": 1.09,
+      "alignment_median_mm": 0.485,
+      "extra_motion_mm": 0.307,
+      "source_triangles": 14194
+    },
+    {
+      "name": "Right fourth metacarpal bone",
+      "matched_source": "right fourth metacarpal bone.stl",
+      "old_triangles": 542,
+      "status": "accepted",
+      "alignment_p95_mm": 0.81,
+      "alignment_median_mm": 0.422,
+      "extra_motion_mm": 0.168,
+      "source_triangles": 2306
+    },
+    {
+      "name": "Right fourth metatarsal bone",
+      "matched_source": "right fourth metatarsal bone.stl",
+      "old_triangles": 678,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right fourth rib",
+      "matched_source": "right fourth rib.stl",
+      "old_triangles": 6710,
+      "status": "accepted",
+      "alignment_p95_mm": 2.633,
+      "alignment_median_mm": 0.895,
+      "extra_motion_mm": 1.934,
+      "source_triangles": 38488
+    },
+    {
+      "name": "Right hamate",
+      "matched_source": "right hamate.stl",
+      "old_triangles": 392,
+      "status": "accepted",
+      "alignment_p95_mm": 0.696,
+      "alignment_median_mm": 0.356,
+      "extra_motion_mm": 0.199,
+      "source_triangles": 1150
+    },
+    {
+      "name": "Right hip bone",
+      "matched_source": "right hip bone.stl",
+      "old_triangles": 3962,
+      "status": "skipped",
+      "reason": "Alignment p95 5.89 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right humerus",
+      "matched_source": "right humerus.stl",
+      "old_triangles": 3744,
+      "status": "accepted",
+      "alignment_p95_mm": 2.004,
+      "alignment_median_mm": 0.994,
+      "extra_motion_mm": 0.16,
+      "source_triangles": 16268
+    },
+    {
+      "name": "Right intermediate cuneiform bone",
+      "matched_source": "right intermediate cuneiform bone.stl",
+      "old_triangles": 342,
+      "status": "accepted",
+      "alignment_p95_mm": 1.079,
+      "alignment_median_mm": 0.51,
+      "extra_motion_mm": 0.461,
+      "source_triangles": 1948
+    },
+    {
+      "name": "Right lacrimal bone",
+      "matched_source": "right lacrimal bone.stl",
+      "old_triangles": 382,
+      "status": "accepted",
+      "alignment_p95_mm": 0.747,
+      "alignment_median_mm": 0.366,
+      "extra_motion_mm": 0.252,
+      "source_triangles": 1114
+    },
+    {
+      "name": "Right lateral cuneiform bone",
+      "matched_source": "right lateral cuneiform bone.stl",
+      "old_triangles": 472,
+      "status": "accepted",
+      "alignment_p95_mm": 1.065,
+      "alignment_median_mm": 0.544,
+      "extra_motion_mm": 0.624,
+      "source_triangles": 2702
+    },
+    {
+      "name": "Right lunate",
+      "matched_source": "right lunate.stl",
+      "old_triangles": 252,
+      "status": "accepted",
+      "alignment_p95_mm": 0.737,
+      "alignment_median_mm": 0.412,
+      "extra_motion_mm": 0.307,
+      "source_triangles": 864
+    },
+    {
+      "name": "Right maxilla",
+      "matched_source": "right maxilla.stl",
+      "old_triangles": 8512,
+      "status": "accepted",
+      "alignment_p95_mm": 1.708,
+      "alignment_median_mm": 0.874,
+      "extra_motion_mm": 0.236,
+      "source_triangles": 14148
+    },
+    {
+      "name": "Right medial cuneiform bone",
+      "matched_source": "right medial cuneiform bone.stl",
+      "old_triangles": 716,
+      "status": "accepted",
+      "alignment_p95_mm": 1.201,
+      "alignment_median_mm": 0.593,
+      "extra_motion_mm": 0.476,
+      "source_triangles": 4114
+    },
+    {
+      "name": "Right nasal bone",
+      "matched_source": "right nasal bone.stl",
+      "old_triangles": 664,
+      "status": "accepted",
+      "alignment_p95_mm": 0.593,
+      "alignment_median_mm": 0.259,
+      "extra_motion_mm": 0.117,
+      "source_triangles": 1024
+    },
+    {
+      "name": "Right ninth rib",
+      "matched_source": "right ninth rib.stl",
+      "old_triangles": 5714,
+      "status": "skipped",
+      "reason": "Alignment p95 4.75 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right palatine bone",
+      "matched_source": "right palatine bone.stl",
+      "old_triangles": 1166,
+      "status": "skipped",
+      "reason": "Anatomical scale mismatch: 0.831"
+    },
+    {
+      "name": "Right parietal bone",
+      "matched_source": "right parietal bone.stl",
+      "old_triangles": 20800,
+      "status": "accepted",
+      "alignment_p95_mm": 3.907,
+      "alignment_median_mm": 1.423,
+      "extra_motion_mm": 2.842,
+      "source_triangles": 29734
+    },
+    {
+      "name": "Right patella",
+      "matched_source": "right patella.stl",
+      "old_triangles": 454,
+      "status": "accepted",
+      "alignment_p95_mm": 1.074,
+      "alignment_median_mm": 0.595,
+      "extra_motion_mm": 0.218,
+      "source_triangles": 1334
+    },
+    {
+      "name": "Right pisiform",
+      "matched_source": "right pisiform.stl",
+      "old_triangles": 228,
+      "status": "accepted",
+      "alignment_p95_mm": 0.531,
+      "alignment_median_mm": 0.303,
+      "extra_motion_mm": 0.157,
+      "source_triangles": 396
+    },
+    {
+      "name": "Right radius",
+      "matched_source": "right radius.stl",
+      "old_triangles": 1018,
+      "status": "accepted",
+      "alignment_p95_mm": 1.605,
+      "alignment_median_mm": 0.745,
+      "extra_motion_mm": 0.285,
+      "source_triangles": 2804
+    },
+    {
+      "name": "Right scaphoid",
+      "matched_source": "right scaphoid.stl",
+      "old_triangles": 340,
+      "status": "accepted",
+      "alignment_p95_mm": 0.767,
+      "alignment_median_mm": 0.397,
+      "extra_motion_mm": 0.087,
+      "source_triangles": 1074
+    },
+    {
+      "name": "Right scapula",
+      "matched_source": "right scapula.stl",
+      "old_triangles": 13836,
+      "status": "accepted",
+      "alignment_p95_mm": 2.304,
+      "alignment_median_mm": 1.167,
+      "extra_motion_mm": 2.051,
+      "source_triangles": 113256
+    },
+    {
+      "name": "Right second metacarpal bone",
+      "matched_source": "right second metacarpal bone.stl",
+      "old_triangles": 750,
+      "status": "accepted",
+      "alignment_p95_mm": 0.731,
+      "alignment_median_mm": 0.391,
+      "extra_motion_mm": 0.175,
+      "source_triangles": 3218
+    },
+    {
+      "name": "Right second metatarsal bone",
+      "matched_source": "right second metatarsal bone.stl",
+      "old_triangles": 744,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right second rib",
+      "matched_source": "right second rib.stl",
+      "old_triangles": 4236,
+      "status": "accepted",
+      "alignment_p95_mm": 2.395,
+      "alignment_median_mm": 0.671,
+      "extra_motion_mm": 0.999,
+      "source_triangles": 23694
+    },
+    {
+      "name": "Right seventh rib",
+      "matched_source": "right seventh rib.stl",
+      "old_triangles": 7550,
+      "status": "accepted",
+      "alignment_p95_mm": 3.883,
+      "alignment_median_mm": 1.059,
+      "extra_motion_mm": 2.497,
+      "source_triangles": 43146
+    },
+    {
+      "name": "Right sixth rib",
+      "matched_source": "right sixth rib.stl",
+      "old_triangles": 7742,
+      "status": "accepted",
+      "alignment_p95_mm": 1.801,
+      "alignment_median_mm": 0.836,
+      "extra_motion_mm": 1.674,
+      "source_triangles": 44634
+    },
+    {
+      "name": "Right talus",
+      "matched_source": "right talus.stl",
+      "old_triangles": 1338,
+      "status": "accepted",
+      "alignment_p95_mm": 3.121,
+      "alignment_median_mm": 0.958,
+      "extra_motion_mm": 1.722,
+      "source_triangles": 5962
+    },
+    {
+      "name": "Right temporal bone",
+      "matched_source": "right temporal bone.stl",
+      "old_triangles": 7600,
+      "status": "accepted",
+      "alignment_p95_mm": 1.959,
+      "alignment_median_mm": 0.97,
+      "extra_motion_mm": 0.945,
+      "source_triangles": 11274
+    },
+    {
+      "name": "Right tenth rib",
+      "matched_source": "right tenth rib.stl",
+      "old_triangles": 5126,
+      "status": "skipped",
+      "reason": "Alignment p95 5.72 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right third metacarpal bone",
+      "matched_source": "right third metacarpal bone.stl",
+      "old_triangles": 636,
+      "status": "accepted",
+      "alignment_p95_mm": 0.784,
+      "alignment_median_mm": 0.427,
+      "extra_motion_mm": 0.166,
+      "source_triangles": 3018
+    },
+    {
+      "name": "Right third metatarsal bone",
+      "matched_source": "right third metatarsal bone.stl",
+      "old_triangles": 722,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right third rib",
+      "matched_source": "right third rib.stl",
+      "old_triangles": 5480,
+      "status": "accepted",
+      "alignment_p95_mm": 3.362,
+      "alignment_median_mm": 0.828,
+      "extra_motion_mm": 1.205,
+      "source_triangles": 30860
+    },
+    {
+      "name": "Right tibia",
+      "matched_source": "right tibia.stl",
+      "old_triangles": 2494,
+      "status": "skipped",
+      "reason": "Alignment p95 15.72 mm exceeds 4 mm"
+    },
+    {
+      "name": "Right trapezium",
+      "matched_source": "right trapezium.stl",
+      "old_triangles": 326,
+      "status": "accepted",
+      "alignment_p95_mm": 0.637,
+      "alignment_median_mm": 0.35,
+      "extra_motion_mm": 0.119,
+      "source_triangles": 1026
+    },
+    {
+      "name": "Right trapezoid",
+      "matched_source": "right trapezoid.stl",
+      "old_triangles": 274,
+      "status": "accepted",
+      "alignment_p95_mm": 0.562,
+      "alignment_median_mm": 0.3,
+      "extra_motion_mm": 0.147,
+      "source_triangles": 616
+    },
+    {
+      "name": "Right twelfth rib",
+      "matched_source": "right twelfth rib.stl",
+      "old_triangles": 2128,
+      "status": "skipped",
+      "reason": "Bone dimensions differ too much for safe replacement"
+    },
+    {
+      "name": "Right ulna",
+      "matched_source": "right ulna.stl",
+      "old_triangles": 1148,
+      "status": "accepted",
+      "alignment_p95_mm": 1.387,
+      "alignment_median_mm": 0.73,
+      "extra_motion_mm": 0.128,
+      "source_triangles": 3592
+    },
+    {
+      "name": "Right zygomatic bone",
+      "matched_source": "right zygomatic bone.stl",
+      "old_triangles": 2488,
+      "status": "accepted",
+      "alignment_p95_mm": 1.116,
+      "alignment_median_mm": 0.457,
+      "extra_motion_mm": 0.139,
+      "source_triangles": 4612
+    },
+    {
+      "name": "Sacrum",
+      "matched_source": "sacrum.stl",
+      "old_triangles": 8918,
+      "status": "accepted",
+      "alignment_p95_mm": 3.897,
+      "alignment_median_mm": 1.567,
+      "extra_motion_mm": 1.346,
+      "source_triangles": 44416
+    },
+    {
+      "name": "Second lumbar vertebra",
+      "matched_source": "second lumbar vertebra.stl",
+      "old_triangles": 3060,
+      "status": "accepted",
+      "alignment_p95_mm": 2.629,
+      "alignment_median_mm": 0.908,
+      "extra_motion_mm": 0.497,
+      "source_triangles": 6946
+    },
+    {
+      "name": "Second thoracic vertebra",
+      "matched_source": "second thoracic vertebra.stl",
+      "old_triangles": 1838,
+      "status": "accepted",
+      "alignment_p95_mm": 1.259,
+      "alignment_median_mm": 0.608,
+      "extra_motion_mm": 0.622,
+      "source_triangles": 8360
+    },
+    {
+      "name": "Seventh cervical vertebra",
+      "matched_source": "seventh cervical vertebra.stl",
+      "old_triangles": 1786,
+      "status": "accepted",
+      "alignment_p95_mm": 1.781,
+      "alignment_median_mm": 0.593,
+      "extra_motion_mm": 0.474,
+      "source_triangles": 5222
+    },
+    {
+      "name": "Seventh thoracic vertebra",
+      "matched_source": "seventh thoracic vertebra.stl",
+      "old_triangles": 2396,
+      "status": "accepted",
+      "alignment_p95_mm": 1.975,
+      "alignment_median_mm": 0.769,
+      "extra_motion_mm": 1.492,
+      "source_triangles": 10740
+    },
+    {
+      "name": "Sixth cervical vertebra",
+      "matched_source": "sixth cervical vertebra.stl",
+      "old_triangles": 1800,
+      "status": "accepted",
+      "alignment_p95_mm": 1.371,
+      "alignment_median_mm": 0.67,
+      "extra_motion_mm": 0.708,
+      "source_triangles": 6350
+    },
+    {
+      "name": "Sixth thoracic vertebra",
+      "matched_source": "sixth thoracic vertebra.stl",
+      "old_triangles": 2140,
+      "status": "accepted",
+      "alignment_p95_mm": 2.087,
+      "alignment_median_mm": 0.715,
+      "extra_motion_mm": 1.182,
+      "source_triangles": 4896
+    },
+    {
+      "name": "Sphenoid bone",
+      "matched_source": "sphenoid bone.stl",
+      "old_triangles": 11952,
+      "status": "accepted",
+      "alignment_p95_mm": 2.547,
+      "alignment_median_mm": 1.118,
+      "extra_motion_mm": 0.581,
+      "source_triangles": 15322
+    },
+    {
+      "name": "Tenth thoracic vertebra",
+      "matched_source": "tenth thoracic vertebra.stl",
+      "old_triangles": 2478,
+      "status": "accepted",
+      "alignment_p95_mm": 2.134,
+      "alignment_median_mm": 0.769,
+      "extra_motion_mm": 0.675,
+      "source_triangles": 11928
+    },
+    {
+      "name": "Third cervical vertebra",
+      "matched_source": "third cervical vertebra.stl",
+      "old_triangles": 1712,
+      "status": "accepted",
+      "alignment_p95_mm": 2.039,
+      "alignment_median_mm": 0.836,
+      "extra_motion_mm": 1.926,
+      "source_triangles": 5278
+    },
+    {
+      "name": "Third lumbar vertebra",
+      "matched_source": "third lumbar vertebra.stl",
+      "old_triangles": 3024,
+      "status": "accepted",
+      "alignment_p95_mm": 2.24,
+      "alignment_median_mm": 0.966,
+      "extra_motion_mm": 0.608,
+      "source_triangles": 14750
+    },
+    {
+      "name": "Third thoracic vertebra",
+      "matched_source": "third thoracic vertebra.stl",
+      "old_triangles": 1954,
+      "status": "accepted",
+      "alignment_p95_mm": 1.528,
+      "alignment_median_mm": 0.673,
+      "extra_motion_mm": 0.72,
+      "source_triangles": 8910
+    },
+    {
+      "name": "Twelfth thoracic vertebra",
+      "matched_source": "twelfth thoracic vertebra.stl",
+      "old_triangles": 2556,
+      "status": "accepted",
+      "alignment_p95_mm": 1.964,
+      "alignment_median_mm": 0.799,
+      "extra_motion_mm": 0.697,
+      "source_triangles": 6038
+    },
+    {
+      "name": "Vomer",
+      "matched_source": "vomer.stl",
+      "old_triangles": 3824,
+      "status": "skipped",
+      "reason": "No meaningful detail gain: 2422 vs 3824 triangles"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-25
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=261'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
+import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=265'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
@@ -48,7 +49,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.64'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.65'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -1454,7 +1455,8 @@ function prepareStructures(root){
   originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
-  installVertebraPilot(structures,THREE,{invalidate,teacherMode,storage:window.localStorage}); // ANATOMIQ_VERTEBRA_PILOT_264
+  const vertebraPilot=installVertebraPilot(structures,THREE,{invalidate,teacherMode,storage:window.localStorage}); // ANATOMIQ_VERTEBRA_PILOT_264
+  installSkeletalGeometryUpgrade(structures,THREE,{invalidate,teacherMode,storage:window.localStorage,pilot:vertebraPilot}); // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
   window.__AnatomIQEyeStatus={version:'2.2.13',source:'Original Écorché GLB',structures:eyeStructures.length,
     names:eyeStructures.map(s=>s.name),indices:structures.filter(s=>s.system==='ocular').map(s=>s.index)};
   console.info('AnatomIQ Eyes:',eyeStructures.length,'source-native eye structures registered.');

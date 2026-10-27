@@ -1,6 +1,6 @@
 {
-  "version": "2.2.64",
+  "version": "2.2.65",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Experimental device-only vertebra surface pilot: four selected Écorché bones; reversible subdivision, polygon audit; source replacement pending alignment verification."
+  "notes": "Optional source-geometry skeletal LOD; original bones retained for unmatched meshes and saved lesson stability."
 }
