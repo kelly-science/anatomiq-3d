@@ -47,7 +47,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.61'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.62'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -238,20 +238,25 @@ const labelContainer = $('label-markers');
 // ANATOMIQ_INLINE_LABELS_EASE_261: descriptions belong to callouts, not dialogs.
 // Keep the original marker's event handlers: clicking still focuses its structure.
 function anat261AttachDescription(label, marker){
-  const s=structures[label.s];
-  const custom=[label.description,label.desc,label.note,label.d]
-    .find(value=>typeof value==='string'&&value.trim());
-  const description=(custom|| (s ? anat249Description(s) : '') || '').trim();
-  if(!description || description===label.t) return;
+  // ANATOMIQ_TEACHER_CALLOUT_262: label.d is the teacher-entered annotation
+  // description. Never substitute the app-generated structure description.
+  // Keep the existing numbered badge and marker click/focus/drag handlers intact.
+  const text=marker.querySelector('.callout-text');
+  if(!text) return;
+  marker.classList.add('anat262-callout');
+  // The title and description must be one flex item, not side-by-side items.
+  // Moving nodes preserves their text and any attached event handlers.
+  const title=document.createElement('span');
+  title.className='anat262-label-title';
+  while(text.firstChild) title.appendChild(text.firstChild);
+  text.appendChild(title);
+  const description=typeof label.d==='string' ? label.d.trim() : '';
+  if(!description) return; // Title-only labels stay title-only.
   const el=document.createElement('span');
   el.className='anat261-description';
   el.textContent=description;
-  // In student reveal mode, never expose the answer before the first reveal click.
-  if(!teacherMode && labelMode==='reveal'){
-    el.hidden=true;
-    marker.addEventListener('click',()=>{el.hidden=false;},{once:true});
-  }
-  marker.appendChild(el);
+  // Reveal mode already hides .callout-text until .revealed is applied.
+  text.appendChild(el);
 }
 // The old modal's original close handler still performs any focus/scroll cleanup.
 // MutationObserver runs before browser paint, so the description-only popup never flashes.

@@ -1,0 +1,6 @@
+{
+  "version": "2.2.61",
+  "channel": "beta",
+  "published": "2026-10-27",
+  "notes": "Horizontal-only 680ms carousel with cubic settle and no overshoot; label descriptions inline, focus retained, popup suppressed. ANATOMIQ_INLINE_LABELS_EASE_261"
+}

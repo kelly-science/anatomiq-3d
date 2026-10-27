@@ -1,0 +1,48 @@
+/* AnatomIQ 2.2.62: title and teacher-authored description share the text column.
+   Leave numbered/reveal badges and leader lines in their original layout. */
+#label-markers .anatomy-label.anat262-callout {
+  max-width: min(300px, calc(100vw - 54px));
+  width: max-content;
+  min-width: 0;
+  height: auto;
+  box-sizing: border-box;
+  align-items: flex-start;
+  white-space: normal;
+  text-overflow: clip;
+}
+#label-markers .anatomy-label.anat262-callout .callout-text {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  text-overflow: clip;
+}
+#label-markers .anatomy-label.anat262-callout .anat262-label-title {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-weight: 700;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  text-overflow: clip;
+}
+#label-markers .anatomy-label.anat262-callout .anat261-description {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid rgba(160,177,187,.38);
+  font-size: .87em;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: left;
+  pointer-events: none;
+}
+/* The original CSS hides the entire text column before reveal. Preserve this. */
+#label-markers .anatomy-label.anat262-callout.reveal:not(.revealed) .callout-text {
+  display: none;
+}
