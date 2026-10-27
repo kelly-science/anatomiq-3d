@@ -1,6 +1,6 @@
 {
-  "version": "2.2.65b",
+  "version": "2.2.65c",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Fix detailed skeletal material/UV incompatibility, preserving Standard geometry and original appearance."
+  "notes": "Selective registered bones (exclude skull/ribs/sternum); original-derived tone; geometry and on-demand render audit."
 }
