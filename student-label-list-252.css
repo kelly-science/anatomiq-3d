@@ -1,0 +1,35 @@
+/* ANATOMIQ_STUDENT_LABEL_LIST_252: Student-only independent label list.
+   No changes to the Three.js renderer, labels or occlusion BVH. */
+body:not(.student-mode) .viewer-panel #anat-student-label-list-button,
+body:not(.student-mode) .viewer-panel #polish-student-labels {display:none!important}
+body.student-mode .viewer-panel #anat-student-label-list-button {
+  position:absolute;z-index:20;top:65px;left:16px;
+  display:inline-flex;align-items:center;justify-content:center;
+  max-width:calc(100% - 32px);min-height:34px;
+  padding:8px 12px;border:1px solid #416977;border-radius:9px;
+  background:rgba(25,41,54,.95);color:#e0f0f4;
+  font-size:12px;font-weight:650;line-height:1.2;
+  box-shadow:0 5px 15px #0006;cursor:pointer;
+}
+body.student-mode .viewer-panel #anat-student-label-list-button:hover {background:#2c4b59}
+body.student-mode .viewer-panel #anat-student-label-list-button[hidden] {display:none!important}
+body.student-mode .viewer-panel #polish-student-labels {
+  position:absolute;z-index:19;top:106px;left:16px;
+  width:min(290px,calc(100% - 32px));max-height:min(52%,440px);
+  overflow-y:auto;overscroll-behavior:contain;
+  padding:12px 10px 12px;border:1px solid #385967;border-radius:12px;
+  background:rgba(19,34,46,.97);color:#dae9ee;
+  box-shadow:0 12px 32px #0009;scrollbar-width:thin;
+  backdrop-filter:blur(10px);
+}
+body.student-mode .viewer-panel #polish-student-labels[hidden] {display:none!important}
+body.student-mode .anat-label-list-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+body.student-mode .anat-label-list-header button{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:7px;background:transparent;color:#acc7d3;font-size:21px;line-height:1;cursor:pointer}
+body.student-mode .anat-label-list-header button:hover{background:#35515f;color:white}
+body.student-mode .viewer-panel #polish-student-label-list {display:flex;flex-direction:column;gap:4px;margin-top:6px}
+body.student-mode .viewer-panel #polish-student-label-list>.polish-student-label-item{flex:0 0 auto}
+body.practical-active #anat-student-label-list-button {display:none!important}
+@media(max-width:760px){
+  body.student-mode .viewer-panel #anat-student-label-list-button{top:47px;left:9px;min-height:32px;padding:7px 10px}
+  body.student-mode .viewer-panel #polish-student-labels{top:87px;left:9px;width:min(290px,calc(100% - 18px));max-height:48%}
+}

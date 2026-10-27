@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.51'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.52'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -194,6 +194,7 @@ function applyStudentPermissions(){
   b.classList.toggle('student-names',studentPermissions.sn);
   b.classList.toggle('student-explore-enabled',studentExplore);
   b.classList.toggle('student-system-toolbar-enabled',studentPermissions.ot!==false); // ANATOMIQ_SELECTION_STUDENT_251
+  b.classList.toggle('student-label-list-enabled',!!studentPermissions.sl && !!studentPermissions.ll); // ANATOMIQ_STUDENT_LABEL_LIST_252
   elements.search.disabled=!studentPermissions.ss;
   if(!studentPermissions.ss)elements.search.value='';
   if(!studentPermissions.sn)setSelection(null);
@@ -2968,16 +2969,28 @@ function polishFocusLabel(label,index){
   marker?.classList.add('revealed');
   if(!teacherMode)polishShowLabelDetails(label);
 }
+let studentLabelListExpanded=window.innerWidth>900;
+$('anat-student-label-list-button')?.addEventListener('click',()=>{
+  studentLabelListExpanded=!studentLabelListExpanded;
+  polishRenderStudentLabels();
+});
+$('anat-student-label-list-close')?.addEventListener('click',()=>{
+  studentLabelListExpanded=false;
+  polishRenderStudentLabels();
+});
 function polishRenderStudentLabels(){
   const panel=$('polish-student-labels'),list=$('polish-student-label-list'),toggle=$('polish-label-toggle');
   if(!panel||!list||!toggle)return;
-  const allowed=!teacherMode && studentPermissions.sl && labelMode!=='hidden' && labels.length>0;
-  panel.hidden=!allowed;
-  toggle.hidden=!allowed;
+  const annotationsAllowed=!teacherMode && studentPermissions.sl && labelMode!=='hidden' && labels.length>0;
+  const listAllowed=annotationsAllowed && !!studentPermissions.ll;
+  const listButton=$('anat-student-label-list-button');
+  if(listButton){listButton.hidden=!listAllowed;listButton.setAttribute('aria-expanded',String(listAllowed&&studentLabelListExpanded));}
+  panel.hidden=!listAllowed || !studentLabelListExpanded;
+  toggle.hidden=!annotationsAllowed;
   toggle.textContent=polishStudentLabelsVisible?'Labels: On':'Labels: Off';
   toggle.setAttribute('aria-pressed',String(polishStudentLabelsVisible));
   list.replaceChildren();
-  if(!allowed || !polishStudentLabelsVisible)return;
+  if(!listAllowed || !studentLabelListExpanded)return;
   labels.forEach((label,i)=>{
     const item=document.createElement('button');item.type='button';item.className='polish-student-label-item';
     item.textContent=`${i+1}. ${labelMode==='reveal'?'Label '+(i+1):label.t}${label.d||label.u?'  ⓘ':''}`;
@@ -3280,7 +3293,7 @@ async function loadProject(data){
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode){
     // Old lessons have no 'ot' field: retain the legacy exploration-dependent toolbar.
-    studentPermissions={...publishPermissions,ot:publishPermissions.ot??publishPermissions.ex};
+    studentPermissions={...publishPermissions,ot:publishPermissions.ot??publishPermissions.ex,ll:publishPermissions.ll??Boolean(publishPermissions.sl&&(publishPermissions.st||publishPermissions.ss))};
     // Apply layout permissions before restoring the scene; avoid a sidebar-layout flash.
     const body=document.body;
     body.classList.toggle('student-search',studentPermissions.ss);
@@ -3500,12 +3513,18 @@ $('cloud-unlock-password').addEventListener('keydown',e=>{
 });
 
 // --- Publishing: one link with explicit lesson-wide student permissions. ---
-const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ex:'publish-explore',ot:'publish-system-toolbar'}; // ANATOMIQ_SELECTION_STUDENT_251
+const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ll:'publish-label-list',ex:'publish-explore',ot:'publish-system-toolbar'}; // ANATOMIQ_SELECTION_STUDENT_251 ANATOMIQ_STUDENT_LABEL_LIST_252
 let embedLink='';
+function studentPublishPermission(permissions,key){
+  if(key==='ot')return permissions.ot??permissions.ex;
+  // Legacy lessons had the label list inside the explorer. Preserve its effective access.
+  if(key==='ll')return permissions.ll??Boolean(permissions.sl&&(permissions.st||permissions.ss));
+  return permissions[key];
+}
 function showPublishPermissions(permissions){
   validatePermissions(permissions);
-  for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=key==='ot'?(permissions.ot??permissions.ex):permissions[key];
-  const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>(k==='ot'?(permissions.ot??permissions.ex):permissions[k])===preset[k]);
+  for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=studentPublishPermission(permissions,key);
+  const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>studentPublishPermission(permissions,k)===preset[k]);
   $('publish-preset').value=exact(STUDY_PERMISSIONS)?'study':exact(EXAM_PERMISSIONS)?'exam':'custom';
 }
 function currentPublishPermissions(){

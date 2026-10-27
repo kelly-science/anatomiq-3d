@@ -1,6 +1,6 @@
 {
-  "version": "2.2.51",
+  "version": "2.2.52",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Canvas click deselection, no highlight from label focus, independent student system toolbar permission, and responsive no-explorer startup hardening"
+  "notes": "Independent Student View label list/publishing permission and removal of redundant left-sidebar Show Teeth control"
 }
