@@ -3,7 +3,8 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=255';
-import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=255'; // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=255';
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=256'; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
@@ -46,7 +47,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.55'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.56'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -394,7 +395,9 @@ if(__labelAuditOn){
 }
 // END ANATOMIQ_LABEL_AUDIT_236
 
+let __anat256LiveCarousel=null; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256
 function draw(){
+  if(__anat256LiveCarousel?.active){frameRequest=0;return;}
   const __lpStart=__labelAudit.enabled?performance.now():0;
   frameRequest=0;
   if(document.hidden)return;
@@ -2583,7 +2586,15 @@ async function switchChapter(index){
     finally{studentAssetBusy=false;}
   }
   const iris=chapterIrisEnabled()?createIrisTransition(elements.stage):null;
-  const carousel=chapterCarouselEnabled()?createChapterCarousel(elements.stage,renderer.domElement,chapterSlideDirection(activeChapter,index,chapters.length)):null; // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+  const __anat256Direction=chapterSlideDirection(activeChapter,index,chapters.length);
+  let liveCarousel=null;
+  if(chapterCarouselEnabled()){
+    try{liveCarousel=createLiveChapterCarousel({THREE,scene,camera,renderer,stage:elements.stage,direction:__anat256Direction});}
+    catch(error){console.warn('Live chapter carousel unavailable; using snapshot animation',error);}
+  }
+  const carousel=chapterCarouselEnabled()?(liveCarousel||createChapterCarousel(elements.stage,renderer.domElement,__anat256Direction)):null; // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256
+  const __anat256WasOrbitEnabled=controls.enabled;
+  if(liveCarousel){controls.enabled=false;__anat256LiveCarousel=liveCarousel;}
   if(iris || carousel)__anat254IrisBusy=true;
   let polishSnapshot=null;
   try{
@@ -2597,10 +2608,21 @@ async function switchChapter(index){
     if(!teacherMode)studentHistoryBegin();
   }finally{
     if(iris){renderer.render(scene,camera);invalidate(3);await iris.open();}
-    else if(carousel){renderer.render(scene,camera);invalidate(3);await carousel.play(renderer.domElement);}
+    else if(carousel){
+      if(liveCarousel)await liveCarousel.play(scene,camera);
+      else {renderer.render(scene,camera);invalidate(3);await carousel.play(renderer.domElement);}
+    }
     else polishRevealChapter(polishSnapshot);
   }
-  }finally{__anat254IrisBusy=false;}
+  }finally{
+    if(liveCarousel){
+      liveCarousel.remove();
+      __anat256LiveCarousel=null;
+      controls.enabled=__anat256WasOrbitEnabled;
+      renderer.render(scene,camera);invalidate(3);
+    }
+    __anat254IrisBusy=false;
+  }
   if(teacherMode)queueDraft();else setStatus('Student view');
 }
 function createChapter(duplicate){
