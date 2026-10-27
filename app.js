@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.50'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.51'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -193,6 +193,7 @@ function applyStudentPermissions(){
   b.classList.toggle('student-tree',studentPermissions.st);
   b.classList.toggle('student-names',studentPermissions.sn);
   b.classList.toggle('student-explore-enabled',studentExplore);
+  b.classList.toggle('student-system-toolbar-enabled',studentPermissions.ot!==false); // ANATOMIQ_SELECTION_STUDENT_251
   elements.search.disabled=!studentPermissions.ss;
   if(!studentPermissions.ss)elements.search.value='';
   if(!studentPermissions.sn)setSelection(null);
@@ -204,7 +205,11 @@ function applyStudentPermissions(){
   if(!studentPermissions.ss && !studentPermissions.st)elements.sidebar.classList.remove('open');
   renderList();
   if(typeof polishRenderStudentLabels==='function')polishRenderStudentLabels();
+  // The sidebar may have been removed entirely: resize canvas after CSS reflow.
   resize();
+  requestAnimationFrame(()=>{resize();invalidate(2);});
+  window.__AnatomIQStudentShell={search:!!studentPermissions.ss,explorer:!!studentPermissions.st,
+    systems:studentPermissions.ot!==false,identification:!!studentPermissions.sn};
 }
 document.body.classList.toggle('student-mode', !teacherMode);
 $('student-badge').hidden = teacherMode;
@@ -1323,7 +1328,12 @@ renderer.domElement.addEventListener('pointerup',event=>{
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
   raycaster.setFromCamera(pointer,camera);
   const hit=raycaster.intersectObjects(currentlyVisible().map(s=>s.mesh),false)[0];
-  if(!hit || (!teacherMode && !studentPermissions.sn))return;
+  if(!hit){
+    // ANATOMIQ_SELECTION_STUDENT_251: empty-canvas click deselects without changing Orbit.
+    if(!placingLabel && !paintMode){isolated=false;setSelection(null);}
+    return;
+  }
+  if(!teacherMode && !studentPermissions.sn)return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
   if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)&&!placingLabel){
@@ -2026,7 +2036,7 @@ $('eye-focus').addEventListener('click',()=>{
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
 async function changeSystemLayer(system){
   divisionNavReset(false);
-  if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore))return;
+  if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore&&studentPermissions.ot===false))return;
   if(!teacherMode && (system==='digestive' || system==='cardiovascular'||system==='respiratory'||system==='nervous'||system==='urinary'||system==='lymphatic'||system==='connective')){
     const type=system==='digestive'?'detailedDigestive':system==='respiratory'?'respiratory':system==='nervous'?'nervous':system==='urinary'?'urinary':system==='lymphatic'?'lymphatic':system==='connective'?'connective':'cardiovascular';
     const active=system==='digestive'?systemLayers.digestive:system==='respiratory'?systemLayers.respiratory:system==='nervous'?systemLayers.nervous:system==='urinary'?systemLayers.urinary:system==='lymphatic'?systemLayers.lymphatic:system==='connective'?systemLayers.connective:systemLayers.cardiovascular;
@@ -2952,7 +2962,7 @@ function smartSaveFocusView(label){
 function polishFocusLabel(label,index){
   const s=structures[label.s];
   if(!s || !s.mesh.visible){showToast('This label’s structure is not visible in the current chapter.');return;}
-  if(teacherMode||studentPermissions.sn)setSelection(s);
+  // Label focus is camera-only: no anatomy selection/highlight.
   if(!smartFocusCamera(label))return;
   const marker=markers.get(label.id)?.marker;
   marker?.classList.add('revealed');
@@ -3268,7 +3278,16 @@ async function loadProject(data){
   activeChapter=!teacherMode?0:(project.v===1?0:project.start);
   practicalConfig=normalPractical(project.v===2?project.practical:null);
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
-  if(!teacherMode)studentPermissions={...publishPermissions};
+  if(!teacherMode){
+    // Old lessons have no 'ot' field: retain the legacy exploration-dependent toolbar.
+    studentPermissions={...publishPermissions,ot:publishPermissions.ot??publishPermissions.ex};
+    // Apply layout permissions before restoring the scene; avoid a sidebar-layout flash.
+    const body=document.body;
+    body.classList.toggle('student-search',studentPermissions.ss);
+    body.classList.toggle('student-tree',studentPermissions.st);
+    body.classList.toggle('student-names',studentPermissions.sn);
+    body.classList.toggle('student-system-toolbar-enabled',studentPermissions.ot);
+  }
   else showPublishPermissions(publishPermissions);
   $('project-title').value=project.t;
   await applyScene(chapters[activeChapter]);
@@ -3481,12 +3500,12 @@ $('cloud-unlock-password').addEventListener('keydown',e=>{
 });
 
 // --- Publishing: one link with explicit lesson-wide student permissions. ---
-const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ex:'publish-explore'};
+const PUBLISH_KEYS={ss:'publish-search',st:'publish-tree',sn:'publish-names',sl:'publish-labels',ex:'publish-explore',ot:'publish-system-toolbar'}; // ANATOMIQ_SELECTION_STUDENT_251
 let embedLink='';
 function showPublishPermissions(permissions){
   validatePermissions(permissions);
-  for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=permissions[key];
-  const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>permissions[k]===preset[k]);
+  for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=key==='ot'?(permissions.ot??permissions.ex):permissions[key];
+  const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>(k==='ot'?(permissions.ot??permissions.ex):permissions[k])===preset[k]);
   $('publish-preset').value=exact(STUDY_PERMISSIONS)?'study':exact(EXAM_PERMISSIONS)?'exam':'custom';
 }
 function currentPublishPermissions(){

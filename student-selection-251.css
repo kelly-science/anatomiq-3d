@@ -1,0 +1,28 @@
+/* ANATOMIQ_SELECTION_STUDENT_251 — student publishing permission and independent viewer layout.
+   Loaded after styles.css and responsive-chapters-panels.css. No changes to 3D overlays. */
+body.student-mode.student-system-toolbar-enabled .mode-tabs {display:flex!important;}
+body.student-mode:not(.student-system-toolbar-enabled) .mode-tabs {display:none!important;}
+/* With Search and Explorer both disabled, the canvas must retain a nonzero flex/grid track. */
+body.student-mode:not(.student-tree):not(.student-search) .workspace.anat-panels-enabled>.viewer-panel {
+  min-width:0!important;min-height:0;width:100%;
+}
+@media(min-width:1441px){
+  body.student-mode:not(.student-tree):not(.student-search).anat-responsive-panels .workspace.anat-panels-enabled {
+    grid-template-columns:0px minmax(0,1fr) var(--anat-right-track,0px)!important;
+  }
+  /* Critical: hidden first grid child otherwise auto-places viewer in the zero-width track. */
+  body.student-mode:not(.student-tree):not(.student-search).anat-responsive-panels .workspace.anat-panels-enabled>.viewer-panel {
+    grid-column:2!important;grid-row:1;
+  }
+  body.student-mode:not(.student-tree):not(.student-search).anat-responsive-panels .workspace.anat-panels-enabled>#info-sidebar {
+    grid-column:3!important;grid-row:1;
+  }
+}
+@media(max-width:1440px){
+  body.student-mode:not(.student-tree):not(.student-search).anat-responsive-panels .workspace.anat-panels-enabled {
+    display:block!important;min-width:0;min-height:0;
+  }
+  body.student-mode:not(.student-tree):not(.student-search).anat-responsive-panels .workspace.anat-panels-enabled>.viewer-panel {
+    position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  }
+}

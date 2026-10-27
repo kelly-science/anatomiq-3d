@@ -1,6 +1,6 @@
 {
-  "version": "2.2.50",
+  "version": "2.2.51",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Removed Teacher Studio card; inline tab-title Rename Lesson and chapter-card title editing. Preserves chapter and lesson storage formats."
+  "notes": "Canvas click deselection, no highlight from label focus, independent student system toolbar permission, and responsive no-explorer startup hardening"
 }

@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="./typography-248.css?rev=248" /> <!-- ANATOMIQ_TYPOGRAPHY_248 -->
   <link rel="stylesheet" href="./lesson-experience-249.css?rev=249" /> <!-- ANATOMIQ_LESSON_EXPERIENCE_249 -->
   <link rel="stylesheet" href="./lesson-renaming-250.css?rev=250" /> <!-- ANATOMIQ_LESSON_RENAME_250 -->
+  <link rel="stylesheet" href="./student-selection-251.css?rev=251" /> <!-- ANATOMIQ_SELECTION_STUDENT_251 -->
 </head>
 <body>
   <div class="app-shell">
@@ -41,7 +42,7 @@
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
-        <span class="version">STUDIO 2.2.50</span>
+        <span class="version">STUDIO 2.2.51</span>
       </div>
       <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
         <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
@@ -440,6 +441,7 @@
           <label><input type="checkbox" id="publish-names" checked /><span><strong>Identify by clicking</strong><small>Reveal anatomical names and descriptions on selection</small></span></label>
           <label><input type="checkbox" id="publish-labels" checked /><span><strong>Teacher annotations</strong><small>Show labels using each chapter’s reveal settings</small></span></label>
           <label><input type="checkbox" id="publish-explore" checked /><span><strong>Hide and isolate bones</strong><small>Allow changing the displayed structures during viewing</small></span></label>
+           <label><input type="checkbox" id="publish-system-toolbar" checked /><span><strong>Organ system toolbar</strong><small>Allow students to show or hide anatomical systems at the top</small></span></label>
         </div>
       </div>
       <button id="generate-student-link" class="button primary full" type="button">Generate student links &amp; embed code</button>
@@ -672,7 +674,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=lesson250'); // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=student251'); // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
   <script defer src="./interface-2221.js?rev=workspace241"></script>

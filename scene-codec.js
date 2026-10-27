@@ -114,11 +114,12 @@ export function validateScene(scene) {
   return scene;
 }
 /** Publish permissions on the whole lesson. Omitted for older links (their original behavior is preserved). */
-export const STUDY_PERMISSIONS = Object.freeze({ss:true,st:true,sn:true,sl:true,ex:true});
-export const EXAM_PERMISSIONS = Object.freeze({ss:false,st:false,sn:false,sl:false,ex:false});
+export const STUDY_PERMISSIONS = Object.freeze({ss:true,st:true,sn:true,sl:true,ex:true,ot:true});
+export const EXAM_PERMISSIONS = Object.freeze({ss:false,st:false,sn:false,sl:false,ex:false,ot:false});
 export function validatePermissions(p){
   if(!p || typeof p!=='object' || Array.isArray(p) ||
-    !['ss','st','sn','sl','ex'].every(key=>typeof p[key]==='boolean'))
+    (!['ss','st','sn','sl','ex'].every(key=>typeof p[key]==='boolean') ||
+      (p.ot!==undefined && typeof p.ot!=='boolean'))) // optional for older lessons
     throw new Error('Invalid student publishing permissions.');
   return p;
 }
