@@ -3,9 +3,10 @@
    No changes to saved anatomy IDs, chapters, or project schema. */
 export const PRACTICAL_DEFAULTS = Object.freeze({on:false,count:15,off:[]});
 export function normalPractical(value){
-  if(!value||typeof value!=='object')return {on:false,count:15,off:[]};
+  if(!value||typeof value!=='object')return {on:false,count:15,off:[],chapters:null};
   return {on:value.on===true,count:Math.max(1,Math.min(60,Number.isInteger(value.count)?value.count:15)),
-    off:Array.isArray(value.off)?[...new Set(value.off.filter(v=>typeof v==='string'&&/^(s:\d{1,5}|l:[0-9A-Za-z-]{6,64})$/.test(v)))].slice(0,3000):[]};
+    off:Array.isArray(value.off)?[...new Set(value.off.filter(v=>typeof v==='string'&&/^(s:\d{1,5}|l:[0-9A-Za-z-]{6,64})$/.test(v)))].slice(0,3000):[],
+     chapters:Array.isArray(value.chapters)?[...new Set(value.chapters.filter(i=>Number.isInteger(i)&&i>=0&&i<12))]:null};
 }
 export function newPracticalLabelId(){
   return 'q-'+(globalThis.crypto?.randomUUID?.()||`${Date.now().toString(36)}-${Math.random().toString(36).slice(2,14)}`);
@@ -49,7 +50,7 @@ export function practicalCandidates(chapters,structures){
       if(!isVisible(i))continue;
       const s=structures[i];const name=String(s?.name||'').trim();
       if(!name||!s||!Number.isInteger(s.index)||s.index!==i)continue;
-      if(!seenStructure.has(i)){
+      { // Chapter-aware candidates: retain eligible structure variants in each chapter.
         raw.push({key:`s:${i}`,type:'structure',s:i,chapter:ci,name,
           system:s.system||'',tissue:s.tissue||'',side:s.side||''});
         seenStructure.add(i);
@@ -60,7 +61,7 @@ export function practicalCandidates(chapters,structures){
       const s=structures[label.s];const name=String(label.t||'').trim();
       if(!s||!name||!label.qi||!/^q-[0-9A-Za-z-]{4,62}$/.test(label.qi))continue;
       const key='l:'+label.qi;
-      const signature=`${label.s}:${normalizedName(name)}`;
+      const signature=`${ci}:${label.s}:${normalizedName(name)}`;
       if(seenLabels.has(signature))continue;
       seenLabels.add(signature);
       raw.push({key,type:'label',s:label.s,chapter:ci,name,
@@ -106,13 +107,12 @@ const keysFor=q=>Array.isArray(q.memberKeys)&&q.memberKeys.length?q.memberKeys:[
 export function practicalAttempt(candidates,structures,config,randomIndex=randomInteger){
   const cfg=normalPractical(config),off=new Set(cfg.off);
   const eligible=candidates.map(group=>{
-    const variants=variantsFor(group).filter(v=>!off.has(v.key));
+    const variants=variantsFor(group).filter(v=>!off.has(v.key)&&(!Array.isArray(cfg.chapters)||cfg.chapters.includes(v.chapter)));
     return variants.length?{group,variants}:null;
   }).filter(Boolean);
   const selected=shuffled(eligible,randomIndex).slice(0,Math.min(cfg.count,eligible.length));
-  const catalog=[...candidates.map(c=>({name:c.name,system:c.system,tissue:c.tissue})),
-    ...structures.map(s=>({name:practicalAnswerName(s?.name),system:s?.system||'',tissue:s?.tissue||''}))]
-    .filter(s=>normalizedName(s.name));
+  const catalog=eligible.flatMap(({variants})=>variants.map(v=>({name:practicalAnswerName(v.name),system:v.system,tissue:v.tissue})))
+     .filter(s=>normalizedName(s.name)); // No distractors from excluded chapters or invisible structures.
   return selected.map(({group,variants})=>{
     const representative=shuffled(variants,randomIndex)[0];
     const answer=normalizedName(group.name);

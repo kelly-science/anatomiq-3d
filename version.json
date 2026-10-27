@@ -1,6 +1,6 @@
 {
-  "version": "2.2.48",
+  "version": "2.2.49",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Unify menu and label editor body text: Inter 12px/500/1.45. Preserve headings, buttons, footers, icons, 3D labels, geometry, saved lessons and BVH optimization."
+  "notes": "Screenshot in both views; chapter-scoped structure Location & Notes; responsive chapter picker; practical selected-chapter visible-only responses; teacher Student Preview; Chromium refresh protection."
 }

@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.48'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.49'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -217,6 +217,7 @@ let draftTimeout = 0;
 const DRAFT_KEY = 'anatomy-studio-project-v2';
 const OLD_DRAFT_KEY = 'anatomy-studio-project-v1';
 let chapters = [];
+let structureNoteOverrides=new Map(); // ANATOMIQ_LESSON_EXPERIENCE_249
 let practicalConfig=normalPractical(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
 let activeChapter = 0;
 const markers = new Map();
@@ -964,6 +965,7 @@ function setSelection(s,preserveMulti=false){
     selectedHighlight=null;
   }
   selected=s;
+  document.dispatchEvent(new CustomEvent('anatomiq:selection-change',{detail:{index:s?.index??null}}));
   $('isolate-selected').textContent='◈   Isolate structure';
   if(s){
     if(displayMaterial(s))highlightSelection(s);
@@ -972,7 +974,7 @@ function setSelection(s,preserveMulti=false){
     elements.selName.textContent=teacherMode&&multiSelectedIndices.size>1?`${multiSelectedIndices.size} structures selected`:s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
     elements.selCategory.textContent=s.system==='ocular'?'SPECIAL SENSES · EYE':(s.system==='connective'||isBaseConnective(s))?'CONNECTIVE TISSUE':s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='nervous'?'NERVOUS SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
-    elements.selDesc.textContent=descriptionFor(s);
+    elements.selDesc.textContent=anat249Description(s);
   }else{
     elements.noSelection.hidden=false;
     elements.selectionContent.hidden=true;
@@ -2242,9 +2244,99 @@ function snapshotScene(){
     cam:(cardioPreviewCamera||(divisionScope&&divisionSavedCamera?divisionSavedCamera:[...camera.position.toArray(),...controls.target.toArray()])).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
+     ...(structureNoteOverrides.size?{sd:[...structureNoteOverrides.entries()].sort((a,b)=>a[0]-b[0]).map(([i,v])=>[i,v.location,v.notes])}:{}),
     ...(pc.length?{pc}:{})
   });
 }
+
+
+// ANATOMIQ_LESSON_EXPERIENCE_249: browser menus call existing 3D/lesson APIs.
+let anat249Activated=false;
+for(const eventName of ['pointerdown','keydown'])document.addEventListener(eventName,()=>{anat249Activated=true;},{capture:true,passive:true});
+window.addEventListener('beforeunload',event=>{
+  // Chromium controls the actual wording/display and requires prior user activation.
+  if(!sceneRoot||!anat249Activated)return;
+  if(teacherMode&&!hasUnsavedLibraryChanges()&&!document.querySelector('.anat-project-dot:not(:empty)'))return;
+  event.preventDefault();event.returnValue='';
+});
+function anat249Description(s){
+  const override=structureNoteOverrides.get(s.index);
+  if(!override)return descriptionFor(s);
+  return [override.location||descriptionFor(s),override.notes?'Notes: '+override.notes:''].filter(Boolean).join('\n\n');
+}
+window.__AnatomIQ249={
+  get teacher(){return teacherMode;},
+  getSelected(){
+    if(!teacherMode||!selected||!sceneRoot)return null;
+    const entry=structureNoteOverrides.get(selected.index)||{};
+    return {index:selected.index,name:selected.name,location:entry.location||'',notes:entry.notes||''};
+  },
+  updateSelected(locationText,notesText){
+    if(!teacherMode||!selected||!sceneRoot)throw new Error('Select one structure in Teacher View.');
+    if(multiSelectedIndices.size>1)throw new Error('Location and Notes can only be edited for one structure at a time.');
+    const locationValue=String(locationText).trim(),noteValue=String(notesText).trim();
+    if(locationValue.length>1200||noteValue.length>2000)throw new Error('Location or Notes exceeds the character limit.');
+    if(!locationValue&&!noteValue)structureNoteOverrides.delete(selected.index);
+    else structureNoteOverrides.set(selected.index,{location:locationValue,notes:noteValue});
+    elements.selDesc.textContent=anat249Description(selected);
+    queueDraft();showToast('Location & Notes saved to this chapter draft.');
+  },
+  async preview(){
+    if(!teacherMode||!sceneRoot)throw new Error('Teacher View must be loaded to preview a lesson.');
+    // Open synchronously from the click handler to avoid popup blockers.
+    const tab=window.open('about:blank','_blank');
+    if(!tab)throw new Error('Chrome blocked the new tab. Allow popups for AnatomIQ.');
+    try{
+      const project=snapshotProject();
+      const encoded=await encodeScene(project);
+      const url=new URL(location.href);url.search='';url.hash='scene='+encoded;
+      tab.location.replace(url.href);
+    }catch(e){tab.close();throw new Error('Could not build student preview: '+e.message);}
+  },
+  async screenshot(){
+    if(!sceneRoot)throw new Error('3D model is not ready.');
+    const stage=elements.stage, rect=stage.getBoundingClientRect();
+    if(rect.width<10||rect.height<10)throw new Error('Viewer is not visible.');
+    renderer.render(scene,camera);
+    const scale=Math.min(2,Math.max(1,window.devicePixelRatio||1));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(rect.width*scale);canvas.height=Math.round(rect.height*scale);
+    const ctx=canvas.getContext('2d');ctx.scale(scale,scale);
+    ctx.fillStyle='#1a2935';ctx.fillRect(0,0,rect.width,rect.height);
+    ctx.drawImage(renderer.domElement,0,0,rect.width,rect.height);
+    // Preserve visible annotation lines and callouts in the saved image.
+    const svg=$('label-lines');
+    const screenshotMarkers=[...labelContainer.querySelectorAll('.anatomy-label')];
+    const markerVisible=marker=>{if(!marker||marker.hidden)return false;const st=getComputedStyle(marker);return st.display!=='none'&&st.visibility!=='hidden'&&Number(st.opacity)>=0.08;};
+    if(svg&&!svg.hidden){
+      const svgBox=svg.getBoundingClientRect(),offsetX=svgBox.left-rect.left,offsetY=svgBox.top-rect.top;
+      ctx.strokeStyle='rgba(95,204,220,.85)';ctx.lineWidth=1.5;
+      for(const [i,line] of [...svg.querySelectorAll('line')].entries()){
+        if(!markerVisible(screenshotMarkers[i]))continue;
+        const x1=Number(line.getAttribute('x1')),y1=Number(line.getAttribute('y1'));
+        const x2=Number(line.getAttribute('x2')),y2=Number(line.getAttribute('y2'));
+        if([x1,y1,x2,y2].every(Number.isFinite)){ctx.beginPath();ctx.moveTo(offsetX+x1,offsetY+y1);ctx.lineTo(offsetX+x2,offsetY+y2);ctx.stroke();}
+      }
+    }
+    for(const marker of screenshotMarkers){
+      if(!markerVisible(marker))continue;
+      const r=marker.getBoundingClientRect(),x=r.left-rect.left,y=r.top-rect.top;
+      if(x>rect.width||y>rect.height||x+r.width<0||y+r.height<0)continue;
+      ctx.fillStyle='#102e3d';ctx.strokeStyle='#4ab3c2';ctx.lineWidth=1.1;
+      ctx.beginPath();ctx.roundRect(x,y,r.width,r.height,7);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#dffaff';ctx.font='500 12px system-ui';ctx.textBaseline='middle';
+      const words=String(marker.innerText??'').replace(/\s+/g,' ').trim();
+      const limit=Math.max(4,Math.floor((r.width-17)/6.3));
+      ctx.fillText(words.length>limit?words.slice(0,limit-1)+'…':words,x+9,y+r.height/2);
+    }
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(v=>v?resolve(v):reject(new Error('Unable to generate PNG')),'image/png'));
+    const link=document.createElement('a'),url=URL.createObjectURL(blob);
+    const title=($('scene-title')?.value||$('project-title')?.value||'AnatomIQ').replace(/[^\w-]+/g,'-').slice(0,60);
+    link.href=url;link.download=`${title||'AnatomIQ'}-screenshot.png`;
+    document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+    invalidate(2);
+  }
+};
 
 // 2.2.22: transient Student View history. Nothing is written into teacher lessons.
 // Student changes can be undone within the current chapter; chapter reset restores the
@@ -2465,6 +2557,7 @@ function createChapter(duplicate){
     fresh.t=`Chapter ${chapters.length+1}`;
     if(!duplicate)fresh.labels=[];
     chapters.splice(activeChapter+1,0,fresh);
+    if(Array.isArray(practicalConfig.chapters)){const at=activeChapter;practicalConfig.chapters=practicalConfig.chapters.map(i=>i>at?i+1:i);if(duplicate&&practicalConfig.chapters.includes(at))practicalConfig.chapters.push(at+1);}
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     activeChapter++;
     applyScene(fresh).then(()=>{renderChapterUI();queueDraft();$('scene-title').focus();$('scene-title').select();showToast('Chapter added. Rename it and customize its view.');});
@@ -2474,6 +2567,7 @@ function moveChapter(index,step){
   if(!teacherMode || index+step<0 || index+step>=chapters.length)return;
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   [chapters[index],chapters[index+step]]=[chapters[index+step],chapters[index]];
+  if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.map(i=>i===index?index+step:i===index+step?index:i);
   if(activeChapter===index)activeChapter=index+step;
   else if(activeChapter===index+step)activeChapter=index;
   renderChapterUI();queueDraft();
@@ -2482,6 +2576,7 @@ async function deleteChapter(index){
   if(!teacherMode || chapters.length===1 || !confirm(`Delete chapter "${chapters[index].t}"? This removes its labels and bone settings from this draft.`))return;
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   chapters.splice(index,1);
+  if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.filter(i=>i!==index).map(i=>i>index?i-1:i);
   if(activeChapter>index)activeChapter--;
   else if(activeChapter===index)activeChapter=Math.min(index,chapters.length-1);
   await applyScene(chapters[activeChapter]);renderChapterUI();queueDraft();
@@ -3113,6 +3208,7 @@ async function applyScene(saved){
     hidden.clear();
     restoreBonePaint(saved.pc||[]);
     polishRestoreFade(saved.fa||[]);
+    structureNoteOverrides=new Map((saved.sd||[]).map(([i,location,notes])=>[i,{location,notes}]));
     const visible=readVisibilityBits(saved.b,saved.n);
     structures.forEach((s,i)=>{
       // Older scenes may lack muscles or organs; new indices stay hidden unless enabled.
@@ -3467,7 +3563,7 @@ $('student-explore').addEventListener('change',()=>{studentExplore=$('student-ex
 $('new-project').addEventListener('click',()=>{
   if(!protectCurrentEdits('start a new lesson'))return;
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
-  restoreBonePaint([]);polishRestoreFade([]);
+  restoreBonePaint([]);polishRestoreFade([]);structureNoteOverrides.clear();
   githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
   chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
   publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
@@ -3526,7 +3622,7 @@ window.__AnatomIQWorkspaceBridge={
     if(!teacherMode||!sceneRoot||libraryBusy)throw new Error('Workspace not ready.');
     clearTimeout(draftTimeout);clearTimeout(historyTimeout);
     cancelPlacing();cancelPainting();
-    restoreBonePaint([]);polishRestoreFade([]);
+    restoreBonePaint([]);polishRestoreFade([]);structureNoteOverrides.clear();
     githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;
     noteLibraryState('Not yet saved to the library.');
     chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
@@ -3942,12 +4038,37 @@ function practicalInChapter(item,chapter){
   return chapter==='all'||(Array.isArray(item.chapters)&&item.chapters.includes(Number(chapter)))||item.chapter===Number(chapter);
 }
 let practicalSearch='',practicalFilter='all';
+
+function anat249PracticalChapterChoices(){
+  let field=$('anat249-chapter-selection');
+  if(!field){
+    field=document.createElement('fieldset');field.id='anat249-chapter-selection';field.className='anat249-practical-chapters';
+    const legend=document.createElement('legend');legend.textContent='Chapters included in Practical';
+    const list=document.createElement('div');list.className='anat249-practical-chapters-list';field.append(legend,list);
+    $('practical-search')?.before(field);
+  }
+  const list=field.querySelector('.anat249-practical-chapters-list');list.replaceChildren();
+  chapters.forEach((ch,index)=>{
+    const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';
+    input.checked=!Array.isArray(practicalConfig.chapters)||practicalConfig.chapters.includes(index);
+    input.setAttribute('aria-label','Include chapter '+(index+1)+' '+ch.t);
+    input.addEventListener('change',()=>{
+      const choices=[...list.querySelectorAll('input')].map((box,i)=>box.checked?i:null).filter(Number.isInteger);
+      practicalConfig.chapters=choices.length===chapters.length?null:choices;
+      renderPracticalEditor();queueDraft();
+    });
+    const text=document.createElement('span');text.textContent=`${index+1}. ${ch.t}`;
+    label.append(input,text);list.append(label);
+  });
+}
+
 function renderPracticalEditor(){
   if(!teacherMode||!sceneRoot)return;
   const enabled=$('practical-enabled');if(!enabled)return;
   enabled.checked=practicalConfig.on;
+  anat249PracticalChapterChoices();
   const pool=practicalPool(),off=new Set(practicalConfig.off);
-  const eligible=pool.filter(q=>practicalKeysOf(q).some(key=>!off.has(key)));
+  const eligible=pool.filter(q=>q.variants?.some(v=>(!Array.isArray(practicalConfig.chapters)||practicalConfig.chapters.includes(v.chapter))&&!off.has(v.key)));
   const opts=$('practical-editor-options');opts.hidden=!practicalConfig.on;
   $('practical-eligible-count').textContent=`${eligible.length} of ${pool.length} eligible targets`;
   $('practical-question-count').value=String(practicalConfig.count);
@@ -3962,7 +4083,7 @@ function renderPracticalEditor(){
   if(prior!=='all'&&Number(prior)>=chapters.length)practicalFilter='all';
   select.value=practicalFilter;
   const list=$('practical-candidate-list');list.replaceChildren();
-  const match=pool.filter(q=>practicalInChapter(q,practicalFilter) &&
+  const match=pool.filter(q=>(!Array.isArray(practicalConfig.chapters)||q.variants?.some(v=>practicalConfig.chapters.includes(v.chapter))) && practicalInChapter(q,practicalFilter) &&
     `${q.name} ${q.system} ${q.tissue}`.toLowerCase().includes(practicalSearch.toLowerCase()));
   for(const item of match.slice(0,140)){
     const row=document.createElement('label');row.className='practical-candidate';

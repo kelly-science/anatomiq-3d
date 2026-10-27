@@ -88,6 +88,15 @@ export function validateScene(scene) {
   if(scene.fa!==undefined && (!Array.isArray(scene.fa)||scene.fa.length>scene.n||
      scene.fa.some(i=>!Number.isInteger(i)||i<0||i>=scene.n)||
      new Set(scene.fa).size!==scene.fa.length))throw new Error('Invalid faded structure list.');
+  // Optional per-chapter Location & Notes overrides, indexed to original anatomical IDs.
+  if(scene.sd!==undefined){
+    if(!Array.isArray(scene.sd)||scene.sd.length>scene.n)throw new Error('Invalid structure details.');
+    const seen=new Set();
+    for(const item of scene.sd){
+      if(!Array.isArray(item)||item.length!==3||!Number.isInteger(item[0])||item[0]<0||item[0]>=scene.n||seen.has(item[0])||typeof item[1]!=='string'||item[1].length>1200||typeof item[2]!=='string'||item[2].length>2000)throw new Error('Invalid chapter structure details.');
+      seen.add(item[0]);
+    }
+  }
   // Optional sparse list of colors, by stable bone index. Absent for older shared links.
   if (scene.pc !== undefined) {
     if (!Array.isArray(scene.pc) || scene.pc.length > scene.n) throw new Error('Invalid bone paint list.');
@@ -121,6 +130,8 @@ export function validateProject(project) {
   if(project.practical!==undefined){const p=project.practical;
     if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!Number.isInteger(p.count)||p.count<1||p.count>60||
       !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
+    // 2.2.49: optional Practical chapter selection (legacy projects omit it).
+    if(p.chapters!==undefined&&p.chapters!==null&&(!Array.isArray(p.chapters)||p.chapters.length>MAX_CHAPTERS||p.chapters.some(i=>!Number.isInteger(i)||i<0||i>=project.chapters?.length)||new Set(p.chapters).size!==p.chapters.length))throw new Error('Invalid practical chapter selection.');
   }
   if (!boundedText(project.t, 90)) throw new Error('A project title is required (90 characters maximum).');
   if (!Array.isArray(project.chapters) || !project.chapters.length || project.chapters.length > MAX_CHAPTERS) throw new Error(`A project must contain 1–${MAX_CHAPTERS} chapters.`);
