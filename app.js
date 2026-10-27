@@ -44,7 +44,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.52'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.53'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2555,7 +2555,7 @@ function polishCaptureChapter(){
     const image=document.createElement('canvas');image.width=width;image.height=height;
     image.getContext('2d').drawImage(renderer.domElement,0,0,width,height);
     const layer=document.createElement('div');layer.className='polish-chapter-snapshot';
-    layer.style.backgroundImage=`url("${image.toDataURL('image/jpeg',0.73)}")`;
+    layer.style.backgroundImage=`url("${image.toDataURL('image/png')}")`; // ANATOMIQ_CHAPTER_CROSSFADE_253: retain alpha, never flatten background to black
     stage.appendChild(layer);
     return layer;
   }catch(error){console.warn('Chapter snapshot unavailable:',error);return null;}

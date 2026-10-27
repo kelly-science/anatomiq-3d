@@ -3,7 +3,7 @@
    The new menu and toolbar proxy existing app handlers rather than reimplement them. */
 (() => {
   'use strict';
-  const VERSION='2.2.52';
+  const VERSION='2.2.53';
   const $ = id => document.getElementById(id);
   const teacher = () => !document.body.classList.contains('student-mode') && !/^#(?:scene|lesson)=/.test(location.hash);
   const button = (label, action, extra={}) => {

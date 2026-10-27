@@ -1,6 +1,6 @@
 {
-  "version": "2.2.52",
+  "version": "2.2.53",
   "channel": "beta",
   "published": "2026-10-26",
-  "notes": "Independent Student View label list/publishing permission and removal of redundant left-sidebar Show Teeth control"
+  "notes": "Chapter transitions: preserve transparent WebGL snapshot in PNG format, eliminating black JPEG flattening while retaining the existing scene crossfade."
 }
