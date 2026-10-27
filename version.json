@@ -1,6 +1,6 @@
 {
-  "version": "2.2.59",
+  "version": "2.2.60",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Default live 3D carousel: 680 ms, subtle 1.8% overshoot and single 136 ms spring-back; active shadows and post-settle label fade"
+  "notes": "Single Label from clicked anatomy; Group Label with multiple anchored structures, group editing and scene persistence. ANATOMIQ_SINGLE_GROUP_LABEL_260"
 }

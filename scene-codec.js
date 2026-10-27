@@ -64,6 +64,22 @@ export function validateScene(scene) {
       throw new Error('A label contains invalid placement or text.');
     }
   }
+  // ANATOMIQ_SINGLE_GROUP_LABEL_260: one callout may point at multiple structures.
+  // The original s/p pair remains the primary anchor for old lessons and focus.
+  for(const label of scene.labels){
+    if(label.g!==undefined){
+      if(!Array.isArray(label.g)||label.g.length<1||label.g.length>63)throw new Error('Group labels need 2–64 structures.');
+      if(!Number.isInteger(label.gn)||label.gn<1||label.gn>9999)throw new Error('Invalid group label number.');
+      const members=new Set([label.s]);
+      for(const anchor of label.g){
+        if(!anchor||!Number.isInteger(anchor.s)||anchor.s<0||anchor.s>=scene.n||
+          !vector(anchor.p,3)||members.has(anchor.s)||
+          (anchor.ln!==undefined&&(!vector(anchor.ln,3)||Math.hypot(...anchor.ln)<0.1)))
+          throw new Error('Invalid group label structure or anchor.');
+        members.add(anchor.s);
+      }
+    }else if(label.gn!==undefined)throw new Error('Invalid group label number without group anchors.');
+  }
   for(const label of scene.labels)if(label.qi!==undefined && (typeof label.qi!=='string'||!/^q-[0-9A-Za-z-]{4,62}$/.test(label.qi)))throw new Error('Invalid quiz label ID.');
   // Optional label study notes/photos and per-chapter faded structure IDs.
   for(const label of scene.labels){

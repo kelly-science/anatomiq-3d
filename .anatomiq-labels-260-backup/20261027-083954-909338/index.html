@@ -1,0 +1,696 @@
+<!-- ANATOMIQ_FADE_DETAILS_239_20261026 -->
+<!-- ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026 -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#101720" />
+  <meta name="description" content="Explore skeletal, muscular, digestive, cardiovascular, respiratory, nervous, and urinary systems in interactive 3D, designed for Chromebook anatomy classes." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>AnatomIQ Studio • Skeletal, Muscular, Digestive & Cardiovascular Anatomy</title>
+  <script type="importmap" id="renderer-importmap">
+  {
+    "imports": {
+      "three": "./vendor/three/build/three.module.js",
+      "three/addons/": "./vendor/three/examples/jsm/"
+    }
+  }
+  </script>
+  <link rel="stylesheet" href="./view-menu-polish.css?rev=2216c" />
+  <link rel="stylesheet" href="./selection-2217.css?rev=2217" />
+  <link rel="stylesheet" href="./anatomy-sidebar-2219.css?rev=2221" />
+  <link rel="stylesheet" href="./interface-2221.css?rev=2222" />
+<link rel="stylesheet" href="./github-library-embed.css?rev=20261026" /> <!-- ANATOMIQ_GITHUB_LIBRARY_EMBED_20261026 -->
+<script src="./global-geometry-quality.js?rev=232"></script> <!-- ANATOMIQ_GLOBAL_GEOMETRY_LIBRARY_232_20261026 -->
+<link rel="stylesheet" href="./responsive-chapters-panels.css?rev=233" />
+<link rel="stylesheet" href="./chapter-bar-width-234.css?rev=234" /> <!-- ANATOMIQ_CHAPTER_BAR_WIDTH_234_20261026 --> <!-- ANATOMIQ_RESPONSIVE_CHAPTERS_PANELS_233_20261026 -->
+  <link rel="stylesheet" href="./teacher-tools-2240.css?rev=240" />
+  <link rel="stylesheet" href="./workspace-tabs-241.css?rev=241" />
+  <link rel="stylesheet" href="./label-order-242.css?rev=242" />
+  <link rel="stylesheet" href="./tab-menu-polish-246.css?rev=247" /> <!-- ANATOMIQ_TAB_MENU_POLISH_246 -->
+  <link rel="stylesheet" href="./typography-248.css?rev=248" /> <!-- ANATOMIQ_TYPOGRAPHY_248 -->
+  <link rel="stylesheet" href="./lesson-experience-249.css?rev=249" /> <!-- ANATOMIQ_LESSON_EXPERIENCE_249 -->
+  <link rel="stylesheet" href="./lesson-renaming-250.css?rev=250" /> <!-- ANATOMIQ_LESSON_RENAME_250 -->
+  <link rel="stylesheet" href="./student-selection-251.css?rev=251" /> <!-- ANATOMIQ_SELECTION_STUDENT_251 -->
+  <link rel="stylesheet" href="./student-label-list-252.css?rev=252" /> <!-- ANATOMIQ_STUDENT_LABEL_LIST_252 -->
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span class="brand-label"><strong>AnatomIQ Studio</strong><small>3D HUMAN ANATOMY</small></span>
+        <span class="version">STUDIO 2.2.54</span>
+      </div>
+      <nav class="mode-tabs" role="group" aria-label="Visible anatomical systems">
+        <button id="mode-skeletal" class="mode-tab active" type="button" aria-pressed="true" data-system="skeletal">Skeletal</button>
+        <button id="mode-connective" class="mode-tab" type="button" aria-pressed="false" data-system="connective" title="Cartilage, ligaments, tendons and intervertebral discs">Connective</button>
+        <button id="mode-muscular" class="mode-tab" type="button" aria-pressed="false" data-system="muscular">Muscular</button>
+        <button id="mode-digestive" class="mode-tab" type="button" aria-pressed="false" data-system="digestive">Digestive</button>
+        <button id="mode-cardiovascular" class="mode-tab" type="button" aria-pressed="false" data-system="cardiovascular" disabled>Cardiovascular</button>
+        <button id="mode-respiratory" class="mode-tab" type="button" aria-pressed="false" data-system="respiratory" disabled>Respiratory</button>
+        <button id="mode-lymphatic" class="mode-tab" type="button" aria-pressed="false" data-system="lymphatic" disabled>Lymphatic</button>
+        <button id="mode-urinary" class="mode-tab" type="button" aria-pressed="false" data-system="urinary" disabled>Urinary</button>
+        <button id="mode-nervous" class="mode-tab" type="button" aria-pressed="false" data-system="nervous" disabled>Nervous</button>
+      </nav>
+      <div class="top-actions">
+        <span id="student-badge" class="viewer-role" hidden>STUDENT VIEW</span>
+        <span id="connectivity" class="status" aria-live="polite"><span class="status-dot"></span>Preparing</span>
+        <button id="save-offline" class="button subtle" hidden title="Cache the 3D model and application files on this Chromebook">Save offline</button>
+        <button id="install" class="button subtle" hidden>Install app</button>
+        <button id="details-toggle" class="icon-button details-toggle" title="Structure details" aria-label="Toggle structure details" aria-expanded="false">ⓘ</button>
+        <button id="menu-toggle" class="icon-button sidebar-toggle" title="Toggle sidebar" aria-label="Toggle sidebar">☰</button>
+      </div>
+    </header>
+
+    <nav id="studio-menubar" class="studio-menubar teacher-only" aria-label="Teacher Studio menu bar">
+      <div class="menu-group" data-menu="file">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-file">File</button>
+        <div id="menu-file" class="menu-dropdown" role="menu" aria-label="File" hidden>
+          <button id="new-project" class="menu-item" role="menuitem" type="button">New lesson</button>
+          <div class="menu-separator" role="separator"></div>
+          <button id="save-library" class="menu-item" role="menuitem" type="button">Save to Library <span class="menu-shortcut">Ctrl / ⌘ S</span></button>
+          <button id="save-library-as" class="menu-item" role="menuitem" type="button">Save as New…</button>
+          <button id="save-draft-action" class="menu-item" role="menuitem" type="button">Save working draft</button>
+          <div class="menu-separator" role="separator"></div>
+          <button id="import-project" class="menu-item" role="menuitem" type="button">Import lesson JSON…</button>
+          <button id="export-project" class="menu-item" role="menuitem" type="button">Export lesson JSON…</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden />
+          <div class="menu-separator" role="separator"></div>
+          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Publish / Share lesson…</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="edit">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-edit">Edit</button>
+        <div id="menu-edit" class="menu-dropdown" role="menu" aria-label="Edit" hidden>
+          <button id="edit-undo" class="menu-item" role="menuitem" type="button" disabled>Undo <span class="menu-shortcut">Ctrl / ⌘ Z</span></button>
+          <button id="edit-redo" class="menu-item" role="menuitem" type="button" disabled>Redo <span class="menu-shortcut">Ctrl / ⌘ ⇧ Z</span></button>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="add-chapter">Add chapter</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="duplicate-chapter">Duplicate chapter</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="restore-all">Restore hidden bones</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="clear-selection">Clear selection</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="view">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-view">View</button>
+        <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
+          <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skull">Focus Skull Only</button>
+          <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skeleton">Show Full Skeleton</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="interior">Heart interior (valves & chordae)</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="chambers">Chamber spaces (ghost view)</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="exterior">Heart exterior</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="coronary">Coronary circulation</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="pulmonary">Pulmonary circulation</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="all">Show all cardiovascular structures</button>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="front">Front</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="back">Back</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="left">Left</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-view="right">Right</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="reset-camera">Reset camera</button>
+        </div>
+      </div>
+      <div class="menu-group menu-group-library" data-menu="library">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-library">Library</button>
+        <div id="menu-library" class="menu-dropdown menu-library-dropdown" role="menu" aria-label="Library" hidden>
+          <button id="library-open-top" class="menu-item highlighted" role="menuitem" type="button">▤ Open Scene Library…</button>
+          <div class="menu-separator" role="separator"></div>
+          <div class="menu-caption">SAVED SCENES ON THIS DEVICE</div>
+          <div id="menu-library-items" class="menu-library-items" role="group" aria-label="Saved scenes"><span class="menu-empty">Open Library to view your saved scenes.</span></div>
+          <div class="menu-separator" role="separator"></div>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="library-backup">Back up entire library…</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="library-import">Import library backup…</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="settings">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-settings">Settings</button>
+        <div id="menu-settings" class="menu-dropdown" role="menu" aria-label="Settings" hidden>
+          <button id="open-app-settings" class="menu-item" role="menuitem" type="button">⚙ App Settings…</button>
+          <button id="menu-check-updates" class="menu-item" role="menuitem" type="button">↻ Check for updates</button>
+        </div>
+      </div>
+      <div class="menu-group" data-menu="help">
+        <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-help">Help</button>
+        <div id="menu-help" class="menu-dropdown" role="menu" aria-label="Help" hidden>
+          <button id="open-menu-help" class="menu-item" role="menuitem" type="button">Keyboard shortcuts & storage…</button>
+          <button class="menu-item" role="menuitem" type="button" data-menu-click="save-offline">Prepare offline access</button>
+        </div>
+      </div>
+      <span class="menubar-context" id="menubar-context">Working draft · Not saved to library</span>
+    </nav>
+
+    <div class="workspace">
+      <aside id="left-sidebar" class="sidebar left-sidebar" aria-label="Structure explorer">
+        <div class="sidebar-top">
+          <span class="eyebrow">EXPLORER</span>
+          <h1 id="explorer-title">Skull</h1>
+          <p class="muted" id="explorer-subtitle">Select a bone from the model or search below.</p>
+        </div>
+        <div class="search-wrap">
+          <span aria-hidden="true" class="search-icon">⌕</span>
+          <input id="search" type="search" placeholder="Search anatomical structures…" autocomplete="off" aria-label="Search anatomical structures" />
+          <button id="clear-search" class="clear-search" aria-label="Clear search" hidden>×</button>
+        </div>
+        <section class="studio-card teacher-only" aria-label="Scene setup" hidden aria-hidden="true">
+          <span class="eyebrow">TEACHER STUDIO</span>
+          <label class="field-label" for="project-title">Lesson title</label>
+          <input class="text-input" id="project-title" maxlength="90" value="Skull exploration" placeholder="Name your full lesson" />
+          <label class="field-label chapter-title-field" for="scene-title">Current chapter title</label>
+          <input class="text-input" id="scene-title" maxlength="90" value="Skull: Exterior" placeholder="e.g., Skull: Exterior" />
+          
+          <small id="library-status" class="studio-hint" aria-live="polite">Not yet saved to the library.</small>
+          <small id="draft-status" class="studio-hint">Your current working draft autosaves locally.</small>
+        </section>
+        <section class="chapters-manager teacher-only" aria-label="Manage lesson chapters">
+          <div class="chapters-heading"><span class="eyebrow">LESSON CHAPTERS</span><span id="chapter-count" class="chapter-count">1 chapter</span></div>
+          <p class="studio-hint">Each chapter keeps its own bones, camera view, labels and student settings.</p>
+          <div id="teacher-chapter-list" class="teacher-chapter-list"></div>
+          <div class="chapter-create-actions">
+            <button id="add-chapter" class="button small" type="button">＋ Add chapter</button>
+            <button id="duplicate-chapter" class="button small subtle" type="button">⧉ Duplicate</button>
+          </div>
+        </section>
+        <div id="systems-panel" class="systems-panel teacher-only" hidden>
+          <div class="systems-header"><span class="eyebrow">ANATOMICAL SYSTEMS</span><p id="layer-description" class="studio-hint">Choose the layers to show.</p></div>
+          <div id="muscle-layers-group"><label class="switch-row"><span>Superficial muscles <small>Outer skeletal muscle layer</small></span><input id="system-superficial" type="checkbox" checked /></label>
+          <label class="switch-row"><span>Deep muscles <small>Rotator cuff, iliacus and deeper muscles</small></span><input id="system-deep" type="checkbox" /></label></div>
+        </div>
+        <section id="nervous-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Nervous system study views" hidden>
+          <div class="systems-header"><span class="eyebrow">NERVOUS SYSTEM STUDY VIEWS</span><p id="nervous-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Source-backed brain, spinal cord and cervical-to-arm nerves. Posterior parietal lobules, deep brain and transparent dura are separate study views. Meninges are hidden by default. Leg anatomy is not part of this update.</p>
+          <div class="cardio-presets" role="group" aria-label="Nervous-system structure presets">
+            <button class="button small" type="button" data-nervous-preset="all">Entire system</button>
+            <button class="button small" type="button" data-nervous-preset="cns">CNS only</button>
+            <button class="button small" type="button" data-nervous-preset="brain">Brain only</button>
+            <button class="button small" type="button" data-nervous-preset="deep">Deep brain &amp; ventricles</button>
+            <button class="button small" type="button" data-nervous-preset="posterior">Posterior cortex</button>
+            <button class="button small" type="button" data-nervous-preset="meninges">Meninges &amp; brain</button>
+            <button class="button small" type="button" data-nervous-preset="cord">Spinal cord</button>
+            <button class="button small" type="button" data-nervous-preset="peripheral">Peripheral nerves</button>
+            <button class="button small" type="button" data-nervous-preset="plexus">Brachial plexus &amp; arm</button>
+            <button class="button small" type="button" data-nervous-preset="verified">Verified source only</button>
+            <button id="nervous-focus" class="button small primary" type="button">Focus nervous system</button>
+          </div>
+        </section>
+        <section id="eye-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Eye anatomy study views" hidden>
+          <div class="systems-header"><span class="eyebrow">NERVOUS · SPECIAL SENSES — EYES</span><p id="eye-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">The eyes belong to Nervous / Special Senses. Realistic white sclera with fine vessels, glossy transparent corneal surface, iris and pupil. Select the original Écorché cornea or sclera; no separate Eyes system is needed. Source: Alexander Antipov (CC BY 4.0).</p>
+          <button id="eye-focus" class="button small" type="button">Focus on eyes</button>
+        </section>
+        <section id="connective-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Connective tissue study views" hidden>
+          <div class="systems-header"><span class="eyebrow">CONNECTIVE TISSUE STUDY VIEWS</span><p id="connective-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Existing Écorché cartilage is reclassified without changing mesh IDs. Native Connective only adds anatomy absent from the existing models: 6 costal-cartilage meshes for ribs 8–10, 2 plantar ligaments, 2 wrist retinacula and 4 interosseous membranes. Existing Écorché discs and Muscular Achilles tendons are preserved without duplication. Knee ACL/PCL and menisci are not in this native set.</p>
+          <div class="cardio-presets" role="group" aria-label="Connective anatomy presets">
+            <button class="button small" type="button" data-connective-preset="all">All connective</button>
+            <button class="button small" type="button" data-connective-preset="spine">Spine &amp; discs</button>
+            <button class="button small" type="button" data-connective-preset="ankle">Foot &amp; ankle</button>
+            <button class="button small" type="button" data-connective-preset="ribs">Rib cartilages 8–10</button>
+            <button class="button small" type="button" data-connective-preset="wrist">Wrist &amp; forearm</button>
+            <button class="button small" type="button" data-connective-preset="membranes">Interosseous membranes</button>
+          </div>
+        </section>
+        <section id="lymphatic-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Lymphatic and immune organs" hidden>
+          <div class="systems-header"><span class="eyebrow">LYMPHATIC / IMMUNE ORGAN STUDY</span><p id="lymphatic-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Verified BodyParts3D spleen and thymus only. The atlas has no lymph node, duct, vessel or tonsil geometry. Use the separately labeled regional drainage teaching diagram.</p>
+          <div class="cardio-presets" role="group" aria-label="Lymphatic organ presets">
+            <button class="button small" type="button" data-lymphatic-preset="all">Immune organs</button>
+            <button class="button small" type="button" data-lymphatic-preset="spleen">Spleen only</button>
+            <button class="button small" type="button" data-lymphatic-preset="thymus">Thymus only</button>
+            <button id="lymphatic-diagram-open" class="button small primary" type="button">Lymph drainage (diagram)</button>
+          </div>
+        </section>
+        <section id="urinary-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Urinary system study views" hidden>
+          <div class="systems-header"><span class="eyebrow">URINARY SYSTEM STUDY VIEWS</span><p id="urinary-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">BodyParts3D 4.3 urinary anatomy. Renal vessels appear through the existing Cardiovascular layer. Kidney cortex, medulla, pyramids and calyces are not independently modeled in this source.</p>
+          <div class="cardio-presets" role="group" aria-label="Urinary-system study presets">
+            <button class="button small" type="button" data-urinary-preset="overview">Urinary overview</button>
+            <button class="button small" type="button" data-urinary-preset="kidneys">Kidneys only</button>
+            <button class="button small" type="button" data-urinary-preset="tract">Urine drainage pathway</button>
+            <button class="button small" type="button" data-urinary-preset="vessels">Urinary &amp; renal vessels</button>
+            <button id="urinary-interior-open" class="button small primary" type="button">Kidney interior (schematic)</button>
+          </div>
+        </section>
+        <section id="respiratory-study-panel" class="systems-panel cardio-study-panel teacher-only" aria-label="Respiratory study views" hidden>
+          <div class="systems-header"><span class="eyebrow">RESPIRATORY STUDY VIEWS</span><p id="respiratory-study-count" class="studio-hint"></p></div>
+          <p class="studio-hint">Lung segments use BodyParts3D 4.3; pulmonary arteries and veins come from your existing cardiovascular layer. No vessels are duplicated in the respiratory GLB.</p>
+          <div class="cardio-presets" role="group" aria-label="Respiratory structure presets">
+            <button class="button small" type="button" data-respiratory-preset="overview">Respiratory overview</button>
+            <button class="button small" type="button" data-respiratory-preset="lobes">Lung segments</button>
+            <button class="button small" type="button" data-respiratory-preset="airways">Airways only</button>
+            <button class="button small" type="button" data-respiratory-preset="circulation">Airways + pulmonary circulation</button>
+          </div>
+          <label class="switch-row"><span>Lung tissue opacity <small>Reduce to reveal bronchial structures and pulmonary vessels</small></span><input id="respiratory-opacity" aria-label="Lung tissue opacity" type="range" min="0.12" max="1" step="0.02" value="1" /></label>
+          <button id="respiratory-coverage-export" class="button small" type="button">Export respiratory coverage</button>
+        </section>
+        <section id="cardio-study-panel"  class="systems-panel cardio-study-panel teacher-only" aria-label="Cardiovascular study views" hidden>
+          <div class="systems-header"><span class="eyebrow">CARDIOVASCULAR STUDY VIEWS</span>
+            <p id="cardio-study-count" class="studio-hint" aria-live="polite">Preparing heart and vessel meshes…</p></div>
+          <p class="studio-hint">Chamber cavities are empty spaces, shown as translucent blue volumes in Show all. Use Heart interior to hide these volumes and expose available valve leaflets and papillary muscles. Chordae tendineae may require another 3D source.</p>
+          <div class="cardio-presets" role="group" aria-label="Cardiovascular structure visibility presets">
+            <button type="button" class="button small" data-cardio-preset="all">Show all</button>
+            <button type="button" class="button small" data-cardio-preset="exterior">Heart exterior</button>
+            <button type="button" class="button small" data-cardio-preset="interior">Heart interior · valves</button>
+            <button type="button" class="button small" data-cardio-preset="chambers">Chamber spaces</button>
+            <button type="button" class="button small" data-cardio-preset="coronary">Coronary</button>
+            <button type="button" class="button small" data-cardio-preset="pulmonary">Pulmonary circulation</button>
+            <button type="button" class="button small" data-cardio-preset="greatvessels">Great vessels</button>
+            <button type="button" class="button small" data-cardio-preset="carotid">Carotid focus</button>
+            <button type="button" class="button small" data-cardio-preset="systemic">Systemic vessels</button>
+            <button type="button" class="button small cardio-class-core-button" data-cardio-preset="classcore">Class core</button>
+            <button type="button" class="button small" data-cardio-preset="arteries">Required arteries</button>
+            <button type="button" class="button small" data-cardio-preset="veins">Required veins</button>
+          </div>
+          <details id="cardio-class-core-panel" class="cardio-core-panel">
+            <summary>Class Core coverage / required structures</summary>
+            <p class="studio-hint" id="cardio-core-summary">Checking available structures…</p>
+            <label class="switch-row"><span>Only show class-core names in teacher explorer <small>Does not change saved lesson visibility</small></span><input id="cardio-core-list-only" type="checkbox" /></label>
+            <button id="cardio-core-export" type="button" class="button small">Export coverage JSON</button>
+            <p class="studio-hint">"Partial" means only valve components, chamber walls, or one side of a paired vessel is identified. Missing anatomy is never synthesized.</p>
+            <ul id="cardio-core-gaps" class="cardio-core-gaps"></ul>
+          </details>
+          <details id="cardio-audit-panel" class="cardio-core-panel">
+            <summary>Vascular completeness inspector (teacher only)</summary>
+            <p id="cardio-audit-summary" class="studio-hint">Checking installed meshes…</p>
+            <p class="studio-hint">Inspect previews are temporary and do not change your saved chapter. Verify names, left/right pairs, and visible vessel continuity before practical exams. Auricles and chordae are label-only targets.</p>
+            <label class="cardio-audit-filter-label" for="cardio-audit-filter">Show requirements</label>
+            <select id="cardio-audit-filter" class="cardio-audit-select">
+              <option value="action">Needs attention</option><option value="paired">Left/right vessel sets</option>
+              <option value="reviewed">Reviewed only</option><option value="all">All requirements</option>
+            </select>
+            <div class="cardio-audit-global-actions">
+              <button type="button" id="cardio-audit-restore" class="button small">Restore full view</button>
+              <button type="button" id="cardio-audit-export" class="button small">Export review JSON</button>
+            </div>
+            <div id="cardio-audit-list" class="cardio-audit-list" aria-live="polite"></div>
+          </details>
+          <p class="studio-hint">Presets hide or reveal cardiovascular structures in the current chapter. Other anatomical systems stay unchanged; save the chapter to share this view.</p>
+        </section>
+        <div class="explorer-settings" hidden aria-hidden="true">
+          <input id="toggle-teeth" type="checkbox" checked hidden aria-hidden="true" tabindex="-1" />
+          <input id="toggle-cartilage" type="checkbox" checked hidden aria-hidden="true" tabindex="-1" />
+        </div>
+        <div class="list-header"><span id="list-label">ANATOMICAL STRUCTURES</span><span id="list-count">—</span></div>
+        <div id="bone-list" class="bone-list" aria-live="polite"><p class="empty-list">Loading anatomical structures…</p></div>
+         
+        <div class="sidebar-footer"><button id="restore-all" class="button full">↺ &nbsp;Restore hidden structures</button></div>
+      </aside>
+
+      <main class="viewer-panel">
+        <!-- Standalone label list: independent of Structure Explorer visibility. -->
+        <button id="anat-student-label-list-button" class="anat-label-list-trigger" type="button" hidden aria-controls="polish-student-labels" aria-expanded="false">☰ &nbsp;Label List</button>
+        <section id="polish-student-labels" class="polish-student-labels anat-independent-label-list" aria-label="Chapter label list" hidden>
+          <div class="anat-label-list-header"><span class="eyebrow">CHAPTER LABELS</span><button id="anat-student-label-list-close" type="button" aria-label="Close label list">×</button></div>
+          <div id="polish-student-label-list"></div>
+        </section>
+        <div id="canvas-container" class="canvas-container" role="application" aria-label="Interactive 3D anatomical model"></div>
+        <div class="viewer-top">
+          <div id="place-hint" class="place-hint" hidden>Click the structure where you want the label to point. Esc cancels.</div>
+          <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip" hidden></span></div>
+          <button id="polish-label-toggle" class="floating-button polish-label-toggle" type="button" hidden aria-pressed="true">Labels: On</button>
+          <button id="reset-camera" class="floating-button" title="Reset camera">⟳ <span>Reset view</span></button>
+        </div>
+        <div class="loading-overlay" id="loader" aria-live="polite">
+          <div class="loader-icon">✦</div>
+          <h2 id="loading-title">Preparing the anatomy viewer</h2>
+          <p id="loading-description">Loading a detailed anatomical model for the first time.</p>
+          <div class="progress-track"><div id="progress-bar" class="progress-bar"></div></div>
+          <small id="loading-progress">Connecting to model source…</small>
+          <button id="retry" class="button primary" hidden>Try again</button>
+        </div>
+        <nav id="chapter-nav" class="chapter-nav" aria-label="Lesson chapter navigation" hidden>
+          <button id="previous-chapter" class="chapter-arrow" type="button" aria-label="Previous chapter">‹</button>
+          <div class="chapter-nav-content"><span id="chapter-progress" class="chapter-progress">CHAPTER 1 OF 1</span><div id="chapter-tabs" class="chapter-tabs"></div></div>
+          <button id="next-chapter" class="chapter-arrow" type="button" aria-label="Next chapter">›</button>
+        </nav>
+        <section id="practical-panel" class="practical-panel" hidden aria-label="Anatomy practical assessment">
+ <div class="practical-panel-head"><strong id="practical-progress">QUESTION 1</strong><button id="practical-exit" type="button" class="button small subtle">Exit</button></div>
+ <p id="practical-message">Identify the highlighted structure.</p>
+ <div id="practical-question-content"><div id="practical-options" class="practical-options"></div><button type="button" id="practical-next" class="button primary full" disabled>Next question →</button></div>
+ <div id="practical-results" hidden><strong id="practical-result-score" class="practical-score"></strong><p id="practical-result-detail"></p><div id="practical-missed"></div><button type="button" id="practical-retake" class="button primary full">Retake practical ↻</button></div>
+ </section>
+        <div class="viewer-bottom">
+          <div class="view-presets" role="group" aria-label="Camera presets">
+            <button data-view="front" class="preset active">Front</button>
+            <button data-view="back" class="preset">Back</button>
+            <button data-view="left" class="preset">Left</button>
+            <button data-view="right" class="preset">Right</button>
+          </div>
+          <label class="viewer-quality-control">Quality
+            <select id="view-quality" aria-label="3D rendering quality" title="Lower resolution improves performance on Chromebooks">
+              <option value="auto">Auto</option><option value="fast">Fast</option><option value="balanced">Balanced</option><option value="sharp">Sharp</option>
+            </select>
+          </label>
+          <div class="zoom-actions" role="group" aria-label="Zoom">
+            <button id="zoom-out" title="Zoom out">−</button><button id="zoom-in" title="Zoom in">+</button>
+          </div>
+        </div>
+      <div id="label-overlay" class="label-overlay" aria-live="polite"><svg id="label-lines" class="label-lines" aria-hidden="true"></svg><div id="label-markers"></div></div>
+      </main>
+
+      <aside id="info-sidebar" class="sidebar info-sidebar" aria-label="Selected structure information">
+        <div class="info-top"><span class="eyebrow">STRUCTURE DETAILS</span><span class="info-type">OSTEOLOGY</span></div>
+        <div id="no-selection" class="no-selection"><div class="detail-graphic">✳</div><h2>Explore a structure</h2><p>Click a bone or muscle to see its name and controls.</p></div>
+        <div id="selection-content" class="selection-content" hidden>
+          <span id="selected-category" class="detail-category">SKELETAL SYSTEM</span>
+          <h2 id="selected-name">—</h2>
+          <p id="selected-side" class="muted">—</p>
+          <div class="detail-separator"></div>
+          <span class="eyebrow">LOCATION & NOTES</span>
+          <p id="selected-description" class="structure-description"></p>
+          <div class="detail-separator"></div>
+          <span class="eyebrow">VIEW OPTIONS</span>
+          <div class="detail-actions"><button id="focus-selected" class="button primary full">◎ &nbsp;Focus on structure</button><button id="isolate-selected" class="button full">◈ &nbsp;Isolate structure</button><button id="fade-selected" class="button full" type="button" hidden disabled aria-pressed="false" title="Fade selected structure">◐ &nbsp;Fade structure</button><button id="hide-selected" class="button full">◌ &nbsp;Hide structure</button></div>
+          <button id="clear-selection" class="text-button">Clear selection</button>
+        </div>
+        <section class="paint-editor teacher-only" aria-label="Bone color editor">
+          <span class="eyebrow">STRUCTURE PAINT</span>
+          <p class="annotation-help">Color whole bones, muscles and organs to distinguish anatomical structures. Colors are saved separately for each chapter.</p>
+          <label for="paint-color" class="field-label">Paint color</label>
+          <div class="paint-color-row">
+            <input id="paint-color" type="color" value="#e45d58" aria-label="Choose structure paint color" />
+            <output id="paint-hex" for="paint-color">#E45D58</output>
+          </div>
+          <div class="paint-swatches" role="group" aria-label="Preset bone colors">
+            <button type="button" class="paint-swatch" data-color="#e45d58" style="--swatch:#e45d58" aria-label="Red" title="Red"></button>
+            <button type="button" class="paint-swatch" data-color="#f3ab46" style="--swatch:#f3ab46" aria-label="Orange" title="Orange"></button>
+            <button type="button" class="paint-swatch" data-color="#f3d66a" style="--swatch:#f3d66a" aria-label="Yellow" title="Yellow"></button>
+            <button type="button" class="paint-swatch" data-color="#69bf93" style="--swatch:#69bf93" aria-label="Green" title="Green"></button>
+            <button type="button" class="paint-swatch" data-color="#5dbfda" style="--swatch:#5dbfda" aria-label="Blue" title="Blue"></button>
+            <button type="button" class="paint-swatch" data-color="#a89bdf" style="--swatch:#a89bdf" aria-label="Purple" title="Purple"></button>
+            <button type="button" class="paint-swatch" data-color="#e895b6" style="--swatch:#e895b6" aria-label="Pink" title="Pink"></button>
+            <button type="button" class="paint-swatch" data-color="#f6f6ef" style="--swatch:#f6f6ef" aria-label="White" title="White"></button>
+          </div>
+          <button id="paint-mode" class="button full" type="button" aria-pressed="false">◉ Paint mode — click structures</button>
+          <div class="paint-action-row">
+            <button id="paint-selected" type="button" class="button small" disabled>Color selected</button>
+            <button id="erase-selected" type="button" class="button small subtle" disabled>Erase selected</button>
+          </div>
+          <button id="erase-all" class="button full subtle" type="button" disabled>Reset all chapter colors</button>
+          <small id="paint-status" class="studio-hint" aria-live="polite">0 painted bones in this chapter</small>
+        </section>
+        <section class="annotation-editor teacher-only" aria-label="Annotation editor">
+          <span class="eyebrow">CUSTOM LABELS</span>
+          <p class="annotation-help">Type a label, then place its anchor directly on a bone. Drag a label to position its callout.</p>
+          <label for="new-label-text" class="field-label">Label text</label>
+          <input id="new-label-text" class="text-input" maxlength="100" placeholder="e.g., Coronal suture" />
+          <button id="place-label" class="button full" type="button">⊕ Place label on bone</button>
+          <div id="label-list" class="label-editor-list"></div>
+          </section>
+        <section id="practical-teacher-editor" class="annotation-editor teacher-only" aria-label="Practical examination setup">
+ <details><summary>Practical Examination</summary><div class="practical-config">
+ <label class="switch-row">Enable final-chapter practical <input id="practical-enabled" type="checkbox"></label>
+ <div id="practical-editor-options" hidden>
+ <label class="field-label" for="practical-question-count">Questions per attempt (1–60)</label>
+ <input class="text-input" id="practical-question-count" type="number" min="1" max="60" value="15">
+ <p class="studio-hint" id="practical-eligible-count"></p><p class="studio-hint" id="practical-warning"></p>
+ <input class="text-input" id="practical-search" type="search" placeholder="Find eligible structures or labels" aria-label="Filter practical questions">
+ <select id="practical-chapter-filter" class="text-input" aria-label="Filter by chapter"></select>
+ <div class="practical-bulk"><button type="button" id="practical-select-all" class="button small">Select shown</button><button type="button" id="practical-select-none" class="button small subtle">Deselect shown</button></div>
+ <div id="practical-candidate-list" class="practical-candidate-list"></div>
+ <small id="practical-candidate-footer" class="studio-hint"></small>
+ </div></div></details></section>
+<section id="polish-student-controls" class="annotation-editor teacher-only" aria-label="Student controls">
+           <details id="polish-student-controls-details" open><summary>Student Controls</summary>
+<div class="detail-separator"></div>
+          <label for="student-label-mode" class="field-label">Student label display</label>
+          <select id="student-label-mode" class="text-input">
+            <option value="shown">Show labels</option>
+            <option value="reveal">Click numbered markers to reveal</option>
+            <option value="hidden">Hide labels (practice)</option>
+          </select>
+          <label class="switch-row"><span>Students can hide / isolate bones <small>Otherwise the published scene stays fixed</small></span><input id="student-explore" type="checkbox" /></label>
+                   <div id="polish-publish-controls"></div>
+           <button type="button" id="polish-student-sharing" class="button full">Generate student link…</button>
+           </details>
+         </section>
+         <div class="info-bottom"><p id="class-tip" hidden></p><details class="credits"><summary>Model credits &amp; limitations</summary><p>3D anatomy and source attribution remain governed by the original model licenses. For educational visualization only.</p><a href="https://github.com/Charleeh/ecorche" target="_blank" rel="noopener noreferrer">Source and attribution ↗</a></details></div>
+      </aside>
+    </div>
+  </div>
+  <div class="dialog-backdrop" id="share-dialog" hidden>
+    <section role="dialog" aria-modal="true" aria-labelledby="dialog-heading" class="share-dialog">
+      <div class="dialog-header"><div><span class="eyebrow">PUBLISH SCENE</span><h2 id="dialog-heading">Student link</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="Close">✕</button></div>
+      <p>Student permissions can be adjusted under <strong>Teacher Studio → Student Controls</strong>. Generate a link to publish this lesson.</p>
+      <div class="publish-options" aria-labelledby="publish-options-title">
+        <label class="field-label" id="publish-options-title" for="publish-preset">Student viewer preset</label>
+        <select id="publish-preset" class="text-input">
+          <option value="study">Study Mode — full exploration</option>
+          <option value="exam">Practical Exam — rotation and zoom only</option>
+          <option value="custom">Custom permissions</option>
+        </select>
+        <div class="publish-permissions">
+          <label><input type="checkbox" id="publish-search" checked /><span><strong>Search</strong><small>Allow searching by anatomical name</small></span></label>
+          <label><input type="checkbox" id="publish-tree" checked /><span><strong>Structure explorer</strong><small>Show the scrollable list of anatomical structures</small></span></label>
+          <label><input type="checkbox" id="publish-names" checked /><span><strong>Identify by clicking</strong><small>Reveal anatomical names and descriptions on selection</small></span></label>
+          <label><input type="checkbox" id="publish-labels" checked /><span><strong>Teacher annotations</strong><small>Show labels using each chapter’s reveal settings</small></span></label>
+           <label><input type="checkbox" id="publish-label-list" checked /><span><strong>Show Label List</strong><small>Allow a separate, collapsible list of chapter labels in Student View (requires Teacher annotations)</small></span></label>
+          <label><input type="checkbox" id="publish-explore" checked /><span><strong>Hide and isolate bones</strong><small>Allow changing the displayed structures during viewing</small></span></label>
+           <label><input type="checkbox" id="publish-system-toolbar" checked /><span><strong>Organ system toolbar</strong><small>Allow students to show or hide anatomical systems at the top</small></span></label>
+        </div>
+      </div>
+      <button id="generate-student-link" class="button primary full" type="button">Generate student links &amp; embed code</button>
+      <div id="publish-results" hidden>
+        <label class="field-label" for="share-url">Direct student link</label>
+        <textarea class="share-url" id="share-url" readonly rows="3"></textarea>
+        <div class="dialog-buttons"><button id="copy-url" class="button">Copy student link</button><button id="preview-url" class="button">Open student preview ↗</button></div>
+        <label class="field-label" for="embed-url">Schoology embedded viewer link</label>
+        <textarea class="share-url" id="embed-url" readonly rows="3"></textarea>
+        <div class="dialog-buttons"><button id="copy-embed-url" class="button">Copy Schoology link</button><button id="preview-embed" class="button">Preview embedded view ↗</button></div>
+        <label class="field-label" for="iframe-code">Optional HTML iframe code</label>
+        <textarea class="share-url" id="iframe-code" readonly rows="3"></textarea>
+        <button id="copy-iframe" class="button" type="button">Copy iframe HTML</button>
+        <p class="footnote">For Schoology, add a <strong>File/Link/External Tool → Link</strong> and choose <strong>Display in Schoology</strong> using the Schoology link above. HTML iframe snippets may be removed by Schoology’s page editor. Test in Student View.</p>
+      </div>
+      <!-- ANATOMIQ_GITHUB_PUBLISHING_20261024 — private per-teacher GitHub publisher -->
+      <details id="cloud-publishing" class="cloud-publishing">
+        <summary>Live lessons · Publish to your GitHub repository</summary>
+        <p class="studio-hint">Publish once, then update the same public lesson file. Students keep one short link. No shared server, GitHub App or teacher credentials built into AnatomIQ Studio.</p>
+        <div class="cloud-grid">
+          <label>GitHub username or organization<input id="cloud-owner" class="text-input" autocomplete="off" placeholder="teacher-account" /></label>
+          <label>Public lesson repository<input id="cloud-repo" class="text-input" autocomplete="off" placeholder="anatomy-lessons" /></label>
+          <label>Publishing branch<input id="cloud-branch" class="text-input" value="main" readonly title="Detected from the repository default branch" /></label>
+          <label>Permanent lesson URL name<input id="cloud-slug" class="text-input" autocomplete="off" maxlength="62" placeholder="skull-anatomy" /></label>
+        </div>
+        <label class="field-label" for="cloud-token">Fine-grained GitHub token (Contents: Read and write; selected repository only)</label>
+        <input id="cloud-token" class="text-input" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" />
+        <p class="studio-hint">By default your token is held in memory only. Remembering the connection below is optional and requires an encryption passphrase. Never connect on shared student devices.</p>
+        <!-- ANATOMIQ_REMEMBER_GITHUB_20261024 — optional client-side encrypted token storage -->
+        <label class="cloud-remember-choice"><input id="cloud-remember" type="checkbox" /> Remember GitHub connection on this device</label>
+        <div id="cloud-remember-password-fields" hidden>
+          <label class="field-label" for="cloud-remember-password">Create an encryption passphrase (12+ characters)</label>
+          <input id="cloud-remember-password" class="text-input" type="password" autocomplete="new-password" spellcheck="false" placeholder="Only you know this passphrase" />
+          <p class="studio-hint">Encrypts your GitHub token on this device. Reloads reconnect automatically in this tab; a new tab or browser session requires this passphrase, not another GitHub token.</p>
+        </div>
+        <div id="cloud-unlock-panel" hidden>
+          <label class="field-label" for="cloud-unlock-password">Unlock remembered GitHub connection</label>
+          <input id="cloud-unlock-password" class="text-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="Vault passphrase" />
+          <button id="cloud-unlock" type="button" class="button small">Unlock saved connection</button>
+        </div>
+        <button id="cloud-forget-saved" type="button" class="button small subtle" hidden>Forget saved GitHub credential</button>
+        <p class="studio-hint">Use only on a private, trusted browser. Encryption protects the stored token when the vault is locked, but no browser-only method protects against malicious code running in an unlocked page. Disconnect or Forget clears this browser's saved credential.</p>
+
+        <div class="cloud-actions">
+          <button id="cloud-connect" type="button" class="button small">Connect GitHub</button>
+          <button id="cloud-disconnect" type="button" class="button small subtle" hidden>Disconnect</button>
+          <button id="cloud-export-json" type="button" class="button small subtle">Download lesson JSON</button>
+        </div>
+        <button id="cloud-publish" type="button" class="button primary full">Publish / Update Live Lesson</button>
+        <p id="cloud-publish-status" class="studio-hint" role="status" aria-live="polite">Connect to a public GitHub repository to publish.</p>
+        <div id="cloud-publish-results" hidden>
+          <label class="field-label" for="cloud-student-url">Permanent live student URL</label>
+          <textarea id="cloud-student-url" class="share-url" rows="2" readonly></textarea>
+          <div class="cloud-actions"><button id="cloud-copy-url" type="button" class="button small">Copy student URL</button><button id="cloud-preview" type="button" class="button small subtle">Open student view ↗</button></div>
+          <label class="field-label" for="cloud-embed-url">Schoology embedded viewer URL</label>
+          <textarea id="cloud-embed-url" class="share-url" rows="2" readonly></textarea>
+          <button id="cloud-copy-embed" type="button" class="button small">Copy Schoology URL</button>
+        </div>
+        <p class="footnote">Published lesson JSON is public and can be inspected by anyone. Do not use this as secure exam access control. Image references must already be publicly hosted. Use Snapshot links above when the lesson must not change.</p>
+      </details>
+      <div id="share-feedback" class="studio-hint" aria-live="polite">Choose a preset, then generate the student links.</div>
+      <p class="footnote">These controls hide UI, not source model data. An HTML/URL-only app cannot securely prevent technically skilled students from accessing anatomical names or changing the viewer; don't treat this as a locked-down assessment environment.</p>
+    </section>
+  </div>
+     <div class="dialog-backdrop" id="polish-label-dialog" hidden>
+     <section class="share-dialog polish-label-dialog" role="dialog" aria-modal="true" aria-labelledby="polish-label-title">
+       <div class="dialog-header"><h2 id="polish-label-title"></h2><button id="polish-label-close" type="button" class="icon-button" aria-label="Close label details">✕</button></div>
+       <p id="polish-label-description"></p><img id="polish-label-image" hidden alt="" loading="lazy" />
+     </section>
+   </div>
+   <div class="dialog-backdrop" id="library-dialog" hidden>
+    <section role="dialog" aria-modal="true" aria-labelledby="library-heading" class="share-dialog library-dialog">
+      <div class="dialog-header"><div><span class="eyebrow">TEACHER STORAGE</span><h2 id="library-heading">Scene Library</h2></div><button id="library-close" type="button" class="icon-button" aria-label="Close Scene Library">✕</button></div>
+      <p>Saved lessons are stored on this Chromebook in this Chrome profile. Student links stay independent of the library.</p>
+      <div class="library-toolbar">
+        <label for="library-search" class="sr-only">Search saved lessons</label>
+        <input id="library-search" type="search" class="text-input" placeholder="Search lesson titles or chapters…" autocomplete="off" />
+        <button id="library-backup" type="button" class="button small">⇩ Back up library</button>
+        <button id="library-import" type="button" class="button small subtle">⇧ Import backup</button>
+        <input id="library-import-file" type="file" accept=".json,application/json" hidden />
+      </div>
+      <div class="library-summary"><span id="library-count">Loading…</span><span id="library-message" role="status" aria-live="polite"></span></div>
+      <div id="library-items" class="library-items" aria-live="polite"></div>
+      <p class="footnote">Important: the library does not sync across Chromebooks. Chrome site-data clearing or school device resets can erase it. Use <strong>Back up library</strong> to keep a copy in Google Drive or another safe location. Importing a backup adds lessons without overwriting existing ones.</p>
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="lymphatic-diagram-dialog" hidden>
+    <section class="share-dialog lymphatic-diagram-dialog" role="dialog" aria-modal="true" aria-labelledby="lymphatic-diagram-title">
+      <div class="dialog-header"><div><span class="eyebrow">LYMPHATIC SYSTEM · TEACHING DIAGRAM</span><h2 id="lymphatic-diagram-title">Major drainage regions (schematic)</h2></div><button type="button" id="lymphatic-diagram-close" class="icon-button" aria-label="Close lymphatic diagram">✕</button></div>
+      <p class="studio-hint">These simplified regional pathways are not anatomical meshes or patient-specific geometry. The spleen and thymus remain selectable in the 3D atlas.</p>
+      <img class="lymphatic-diagram-image" src="./lymphatic-drainage.svg" alt="Schematic major lymphatic nodes, thoracic duct, spleen and thymus" />
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="kidney-interior-dialog" hidden>
+    <section class="share-dialog kidney-interior-dialog" role="dialog" aria-modal="true" aria-labelledby="kidney-interior-title">
+      <div class="dialog-header"><div><span class="eyebrow">URINARY SYSTEM</span><h2 id="kidney-interior-title">Kidney internal anatomy · schematic</h2></div><button type="button" id="kidney-interior-close" class="icon-button" aria-label="Close kidney schematic">✕</button></div>
+      <p class="studio-hint">The 3D kidney is a verified external anatomy mesh. This separately labeled drawing illustrates internal organization and is not patient-specific 3D source geometry.</p>
+      <img class="kidney-interior-image" src="./kidney-interior.svg" alt="Kidney section illustrating cortex, medullary pyramids, calyces, renal pelvis and ureter" />
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="help-dialog" hidden>
+    <section class="share-dialog help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="dialog-header"><div><span class="eyebrow">ANATOMIQ STUDIO</span><h2 id="help-title">Menus & keyboard shortcuts</h2></div><button type="button" id="help-close" class="icon-button" aria-label="Close Help">✕</button></div>
+      <p><strong>File</strong> manages the current lesson: save, import/export, drafts and student links. <strong>Edit</strong> includes Undo/Redo and chapter actions. <strong>Library</strong> lists saved lessons in this Chrome profile.</p>
+      <div class="help-shortcuts"><span>Hide selected</span><kbd>Delete / Backspace</kbd><span>Search</span><kbd>Ctrl / ⌘ + F</kbd><span>Isolate selected</span><kbd>Ctrl / ⌘ + I</kbd><span>Fade selected</span><kbd>Ctrl / ⌘ + −</kbd><span>Save to Library</span><kbd>Ctrl / ⌘ + S</kbd><span>Undo</span><kbd>Ctrl / ⌘ + Z</kbd><span>Redo</span><kbd>Ctrl / ⌘ + Shift + Z</kbd><span>Open Library</span><kbd>Ctrl / ⌘ + O</kbd></div>
+      <p class="footnote">Scene Library data is local to this website and Chrome profile, and is not automatically backed up or synced. Use <strong>Library → Back up entire library</strong> regularly. Clearing site data may remove your library and drafts. Sharing a student link does not upload your saved library.</p>
+    </section>
+  </div>
+  <div class="dialog-backdrop" id="settings-dialog" hidden>
+    <section class="share-dialog settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="dialog-header"><div><span class="eyebrow">APPLICATION</span><h2 id="settings-title">App Settings</h2></div><button type="button" id="settings-close" class="icon-button" aria-label="Close App Settings">✕</button></div>
+      <div class="settings-grid">
+        <span>Installed version</span><strong id="settings-installed">1.9.1</strong>
+        <span>Published version</span><strong id="settings-published">Not checked</strong>
+        <span>3D renderer</span><strong id="settings-renderer">Checking…</strong>
+        <span>Anatomy model</span><strong id="settings-model">Checking…</strong>
+        <span>Skull geometry</span><strong id="settings-skull">Checking…</strong>
+        <span>Digestive organs</span><strong id="settings-organs">Checking…</strong>
+        <span>Cardiovascular</span><strong id="settings-cardio">Checking…</strong>
+        <span>Self-hosting</span><strong id="settings-assets">Checking local files…</strong>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-skull-geometry"><strong>Skull geometry on this device</strong></label>
+        <select id="settings-skull-geometry" class="text-input" aria-label="Skull geometry quality">
+          <option value="standard">Standard — existing fast skull and skeleton (recommended)</option>
+          <option value="detailed">Experimental — additional cranial bone detail (reloads app)</option>
+        </select>
+        <p class="studio-hint">Standard is recommended for accurate dental alignment and predictable performance. In Experimental mode, only safely matched skull surfaces are upgraded; the original maxillae, mandible and teeth remain together. The replacement uses a neutral bone material. Existing 1.7.1 devices have been reset to Standard once. The experiment requires <code>models/skull-detailed.glb</code> and <code>models/skull-structures.json</code>. The setting is device-specific and never changes saved lessons or student links.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-connective-geometry"><strong>Connective anatomy geometry</strong></label>
+        <select id="settings-connective-geometry" class="text-input" aria-label="Connective model detail"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — smooth connective surfaces</option></select>
+        <label for="settings-lymphatic-geometry"><strong>Lymphatic geometry</strong></label>
+        <select id="settings-lymphatic-geometry" class="text-input" aria-label="Lymphatic geometry quality"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — smoother spleen and thymus</option></select>
+        <label for="settings-urinary-geometry"><strong>Urinary system geometry</strong></label>
+        <select id="settings-urinary-geometry" class="text-input" aria-label="Urinary geometry quality"><option value="standard">Standard — Chromebook optimized</option><option value="detailed">Detailed — refined kidney and urinary tract surfaces</option></select>
+        <label for="settings-nervous-geometry"><strong>Nervous system geometry</strong></label>
+        <select id="settings-nervous-geometry" class="text-input" aria-label="Nervous geometry quality"><option value="standard">Standard — recommended for Chromebooks</option><option value="detailed">Detailed — higher-resolution brain surfaces</option></select>
+        <p class="studio-hint">Uses 125 verified DBCLS / BodyParts3D 4.3 meshes. Device quality does not affect lesson structure IDs. Changing this option reloads the viewer.</p>
+        <label for="settings-respiratory-geometry"><strong>Respiratory geometry</strong></label>
+        <select id="settings-respiratory-geometry" class="text-input" aria-label="Respiratory geometry quality"><option value="standard">Standard — recommended for Chromebooks</option><option value="detailed">Detailed — more triangles</option></select>
+        <p class="studio-hint">Respiratory assets are self-hosted; this selection is device-local and does not affect student scene anatomy.</p>
+        <label for="settings-cardio-geometry"><strong>Cardiovascular geometry on this device</strong></label>
+        <select id="settings-cardio-geometry" class="text-input" aria-label="Cardiovascular geometry detail">
+          <option value="standard">Standard — optimized for Chromebooks (reloads app)</option>
+          <option value="detailed">Detailed — higher-resolution vessels (reloads app)</option>
+        </select>
+        <p class="studio-hint">Geometry detail is device-specific. It doesn't change the teacher's shared scene.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-digestive-geometry"><strong>Digestive geometry on this device</strong></label>
+        <select id="settings-digestive-geometry" class="text-input" aria-label="Digestive geometry detail">
+          <option value="standard">Standard — optimized for Chromebooks</option>
+          <option value="detailed">Detailed — high-resolution organs (reloads app)</option>
+        </select>
+        <p class="studio-hint">This setting controls mesh resolution only. To display the additional organs, select Digestive and enable <strong>Detailed anatomy</strong> under Anatomical Systems in the left sidebar. The choice here is device-specific and does not change published scenes.</p>
+      </div>
+      <div class="render-settings-group" data-feature="anatomiq-natural-bone-phase1">
+        <label for="settings-bone-appearance"><strong>Skeletal bone appearance</strong></label>
+        <select id="settings-bone-appearance" class="text-input" aria-label="Skeletal bone appearance">
+          <option value="natural">Natural Bone</option>
+          <option value="classic">Classic Bone</option>
+        </select>
+        <p class="studio-hint">Changes immediately. Natural Bone retains the approved satin highlights with fine, screen-filtered surface microrelief. No geometry changes, displacement or altered anatomical landmarks. Cartilage, discs, teeth and teacher paint remain separate. This preference is local to this device and is not part of saved lessons.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-surface-lighting"><strong>Anatomical surface lighting</strong></label>
+        <select id="settings-surface-lighting" class="text-input" aria-label="Anatomical surface lighting">
+          <option value="studio">Studio — balanced highlights across all systems (recommended)</option>
+          <option value="classic">Classic — previous matte appearance</option>
+        </select>
+        <p class="studio-hint">Studio uses shared directional lighting and physically based surface finishes to add realistic depth to bones, muscles, vessels and organs. Changing this option reloads the viewer. This choice is saved only on this device and never changes saved lessons or student links.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-shadow-mode"><strong>Dynamic anatomical shadows</strong></label>
+        <select id="settings-shadow-mode" class="text-input" aria-label="Dynamic anatomical shadows">
+          <option value="auto">Auto — dynamic shadows on Balanced/Sharp, off on Fast (recommended)</option>
+          <option value="on">On — cast and receive shadows, including in Fast mode</option>
+          <option value="off">Off — no shadow-map pass</option>
+        </select>
+        <p id="settings-shadow-explanation" class="studio-hint" role="status"></p>
+        <p class="studio-hint">A single camera-aware key light casts real-time shadows where anatomical surfaces overlap. Shadows update when you rotate, zoom, hide or reveal structures. Faster Chromebooks can use Auto or Off. Transparent heart cavity volumes never cast opaque shadows. This setting is saved only on this device; changing it reloads the viewer.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-render-quality"><strong>3D rendering quality</strong></label>
+        <select id="settings-render-quality" class="text-input" aria-label="Rendering quality">
+          <option value="auto">Auto — adjust to Chromebook capabilities</option>
+          <option value="fast">Fast — lower resolution (recommended for heavy muscle scenes)</option>
+          <option value="balanced">Balanced — standard quality</option>
+          <option value="sharp">Sharp — higher resolution, more demanding</option>
+        </select>
+        <p id="settings-quality-explanation" class="studio-hint" role="status"></p>
+        <p id="settings-performance-stats" class="studio-hint"></p>
+        <p class="studio-hint">Quality is stored on this device only. It does not change the teacher's lesson or the student's shared scene.</p>
+      </div>
+      <div class="render-settings-group">
+        <label for="settings-model-refresh-scope"><strong>Force re-download anatomy models</strong></label>
+        <select id="settings-model-refresh-scope" class="text-input" aria-label="Model system to refresh">
+          <option value="cardiovascular">Cardiovascular — catalog, Standard and Detailed models</option>
+          <option value="respiratory">Respiratory — catalog, Standard and Detailed models</option>
+          <option value="nervous">Nervous — catalog, Standard and Detailed models</option>
+          <option value="urinary">Urinary — catalog, Standard and Detailed models</option>
+          <option value="lymphatic">Lymphatic — catalog, Standard and Detailed models</option>
+          <option value="digestive">Digestive — organs, catalog, Standard and Detailed models</option>
+          <option value="skeletal">Skeletal / muscular — base model</option>
+        </select>
+        <button id="settings-force-models" type="button" class="button">↻ Force re-download selected models</button>
+        <p class="studio-hint" id="settings-model-refresh-result" role="status" aria-live="polite">Downloads fresh copies from this GitHub Pages site. Verifies each file before replacing the model cache. Does not clear lessons, drafts or settings.</p>
+      </div>
+      <p id="settings-check-result" class="settings-result" role="status" aria-live="polite">Updates are checked against your own GitHub Pages site's version.json file, not an external update service.</p>
+      <div class="dialog-buttons"><button type="button" id="settings-check-updates" class="button primary">↻ Check for updates</button><button type="button" id="settings-reload" class="button" hidden>Reload to update</button><button type="button" id="settings-recheck-assets" class="button">Check local files</button></div>
+      <p class="footnote">For independent hosting, include <code>vendor/three/</code>, <code>models/ecorche.glb</code>, and <code>models/anatomy-organs.glb</code> in this GitHub repository. The app can temporarily use the earlier CDN links when files are missing. For offline access, use <strong>Help → Prepare offline access</strong>. Saved library scenes are local to this Chrome profile; back them up before clearing site data.</p>
+    </section>
+  </div>
+  <div id="app-toast" class="app-toast" role="status" hidden></div>
+  <script type="module">
+    // Installer changes the static import map to local files after they are downloaded.
+    // Keep the import map before module execution for older managed Chromebooks.
+    window.__ANATOMY_RENDERER_SOURCE = document.getElementById('renderer-importmap')
+      .textContent.includes('"./vendor/three/build/three.module.js"') ? 'local' : 'external';
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+      try {
+        await navigator.serviceWorker.register('./sw.js');
+        await navigator.serviceWorker.ready;
+        if (!navigator.serviceWorker.controller) {
+          await Promise.race([
+            new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once:true })),
+            new Promise(resolve => setTimeout(resolve, 2000))
+          ]);
+        }
+      } catch (e) { console.warn('Offline features unavailable:', e); }
+    }
+    await import('./app.js?rev=carousel259'); // ANATOMIQ_TRIQUETRUM_244
+  </script>
+  <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
+  <script defer src="./interface-2221.js?rev=workspace241"></script>
+  <script defer src="./workspace-tabs-241.js?rev=250"></script>
+  <script defer src="./teacher-tools-2240.js?rev=240"></script>
+<script type="module" src="./github-library-embed.mjs?rev=235"></script> <!-- ANATOMIQ_GITHUB_LIBRARY_EMBED_20261026 -->
+<script defer src="./responsive-chapters-panels.js?rev=233"></script>
+<script defer src="./chapter-bar-width-234.js?rev=234"></script>
+  <script defer src="./lesson-experience-249.js?rev=249"></script>
+</body>
+</html>

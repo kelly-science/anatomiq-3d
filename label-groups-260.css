@@ -1,0 +1,15 @@
+/* AnatomIQ Studio 2.2.60 — Single / Group Label tools */
+#group-label { margin-top: 7px; }
+#group-label-actions[hidden], #group-label-stage-done[hidden] { display: none !important; }
+#group-label-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:9px 0 12px; }
+#group-label-actions .button { flex: 1; min-width: 92px; }
+#group-label-status { display:block; margin: 6px 0 0; line-height:1.4; }
+#group-label-stage-done { appearance:none; border:1px solid rgba(154,233,218,.5); background:rgba(13,91,80,.94); color:#fff; border-radius:11px; padding:9px 14px; font:inherit; font-weight:700; cursor:pointer; box-shadow:0 6px 22px rgba(0,0,0,.28); }
+#group-label-stage-done:disabled { opacity:.48; cursor:not-allowed; }
+#group-label-stage-done:focus-visible { outline:3px solid #74e1d2; outline-offset:2px; }
+.anat-group-members { display:flex; flex-wrap:wrap; gap:5px; margin:8px 0; }
+.anat-group-member { display:inline-flex; gap:5px; align-items:center; font-size:.8rem; padding:4px 7px; border:1px solid var(--line, #5e7780); border-radius:7px; }
+.anat-group-member button { padding:0 4px; border:0; border-radius:4px; background:transparent; color:inherit; cursor:pointer; }
+.anat-group-member button:focus-visible { outline:2px solid currentColor; }
+/* Viewer overlays may suppress pointer events; Done remains operable. */
+#group-label-stage-done { position:relative; z-index:10; pointer-events:auto; }

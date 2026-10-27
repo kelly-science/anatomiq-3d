@@ -36,6 +36,7 @@
   <link rel="stylesheet" href="./lesson-renaming-250.css?rev=250" /> <!-- ANATOMIQ_LESSON_RENAME_250 -->
   <link rel="stylesheet" href="./student-selection-251.css?rev=251" /> <!-- ANATOMIQ_SELECTION_STUDENT_251 -->
   <link rel="stylesheet" href="./student-label-list-252.css?rev=252" /> <!-- ANATOMIQ_STUDENT_LABEL_LIST_252 -->
+  <link rel="stylesheet" href="./label-groups-260.css?rev=260" /> <!-- ANATOMIQ_SINGLE_GROUP_LABEL_260 -->
 </head>
 <body>
   <div class="app-shell">
@@ -308,7 +309,8 @@
         </section>
         <div id="canvas-container" class="canvas-container" role="application" aria-label="Interactive 3D anatomical model"></div>
         <div class="viewer-top">
-          <div id="place-hint" class="place-hint" hidden>Click the structure where you want the label to point. Esc cancels.</div>
+          <div id="place-hint" class="place-hint" hidden>Click a structure to place its label. Esc cancels.</div>
+           <button id="group-label-stage-done" type="button" hidden disabled>Done ✓</button>
           <div class="viewer-context"><span class="viewer-breadcrumb">3D VIEWER <span class="chevron">›</span> <strong id="context-name">Skull</strong></span><span class="viewer-tip" hidden></span></div>
           <button id="polish-label-toggle" class="floating-button polish-label-toggle" type="button" hidden aria-pressed="true">Labels: On</button>
           <button id="reset-camera" class="floating-button" title="Reset camera">⟳ <span>Reset view</span></button>
@@ -394,10 +396,14 @@
         </section>
         <section class="annotation-editor teacher-only" aria-label="Annotation editor">
           <span class="eyebrow">CUSTOM LABELS</span>
-          <p class="annotation-help">Type a label, then place its anchor directly on a bone. Drag a label to position its callout.</p>
-          <label for="new-label-text" class="field-label">Label text</label>
-          <input id="new-label-text" class="text-input" maxlength="100" placeholder="e.g., Coronal suture" />
-          <button id="place-label" class="button full" type="button">⊕ Place label on bone</button>
+          <p class="annotation-help">Create a label by clicking any anatomical structure. Use Group Label to connect one callout to several structures. Rename or edit labels below.</p>
+           <button id="place-label" class="button full" type="button">⊕ Single Label</button>
+           <button id="group-label" class="button full subtle" type="button">⊕ Group Label</button>
+           <div id="group-label-actions" hidden>
+             <button id="group-label-done" class="button small" type="button" disabled>Done</button>
+             <button id="group-label-cancel" class="button small subtle" type="button">Cancel</button>
+           </div>
+           <small id="group-label-status" class="studio-hint" aria-live="polite"></small>
           <div id="label-list" class="label-editor-list"></div>
           </section>
         <section id="practical-teacher-editor" class="annotation-editor teacher-only" aria-label="Practical examination setup">
@@ -682,7 +688,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=carousel259'); // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=labels260'); // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
   <script defer src="./interface-2221.js?rev=workspace241"></script>

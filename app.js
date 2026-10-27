@@ -29,7 +29,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=260';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -47,7 +47,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.56'; // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.60'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -221,6 +221,9 @@ let sceneFingerprint = '';
 let labels = [];
 let labelSequence = 0;
 let placingLabel = false;
+// Single / Group label placement is transient and never stored as scene state.
+let labelPlacementMode=null;
+let groupPendingAnchors=[];
 let restoringScene = false;
 let draftTimeout = 0;
 const DRAFT_KEY = 'anatomy-studio-project-v2';
@@ -889,7 +892,7 @@ function restoreBonePaint(entries=[]){
 }
 function cancelPainting(){
   paintMode=false;elements.stage.style.cursor='';
-  $('place-hint').textContent='Click the structure where you want the label to point. Esc cancels.';
+  $('place-hint').textContent='Click any structure to create its label. Esc cancels.';
   $('place-hint').hidden=true;
   updatePaintControls();
 }
@@ -1348,13 +1351,22 @@ renderer.domElement.addEventListener('pointerup',event=>{
   if(paintMode && teacherMode){
     setBoneColor(s,paintColor);isolated=false;setSelection(s);
   } else if(placingLabel && teacherMode){
-    const text=$('new-label-text').value.trim();
-    if(!text){showToast('Enter label text first.');cancelPlacing();return;}
+    // Works for every named clickable structure, not just skeletal bones.
     const local=hit.object.worldToLocal(hit.point.clone());
-    practicalNewLabelExpand=labelSequence+1;
-    labels.push({id:++labelSequence,qi:newPracticalLabelId(),s:s.index,p:local.toArray().map(n=>round(n,5)),t:text,dx:24,dy:-31,...(hit.face?.normal?{ln:hit.face.normal.toArray().map(n=>round(n,5))}:{})});
-    $('new-label-text').value='';cancelPlacing();setSelection(s);renderAnnotations();renderLabelEditor();queueDraft();
-    showToast('Label anchored. Drag its callout to reposition it.');
+    const anchor={s:s.index,p:local.toArray().map(n=>round(n,5)),...(hit.face?.normal?{ln:hit.face.normal.toArray().map(n=>round(n,5))}:{})};
+    if(labelPlacementMode==='group'){
+      if(groupPendingAnchors.some(a=>a.s===s.index)){
+        showToast(`${s.name} is already in this group.`);return;
+      }
+      if(groupPendingAnchors.length>=64){showToast('A group can contain up to 64 structures.');return;}
+      groupPendingAnchors.push(anchor);
+      setSelection(s);updateGroupLabelStatus();
+    }else{
+      practicalNewLabelExpand=labelSequence+1;
+      labels.push({id:++labelSequence,qi:newPracticalLabelId(),...anchor,t:s.name.trim().slice(0,100)||'Unnamed structure',dx:24,dy:-31});
+      cancelPlacing();setSelection(s);renderAnnotations();renderLabelEditor();queueDraft();
+      showToast('Label created. Edit its name in Custom Labels.');
+    }
   } else {isolated=false;setSelection(s);} 
 });
 // ANATOMIQ_TRIQUETRUM_244 — The only added skeletal assets are two approved triquetra.
@@ -2232,10 +2244,60 @@ function showToast(message){
 }
 function cancelPlacing(){
   placingLabel=false;
-  $('place-label').textContent='⊕ Place label on bone';
+  labelPlacementMode=null;
+  groupPendingAnchors=[];
+  $('place-label').textContent='⊕ Single Label';
   $('place-label').classList.remove('placing');
+  $('group-label').textContent='⊕ Group Label';
+  $('group-label').classList.remove('placing');
+  $('group-label-actions').hidden=true;
+  $('group-label-stage-done').hidden=true;
+  $('group-label-status').textContent='';
   $('place-hint').hidden=true;
   elements.stage.style.cursor='';
+}
+function groupLabelNumber(){
+  const used=new Set(labels.filter(l=>Array.isArray(l.g)).map(l=>l.gn).filter(Number.isInteger));
+  let n=1;while(used.has(n))n++;
+  return n;
+}
+function updateGroupLabelStatus(){
+  if(!placingLabel||labelPlacementMode!=='group')return;
+  const names=groupPendingAnchors.map(a=>structures[a.s]?.name||`Structure ${a.s+1}`);
+  const count=names.length;
+  $('group-label-status').textContent=count?`${count} selected: ${names.join(', ')}`:'Select two or more structures in the 3D viewer.';
+  $('place-hint').textContent=`GROUP LABEL: ${count} structure${count===1?'':'s'} selected. Click more structures, then Done.`;
+  $('group-label-done').disabled=count<2;
+  $('group-label-stage-done').disabled=count<2;
+}
+function beginLabelPlacement(mode){
+  if(!teacherMode||!sceneRoot)return;
+  if(paintMode)cancelPainting();
+  if(placingLabel){cancelPlacing();}
+  if(labels.length>=64){showToast('Maximum 64 annotations per scene.');return;}
+  labelPlacementMode=mode;placingLabel=true;groupPendingAnchors=[];
+  openDetails(false);
+  $('place-label').classList.toggle('placing',mode==='single');
+  $('group-label').classList.toggle('placing',mode==='group');
+  $('place-label').textContent=mode==='single'?'Cancel Single Label':'⊕ Single Label';
+  $('group-label').textContent=mode==='group'?'Cancel Group Label':'⊕ Group Label';
+  $('group-label-actions').hidden=mode!=='group';
+  $('group-label-stage-done').hidden=mode!=='group';
+  $('place-hint').hidden=false;
+  $('place-hint').textContent=mode==='single'?'SINGLE LABEL: Click any anatomical structure. Esc cancels.':'GROUP LABEL: Select at least two structures, then Done.';
+  elements.stage.style.cursor='crosshair';
+  updateGroupLabelStatus();
+}
+function finishGroupLabel(){
+  if(!placingLabel||labelPlacementMode!=='group'||!teacherMode)return;
+  if(groupPendingAnchors.length<2){showToast('Select at least two different structures.');return;}
+  if(labels.length>=64){cancelPlacing();showToast('Maximum 64 annotations per scene.');return;}
+  const [first,...additional]=groupPendingAnchors;
+  const gn=groupLabelNumber();
+  practicalNewLabelExpand=labelSequence+1;
+  labels.push({id:++labelSequence,qi:newPracticalLabelId(),...first,g:additional,gn,t:`Group ${gn}`,dx:24,dy:-31});
+  cancelPlacing();renderAnnotations();renderLabelEditor();queueDraft();
+  showToast(`Group ${gn} created with ${1+additional.length} structures. Rename it in Custom Labels.`);
 }
 function queueDraft(){
   if(!teacherMode || restoringScene || !sceneRoot)return;
@@ -2258,7 +2320,8 @@ function snapshotScene(){
     te:elements.teeth.checked,ca:elements.cartilage.checked,
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ey:systemLayers.nervous,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(cardioPreviewCamera||(divisionScope&&divisionSavedCamera?divisionSavedCamera:[...camera.position.toArray(),...controls.target.toArray()])).map(n=>round(n,5)),
-    labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
+    labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),
+      ...(Array.isArray(l.g)?{g:l.g.map(a=>({s:a.s,p:a.p.map(n=>round(n,5)),...(a.ln?{ln:a.ln.map(n=>round(n,5))}:{})})),gn:l.gn}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
      ...(structureNoteOverrides.size?{sd:[...structureNoteOverrides.entries()].sort((a,b)=>a[0]-b[0]).map(([i,v])=>[i,v.location,v.notes])}:{}),
     ...(pc.length?{pc}:{})
@@ -3133,6 +3196,27 @@ function renderLabelEditor(){
     const remove=document.createElement('button');remove.textContent='×';remove.className='icon-button';remove.title='Remove label';remove.setAttribute('aria-label',`Remove label ${i+1}`);
     remove.addEventListener('click',()=>{labels=labels.filter(l=>l.id!==label.id);renderAnnotations();renderLabelEditor();queueDraft();});
     const more=document.createElement('div');more.className='polish-label-fields';
+    // Group members remain editable after creation; do not split into independent labels.
+    if(Array.isArray(label.g)){
+      const members=document.createElement('div');members.className='anat-group-members';
+      for(const [idx,anchor] of [{s:label.s,p:label.p},...label.g].entries()){
+        const chip=document.createElement('span');chip.className='anat-group-member';
+        const text=document.createElement('span');text.textContent=structures[anchor.s]?.name||`Structure ${anchor.s+1}`;
+        chip.append(text);
+        if(label.g.length){
+          const removeMember=document.createElement('button');removeMember.type='button';removeMember.textContent='×';
+          removeMember.setAttribute('aria-label',`Remove ${text.textContent} from group`);
+          removeMember.addEventListener('click',()=>{
+            if(idx===0){const next=label.g.shift();label.s=next.s;label.p=next.p;label.ln=next.ln;}
+            else label.g.splice(idx-1,1);
+            if(!label.g.length){delete label.g;delete label.gn;}
+            renderLabelEditor();renderAnnotations();queueDraft();
+          });chip.append(removeMember);
+        }
+        members.append(chip);
+      }
+      more.append(members);
+    }
     const desc=document.createElement('textarea');desc.rows=2;desc.maxLength=1200;
     desc.placeholder='Optional description for students';desc.value=label.d||'';
     desc.setAttribute('aria-label',`Description for label ${i+1}`);
@@ -3175,9 +3259,14 @@ function renderAnnotations(){
     const number=document.createElement('span');number.className='callout-number';number.textContent=String(i+1);
     const caption=document.createElement('span');caption.className='callout-text';caption.textContent=label.t;
     marker.append(number,caption);labelContainer.appendChild(marker);
-    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('class','leader-line');labelSVG.appendChild(line);
-    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','2.5');dot.setAttribute('class','leader-dot');labelSVG.appendChild(dot);
+    const lines=[],dots=[];
+    for(const anchor of [{s:label.s,p:label.p},...(label.g||[])]){
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('class','leader-line');labelSVG.appendChild(line);lines.push(line);
+      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('r','2.5');dot.setAttribute('class','leader-dot');labelSVG.appendChild(dot);dots.push(dot);
+    }
+    const line=lines[0],dot=dots[0];
     const visibility=teacherMode?'shown':labelMode;
     if(visibility==='reveal'){
       marker.classList.add('reveal');
@@ -3208,61 +3297,67 @@ function renderAnnotations(){
       const finish=()=>{if(dragging){dragging=null;queueDraft();}};
       marker.addEventListener('pointerup',finish);marker.addEventListener('pointercancel',finish);
     }
-    markers.set(label.id,{marker,line,dot});
+    markers.set(label.id,{marker,line,dot,lines,dots});
   });
   polishRenderStudentLabels();
   invalidate(2);
 }
 function updateAnnotationPositions(){
   if(__labelAudit.enabled && __labelAudit.mode==='no-labels')return;
-  // View > Labels: avoid costly occlusion raycasts when teacher labels are off.
   if(document.body.classList.contains('anat-labels-hidden'))return;
   if(!sceneRoot || !labels.length)return;
-  // The scene renderer already updates matrices; avoid a second full traversal
-  // of hundreds of muscle meshes for each annotation refresh.
   const width=stageWidth,height=stageHeight;
   const refreshOcclusion=performance.now()>polishOcclusionAt && !(__labelAudit.enabled && __labelAudit.mode==='no-occlusion');
   if(refreshOcclusion){
     polishOcclusionAt=performance.now()+110;
     polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
-    polishOcclusionIndex.update(polishOccluders); // ANATOMIQ_LABEL_OCCLUSION_BVH_238
+    polishOcclusionIndex.update(polishOccluders);
   }
   for(const label of labels){
     const nodes=markers.get(label.id);if(!nodes)continue;
-    const s=structures[label.s];
-    if(!s || !s.mesh.visible || (!teacherMode && (labelMode==='hidden'||!polishStudentLabelsVisible))){
-      nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
+    const anchors=[{s:label.s,p:label.p},...(label.g||[])];
+    const projected=[];
+    const hiddenByMode=!teacherMode&&(labelMode==='hidden'||!polishStudentLabelsVisible);
+    for(let i=0;i<anchors.length;i++){
+      const a=anchors[i],s=structures[a.s],line=nodes.lines[i],dot=nodes.dots[i];
+      if(hiddenByMode||!s?.mesh.visible){line.setAttribute('visibility','hidden');dot.setAttribute('visibility','hidden');continue;}
+      const world=s.mesh.localToWorld(new THREE.Vector3(...a.p));
+      const at=world.clone().project(camera);
+      if(at.z< -1||at.z>1||Math.abs(at.x)>1.15||Math.abs(at.y)>1.15){
+        line.setAttribute('visibility','hidden');dot.setAttribute('visibility','hidden');continue;
+      }
+      const x=(at.x+1)*width/2,y=(1-at.y)*height/2;
+      if(refreshOcclusion){
+        const delta=world.clone().sub(camera.position),distance=delta.length();
+        polishOcclusionRay.set(camera.position,delta.normalize());
+        polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
+        const start=__labelAudit.enabled?performance.now():0;
+        const blocked=(__labelAudit.enabled&&__labelAudit.mode==='legacy-occlusion')
+          ?polishOcclusionRay.intersectObjects(polishOccluders,false).length>0
+          :polishOcclusionIndex.isOccluded(polishOcclusionRay);
+        if(__labelAudit.enabled){__labelAudit.rayCalls++;__labelAudit.rayMs+=performance.now()-start;}
+        line.dataset.occluded=blocked?'1':'0';
+      }
+      projected.push({x,y,line,dot,blocked:line.dataset.occluded==='1'});
     }
-    const world=s.mesh.localToWorld(new THREE.Vector3(...label.p));
-    const at=world.clone().project(camera);
-    if(at.z<-1 || at.z>1 || Math.abs(at.x)>1.15 || Math.abs(at.y)>1.15){
-      nodes.marker.hidden=true;nodes.line.setAttribute('visibility','hidden');nodes.dot.setAttribute('visibility','hidden');continue;
+    if(!projected.length){
+      nodes.marker.hidden=true;
+      continue;
     }
-    const x=(at.x+1)*width/2,y=(1-at.y)*height/2;
-    const bx=x+label.dx,by=y+label.dy;
+    const reference=projected.find(p=>!p.blocked)||projected[0];
+    const bx=reference.x+label.dx,by=reference.y+label.dy;
     nodes.marker.hidden=false;
-    if(refreshOcclusion){
-      const delta=world.clone().sub(camera.position),distance=delta.length();
-      polishOcclusionRay.set(camera.position,delta.normalize());
-      polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
-      // Only a closer, visible mesh can occlude a label; the label's own surface
-      // can be encountered at the anchor without counting as an occluder.
-      const __lpRayStart=__labelAudit.enabled?performance.now():0;
-      const blocked=(__labelAudit.enabled && __labelAudit.mode==='legacy-occlusion')
-        ? polishOcclusionRay.intersectObjects(polishOccluders,false).length>0
-        : polishOcclusionIndex.isOccluded(polishOcclusionRay); // ANATOMIQ_LABEL_OCCLUSION_BVH_238
-      if(__labelAudit.enabled){__labelAudit.rayCalls++;__labelAudit.rayMs+=performance.now()-__lpRayStart;}
-      nodes.marker.dataset.occluded=blocked?'1':'0';
-    }
-    const isOccluded=nodes.marker.dataset.occluded==='1';
-    nodes.marker.classList.toggle('polish-occluded',isOccluded);
-    nodes.line.style.opacity=isOccluded?'0':'1';
-    nodes.dot.style.opacity=isOccluded?'0':'1';
+    const allOccluded=projected.every(p=>p.blocked);
+    nodes.marker.dataset.occluded=allOccluded?'1':'0';
+    nodes.marker.classList.toggle('polish-occluded',allOccluded);
     nodes.marker.style.left=bx+'px';nodes.marker.style.top=by+'px';
-    nodes.line.setAttribute('visibility','visible');nodes.dot.setAttribute('visibility','visible');
-    nodes.line.setAttribute('x1',String(x));nodes.line.setAttribute('y1',String(y));
-    nodes.line.setAttribute('x2',String(bx+10));nodes.line.setAttribute('y2',String(by+13));
-    nodes.dot.setAttribute('cx',String(x));nodes.dot.setAttribute('cy',String(y));
+    for(const p of projected){
+      p.line.style.opacity=p.blocked?'0':'1';p.dot.style.opacity=p.blocked?'0':'1';
+      p.line.setAttribute('visibility','visible');p.dot.setAttribute('visibility','visible');
+      p.line.setAttribute('x1',String(p.x));p.line.setAttribute('y1',String(p.y));
+      p.line.setAttribute('x2',String(bx+10));p.line.setAttribute('y2',String(by+13));
+      p.dot.setAttribute('cx',String(p.x));p.dot.setAttribute('cy',String(p.y));
+    }
   }
 }
 async function applyScene(saved){
@@ -3638,15 +3733,16 @@ $('copy-iframe').addEventListener('click',()=>copyPublishValue('iframe-code','if
 $('preview-url').addEventListener('click',()=>{if(sharedLink)window.open(sharedLink,'_blank','noopener');});
 $('preview-embed').addEventListener('click',()=>{if(embedLink)window.open(embedLink,'_blank','noopener');});
 $('place-label').addEventListener('click',()=>{
-  if(!teacherMode || !sceneRoot)return;
-  if(paintMode)cancelPainting();
-  if(placingLabel){cancelPlacing();return;}
-  if(!$('new-label-text').value.trim()){showToast('Enter label text before placing it.');$('new-label-text').focus();return;}
-  if(labels.length>=64){showToast('Maximum 64 annotations per scene.');return;}
-  placingLabel=true;openDetails(false);
-  $('place-label').textContent='Cancel placing label';$('place-label').classList.add('placing');
-  $('place-hint').hidden=false;elements.stage.style.cursor='crosshair';
+  if(placingLabel&&labelPlacementMode==='single'){cancelPlacing();return;}
+  beginLabelPlacement('single');
 });
+$('group-label').addEventListener('click',()=>{
+  if(placingLabel&&labelPlacementMode==='group'){cancelPlacing();return;}
+  beginLabelPlacement('group');
+});
+$('group-label-done').addEventListener('click',finishGroupLabel);
+$('group-label-stage-done').addEventListener('click',finishGroupLabel);
+$('group-label-cancel').addEventListener('click',cancelPlacing);
 // Teacher paint brush: one click colors a complete anatomical mesh (not surface pixels).
 $('paint-color').addEventListener('input',event=>{
   paintColor=event.target.value.toLowerCase();$('paint-hex').textContent=paintColor.toUpperCase();updatePaintControls();
@@ -3659,7 +3755,7 @@ $('paint-mode').addEventListener('click',()=>{
   if(!teacherMode||!sceneRoot)return;
   if(placingLabel)cancelPlacing();
   paintMode=!paintMode;
-  $('place-hint').textContent=paintMode?'PAINT: Click a structure to color its entire mesh. Esc exits Paint mode.':'Click the structure where you want the label to point. Esc cancels.';
+  $('place-hint').textContent=paintMode?'PAINT: Click a structure to color its entire mesh. Esc exits Paint mode.':'Click any structure to create its label. Esc cancels.';
   $('place-hint').hidden=!paintMode;
   elements.stage.style.cursor=paintMode?'crosshair':'';
   openDetails(false);updatePaintControls();
