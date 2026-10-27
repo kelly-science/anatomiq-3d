@@ -6,11 +6,17 @@
  */
 // The additional travel time and smooth deceleration preserve a sense of
 // momentum without a snap or overshoot when the model reaches the center.
-export const LIVE_CAROUSEL_DURATION_MS = 620; // ANATOMIQ_CAROUSEL_EASE_DEFAULT_258
+export const LIVE_CAROUSEL_DURATION_MS = 680; // ANATOMIQ_CAROUSEL_SPRING_259
 export const slideEase = t => {
   const x = Math.max(0, Math.min(1, t));
-  // Smoothstep: the last third visibly slows, without overshooting center.
-  return x*x*(3-2*x);
+  // Travel 1.8% beyond center, then settle back in one restrained motion.
+  // Smoothstep at each end prevents an abrupt velocity change or elastic jitter.
+  const peakAt = 0.80;
+  const overshoot = 0.018;
+  const smooth = u => u*u*(3-2*u);
+  return x <= peakAt
+    ? (1+overshoot)*smooth(x/peakAt)
+    : 1+overshoot*(1-smooth((x-peakAt)/(1-peakAt)));
 };
 
 /** Render two entire live 3D scenes into adjacent sliding scissor viewports.

@@ -1,0 +1,6 @@
+{
+  "version": "2.2.58",
+  "channel": "beta",
+  "published": "2026-10-27",
+  "notes": "Live 3D carousel default; gentle 620 ms deceleration, entry shadows and settled label fade"
+}
