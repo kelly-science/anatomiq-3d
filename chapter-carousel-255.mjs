@@ -3,14 +3,9 @@
    published lesson data and the 2.2.38 occlusion BVH are untouched. */
 export const CAROUSEL_MS = 680; // ANATOMIQ_CAROUSEL_SPRING_259
 const easeInOut = value => {
-  const x = Math.max(0,Math.min(1,value));
-  // Keep snapshot fallback spatially identical to the live 3D carousel.
-  const peakAt = 0.80;
-  const overshoot = 0.018;
-  const smooth = u => u*u*(3-2*u);
-  return x <= peakAt
-    ? (1+overshoot)*smooth(x/peakAt)
-    : 1+overshoot*(1-smooth((x-peakAt)/(1-peakAt)));
+  const x = Math.max(0, Math.min(1, value));
+  // ANATOMIQ_INLINE_LABELS_EASE_261: exactly matches live model translation.
+  return 1 - Math.pow(1-x, 3);
 };
 
 /** Numeric chapter order, with explicit wrap-around behavior. */

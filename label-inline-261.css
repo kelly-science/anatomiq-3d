@@ -1,0 +1,19 @@
+/* AnatomIQ 2.2.61: inline description inside each existing label marker. */
+.anat261-description:not([hidden]) {
+  display:block;
+  max-width: min(250px, 42vw);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(160,177,187,.38);
+  font-size: .77em;
+  font-weight: 400;
+  line-height: 1.38;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: left;
+  opacity: .88;
+  pointer-events: none;
+}
+.anat261-description[hidden] { display:none !important; }
+/* The old details backdrop is not used; the original focus still runs. */
+#polish-label-dialog { display:none !important; }

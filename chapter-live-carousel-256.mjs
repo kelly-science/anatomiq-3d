@@ -9,14 +9,9 @@
 export const LIVE_CAROUSEL_DURATION_MS = 680; // ANATOMIQ_CAROUSEL_SPRING_259
 export const slideEase = t => {
   const x = Math.max(0, Math.min(1, t));
-  // Travel 1.8% beyond center, then settle back in one restrained motion.
-  // Smoothstep at each end prevents an abrupt velocity change or elastic jitter.
-  const peakAt = 0.80;
-  const overshoot = 0.018;
-  const smooth = u => u*u*(3-2*u);
-  return x <= peakAt
-    ? (1+overshoot)*smooth(x/peakAt)
-    : 1+overshoot*(1-smooth((x-peakAt)/(1-peakAt)));
+  // ANATOMIQ_INLINE_LABELS_EASE_261: horizontal, monotonic ease-out.
+  // Velocity gently approaches zero at center; never overshoots or changes scale.
+  return 1 - Math.pow(1-x, 3);
 };
 
 /** Render two entire live 3D scenes into adjacent sliding scissor viewports.

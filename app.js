@@ -3,8 +3,8 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
-import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=259';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=259'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=261'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
@@ -47,7 +47,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.60'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.61'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -235,6 +235,36 @@ let activeChapter = 0;
 const markers = new Map();
 const labelSVG = $('label-lines');
 const labelContainer = $('label-markers');
+// ANATOMIQ_INLINE_LABELS_EASE_261: descriptions belong to callouts, not dialogs.
+// Keep the original marker's event handlers: clicking still focuses its structure.
+function anat261AttachDescription(label, marker){
+  const s=structures[label.s];
+  const custom=[label.description,label.desc,label.note,label.d]
+    .find(value=>typeof value==='string'&&value.trim());
+  const description=(custom|| (s ? anat249Description(s) : '') || '').trim();
+  if(!description || description===label.t) return;
+  const el=document.createElement('span');
+  el.className='anat261-description';
+  el.textContent=description;
+  // In student reveal mode, never expose the answer before the first reveal click.
+  if(!teacherMode && labelMode==='reveal'){
+    el.hidden=true;
+    marker.addEventListener('click',()=>{el.hidden=false;},{once:true});
+  }
+  marker.appendChild(el);
+}
+// The old modal's original close handler still performs any focus/scroll cleanup.
+// MutationObserver runs before browser paint, so the description-only popup never flashes.
+const anat261LabelDialog=$('polish-label-dialog');
+if(anat261LabelDialog){
+  const suppress=()=>{
+    if(anat261LabelDialog.hidden)return;
+    $('polish-label-close')?.click();
+    anat261LabelDialog.hidden=true;
+  };
+  new MutationObserver(suppress).observe(anat261LabelDialog,{attributes:true,attributeFilter:['hidden']});
+}
+
 let sharedLink = '';
 let libraryLessonId = null; // Active library entry; never included in student share links.
 let lastLibrarySnapshot = null;
@@ -3298,6 +3328,7 @@ function renderAnnotations(){
       marker.addEventListener('pointerup',finish);marker.addEventListener('pointercancel',finish);
     }
     markers.set(label.id,{marker,line,dot,lines,dots});
+    anat261AttachDescription(label,marker);
   });
   polishRenderStudentLabels();
   invalidate(2);
