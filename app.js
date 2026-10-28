@@ -6,7 +6,7 @@ import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installCh
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=261'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
-import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268'; // ANATOMIQ_STABLE_DOF_268
+import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268a'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=267'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
@@ -50,7 +50,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.68'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.68a'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2794,7 +2794,8 @@ async function switchChapter(index){
         onSettled:()=>{
           // Restore the normal full-size render BEFORE showing annotations.
           shadows.update(camera,controls.target,true);
-          renderer.render(scene,camera);
+          __anat268DOF.onChapterSettled(); // ANATOMIQ_DOF_STABILITY_268A
+          __anat268DOF.render(scene,camera);
           updateAnnotationPositions();
         }
       }); // ANATOMIQ_CAROUSEL_LIGHT_LABEL_257

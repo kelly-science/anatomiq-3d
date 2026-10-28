@@ -1,5 +1,5 @@
-// AnatomIQ Studio 2.2.68 — production cinematic depth of field.
-// Built from the locally tested 2.2.68 renderer; only preference/UI wiring changed.
+// AnatomIQ Studio 2.2.68a — zoom stability and carousel lighting handoff.
+// Same tested renderer, with direct camera focus, matched final tone mapping, and carousel handoff.
 // Scene-only postprocessing: native HTML labels, live chapter carousel, and
 // original mesh materials are not modified.
 export const DOF_STORAGE_KEY='anatomiq-depth-of-field-v1';
@@ -56,6 +56,7 @@ void main(){
   float b=(depth>0.99999?0.0:fade*nearZoom*uIntensity);
   vec4 soft=texture2D(tSoft,vUv);
   gl_FragColor=mix(sharp,soft,b);
+  #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
 
@@ -64,7 +65,19 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
   const settings={preset:initialPreset()};
   const size=new THREE.Vector2();
   let colorTarget=null,softTarget=null,quad=null,blurMaterial=null,combineMaterial=null;
-  let hardwareFailure=false,focusValue=null,screen=null;
+  let hardwareFailure=false,screen=null,settleStartedAt=null;
+  const settleMs=240;
+  const clock=()=>globalThis.performance?.now?.() ?? Date.now();
+  function settleGain(){
+    if(settleStartedAt===null)return 1;
+    const elapsed=Math.max(0,clock()-settleStartedAt);
+    const t=Math.min(1,elapsed/settleMs);
+    if(t>=1){settleStartedAt=null;return 1;}
+    // The upcoming frame is still part of the carousel handoff; do not
+    // request focus-chasing frames during ordinary OrbitControls movement.
+    invalidate();
+    return t*t*(3-2*t);
+  }
   const safePersist=value=>{try{localStorage.setItem(DOF_STORAGE_KEY,value);}catch{}};
   function release(){
     colorTarget?.dispose();softTarget?.dispose();
@@ -101,7 +114,7 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     combineMaterial=new THREE.ShaderMaterial({vertexShader:VERTEX,fragmentShader:COMPOSITE_FRAGMENT,
       uniforms:{tSharp:{value:colorTarget.texture},tSoft:{value:softTarget.texture},tDepth:{value:colorTarget.depthTexture},
         uNear:{value:camera.near},uFar:{value:camera.far},uFocus:{value:0.5},uIntensity:{value:0.75}},
-      transparent:false,depthTest:false,depthWrite:false,toneMapped:false});
+      transparent:false,depthTest:false,depthWrite:false,toneMapped:true});
     return {screenCamera,screenScene};
   }
   function status(message){if(statusElement)statusElement.textContent=message;}
@@ -119,14 +132,15 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     if(softTarget.width!==bw || softTarget.height!==bh)softTarget.setSize(bw,bh);
     const cfg=DOF_PRESETS[settings.preset];
     const distance=viewCamera.position.distanceTo(controls.target);
-    focusValue=focusValue===null?distance:focusValue+(distance-focusValue)*0.28;
-    if(Math.abs(distance-focusValue)>0.0005)invalidate();
+    // OrbitControls already invalidates on camera changes. Using the current
+    // focus distance avoids a trailing blur plane and endless redraws on zoom.
+    const focusDistance=distance;
     blurMaterial.uniforms.uPx.value.set(1/w,1/h);
     blurMaterial.uniforms.uRadius.value=cfg.radius;
     combineMaterial.uniforms.uNear.value=viewCamera.near;
     combineMaterial.uniforms.uFar.value=viewCamera.far;
-    combineMaterial.uniforms.uFocus.value=focusValue;
-    combineMaterial.uniforms.uIntensity.value=cfg.intensity;
+    combineMaterial.uniforms.uFocus.value=focusDistance;
+    combineMaterial.uniforms.uIntensity.value=cfg.intensity*settleGain();
     const previousTarget=renderer.getRenderTarget();
     const previousAutoClear=renderer.autoClear;
     try{
@@ -145,7 +159,7 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
   function select(preset){
     const next=normalizedPreset(preset);
     settings.preset=hardwareFailure?'off':next;
-    focusValue=null;
+    settleStartedAt=null;
     if(settings.preset==='off')release(); // Reclaim GPU buffers when turned off.
     safePersist(settings.preset);
     syncUI();invalidate(2);
@@ -163,8 +177,13 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
       renderer.setRenderTarget(null);renderer.render(scene,viewCamera);
     }
   }
+  function onChapterSettled(){
+    // Called after the live carousel restores its full-size viewport and
+    // before its settled frame. Shadow synchronization stays in app.js.
+    settleStartedAt=clock();
+  }
   // The same control is available from the application Settings dialog.
   if(selectElement)selectElement.addEventListener('change',()=>select(selectElement.value));
   syncUI();
-  return {render,select,get mode(){return settings.preset;},dispose:release};
+  return {render,select,onChapterSettled,get mode(){return settings.preset;},dispose:release};
 }

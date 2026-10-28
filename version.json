@@ -1,6 +1,6 @@
 {
-  "version": "2.2.68",
+  "version": "2.2.68a",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Cinematic depth of field by default, Subtle/Off in App Settings; local per-device preference, original rendering fallback."
+  "notes": "DOF zoom stabilizes at current camera focus; cinematic/postprocessing tone mapping matches carousel; 240ms settle handoff; existing user modes preserved."
 }
