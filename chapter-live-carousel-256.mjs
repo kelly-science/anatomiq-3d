@@ -15,7 +15,25 @@ export const slideEase = t => {
   return 1 - Math.pow(1-x, 3);
 };
 
-const activeLabelReveals=new WeakMap(); // ANATOMIQ_LABEL_HANDOFF_269C_TEST1
+// ANATOMIQ_LABEL_CASCADE_269G_LOCAL1 — seeded jitter; no per-frame JavaScript.
+const activeLabelReveals=new WeakMap();
+function labelSeed(text){
+  let h=2166136261;
+  for(const char of text){h=Math.imul(h^char.charCodeAt(0),16777619);}
+  return h>>>0;
+}
+export function labelCascadeDelays(names){
+  const count=names.length,spread=Math.min(1000,Math.max(0,(count-1)*67+55));
+  let previous=-10;
+  return names.map((name,i)=>{
+    const progress=count>1?i/(count-1):0;
+    const center=count>1?Math.round(spread*Math.pow(progress,1.85)):0;
+    const jitter=(labelSeed(String(name)+'|'+i)%25)-12;
+    const delay=Math.max(i?previous+10:0,center+jitter);
+    previous=delay;
+    return delay;
+  });
+}
 
 /** Render two entire live 3D scenes into adjacent sliding scissor viewports.
  * The clone contains THREE.Object3D nodes only; BufferGeometry, textures,
@@ -51,13 +69,14 @@ export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,dir
     autoClear:renderer.autoClear,
     // The app updates incoming light and will invalidate shadows on settle.
   };
-  // ANATOMIQ_LABEL_HANDOFF_269C_TEST1: one gate for SVG connectors AND label cards.
-  // Hiding children independently allowed the leaders to flash mid-carousel.
-  // The single overlay also needs only one compositor animation on DOF devices.
+  // ANATOMIQ_LABEL_CASCADE_269G_LOCAL1: gate the common overlay for the live
+  // slide, then animate each label with its own paired SVG leader group.
+  // A leader group's opacity is independent of its child line/dot occlusion.
   const overlay=document.getElementById('label-overlay');
   const markers=document.getElementById('label-markers');
+  const leaders=document.getElementById('label-lines');
   const previousReveal=overlay?activeLabelReveals.get(overlay):null;
-  previousReveal?.(); // Complete an unfinished reveal before capturing base styles.
+  previousReveal?.();
   const overlayStyles=overlay?{
     visibility:overlay.style.visibility,
     opacity:overlay.style.opacity,
@@ -77,33 +96,62 @@ export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,dir
       overlay.style.opacity=overlayStyles.opacity;
       overlay.style.pointerEvents=overlayStyles.pointerEvents;
     };
-    const hasLabels=Boolean(markers?.querySelector('.anatomy-label:not([hidden])'));
+    const cards=Array.from(markers?.querySelectorAll('.anatomy-label')||[]);
+    const leaderGroups=Array.from(leaders?.querySelectorAll('.anat-label-leader-group')||[]);
+    const pairs=cards.map((card,i)=>({card,leader:leaderGroups[i]}))
+      .filter(({card,leader})=>!card.hidden && leader);
     const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
-    if(!fullySettled || !hasLabels || overlayStyles.visibility==='hidden' ||
-       document.hidden || reducedMotion || typeof overlay.animate!=='function'){
+    if(!fullySettled || !pairs.length || overlayStyles.visibility==='hidden' ||
+       document.hidden || reducedMotion || pairs.some(({card,leader})=>
+         typeof card.animate!=='function'||typeof leader.animate!=='function')){
       restore();return;
     }
-    // Reveal only after the centered model is ready; preserve each leader's
-    // BVH occlusion opacity and avoid additional WebGL/label-position frames.
-    overlay.style.visibility=overlayStyles.visibility;
-    overlay.style.opacity='0';
-    overlay.style.pointerEvents='none';
+    const schedule=labelCascadeDelays(pairs.map(({card})=>card.getAttribute?.('aria-label')||card.textContent||''));
+    const animations=[];
+    let remaining=0, finished=false;
+    const finish=()=>{
+      if(finished)return;
+      finished=true;
+      if(activeLabelReveals.get(overlay)!==finish)return;
+      activeLabelReveals.delete(overlay);
+      for(const animation of animations){animation.onfinish=null;animation.cancel();}
+      restore();
+    };
     try{
-      const effect=overlay.animate([{opacity:0},{opacity:1}],{
-        delay:Math.max(0,labelFadeDelayMs),duration:330,
-        easing:'cubic-bezier(0.22, 1, 0.36, 1)',fill:'both'
-      });
-      const finish=()=>{
-        if(activeLabelReveals.get(overlay)!==finish)return;
-        activeLabelReveals.delete(overlay);
-        effect.onfinish=null;
-        effect.cancel();
-        restore();
-      };
+      for(const [i,{card,leader}] of pairs.entries()){
+        const base=Math.max(0,labelFadeDelayMs)+schedule[i];
+        const cardOpacity=typeof getComputedStyle==='function'
+          ? Number.parseFloat(getComputedStyle(card).opacity) : 1;
+        const targetOpacity=Number.isFinite(cardOpacity)?cardOpacity:1;
+        const useLift=typeof getComputedStyle!=='function' ||
+          ['none','0px','0px 0px'].includes(getComputedStyle(card).translate);
+        // Leaders lead the matching card by just 24–48 ms; both receive the
+        // same progressively slowing stagger. Occlusion remains on descendants.
+        const leaderEffect=leader.animate([{opacity:0},{opacity:1}],{
+          delay:base,duration:290,easing:'cubic-bezier(0.22,1,0.36,1)',fill:'both'
+        });
+        animations.push(leaderEffect);
+        const lag=24+(labelSeed('line|'+i+'|'+String(card.textContent||''))%25);
+        const cardFrames=useLift
+          ?[{opacity:0,translate:'0px 5px'},{opacity:targetOpacity,translate:'0px 0px'}]
+          :[{opacity:0},{opacity:targetOpacity}];
+        const cardEffect=card.animate(cardFrames,{
+          delay:base+lag,duration:320,easing:'cubic-bezier(0.22,1,0.36,1)',fill:'both'
+        });
+        animations.push(cardEffect);
+      }
+      remaining=animations.length;
+      for(const animation of animations){
+        animation.onfinish=()=>{if(--remaining===0)finish();};
+      }
       activeLabelReveals.set(overlay,finish);
-      effect.onfinish=finish;
+      // Animations with fill:'both' are in their invisible first keyframe
+      // before this reveal. Never expose bare SVG leaders during the slide.
+      overlay.style.visibility=overlayStyles.visibility;
+      overlay.style.opacity=overlayStyles.opacity||'1';
     }catch(error){
-      console.warn('AnatomIQ overlay reveal skipped',error);
+      console.warn('AnatomIQ label cascade skipped',error);
+      for(const animation of animations){animation.onfinish=null;animation.cancel();}
       restore();
     }
   };

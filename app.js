@@ -4,7 +4,7 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269f-label-handoff'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=269g-dof-alpha-handoff'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
@@ -51,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69g'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69h'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -3449,12 +3449,17 @@ function renderAnnotations(){
     const number=document.createElement('span');number.className='callout-number';number.textContent=String(i+1);
     const caption=document.createElement('span');caption.className='callout-text';caption.textContent=label.t;
     marker.append(number,caption);labelContainer.appendChild(marker);
+    // ANATOMIQ_LABEL_CASCADE_269G_LOCAL1: group each label's connectors so
+    // their entrance opacity cannot override individual BVH occlusion values.
+    const leaderGroup=document.createElementNS('http://www.w3.org/2000/svg','g');
+    leaderGroup.setAttribute('class','anat-label-leader-group');
+    labelSVG.appendChild(leaderGroup);
     const lines=[],dots=[];
     for(const anchor of [{s:label.s,p:label.p},...(label.g||[])]){
       const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('class','leader-line');labelSVG.appendChild(line);lines.push(line);
+      line.setAttribute('class','leader-line');leaderGroup.appendChild(line);lines.push(line);
       const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-      dot.setAttribute('r','2.5');dot.setAttribute('class','leader-dot');labelSVG.appendChild(dot);dots.push(dot);
+      dot.setAttribute('r','2.5');dot.setAttribute('class','leader-dot');leaderGroup.appendChild(dot);dots.push(dot);
     }
     const line=lines[0],dot=dots[0];
     const visibility=teacherMode?'shown':labelMode;

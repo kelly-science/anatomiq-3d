@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69g",
+  "version": "2.2.69h",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Correct DOF shader GLSL alpha identifier and faded-anatomy alpha/compositing handoff; refresh GitHub Pages / PWA module and offline shell cache references. Preserves smooth chapter label transitions and existing lighting."
+  "notes": "Cinematic chapter transitions: staggered label and connector-line reveals, with progressively spaced timing, per-label jitter, and reduced-motion handling. Preserves 2.2.69g DOF, transparency, lighting, and model loading."
 }
