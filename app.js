@@ -8,7 +8,7 @@ import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=261
 import * as THREE from 'three';
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268a'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
-import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=267'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
+import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
@@ -50,7 +50,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.68a'; // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.68b'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -62,8 +62,7 @@ const SKULL_MANIFEST='./models/skull-structures.json';
 const SKULL_HIGH='./models/skull-detailed.glb';
 // The legacy v1 detailed preference is intentionally not imported: this
 // stabilisation release returns existing devices to the reliable base skull.
-let skullGeometry='standard';
-try{skullGeometry=getSkullGeometry(window.localStorage);}catch{}
+let skullGeometry='standard'; // Legacy independent skull loader retired; stable assembled skull belongs to Detailed skeletal geometry.
 let skullDetailStats=null;
 
 const LOCAL_DIGESTIVE_MODEL='./models/anatomy-organs.glb';
@@ -160,6 +159,7 @@ let isolated = false;
 // ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
 let structures = [];
+let __anat268bSkeletalReady=null; // Resolved before a Teacher or Student lesson is shown.
 let triquetrumEntries = []; // ANATOMIQ_TRIQUETRUM_244
 let eyeStructures=[];
 let legacyEyeVisibilityPending=true;
@@ -726,6 +726,14 @@ function refreshVisibility(transient=false){
       && (divisionScope ? true : (inspecting ? cardioPreviewIDs.has(s.sourceName) : !hidden.has(s.mesh)))
       && (!isolated||(teacherMode?multiSelectedIndices.has(s.index):s===selected));
   }
+  // Approved assembled skull: never reveal the five retired original-only nasal meshes
+  // when a saved lesson or chapter restores its visibility bitset. Their IDs remain intact.
+  if(window.__AnatomIQSkeletalDetail?.mode==='detailed'){
+    const retired=new Set(['left inferior nasal concha','right inferior nasal concha',
+      'left lateral nasal cartilage','right lateral nasal cartilage','septal nasal cartilage']);
+    for(const s of structures)if(s.system==='skeletal' && retired.has(String(s.name||'').trim().toLowerCase()))s.mesh.visible=false;
+  }
+
   renderList();
   invalidate(2);
   if(!transient){queueDraft();if(!teacherMode)studentHistoryQueue();}
@@ -1460,7 +1468,8 @@ function prepareStructures(root){
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
   const vertebraPilot=installVertebraPilot(structures,THREE,{invalidate,teacherMode,storage:window.localStorage}); // ANATOMIQ_VERTEBRA_PILOT_264
-  installSkeletalGeometryUpgrade(structures,THREE,{invalidate,teacherMode,storage:window.localStorage,pilot:vertebraPilot,boneAppearanceController:boneSurfaceController,materials,refreshAppearance:updateBoneMaterial,renderer}); // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265 ANATOMIQ_SKELETAL_MATERIALS_265B ANATOMIQ_SKELETAL_SELECTIVE_265C
+  const __detailedController=installSkeletalGeometryUpgrade(structures,THREE,{invalidate,teacherMode,storage:window.localStorage,pilot:vertebraPilot,boneAppearanceController:boneSurfaceController,materials,refreshAppearance:updateBoneMaterial,renderer});
+  __anat268bSkeletalReady=__detailedController.ready; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265 ANATOMIQ_SKELETAL_MATERIALS_265B ANATOMIQ_SKELETAL_SELECTIVE_265C
   window.__AnatomIQEyeStatus={version:'2.2.13',source:'Original Écorché GLB',structures:eyeStructures.length,
     names:eyeStructures.map(s=>s.name),indices:structures.filter(s=>s.system==='ocular').map(s=>s.index)};
   console.info('AnatomIQ Eyes:',eyeStructures.length,'source-native eye structures registered.');
@@ -1994,7 +2003,11 @@ async function loadAnatomy(){
         prepareStructures(sceneRoot);
       }
     }
-    if(teacherMode||(skullGeometry==='detailed' && chapterAssets(studentProjectAtStartup.v===1?studentProjectAtStartup:studentProjectAtStartup.chapters[studentProjectAtStartup.start]).skull))await loadHighResolutionSkull();
+    // Wait for approved detailed skeletal geometry before restoring lesson visibility, camera and labels.
+    if(!__anat268bSkeletalReady || !await __anat268bSkeletalReady){
+      const info=window.__AnatomIQSkeletalDetail;
+      throw new Error('Required approved Detailed skeleton could not load: '+(info?.error||info?.skull?.error||'missing model assets'));
+    }
     // ANATOMIQ_REALISTIC_EYES_2214: update visual surfaces of the original
     // four selectable eye anchors, without altering mesh identity or catalog IDs.
     // If the optional external texture cannot load, native gray eyes remain.
@@ -4216,9 +4229,9 @@ async function checkLocalAssets(){
   display.classList.toggle('status-success',missing.length===0);
   $('settings-renderer').textContent=window.__ANATOMY_RENDERER_SOURCE==='local'?'Local Three.js 0.169.0':'CDN fallback (Three.js 0.169.0)';
   $('settings-model').textContent=sceneRoot ? displayLocalAssetName(currentModelURL) : 'Not loaded';
-  $('settings-skull').textContent=skullGeometry==='detailed'
-    ? (skullDetailStats?.upgraded ? `Experimental: ${skullDetailStats.upgraded} skull bones upgraded; original jaw/teeth retained` : `Experimental not active: ${skullDetailStats?.error||'no safely matched replacement bones'}`)
-    : 'Standard Écorché geometry (recommended)';
+  $('settings-skull').textContent=window.__AnatomIQSkeletalDetail?.mode==='detailed'
+    ? 'Approved Detailed skeletal geometry · calibrated 20-bone skull'
+    : 'Loading required Detailed skeletal geometry…';
   $('settings-skull').title=skullDetailStats?.skipped?.join('; ')||'';
   $('settings-cardio').textContent=cardioLoadError?`Load failed: ${cardioLoadError}`:cardioAvailable?`${cardioEntries.length} heart and vessel meshes (${cardioGeometry}${!teacherMode&&!cardioLoaded?'; loads when needed':''})`:'Not installed — check cardiovascular manifest and model files';
   $('settings-organs').textContent=detailAvailable?`${detailEntries.length} detailed structures (${digestiveGeometry}; A/P orientation corrected${!teacherMode&&!detailLoaded?'; loads when needed':''})`:digestiveAvailable?'Legacy organ geometry only (install detailed assets)':'Detailed digestive files missing';

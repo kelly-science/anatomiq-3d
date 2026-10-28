@@ -4,7 +4,7 @@ import {createStableSkull} from './skull-stable-267.mjs?rev=267';
    Original bones/IDs/materials/metadata stay in the scene. Any missing or
    unsafe asset falls back to the standard geometry. No changes to anatomy
    catalogue, lesson serialization, camera, overlays or carousel. */
-export const SKELETAL_DETAIL_VERSION = '2.2.67';
+export const SKELETAL_DETAIL_VERSION = '2.2.68b'; // ANATOMIQ_DETAILED_ONLY_268B
 export const SURFACE_STORAGE_KEY='anatomiq-vertebra-surface-267';
 const DETAIL_ASSET_VERSION='2.2.65c'; // 2.2.65d changes materials only; asset/report unchanged
 export const BONE_TONE_KEY='anatomiq-detailed-bone-tone-265d';
@@ -123,7 +123,7 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
   }
 
   let reportMetadata=null;
-  try {if(storage.getItem(key)==='detailed')mode='detailed';}catch{}
+  // 2.2.68b: per-device Standard choices are retired; all lesson views use approved Detailed.
   const status={version:SKELETAL_DETAIL_VERSION,mode:'standard',available:false,replacements:0,matched:0,error:null};
   function emit(){status.mode=mode;window.__AnatomIQSkeletalDetail={...status,skull:skull.getStatus(),surfaceMode,apply,setSurfaceMode,reset:()=>apply('standard')};}
   async function prepare(){
@@ -192,8 +192,9 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
     }
   }
   async function apply(next){
+    if(next!=='detailed')return false; // Standard remains internal rollback only.
     if(busy)return false;
-    if(next===mode && (next!=='detailed'||replacements))return true;
+    if(next===mode && replacements && skull.getStatus().active===20)return true;
     busy=true;
     try{
       if(next==='detailed'){
@@ -212,10 +213,10 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
           mesh.geometry=surfaceFor(entry.name,geometry);
           updateMaterial(entry,detailedMaterials.get(mesh));
         }
+        // Require the exact approved native skull; a missing asset must NOT silently show the old one.
+        const skullOk=await skull.sync('detailed');
+        if(!skullOk || skull.getStatus().active!==20)throw new Error('Approved 20-bone skull unavailable: '+(skull.getStatus().error||'incomplete skull'));
         mode='detailed';
-        // Keep 20 approved C1-aligned skull bones in the same global Detailed mode.
-        // If the skull asset is missing, it remains original while body detail survives.
-        await skull.sync('detailed');
       }else{
         await skull.sync('standard');
         restoreOriginals();
@@ -239,12 +240,14 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
     const group=document.createElement('section');group.id='aiq-skeletal-detail-265';group.className='render-settings-group';
     const label=document.createElement('label');label.htmlFor='aiq-skeletal-mode-265';label.textContent='Skeletal geometry';
     const select=document.createElement('select');select.id='aiq-skeletal-mode-265';select.className='text-input';
-    for(const [value,name] of [['standard','Standard — original skeleton'],['detailed','Detailed — registered full-source bones']]){
+    for(const [value,name] of [['detailed','Detailed — approved skeleton and assembled skull']]){
       const opt=document.createElement('option');opt.value=value;opt.textContent=name;select.add(opt);
     }
-    select.value=mode;
+    select.value='detailed';select.disabled=true;
     const hint=document.createElement('p');hint.className='studio-hint';hint.textContent='Detailed upgrades the vertebrae and approved assembled skull, while retaining original ribs, sternum and unmatched source structures.';
-    select.addEventListener('change',async()=>{select.disabled=true;hint.textContent='Loading skeletal detail…';const ok=await apply(select.value);select.value=mode;select.disabled=false;hint.textContent=ok?(status.replacements+' enhanced bones ready; all other bones stay original.'):(status.error||'Using standard geometry.');});
+    // No Standard option; underlying mesh IDs stay stable for previously saved lessons.
+    const readyLabel=()=>{hint.textContent=status.error?'Detailed anatomy unavailable: '+status.error:(mode==='detailed'?'Approved Detailed skeleton and skull active.':'Loading approved Detailed bones…');};
+    readyLabel();
     const surfaceLabel=document.createElement('label');surfaceLabel.htmlFor='aiq-vertebra-surface-265e';surfaceLabel.textContent='Detailed vertebra surface';
     const surfaceSelect=document.createElement('select');surfaceSelect.id='aiq-vertebra-surface-265e';surfaceSelect.className='text-input';
     for(const [value,name] of [['original','Original — unchanged'],['normals','Smooth shading — same geometry'],['gentle','Gentle surface smoothing — same triangles']]){
@@ -261,9 +264,9 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
   if(typeof document!=='undefined'){
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ui,{once:true});else ui();
   }
-  // A saved local preference may be missing assets offline. Failure always restores originals.
-  if(mode==='detailed'){
-    mode='standard';apply('detailed').then(()=>{const select=document.getElementById('aiq-skeletal-mode-265');if(select)select.value=mode;});
-  }
-  return {apply,setBoneTone,setSurfaceMode,status};
+  // All Teacher and Student loaders await this readiness promise before displaying lessons.
+  // On error the viewer shows an explicit loading failure instead of an obsolete skeleton.
+  const ready=apply('detailed');
+  ready.then(()=>{if(typeof document!=='undefined'){const node=document.querySelector('#aiq-skeletal-detail-265 .studio-hint');if(node)node.textContent=status.error?'Detailed anatomy unavailable: '+status.error:'Approved Detailed skeleton and skull active.';}});
+  return {apply,setBoneTone,setSurfaceMode,status,ready};
 }

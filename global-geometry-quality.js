@@ -64,7 +64,7 @@
     select.value = selected;
     const hint = document.createElement('p');
     hint.className = 'studio-hint';
-    hint.textContent = 'Applies to Connective, Lymphatic, Urinary, Nervous, Respiratory, Cardiovascular and Digestive models on this device. Reloads the viewer. The base skeleton and muscles do not have alternative geometry here; experimental skull geometry is archived. This does not modify lessons or anatomical visibility.';
+    hint.textContent = 'Applies to Connective, Lymphatic, Urinary, Nervous, Respiratory, Cardiovascular and Digestive models on this device. Reloads the viewer. The skeletal system always uses the approved Detailed bones and assembled skull, regardless of this setting. Other anatomical systems follow the selector. This does not modify lessons or anatomical visibility.';
     group.append(label, select, hint);
     anchor.before(group);
     // Keep the individual controls in the DOM so existing app handlers remain safe.

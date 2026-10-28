@@ -1,6 +1,6 @@
 {
-  "version": "2.2.68a",
+  "version": "2.2.68b",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "DOF zoom stabilizes at current camera focus; cinematic/postprocessing tone mapping matches carousel; 240ms settle handoff; existing user modes preserved."
+  "notes": "Approved Detailed skeleton and assembled skull required for all teacher/student lessons; Standard skeletal rendering retired, original structure IDs preserved."
 }
