@@ -15,11 +15,13 @@ export const slideEase = t => {
   return 1 - Math.pow(1-x, 3);
 };
 
+const activeLabelReveals=new WeakMap(); // ANATOMIQ_LABEL_HANDOFF_269C_TEST1
+
 /** Render two entire live 3D scenes into adjacent sliding scissor viewports.
  * The clone contains THREE.Object3D nodes only; BufferGeometry, textures,
  * materials and programs are shared rather than reloaded or duplicated.
  */
-export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,direction,durationMs=LIVE_CAROUSEL_DURATION_MS,onSettled,skipLabelFade=false}){
+export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,direction,durationMs=LIVE_CAROUSEL_DURATION_MS,onSettled,labelFadeDelayMs=200}){
   if(!THREE || !scene || !camera || !renderer || !stage || Math.abs(direction)!==1) return null;
   const canvas = renderer.domElement;
   const box = canvas?.getBoundingClientRect?.();
@@ -49,30 +51,60 @@ export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,dir
     autoClear:renderer.autoClear,
     // The app updates incoming light and will invalidate shadows on settle.
   };
+  // ANATOMIQ_LABEL_HANDOFF_269C_TEST1: one gate for SVG connectors AND label cards.
+  // Hiding children independently allowed the leaders to flash mid-carousel.
+  // The single overlay also needs only one compositor animation on DOF devices.
+  const overlay=document.getElementById('label-overlay');
   const markers=document.getElementById('label-markers');
-  const leaders=document.getElementById('label-lines');
-  const labels=[markers,leaders].filter(Boolean).map(el=>({el,visibility:el.style.visibility}));
-  // Keep labels off while sliding. Fade them in after the centered scene
-  // has had one final render/label-position update (no BVH work mid-slide).
-  for(const entry of labels)entry.el.style.visibility='hidden';
+  const previousReveal=overlay?activeLabelReveals.get(overlay):null;
+  previousReveal?.(); // Complete an unfinished reveal before capturing base styles.
+  const overlayStyles=overlay?{
+    visibility:overlay.style.visibility,
+    opacity:overlay.style.opacity,
+    pointerEvents:overlay.style.pointerEvents
+  }:null;
+  if(overlay){
+    overlay.style.visibility='hidden';
+    overlay.style.opacity='0';
+    overlay.style.pointerEvents='none';
+  }
   canvas.style.pointerEvents='none';
-  let fullySettled = false;
-  // The parent containers animate, so line/dot occlusion opacity remains intact.
-  // A label-free scene or Student View with labels disabled is not animated.
+  let fullySettled=false;
   const revealLabels=()=>{
+    if(!overlay)return;
+    const restore=()=>{
+      overlay.style.visibility=overlayStyles.visibility;
+      overlay.style.opacity=overlayStyles.opacity;
+      overlay.style.pointerEvents=overlayStyles.pointerEvents;
+    };
     const hasLabels=Boolean(markers?.querySelector('.anatomy-label:not([hidden])'));
-    for(const entry of labels){
-      entry.el.style.visibility=entry.visibility;
-      if(!fullySettled || !hasLabels || entry.visibility==='hidden' || document.hidden ||
-         window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)continue;
-      // A Web Animations opacity effect avoids changing the saved inline CSS.
-      // It is composited without running occlusion raycasts on each animation frame.
-      if(skipLabelFade)continue; // ANATOMIQ_CAROUSEL_LABEL_DOF_269B
-      if(typeof entry.el.animate==='function'){
-        try{entry.el.animate([{opacity:0},{opacity:1}],{
-          duration:360,easing:'cubic-bezier(0.22, 1, 0.36, 1)'
-        });}catch(error){console.warn('AnatomIQ label fade skipped',error);}
-      }
+    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
+    if(!fullySettled || !hasLabels || overlayStyles.visibility==='hidden' ||
+       document.hidden || reducedMotion || typeof overlay.animate!=='function'){
+      restore();return;
+    }
+    // Reveal only after the centered model is ready; preserve each leader's
+    // BVH occlusion opacity and avoid additional WebGL/label-position frames.
+    overlay.style.visibility=overlayStyles.visibility;
+    overlay.style.opacity='0';
+    overlay.style.pointerEvents='none';
+    try{
+      const effect=overlay.animate([{opacity:0},{opacity:1}],{
+        delay:Math.max(0,labelFadeDelayMs),duration:330,
+        easing:'cubic-bezier(0.22, 1, 0.36, 1)',fill:'both'
+      });
+      const finish=()=>{
+        if(activeLabelReveals.get(overlay)!==finish)return;
+        activeLabelReveals.delete(overlay);
+        effect.onfinish=null;
+        effect.cancel();
+        restore();
+      };
+      activeLabelReveals.set(overlay,finish);
+      effect.onfinish=finish;
+    }catch(error){
+      console.warn('AnatomIQ overlay reveal skipped',error);
+      restore();
     }
   };
   const release=()=>{

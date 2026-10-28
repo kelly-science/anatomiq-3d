@@ -4,7 +4,7 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269b'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269c-label-handoff-test1'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268a'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
@@ -2842,7 +2842,7 @@ async function switchChapter(index){
       shadows.update(camera,controls.target,true);
       liveCarousel=createLiveChapterCarousel({
         THREE,scene,camera,renderer,stage:elements.stage,direction:__anat256Direction,
-        skipLabelFade:__anat268DOF.mode!=='off', // ANATOMIQ_CAROUSEL_LABEL_DOF_269B
+        labelFadeDelayMs:__anat268DOF.mode==='off'?45:220, // ANATOMIQ_LABEL_HANDOFF_269C_TEST1
         onSettled:()=>{
           // Label positions were prepared before the live slide.
           shadows.update(camera,controls.target,true);
