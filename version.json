@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69c",
+  "version": "2.2.69f",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Version and cache synchronization for DOF diagnostics. Rendering, refocus behavior, geometry and lesson content unchanged."
+  "notes": "Carousel labels and connector lines remain hidden during chapter slides, then fade in together after the model settles. Preserves 2.2.69c DOF and lighting."
 }

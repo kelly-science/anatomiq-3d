@@ -4,7 +4,7 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269c-label-handoff-test1'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269f-label-handoff'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268a'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
@@ -51,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69c'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69f'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
