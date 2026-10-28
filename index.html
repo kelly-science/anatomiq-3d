@@ -636,6 +636,16 @@
         </select>
         <p class="studio-hint">Studio uses shared directional lighting and physically based surface finishes to add realistic depth to bones, muscles, vessels and organs. Changing this option reloads the viewer. This choice is saved only on this device and never changes saved lessons or student links.</p>
       </div>
+      <div class="render-settings-group" data-feature="anatomiq-cinematic-dof-268">
+        <label for="settings-dof-mode"><strong>Cinematic Depth of Field</strong></label>
+        <select id="settings-dof-mode" class="text-input" aria-label="Cinematic Depth of Field">
+          <option value="cinematic">Cinematic — stronger background blur (default)</option>
+          <option value="subtle">Subtle — gentle background blur</option>
+          <option value="off">Off — no depth of field</option>
+        </select>
+        <p id="settings-dof-status" class="studio-hint" role="status" aria-live="polite"></p>
+        <p class="studio-hint">Close-up anatomy stays sharp at the camera focus; distant anatomy softens. Labels and menus remain sharp. The setting applies only to this browser and can be changed without reloading.</p>
+      </div>
       <div class="render-settings-group">
         <label for="settings-shadow-mode"><strong>Dynamic anatomical shadows</strong></label>
         <select id="settings-shadow-mode" class="text-input" aria-label="Dynamic anatomical shadows">
@@ -695,7 +705,7 @@
         }
       } catch (e) { console.warn('Offline features unavailable:', e); }
     }
-    await import('./app.js?rev=stable267'); // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=stable268'); // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2"></script>
   <script defer src="./interface-2221.js?rev=workspace241"></script>

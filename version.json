@@ -1,6 +1,6 @@
 {
-  "version": "2.2.67",
+  "version": "2.2.68",
   "channel": "beta",
   "published": "2026-10-27",
-  "notes": "Stable C1-registered assembled BP3D skull incl. vomer alignment; global Detailed; gentle smoothing default; removed calibration and profiling controls."
+  "notes": "Cinematic depth of field by default, Subtle/Off in App Settings; local per-device preference, original rendering fallback."
 }

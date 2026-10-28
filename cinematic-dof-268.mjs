@@ -1,0 +1,170 @@
+// AnatomIQ Studio 2.2.68 — production cinematic depth of field.
+// Built from the locally tested 2.2.68 renderer; only preference/UI wiring changed.
+// Scene-only postprocessing: native HTML labels, live chapter carousel, and
+// original mesh materials are not modified.
+export const DOF_STORAGE_KEY='anatomiq-depth-of-field-v1';
+export const DOF_PRESETS=Object.freeze({
+  off:{radius:0,intensity:0},
+  subtle:{radius:2.0,intensity:0.72},
+  cinematic:{radius:3.8,intensity:1.0}
+});
+export function normalizedPreset(value){
+  return Object.prototype.hasOwnProperty.call(DOF_PRESETS,value)?value:'cinematic';
+}
+export function initialPreset(store=globalThis.localStorage){
+  try { return normalizedPreset(store?.getItem(DOF_STORAGE_KEY)); }
+  catch { return 'cinematic'; }
+}
+const VERTEX=`varying vec2 vUv;
+void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}`;
+const BLUR_FRAGMENT=`precision highp float;
+varying vec2 vUv;
+uniform sampler2D tInput;
+uniform vec2 uPx;
+uniform float uRadius;
+void main(){
+  vec2 d=uPx*uRadius;
+  vec4 c=texture2D(tInput,vUv)*0.18;
+  c+=texture2D(tInput,vUv+vec2( 1.00,0.00)*d)*0.11;
+  c+=texture2D(tInput,vUv+vec2(-1.00,0.00)*d)*0.11;
+  c+=texture2D(tInput,vUv+vec2(0.00, 1.00)*d)*0.11;
+  c+=texture2D(tInput,vUv+vec2(0.00,-1.00)*d)*0.11;
+  c+=texture2D(tInput,vUv+vec2( 0.71, 0.71)*d)*0.095;
+  c+=texture2D(tInput,vUv+vec2(-0.71, 0.71)*d)*0.095;
+  c+=texture2D(tInput,vUv+vec2( 0.71,-0.71)*d)*0.095;
+  c+=texture2D(tInput,vUv+vec2(-0.71,-0.71)*d)*0.095;
+  gl_FragColor=c;
+}`;
+const COMPOSITE_FRAGMENT=`precision highp float;
+varying vec2 vUv;
+uniform sampler2D tSharp;
+uniform sampler2D tSoft;
+uniform sampler2D tDepth;
+uniform float uNear;
+uniform float uFar;
+uniform float uFocus;
+uniform float uIntensity;
+void main(){
+  vec4 sharp=texture2D(tSharp,vUv);
+  float depth=texture2D(tDepth,vUv).r;
+  float realDepth=uNear*uFar/max(0.000001,(uFar-depth*(uFar-uNear)));
+  float sharpZone=max(0.008,uFocus*0.035);
+  float falloff=max(0.025,uFocus*0.26);
+  float t=clamp((realDepth-uFocus-sharpZone)/falloff,0.0,1.0);
+  float fade=t*t*(3.0-2.0*t);
+  float nearZoom=clamp((0.85-uFocus)/0.65,0.0,1.0);
+  float b=(depth>0.99999?0.0:fade*nearZoom*uIntensity);
+  vec4 soft=texture2D(tSoft,vUv);
+  gl_FragColor=mix(sharp,soft,b);
+  #include <colorspace_fragment>
+}`;
+
+
+export function createCinematicDepthOfField({THREE,renderer,camera,controls,invalidate,selectElement,statusElement}){
+  const settings={preset:initialPreset()};
+  const size=new THREE.Vector2();
+  let colorTarget=null,softTarget=null,quad=null,blurMaterial=null,combineMaterial=null;
+  let hardwareFailure=false,focusValue=null,screen=null;
+  const safePersist=value=>{try{localStorage.setItem(DOF_STORAGE_KEY,value);}catch{}};
+  function release(){
+    colorTarget?.dispose();softTarget?.dispose();
+    colorTarget=null;softTarget=null;
+    blurMaterial?.dispose();combineMaterial?.dispose();
+    blurMaterial=null;combineMaterial=null;
+    quad?.geometry?.dispose();quad=null;screen=null;
+  }
+  function createTargets(){
+    const color=new THREE.WebGLRenderTarget(1,1,{format:THREE.RGBAFormat,type:THREE.UnsignedByteType,
+      minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:true,stencilBuffer:false});
+    color.texture.generateMipmaps=false;
+    color.depthTexture=new THREE.DepthTexture(1,1,THREE.UnsignedIntType);
+    color.depthTexture.minFilter=THREE.NearestFilter;
+    color.depthTexture.magFilter=THREE.NearestFilter;
+    const soft=new THREE.WebGLRenderTarget(1,1,{format:THREE.RGBAFormat,type:THREE.UnsignedByteType,
+      minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});
+    soft.texture.generateMipmaps=false;
+    return [color,soft];
+  }
+  function prepare(){
+    if(colorTarget)return;
+    if(!renderer.capabilities?.isWebGL2 && !renderer.extensions?.has?.('WEBGL_depth_texture')){
+      throw new Error('Depth textures unavailable on this WebGL renderer');
+    }
+    [colorTarget,softTarget]=createTargets();
+    const geometry=new THREE.PlaneGeometry(2,2);
+    quad=new THREE.Mesh(geometry,null);
+    const screenCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    const screenScene=new THREE.Scene();screenScene.add(quad);
+    blurMaterial=new THREE.ShaderMaterial({vertexShader:VERTEX,fragmentShader:BLUR_FRAGMENT,
+      uniforms:{tInput:{value:colorTarget.texture},uPx:{value:new THREE.Vector2(1,1)},uRadius:{value:2}},
+      transparent:true,depthTest:false,depthWrite:false,toneMapped:false});
+    combineMaterial=new THREE.ShaderMaterial({vertexShader:VERTEX,fragmentShader:COMPOSITE_FRAGMENT,
+      uniforms:{tSharp:{value:colorTarget.texture},tSoft:{value:softTarget.texture},tDepth:{value:colorTarget.depthTexture},
+        uNear:{value:camera.near},uFar:{value:camera.far},uFocus:{value:0.5},uIntensity:{value:0.75}},
+      transparent:false,depthTest:false,depthWrite:false,toneMapped:false});
+    return {screenCamera,screenScene};
+  }
+  function status(message){if(statusElement)statusElement.textContent=message;}
+  function syncUI(){
+    if(selectElement)selectElement.value=settings.preset;
+    status(settings.preset==='off'?'Off — original anatomy rendering':
+      settings.preset==='subtle'?'Subtle — soft background focus':'Cinematic — stronger background separation');
+  }
+  function drawWithDepth(scene,viewCamera){
+    if(!screen)screen=prepare();
+    renderer.getDrawingBufferSize(size);
+    const w=Math.max(1,Math.floor(size.x)),h=Math.max(1,Math.floor(size.y));
+    if(colorTarget.width!==w || colorTarget.height!==h)colorTarget.setSize(w,h);
+    const bw=Math.max(1,Math.ceil(w*0.5)),bh=Math.max(1,Math.ceil(h*0.5));
+    if(softTarget.width!==bw || softTarget.height!==bh)softTarget.setSize(bw,bh);
+    const cfg=DOF_PRESETS[settings.preset];
+    const distance=viewCamera.position.distanceTo(controls.target);
+    focusValue=focusValue===null?distance:focusValue+(distance-focusValue)*0.28;
+    if(Math.abs(distance-focusValue)>0.0005)invalidate();
+    blurMaterial.uniforms.uPx.value.set(1/w,1/h);
+    blurMaterial.uniforms.uRadius.value=cfg.radius;
+    combineMaterial.uniforms.uNear.value=viewCamera.near;
+    combineMaterial.uniforms.uFar.value=viewCamera.far;
+    combineMaterial.uniforms.uFocus.value=focusValue;
+    combineMaterial.uniforms.uIntensity.value=cfg.intensity;
+    const previousTarget=renderer.getRenderTarget();
+    const previousAutoClear=renderer.autoClear;
+    try{
+      renderer.autoClear=true;
+      renderer.setRenderTarget(colorTarget);renderer.clear();
+      renderer.render(scene,viewCamera);
+      renderer.setRenderTarget(softTarget);renderer.clear();
+      quad.material=blurMaterial;renderer.render(screen.screenScene,screen.screenCamera);
+      renderer.setRenderTarget(null);renderer.clear();
+      quad.material=combineMaterial;renderer.render(screen.screenScene,screen.screenCamera);
+    }finally{
+      renderer.setRenderTarget(previousTarget);
+      renderer.autoClear=previousAutoClear;
+    }
+  }
+  function select(preset){
+    const next=normalizedPreset(preset);
+    settings.preset=hardwareFailure?'off':next;
+    focusValue=null;
+    if(settings.preset==='off')release(); // Reclaim GPU buffers when turned off.
+    safePersist(settings.preset);
+    syncUI();invalidate(2);
+  }
+  function render(scene,viewCamera){
+    if(settings.preset==='off'||hardwareFailure){
+      renderer.render(scene,viewCamera);return;
+    }
+    try{drawWithDepth(scene,viewCamera);}
+    catch(error){
+      hardwareFailure=true;settings.preset='off';
+      release();safePersist('off');syncUI();
+      status('Depth of field unavailable on this device — original renderer restored.');
+      console.warn('AnatomIQ depth of field disabled after a WebGL error:',error);
+      renderer.setRenderTarget(null);renderer.render(scene,viewCamera);
+    }
+  }
+  // The same control is available from the application Settings dialog.
+  if(selectElement)selectElement.addEventListener('change',()=>select(selectElement.value));
+  syncUI();
+  return {render,select,get mode(){return settings.preset;},dispose:release};
+}
