@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69b",
+  "version": "2.2.69c",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Cinematic chapter transitions: prevent shadow re-rendering during DOF settle, precompute hidden label occlusion, skip overlapping label fades, avoid redundant plain render and student-only editor construction."
+  "notes": "Version and cache synchronization for DOF diagnostics. Rendering, refocus behavior, geometry and lesson content unchanged."
 }
