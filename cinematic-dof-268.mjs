@@ -139,7 +139,7 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     blurMaterial.uniforms.uRadius.value=cfg.radius;
     combineMaterial.uniforms.uNear.value=viewCamera.near;
     combineMaterial.uniforms.uFar.value=viewCamera.far;
-    combineMaterial.uniforms.uFocus.value=focusDistance;
+    combineMaterial.uniforms.uFocus.value=(window.__anatomiqDofRefocusState ? window.__anatomiqDofRefocusState.resolve((focusDistance)) : (focusDistance));
     combineMaterial.uniforms.uIntensity.value=cfg.intensity*settleGain();
     const previousTarget=renderer.getRenderTarget();
     const previousAutoClear=renderer.autoClear;
