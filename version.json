@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69a",
+  "version": "2.2.69b",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Student links recover from failed Detailed skeletal assets; keep detailed body if skull is unavailable; model-failure diagnostic and explicit reload, with all lesson structure IDs preserved."
+  "notes": "Cinematic chapter transitions: prevent shadow re-rendering during DOF settle, precompute hidden label occlusion, skip overlapping label fades, avoid redundant plain render and student-only editor construction."
 }

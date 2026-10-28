@@ -4,7 +4,7 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
-import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=261'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
+import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269b'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=stable268a'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
@@ -51,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69a'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69b'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -376,7 +376,7 @@ controls.minDistance = 0.035;
 controls.maxDistance = 9;
 controls.zoomSpeed = 0.9;
 controls.target.set(0, 1.6, 0);
-const __anat268DOF=createCinematicDepthOfField({THREE,renderer,camera,controls,invalidate:()=>invalidate(2),
+const __anat268DOF=createCinematicDepthOfField({THREE,renderer,camera,controls,invalidate:()=>invalidateVisualOnly(1), // ANATOMIQ_CAROUSEL_LABEL_DOF_269B — do not dirty shadows on DOF fade
   selectElement:document.getElementById('settings-dof-mode'),
   statusElement:document.getElementById('settings-dof-status')});
 const raycaster = new THREE.Raycaster();
@@ -385,10 +385,14 @@ let drawFrames = 0;
 let frameRequest = 0;
 let updatingControls=false;
 let stageWidth=0,stageHeight=0;
-function invalidate(frames=1){
-  shadows.markDirty();
+// DOF fade only redraws the viewer; it does not require new shadow maps.
+function invalidateVisualOnly(frames=1){ // ANATOMIQ_CAROUSEL_LABEL_DOF_269B
   drawFrames=Math.max(drawFrames,frames);
   if(!document.hidden && !frameRequest)frameRequest=requestAnimationFrame(draw);
+}
+function invalidate(frames=1){
+  shadows.markDirty();
+  invalidateVisualOnly(frames);
 }
 // ANATOMIQ_LABEL_AUDIT_236 — temporary, opt-in teacher-only profiler; remove after audit.
 const __labelAuditOn=teacherMode && new URLSearchParams(location.search).get('labelperf')==='1';
@@ -2838,12 +2842,12 @@ async function switchChapter(index){
       shadows.update(camera,controls.target,true);
       liveCarousel=createLiveChapterCarousel({
         THREE,scene,camera,renderer,stage:elements.stage,direction:__anat256Direction,
+        skipLabelFade:__anat268DOF.mode!=='off', // ANATOMIQ_CAROUSEL_LABEL_DOF_269B
         onSettled:()=>{
-          // Restore the normal full-size render BEFORE showing annotations.
+          // Label positions were prepared before the live slide.
           shadows.update(camera,controls.target,true);
           __anat268DOF.onChapterSettled(); // ANATOMIQ_DOF_STABILITY_268A
           __anat268DOF.render(scene,camera);
-          updateAnnotationPositions();
         }
       }); // ANATOMIQ_CAROUSEL_LIGHT_LABEL_257
     }
@@ -2870,6 +2874,8 @@ async function switchChapter(index){
          // applyScene changes both camera target and visible meshes. Normally
          // draw() updates the shadow frustum, but draw() is paused mid-carousel.
          shadows.update(camera,controls.target,true);
+         // Build final label positions and occlusion before animation.
+         if(labels.length)updateAnnotationPositions();
          await liveCarousel.play(scene,camera);
        }
       else {renderer.render(scene,camera);invalidate(3);await carousel.play(renderer.domElement);}
@@ -2881,7 +2887,8 @@ async function switchChapter(index){
       liveCarousel.remove();
       __anat256LiveCarousel=null;
       controls.enabled=__anat256WasOrbitEnabled;
-      renderer.render(scene,camera);invalidate(3);
+      // Settled frame already rendered through the DOF path.
+      invalidateVisualOnly(1);
     }
     __anat254IrisBusy=false;
   }
@@ -3605,7 +3612,8 @@ async function applyScene(saved){
     camera.position.set(c[0],c[1],c[2]);controls.target.set(c[3],c[4],c[5]);
     camera.updateProjectionMatrix();controls.update();setPresetActive('');
     labels=saved.labels.map(l=>({...l,id:++labelSequence,qi:l.qi||newPracticalLabelId()}));
-    renderLabelEditor();renderAnnotations();
+    // Student View has no teacher label editors to populate.
+    if(teacherMode)renderLabelEditor();renderAnnotations();
     $('context-name').textContent=saved.t;
     if(!teacherMode){
       $('explorer-title').textContent=saved.t;

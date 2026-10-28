@@ -1,3 +1,4 @@
+/* ANATOMIQ_CAROUSEL_LABEL_DOF_269B — DOF-safe label reveal */
 /* AnatomIQ 2.2.57 — LIVE carousel: ready shadows + settled label fade.
  * TWO genuine THREE.Scene renders per frame, ONE WebGLRenderer and its canvas.
  * Shared geometry / textures; no PNG/JPEG snapshots during the live effect.
@@ -18,7 +19,7 @@ export const slideEase = t => {
  * The clone contains THREE.Object3D nodes only; BufferGeometry, textures,
  * materials and programs are shared rather than reloaded or duplicated.
  */
-export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,direction,durationMs=LIVE_CAROUSEL_DURATION_MS,onSettled}){
+export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,direction,durationMs=LIVE_CAROUSEL_DURATION_MS,onSettled,skipLabelFade=false}){
   if(!THREE || !scene || !camera || !renderer || !stage || Math.abs(direction)!==1) return null;
   const canvas = renderer.domElement;
   const box = canvas?.getBoundingClientRect?.();
@@ -66,6 +67,7 @@ export function createLiveChapterCarousel({THREE,scene,camera,renderer,stage,dir
          window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)continue;
       // A Web Animations opacity effect avoids changing the saved inline CSS.
       // It is composited without running occlusion raycasts on each animation frame.
+      if(skipLabelFade)continue; // ANATOMIQ_CAROUSEL_LABEL_DOF_269B
       if(typeof entry.el.animate==='function'){
         try{entry.el.animate([{opacity:0},{opacity:1}],{
           duration:360,easing:'cubic-bezier(0.22, 1, 0.36, 1)'
