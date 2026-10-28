@@ -12,6 +12,7 @@ import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=26
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
+import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
 import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
@@ -50,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.68b'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4564,11 +4565,27 @@ async function practicalShowQuestion(){
   }catch(error){console.error('AnatomIQ Practical target failed',error);showToast(error.message);practicalLeave(true);}
   finally{practicalBusy=false;}
 }
-async function startPractical(){
+let studentPracticalChapterScope='all';
+let studentPracticalSetupOpening=false;
+async function startPractical(chapterChoice=undefined){
   if(teacherMode||!practicalConfig.on||practicalBusy)return;
+  if(practicalActive){renderChapterUI();return;}
+  // The chooser precedes question generation; the teacher's allowed chapters are the upper limit.
+  if(chapterChoice===undefined){
+    if(studentPracticalSetupOpening)return; // Ignore rapid double taps while the chooser is open.
+    studentPracticalSetupOpening=true;
+    try{
+      const choice=await chooseStudentPracticalChapter({chapters,candidates:practicalPool(),config:practicalConfig});
+      if(choice===null)return;
+      return await startPractical(choice);
+    }finally{studentPracticalSetupOpening=false;}
+  }
+  const scopedConfig=practicalScopedConfig(practicalConfig,chapters,chapterChoice);
+  if(!scopedConfig){showToast('This chapter is not enabled for the practical.');return;}
   if(divisionScope){divisionNavReset(false);refreshVisibility(true);}
   if(practicalActive){renderChapterUI();return;}
-  const qs=practicalAttempt(practicalPool(),structures,practicalConfig);
+  const qs=practicalAttempt(practicalPool(),structures,scopedConfig);
+  studentPracticalChapterScope=chapterChoice;
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
   practicalActive=true;practicalState={questions:qs,index:0,answers:[],selected:null};
   setSelection(null);
@@ -4611,7 +4628,7 @@ $('practical-next')?.addEventListener('click',()=>{
 $('practical-retake')?.addEventListener('click',async()=>{
   if(!practicalActive||practicalBusy)return;
   practicalClearHighlight();practicalActive=false;practicalState=null;
-  await startPractical();
+  await startPractical(studentPracticalChapterScope);
 });
 $('practical-exit')?.addEventListener('click',()=>{
   if(!practicalActive)return;

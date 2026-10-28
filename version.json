@@ -1,6 +1,6 @@
 {
-  "version": "2.2.68b",
+  "version": "2.2.69",
   "channel": "beta",
-  "published": "2026-10-27",
-  "notes": "Approved Detailed skeleton and assembled skull required for all teacher/student lessons; Standard skeletal rendering retired, original structure IDs preserved."
+  "published": "2026-10-28",
+  "notes": "Student practicals: choose one teacher-permitted chapter or all available chapters; grade and retake within the chosen chapter scope."
 }
