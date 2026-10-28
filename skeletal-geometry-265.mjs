@@ -196,6 +196,7 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
     if(busy)return false;
     if(next===mode && replacements && skull.getStatus().active===20)return true;
     busy=true;
+    status.skullError=null;
     try{
       if(next==='detailed'){
         if(pilot?.apply)pilot.apply('standard');
@@ -215,7 +216,10 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
         }
         // Require the exact approved native skull; a missing asset must NOT silently show the old one.
         const skullOk=await skull.sync('detailed');
-        if(!skullOk || skull.getStatus().active!==20)throw new Error('Approved 20-bone skull unavailable: '+(skull.getStatus().error||'incomplete skull'));
+        const skullState=skull.getStatus();
+        status.skullError=(!skullOk || skullState.active!==20)
+          ? 'Approved 20-bone skull unavailable: '+(skullState.error||'incomplete skull') : null; // ANATOMIQ_STUDENT_ASSET_RECOVERY_268C
+        if(status.skullError)console.warn('AnatomIQ skull asset:',status.skullError);
         mode='detailed';
       }else{
         await skull.sync('standard');
@@ -266,7 +270,7 @@ export function installSkeletalGeometryUpgrade(structures,THREE,{invalidate=()=>
   }
   // All Teacher and Student loaders await this readiness promise before displaying lessons.
   // On error the viewer shows an explicit loading failure instead of an obsolete skeleton.
-  const ready=apply('detailed');
+  const ready=teacherMode ? apply('detailed') : Promise.resolve(null); // ANATOMIQ_STUDENT_ASSET_RECOVERY_268C
   ready.then(()=>{if(typeof document!=='undefined'){const node=document.querySelector('#aiq-skeletal-detail-265 .studio-hint');if(node)node.textContent=status.error?'Detailed anatomy unavailable: '+status.error:'Approved Detailed skeleton and skull active.';}});
   return {apply,setBoneTone,setSurfaceMode,status,ready};
 }

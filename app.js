@@ -51,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69a'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -1470,7 +1470,7 @@ function prepareStructures(root){
   structures.forEach((entry,i)=>entry.index=i);
   const vertebraPilot=installVertebraPilot(structures,THREE,{invalidate,teacherMode,storage:window.localStorage}); // ANATOMIQ_VERTEBRA_PILOT_264
   const __detailedController=installSkeletalGeometryUpgrade(structures,THREE,{invalidate,teacherMode,storage:window.localStorage,pilot:vertebraPilot,boneAppearanceController:boneSurfaceController,materials,refreshAppearance:updateBoneMaterial,renderer});
-  __anat268bSkeletalReady=__detailedController.ready; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265 ANATOMIQ_SKELETAL_MATERIALS_265B ANATOMIQ_SKELETAL_SELECTIVE_265C
+  __anat268bSkeletalReady=teacherMode ? __detailedController.ready : () => __detailedController.apply('detailed'); // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265 ANATOMIQ_SKELETAL_MATERIALS_265B ANATOMIQ_SKELETAL_SELECTIVE_265C
   window.__AnatomIQEyeStatus={version:'2.2.13',source:'Original Écorché GLB',structures:eyeStructures.length,
     names:eyeStructures.map(s=>s.name),indices:structures.filter(s=>s.system==='ocular').map(s=>s.index)};
   console.info('AnatomIQ Eyes:',eyeStructures.length,'source-native eye structures registered.');
@@ -2004,11 +2004,22 @@ async function loadAnatomy(){
         prepareStructures(sceneRoot);
       }
     }
-    // Wait for approved detailed skeletal geometry before restoring lesson visibility, camera and labels.
-    if(!__anat268bSkeletalReady || !await __anat268bSkeletalReady){
-      const info=window.__AnatomIQSkeletalDetail;
-      throw new Error('Required approved Detailed skeleton could not load: '+(info?.error||info?.skull?.error||'missing model assets'));
-    }
+    // ANATOMIQ_STUDENT_ASSET_RECOVERY_268C: do not reject an otherwise valid
+    // published lesson solely because the optional replacement mesh pipeline
+    // fails. Preserve the existing catalog/indices; never alter lesson files.
+    // Other chapter-specific required models still use their original guards.
+    const __skeletalReady=typeof __anat268bSkeletalReady==='function'
+      ? await __anat268bSkeletalReady()
+      : (__anat268bSkeletalReady ? await __anat268bSkeletalReady : false);
+    const __skeletalStatus=window.__AnatomIQSkeletalDetail;
+    const __skullWarning=__skeletalStatus?.skullError || '';
+    const __skeletalIssue=!__skeletalReady || !!__skullWarning;
+    if(__skeletalIssue){
+      const reason=String(__skeletalStatus?.error||__skullWarning||'Detailed geometry unavailable').slice(0,450);
+      window.__AnatomIQStudentModelWarning={version:'2.2.68c',scope:'skeletal',reason,
+        detailedReady:!!__skeletalReady,skullReady:!__skullWarning,updated:Date.now()};
+      console.warn('AnatomIQ: compatibility rendering while detailed model is unavailable:',reason);
+    }else window.__AnatomIQStudentModelWarning=null;
     // ANATOMIQ_REALISTIC_EYES_2214: update visual surfaces of the original
     // four selectable eye anchors, without altering mesh identity or catalog IDs.
     // If the optional external texture cannot load, native gray eyes remain.
@@ -2038,6 +2049,28 @@ async function loadAnatomy(){
       ]);
     }
     elements.loader.hidden=true;
+    // A recovery notice is shown ONLY after a detailed model load failure.
+    // The teacher can restore the approved model by fixing the assets and reloading.
+    if(window.__AnatomIQStudentModelWarning){
+      let note=document.getElementById('aiq-skeletal-recovery-268c');
+      if(!note){
+        note=document.createElement('aside');note.id='aiq-skeletal-recovery-268c';
+        note.setAttribute('role','status');
+        Object.assign(note.style,{position:'fixed',bottom:'16px',left:'16px',zIndex:'4000',
+          maxWidth:'min(490px,calc(100vw - 32px))',padding:'12px 14px',borderRadius:'12px',
+          color:'#f7ead4',background:'rgba(26,31,41,.96)',border:'1px solid #967754',
+          font:'13px/1.45 system-ui,sans-serif',boxShadow:'0 6px 24px rgba(0,0,0,.35)'});
+        document.body.append(note);
+      }
+      const message=window.__AnatomIQStudentModelWarning.reason;
+      note.replaceChildren();
+      const text=document.createElement('div');
+      text.textContent='Detailed skeleton unavailable — compatibility anatomy is displayed. '+message;
+      const retry=document.createElement('button');retry.type='button';retry.textContent='Reload and retry';
+      Object.assign(retry.style,{marginTop:'8px',padding:'5px 10px',cursor:'pointer'});
+      retry.addEventListener('click',()=>window.location.reload());
+      note.append(text,retry);
+    }else document.getElementById('aiq-skeletal-recovery-268c')?.remove();
     studentStartupAttempts=0;
     setStatus(teacherMode?'Studio ready':'Student view');
     elements.offlineButton.hidden=false;
