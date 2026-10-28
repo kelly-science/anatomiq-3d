@@ -54,10 +54,22 @@ void main(){
   float fade=t*t*(3.0-2.0*t);
   float nearZoom=clamp((0.85-uFocus)/0.65,0.0,1.0);
   float b=(depth>0.99999?0.0:fade*nearZoom*uIntensity);
+  // ANATOMIQ_269F_FADED_DOF_EXEMPT_LOCAL1: faded anatomy is rendered at 26%.
+  // Most unoccluded faded fragments retain partial alpha in tSharp. Do not
+  // apply the DOF blur to those pixels. This does not add any render pass.
+  // Opaque anatomy behind transparent anatomy can mask the alpha distinction;
+  // exact per-mesh exclusion would require an additional ID/mask buffer.
+  b *= smoothstep(0.65,0.95,sharp.a);
   vec4 soft=texture2D(tSoft,vUv);
   gl_FragColor=mix(sharp,soft,b);
+  // Render-target alpha is premultiplied. Convert straight RGB before
+  // color-space output, then premultiply again so faded surfaces visually
+  // match the direct WebGL carousel renderer more closely.
+  float anatAlpha=gl_FragColor.a;
+  gl_FragColor.rgb/=max(anatAlpha,0.00001);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
+  gl_FragColor.rgb*=anatAlpha;
 }`;
 
 

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69f",
+  "version": "2.2.69g",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Carousel labels and connector lines remain hidden during chapter slides, then fade in together after the model settles. Preserves 2.2.69c DOF and lighting."
+  "notes": "Correct DOF shader GLSL alpha identifier and faded-anatomy alpha/compositing handoff; refresh GitHub Pages / PWA module and offline shell cache references. Preserves smooth chapter label transitions and existing lighting."
 }
