@@ -1,0 +1,271 @@
+{
+  "version": "2.2.66",
+  "source": "BodyParts3D 3.0 pinned skeletal STL subset; anatomical skull targets from original \u00c9corch\u00e9",
+  "base_glb": "ecorche.glb",
+  "base_sha256": "7328ccdf8a1b86a449babc5f83fe12aa1c8941c0cfed85295e438af024d3d12c",
+  "mode": "teacher review only; no automatic replacement on install",
+  "candidate_count": 16,
+  "auto_candidates": 13,
+  "review_candidates": 3,
+  "rejected": 9,
+  "rows": [
+    {
+      "name": "Ethmoid",
+      "old_triangles": 11746,
+      "source_file": "ethmoid.stl",
+      "status": "rejected",
+      "reason": "Source has no meaningful detail gain (7774 vs 11746 triangles)"
+    },
+    {
+      "name": "Frontal bone",
+      "old_triangles": 23216,
+      "source_file": "frontal bone.stl",
+      "status": "review",
+      "alignment_p95_mm": 4.199,
+      "alignment_median_mm": 1.74,
+      "extra_motion_mm": 2.146,
+      "source_triangles": 33062,
+      "largest_estimated_gap_increase_mm": 3.57,
+      "gap_neighbor": "Right zygomatic bone"
+    },
+    {
+      "name": "Left inferior nasal concha",
+      "old_triangles": 400,
+      "source_file": null,
+      "status": "rejected",
+      "reason": "No matching full-resolution source; keep original bone"
+    },
+    {
+      "name": "Left lacrimal bone",
+      "old_triangles": 370,
+      "source_file": "left lacrimal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 0.656,
+      "alignment_median_mm": 0.349,
+      "extra_motion_mm": 0.052,
+      "source_triangles": 1152,
+      "largest_estimated_gap_increase_mm": 2.1,
+      "gap_neighbor": "Frontal bone"
+    },
+    {
+      "name": "Left lateral nasal cartilage",
+      "old_triangles": 592,
+      "source_file": null,
+      "status": "rejected",
+      "reason": "No matching full-resolution source; keep original bone"
+    },
+    {
+      "name": "Left maxilla",
+      "old_triangles": 8312,
+      "source_file": "left maxilla.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.74,
+      "alignment_median_mm": 0.888,
+      "extra_motion_mm": 0.28,
+      "source_triangles": 14506,
+      "largest_estimated_gap_increase_mm": 1.69,
+      "gap_neighbor": "Right maxilla"
+    },
+    {
+      "name": "Left nasal bone",
+      "old_triangles": 696,
+      "source_file": "left nasal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 0.628,
+      "alignment_median_mm": 0.283,
+      "extra_motion_mm": 0.107,
+      "source_triangles": 1124,
+      "largest_estimated_gap_increase_mm": 1.99,
+      "gap_neighbor": "Right maxilla"
+    },
+    {
+      "name": "Left palatine bone",
+      "old_triangles": 1138,
+      "source_file": "left palatine bone.stl",
+      "status": "rejected",
+      "reason": "Anatomical scale mismatch: 0.861"
+    },
+    {
+      "name": "Left parietal bone",
+      "old_triangles": 21136,
+      "source_file": "left parietal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 3.952,
+      "alignment_median_mm": 1.515,
+      "extra_motion_mm": 2.717,
+      "source_triangles": 30250,
+      "largest_estimated_gap_increase_mm": 4.86,
+      "gap_neighbor": "Sphenoid bone"
+    },
+    {
+      "name": "Left temporal bone",
+      "old_triangles": 7448,
+      "source_file": "left temporal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.987,
+      "alignment_median_mm": 0.938,
+      "extra_motion_mm": 0.958,
+      "source_triangles": 11208,
+      "largest_estimated_gap_increase_mm": 1.39,
+      "gap_neighbor": "Occipital bone"
+    },
+    {
+      "name": "Left zygomatic bone",
+      "old_triangles": 2288,
+      "source_file": "left zygomatic bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.051,
+      "alignment_median_mm": 0.477,
+      "extra_motion_mm": 0.148,
+      "source_triangles": 4560,
+      "largest_estimated_gap_increase_mm": 3.3,
+      "gap_neighbor": "Frontal bone"
+    },
+    {
+      "name": "Mandible",
+      "old_triangles": 8920,
+      "source_file": "mandible.stl",
+      "status": "auto",
+      "alignment_p95_mm": 3.345,
+      "alignment_median_mm": 1.273,
+      "extra_motion_mm": 2.506,
+      "source_triangles": 21658,
+      "largest_estimated_gap_increase_mm": 1.35,
+      "gap_neighbor": "Right temporal bone"
+    },
+    {
+      "name": "Occipital bone",
+      "old_triangles": 19920,
+      "source_file": "occipital bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 3.99,
+      "alignment_median_mm": 1.523,
+      "extra_motion_mm": 3.232,
+      "source_triangles": 27812,
+      "largest_estimated_gap_increase_mm": 4.25,
+      "gap_neighbor": "Right parietal bone"
+    },
+    {
+      "name": "Right inferior nasal concha",
+      "old_triangles": 422,
+      "source_file": null,
+      "status": "rejected",
+      "reason": "No matching full-resolution source; keep original bone"
+    },
+    {
+      "name": "Right lacrimal bone",
+      "old_triangles": 382,
+      "source_file": "right lacrimal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 0.747,
+      "alignment_median_mm": 0.366,
+      "extra_motion_mm": 0.252,
+      "source_triangles": 1114,
+      "largest_estimated_gap_increase_mm": 1.25,
+      "gap_neighbor": "Frontal bone"
+    },
+    {
+      "name": "Right lateral nasal cartilage",
+      "old_triangles": 664,
+      "source_file": null,
+      "status": "rejected",
+      "reason": "No matching full-resolution source; keep original bone"
+    },
+    {
+      "name": "Right maxilla",
+      "old_triangles": 8512,
+      "source_file": "right maxilla.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.708,
+      "alignment_median_mm": 0.874,
+      "extra_motion_mm": 0.236,
+      "source_triangles": 14148,
+      "largest_estimated_gap_increase_mm": 1.99,
+      "gap_neighbor": "Left nasal bone"
+    },
+    {
+      "name": "Right nasal bone",
+      "old_triangles": 664,
+      "source_file": "right nasal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 0.593,
+      "alignment_median_mm": 0.259,
+      "extra_motion_mm": 0.117,
+      "source_triangles": 1024,
+      "largest_estimated_gap_increase_mm": 1.34,
+      "gap_neighbor": "Left maxilla"
+    },
+    {
+      "name": "Right palatine bone",
+      "old_triangles": 1166,
+      "source_file": "right palatine bone.stl",
+      "status": "rejected",
+      "reason": "Anatomical scale mismatch: 0.831"
+    },
+    {
+      "name": "Right parietal bone",
+      "old_triangles": 20800,
+      "source_file": "right parietal bone.stl",
+      "status": "review",
+      "alignment_p95_mm": 3.907,
+      "alignment_median_mm": 1.423,
+      "extra_motion_mm": 2.842,
+      "source_triangles": 29734,
+      "largest_estimated_gap_increase_mm": 5.99,
+      "gap_neighbor": "Sphenoid bone",
+      "review_reason": "Potential enlarged suture gap versus original AnatomIQ skull"
+    },
+    {
+      "name": "Right temporal bone",
+      "old_triangles": 7600,
+      "source_file": "right temporal bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.959,
+      "alignment_median_mm": 0.97,
+      "extra_motion_mm": 0.945,
+      "source_triangles": 11274,
+      "largest_estimated_gap_increase_mm": 1.85,
+      "gap_neighbor": "Right parietal bone"
+    },
+    {
+      "name": "Right zygomatic bone",
+      "old_triangles": 2488,
+      "source_file": "right zygomatic bone.stl",
+      "status": "auto",
+      "alignment_p95_mm": 1.116,
+      "alignment_median_mm": 0.457,
+      "extra_motion_mm": 0.139,
+      "source_triangles": 4612,
+      "largest_estimated_gap_increase_mm": 3.57,
+      "gap_neighbor": "Frontal bone"
+    },
+    {
+      "name": "Septal nasal cartilage",
+      "old_triangles": 576,
+      "source_file": null,
+      "status": "rejected",
+      "reason": "No matching full-resolution source; keep original bone"
+    },
+    {
+      "name": "Sphenoid bone",
+      "old_triangles": 11952,
+      "source_file": "sphenoid bone.stl",
+      "status": "review",
+      "alignment_p95_mm": 2.547,
+      "alignment_median_mm": 1.118,
+      "extra_motion_mm": 0.581,
+      "source_triangles": 15322,
+      "largest_estimated_gap_increase_mm": 5.99,
+      "gap_neighbor": "Right parietal bone",
+      "review_reason": "Potential enlarged suture gap versus original AnatomIQ skull"
+    },
+    {
+      "name": "Vomer",
+      "old_triangles": 3824,
+      "source_file": "vomer.stl",
+      "status": "rejected",
+      "reason": "Source has no meaningful detail gain (2422 vs 3824 triangles)"
+    }
+  ],
+  "license": "BodyParts3D CC BY-SA 2.1 JP; \u00c9corch\u00e9 CC BY-SA 4.0. Preserve attribution."
+}

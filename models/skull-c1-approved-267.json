@@ -1,0 +1,286 @@
+{
+  "version": "2.2.66h",
+  "mode": "detailed",
+  "placement": {
+    "enabled": true,
+    "tx": 0,
+    "ty": -2,
+    "tz": 2,
+    "rx": 0.5,
+    "ry": 0,
+    "rz": 0,
+    "scale": 1.07,
+    "showReference": false,
+    "showUnmatched": false,
+    "skullTone": "#eee0c9",
+    "boneContrast": "distinct",
+    "vomerTx": 1,
+    "vomerTy": -6,
+    "vomerTz": 1,
+    "vomerRx": 14.5,
+    "vomerRy": 2,
+    "vomerRz": 0,
+    "showVomerReference": false
+  },
+  "materialPipeline": "UV-free per-bone ivory; vertexColors; softened vertex normals",
+  "vomerCorrection": {
+    "tx": 1,
+    "ty": -6,
+    "tz": 1,
+    "rx": 14.5,
+    "ry": 2,
+    "rz": 0
+  },
+  "materialCheck": [
+    {
+      "bone": "Ethmoid",
+      "hasUVTexture": false,
+      "vertexColors": true,
+      "hasGeometryColors": true,
+      "hex": "e6d3b9"
+    },
+    {
+      "bone": "Frontal_bone",
+      "hasUVTexture": false,
+      "vertexColors": true,
+      "hasGeometryColors": true,
+      "hex": "e0d0bb"
+    },
+    {
+      "bone": "Left_lacrimal_bone",
+      "hasUVTexture": false,
+      "vertexColors": true,
+      "hasGeometryColors": true,
+      "hex": "e6d3b9"
+    },
+    {
+      "bone": "Left_maxilla",
+      "hasUVTexture": false,
+      "vertexColors": true,
+      "hasGeometryColors": true,
+      "hex": "f4e6d3"
+    }
+  ],
+  "active": 20,
+  "available": 20,
+  "unmatched": 5,
+  "atlasWorldMeters": [
+    0.00024754333496093683,
+    1.5499420410156253,
+    -0.014960420608520507
+  ],
+  "report": {
+    "version": "2.2.66d",
+    "method": "One common anatomical coordinate transform anchored to C1; no per-bone alignment",
+    "base_sha256": "7328ccdf8a1b86a449babc5f83fe12aa1c8941c0cfed85295e438af024d3d12c",
+    "source_collection": "Existing BP3D 3.0 local STL subset; incomplete coverage possible",
+    "anchor": "Atlas (C1) bounding-box center",
+    "pivot_world_m": [
+      -0.0006,
+      1.5499,
+      -0.0152
+    ],
+    "initial_translation_world_m": [
+      -0.0004247,
+      0.06903,
+      -0.0922794
+    ],
+    "candidate_count": 20,
+    "unmatched_count": 5,
+    "rows": [
+      {
+        "name": "Ethmoid",
+        "status": "native",
+        "old_triangles": 11746,
+        "source_file": "ethmoid.stl",
+        "source_triangles": 7774,
+        "distance_to_c1_mm": 85.57
+      },
+      {
+        "name": "Frontal bone",
+        "status": "native",
+        "old_triangles": 23216,
+        "source_file": "frontal bone.stl",
+        "source_triangles": 33062,
+        "distance_to_c1_mm": 122.9
+      },
+      {
+        "name": "Left inferior nasal concha",
+        "status": "unmatched",
+        "old_triangles": 400,
+        "source_file": null
+      },
+      {
+        "name": "Left lacrimal bone",
+        "status": "native",
+        "old_triangles": 370,
+        "source_file": "left lacrimal bone.stl",
+        "source_triangles": 1152,
+        "distance_to_c1_mm": 96.37
+      },
+      {
+        "name": "Left lateral nasal cartilage",
+        "status": "unmatched",
+        "old_triangles": 592,
+        "source_file": null
+      },
+      {
+        "name": "Left maxilla",
+        "status": "native",
+        "old_triangles": 8312,
+        "source_file": "left maxilla.stl",
+        "source_triangles": 14506,
+        "distance_to_c1_mm": 90.55
+      },
+      {
+        "name": "Left nasal bone",
+        "status": "native",
+        "old_triangles": 696,
+        "source_file": "left nasal bone.stl",
+        "source_triangles": 1124,
+        "distance_to_c1_mm": 116.24
+      },
+      {
+        "name": "Left palatine bone",
+        "status": "native",
+        "old_triangles": 1138,
+        "source_file": "left palatine bone.stl",
+        "source_triangles": 3642,
+        "distance_to_c1_mm": 65.16
+      },
+      {
+        "name": "Left parietal bone",
+        "status": "native",
+        "old_triangles": 21136,
+        "source_file": "left parietal bone.stl",
+        "source_triangles": 30250,
+        "distance_to_c1_mm": 106.51
+      },
+      {
+        "name": "Left temporal bone",
+        "status": "native",
+        "old_triangles": 7448,
+        "source_file": "left temporal bone.stl",
+        "source_triangles": 11208,
+        "distance_to_c1_mm": 60.42
+      },
+      {
+        "name": "Left zygomatic bone",
+        "status": "native",
+        "old_triangles": 2288,
+        "source_file": "left zygomatic bone.stl",
+        "source_triangles": 4560,
+        "distance_to_c1_mm": 92.06
+      },
+      {
+        "name": "Mandible",
+        "status": "native",
+        "old_triangles": 8920,
+        "source_file": "mandible.stl",
+        "source_triangles": 21658,
+        "distance_to_c1_mm": 62.39
+      },
+      {
+        "name": "Occipital bone",
+        "status": "native",
+        "old_triangles": 19920,
+        "source_file": "occipital bone.stl",
+        "source_triangles": 27812,
+        "distance_to_c1_mm": 62.6
+      },
+      {
+        "name": "Right inferior nasal concha",
+        "status": "unmatched",
+        "old_triangles": 422,
+        "source_file": null
+      },
+      {
+        "name": "Right lacrimal bone",
+        "status": "native",
+        "old_triangles": 382,
+        "source_file": "right lacrimal bone.stl",
+        "source_triangles": 1114,
+        "distance_to_c1_mm": 97.51
+      },
+      {
+        "name": "Right lateral nasal cartilage",
+        "status": "unmatched",
+        "old_triangles": 664,
+        "source_file": null
+      },
+      {
+        "name": "Right maxilla",
+        "status": "native",
+        "old_triangles": 8512,
+        "source_file": "right maxilla.stl",
+        "source_triangles": 14148,
+        "distance_to_c1_mm": 92.71
+      },
+      {
+        "name": "Right nasal bone",
+        "status": "native",
+        "old_triangles": 664,
+        "source_file": "right nasal bone.stl",
+        "source_triangles": 1024,
+        "distance_to_c1_mm": 116.88
+      },
+      {
+        "name": "Right palatine bone",
+        "status": "native",
+        "old_triangles": 1166,
+        "source_file": "right palatine bone.stl",
+        "source_triangles": 3592,
+        "distance_to_c1_mm": 66.59
+      },
+      {
+        "name": "Right parietal bone",
+        "status": "native",
+        "old_triangles": 20800,
+        "source_file": "right parietal bone.stl",
+        "source_triangles": 29734,
+        "distance_to_c1_mm": 107.21
+      },
+      {
+        "name": "Right temporal bone",
+        "status": "native",
+        "old_triangles": 7600,
+        "source_file": "right temporal bone.stl",
+        "source_triangles": 11274,
+        "distance_to_c1_mm": 61.11
+      },
+      {
+        "name": "Right zygomatic bone",
+        "status": "native",
+        "old_triangles": 2488,
+        "source_file": "right zygomatic bone.stl",
+        "source_triangles": 4612,
+        "distance_to_c1_mm": 92.57
+      },
+      {
+        "name": "Septal nasal cartilage",
+        "status": "unmatched",
+        "old_triangles": 576,
+        "source_file": null
+      },
+      {
+        "name": "Sphenoid bone",
+        "status": "native",
+        "old_triangles": 11952,
+        "source_file": "sphenoid bone.stl",
+        "source_triangles": 15322,
+        "distance_to_c1_mm": 64.17
+      },
+      {
+        "name": "Vomer",
+        "status": "native",
+        "old_triangles": 3824,
+        "source_file": "vomer.stl",
+        "source_triangles": 2422,
+        "distance_to_c1_mm": 75.25
+      }
+    ],
+    "caution": "Native relative placement assumes co-registered BP3D STLs. Verify atlas/occiput and cranial sutures visually before any publish.",
+    "license": "BodyParts3D CC BY-SA 2.1 JP; Écorché CC BY-SA 4.0; preserve attribution"
+  },
+  "error": ""
+}
