@@ -4677,162 +4677,265 @@ $('practical-exit')?.addEventListener('click',()=>{
 });
 
 
-/* AnatomIQ DOF click-refocus runtime — installed in the Three.js controller module.
- * Captures the application's own structure-picking raycast; no extra frame raycasts.
- * This intentionally does not alter anatomy selection, model visibility, or camera position.
+/* AnatomIQ DOF click-refocus runtime v2 — rendered-scene picker + diagnostic.
+ * This runtime runs in app.js' existing Three.js module scope. The app's
+ * selection/camera/visibility behaviors are left unchanged.
  */
 ;(() => {
-  if (typeof window === 'undefined' || window.__anatomiqDofRefocusState) return;
-  const RaycasterClass = (typeof THREE !== 'undefined' && THREE.Raycaster)
-    || (typeof Raycaster !== 'undefined' && Raycaster)
-    || (window.THREE && window.THREE.Raycaster);
-  if (!RaycasterClass || !RaycasterClass.prototype) {
-    console.warn('[AnatomIQ DOF click-refocus] Three.js Raycaster unavailable; click focus inactive');
+  if (typeof window === 'undefined') return;
+  const key = '__anatomiqDofRefocusState';
+  if (window[key]) return;
+  const Three = (typeof THREE !== 'undefined' && THREE) || (window.THREE || null);
+  const RaycasterClass = (Three && Three.Raycaster) || (typeof Raycaster !== 'undefined' ? Raycaster : null);
+  const RendererClass = Three && Three.WebGLRenderer;
+  if (!RaycasterClass || !document || !document.addEventListener) {
+    console.warn('[AnatomIQ DOF refocus v2] Missing Three raycaster or document');
     return;
   }
-  const proto = RaycasterClass.prototype;
-  const originals = {
-    fromCamera: proto.setFromCamera,
-    intersectObject: proto.intersectObject,
-    intersectObjects: proto.intersectObjects,
+  const stats = {
+    version: '2.0', clicks: 0, picks: 0, nativePicks: 0, renderedScenes: 0,
+    focusUniformReads: 0, focusUniformOverrides: 0, lastAuto: null, lastOutput: null,
+    clickedMesh: null, clickedDistance: null, lastReason: 'not clicked',
+    source: null,
   };
-  if (typeof originals.fromCamera !== 'function' || typeof originals.intersectObjects !== 'function') {
-    console.warn('[AnatomIQ DOF click-refocus] Unsupported raycaster');
-    return;
-  }
-  let pointerDown = null;
-  let moved = false;
-  let armed = false;
-  let captured = false;
-  let pending = null;
   let active = null;
-  let smoothedDistance = null;
-  let lastUpdate = 0;
-  const isCanvas = (e) => !!(e.target && e.target.tagName === 'CANVAS');
-  function disarmNextTask() {
-    // Skip costly per-frame label/occlusion raycasts outside a pointer event.
-    setTimeout(() => { armed = false; }, 0);
+  let focusValue = null;
+  let lastTick = 0;
+  let pointer = null;
+  let moved = false;
+  let hoveredCanvas = null;
+  let pickWindowUntil = 0;
+  let nativePick = null;
+  const recent = [];
+  const now = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
+  function canvasOf(target) {
+    if (!target) return null;
+    if (target.tagName === 'CANVAS') return target;
+    return target.closest && target.closest('canvas') || null;
   }
-  function beginCapture(e) {
-    if (!isCanvas(e)) return;
-    armed = true;
-    captured = false;
-    disarmNextTask();
+  function visibleMesh(obj) {
+    if (!obj || !(obj.isMesh || obj.isSkinnedMesh) || !obj.geometry) return false;
+    for (let n = obj; n; n=n.parent) if (n.visible === false) return false;
+    const u = obj.userData || {};
+    if (u.isLabel || u.isHelper || u.isGizmo || u.isControl) return false;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    if (mats.length && mats.every(m => m && (m.visible === false || (m.transparent && m.opacity <= .025)))) return false;
+    return true;
   }
-  document.addEventListener('pointerdown', (e) => {
-    pointerDown = isCanvas(e) ? {x: e.clientX, y: e.clientY} : null;
-    pending = null;
-    moved = false;
-    if (pointerDown) beginCapture(e);
-  }, true);
-  document.addEventListener('pointermove', (e) => {
-    if (pointerDown && Math.hypot(e.clientX-pointerDown.x, e.clientY-pointerDown.y)>7)
-      moved = true;
-  }, true);
-  document.addEventListener('pointerup', (e) => {
-    if (!isCanvas(e) || !pointerDown || moved ||
-        Math.hypot(e.clientX-pointerDown.x, e.clientY-pointerDown.y)>7) {
-      pending = null;
-      armed = false;
-    } else {
-      if (pending) commitFocus(pending);
-      beginCapture(e); // Some app versions pick on pointerup, not pointerdown.
-    }
-    pointerDown = null;
-  }, true);
-  document.addEventListener('click', (e) => {
-    if (isCanvas(e) && !moved) beginCapture(e);
-    moved = false;
-  }, true);
-  proto.setFromCamera = function(coords, camera) {
-    this.__anatomiqDofRayCamera = camera || null;
-    return originals.fromCamera.apply(this, arguments);
-  };
   function rootOf(mesh) {
     let node = mesh;
     while (node && node.parent) node = node.parent;
     return node;
   }
-  function commitFocus(candidate) {
-    active = candidate;
-    smoothedDistance = null;
-    lastUpdate = 0;
+  function removeInvalidFocus() {
+    if (!active) return;
+    const a = active;
+    if (!a.mesh || !a.mesh.parent || rootOf(a.mesh) !== a.root || !visibleMesh(a.mesh)) {
+      active = null;
+      focusValue = null;
+      lastTick = 0;
+      stats.lastReason = 'selected mesh hidden or removed';
+    }
   }
-  function examine(raycaster, hits) {
-    if (!armed || captured || !Array.isArray(hits)) return;
-    // Existing picker may hit non-anatomy helpers. Only actual visible geometry counts.
-    const hit = hits.find(h => h && h.point && h.object &&
-      (h.object.isMesh || h.object.isSkinnedMesh) && h.object.visible !== false &&
-      !(h.object.userData && (h.object.userData.isLabel || h.object.userData.isHelper)));
-    if (!hit) return;
-    const cam = raycaster.__anatomiqDofRayCamera;
-    if (!cam || !cam.position || typeof cam.getWorldDirection !== 'function') return;
+  function candidateFromHit(hit, camera, source) {
+    if (!hit || !visibleMesh(hit.object) || !hit.point || !camera || !camera.position ||
+        typeof camera.getWorldDirection !== 'function') return null;
     const mesh = hit.object;
-    captured = true;
-    const candidate = {
-      mesh,
-      root: rootOf(mesh),
-      localPoint: typeof mesh.worldToLocal === 'function'
-        ? mesh.worldToLocal(hit.point.clone()) : null,
-      worldPoint: hit.point.clone(),
-      camera: cam,
-    };
-    if (pointerDown) pending = candidate; // Commit only if pointer does not drag.
-    else commitFocus(candidate); // Pointerup or click-based selection.
+    const worldPoint = hit.point.clone();
+    const localPoint = mesh.worldToLocal ? mesh.worldToLocal(worldPoint.clone()) : null;
+    return {mesh, camera, root:rootOf(mesh), worldPoint, localPoint, source};
   }
-  proto.intersectObject = function() {
-    const result = originals.intersectObject.apply(this, arguments);
-    examine(this, result);
+  function distanceFor(a) {
+    if (!a || !a.camera || !a.camera.position) return null;
+    const world = a.localPoint && a.mesh.localToWorld
+      ? a.mesh.localToWorld(a.localPoint.clone()) : a.worldPoint;
+    const forward = a.camera.getWorldDirection(world.clone().sub(a.camera.position));
+    const d = world.clone().sub(a.camera.position).dot(forward);
+    return Number.isFinite(d) && d > 0 ? d : null;
+  }
+  function commit(c) {
+    if (!c) return false;
+    const d = distanceFor(c);
+    if (d === null) return false;
+    active = c;
+    focusValue = null;
+    lastTick = 0;
+    stats.picks++;
+    stats.clickedMesh = String(c.mesh.name || c.mesh.userData && (c.mesh.userData.structureName || c.mesh.userData.structureId) || '(unnamed mesh)');
+    stats.clickedDistance = Number(d.toFixed(4));
+    stats.source = c.source;
+    stats.lastReason = 'captured clickable 3D geometry';
+    console.info('[AnatomIQ DOF refocus v2] picked', stats.clickedMesh,
+      'distance', stats.clickedDistance, 'source', c.source);
+    return true;
+  }
+  function canvasPoint(ev, canvas) {
+    if (!canvas || typeof canvas.getBoundingClientRect !== 'function') return null;
+    const r = canvas.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const x = ((ev.clientX - r.left) / r.width) * 2 - 1;
+    const y = 1 - ((ev.clientY - r.top) / r.height) * 2;
+    if (x < -1 || x > 1 || y < -1 || y > 1) return null;
+    return {x, y};
+  }
+  // Capture the scene and camera actually supplied to the Three renderer.
+  // This works even if AnatomIQ's structure selection uses GPU/custom picking.
+  // It adds no per-frame raycast, only a constant-time capture in render().
+  if (RendererClass && RendererClass.prototype && typeof RendererClass.prototype.render === 'function') {
+    const originalRender = RendererClass.prototype.render;
+    RendererClass.prototype.render = function(scene, camera) {
+      if (scene && scene.isScene && camera && camera.isPerspectiveCamera && scene.children && scene.children.length) {
+        let item = recent.find(v => v.scene === scene);
+        if (!item) {
+          item = {scene, camera, seen:now(), score:0, evaluated:false};
+          recent.push(item);
+          if (recent.length > 8) recent.shift();
+        }
+        item.camera = camera;
+        item.seen = now();
+        stats.renderedScenes++;
+      }
+      return originalRender.apply(this, arguments);
+    };
+  }
+  function meshCount(scene) {
+    let n = 0, inspected = 0;
+    const stack = [scene];
+    while (stack.length && inspected++ < 12000) {
+      const item = stack.pop();
+      if (visibleMesh(item)) n++;
+      if (item && item.children) for (const c of item.children) stack.push(c);
+    }
+    return n;
+  }
+  function chooseScene() {
+    let best = null;
+    const newest = recent.reduce((v,e)=>Math.max(v,e.seen),0);
+    for (const entry of recent) {
+      // Avoid a larger, now-inactive chapter scene winning subsequent clicks.
+      if (newest-entry.seen > 1500) continue;
+      if (!entry.evaluated) {entry.score = meshCount(entry.scene);entry.evaluated = true;}
+      if (entry.score > 0 && (!best || entry.score > best.score)) best = entry;
+    }
+    return best;
+  }
+  function pickFromRenderedScene(ev, canvas) {
+    const chosen = chooseScene();
+    if (!chosen) {stats.lastReason = 'no main 3D render scene captured';return false;}
+    const ndc = canvasPoint(ev,canvas);
+    if (!ndc) {stats.lastReason = 'click outside viewer canvas';return false;}
+    const ray = new RaycasterClass();
+    if (typeof ray.setFromCamera !== 'function' || typeof ray.intersectObjects !== 'function') {
+      stats.lastReason = 'raycaster cannot pick';return false;
+    }
+    ray.setFromCamera(ndc, chosen.camera);
+    let hits;
+    try { hits = ray.intersectObjects(chosen.scene.children, true); }
+    catch (e) {stats.lastReason = 'scene hit test failed: ' + String(e);return false;}
+    const hit = Array.isArray(hits) ? hits.find(h => visibleMesh(h && h.object)) : null;
+    if (!hit) {stats.lastReason = 'no visible anatomy surface under pointer';return false;}
+    return commit(candidateFromHit(hit, chosen.camera, 'rendered scene'));
+  }
+  // Retain the native picker as a fallback for unusual multi-scene renderers.
+  const proto = RaycasterClass.prototype;
+  const originalFromCamera = proto.setFromCamera;
+  const originalIntersectObject = proto.intersectObject;
+  const originalIntersectObjects = proto.intersectObjects;
+  if (typeof originalFromCamera === 'function') proto.setFromCamera = function(coords, camera) {
+    this.__anatomiqDofRayCamera = camera;
+    return originalFromCamera.apply(this,arguments);
+  };
+  function recordNative(raycaster, hits) {
+    if (now() > pickWindowUntil || !Array.isArray(hits) || !hoveredCanvas) return;
+    const hit = hits.find(h => visibleMesh(h && h.object));
+    if (hit) {
+      const c = candidateFromHit(hit,raycaster.__anatomiqDofRayCamera,'native picker');
+      if (c) {nativePick = c; stats.nativePicks++;}
+    }
+  }
+  if (typeof originalIntersectObject === 'function') proto.intersectObject = function() {
+    const result = originalIntersectObject.apply(this,arguments);
+    recordNative(this,result);
     return result;
   };
-  proto.intersectObjects = function() {
-    const result = originals.intersectObjects.apply(this, arguments);
-    examine(this, result);
+  if (typeof originalIntersectObjects === 'function') proto.intersectObjects = function() {
+    const result = originalIntersectObjects.apply(this,arguments);
+    recordNative(this,result);
     return result;
   };
+  function handleClick(ev, canvas) {
+    stats.clicks++;
+    pickWindowUntil = now() + 60;
+    // Prioritize what is visibly on screen, not a helper/occlusion raycast.
+    if (pickFromRenderedScene(ev,canvas)) return;
+    if (nativePick && commit(nativePick)) return;
+    console.info('[AnatomIQ DOF refocus v2] no focus target:', stats.lastReason);
+  }
+  document.addEventListener('pointerdown',e => {
+    const canvas = canvasOf(e.target);
+    pointer = canvas ? {x:e.clientX,y:e.clientY,canvas,ts:now()} : null;
+    hoveredCanvas = canvas;
+    moved = false;
+    nativePick = null;
+    pickWindowUntil = now() + 600;
+  },true);
+  document.addEventListener('pointermove',e => {
+    if (pointer && Math.hypot(e.clientX-pointer.x,e.clientY-pointer.y) > 7) moved = true;
+  },true);
+  document.addEventListener('pointerup',e => {
+    if (pointer && pointer.canvas && !moved &&
+        Math.hypot(e.clientX-pointer.x,e.clientY-pointer.y) <= 7) {
+      const c = pointer.canvas;
+      // Run after the app's pointerup handler; selection still follows its own path.
+      setTimeout(() => handleClick(e,c),0);
+    }
+    pointer = null;
+  },true);
+  // Keyboard/mouse accessibility: mouse click may arrive without pointer events.
+  document.addEventListener('click',e => {
+    const c = canvasOf(e.target);
+    if (c && !moved && !hoveredCanvas) setTimeout(() => handleClick(e,c),0);
+    moved = false;
+  },true);
   const state = {
     resolve(automaticDistance) {
-      if (!active) return automaticDistance;
-      const {mesh, root, localPoint, worldPoint, camera} = active;
-      // Model replaced, hidden, or detached when chapter changes.
-      if (!mesh.parent || rootOf(mesh) !== root || !camera || !camera.position) {
-        active = null;
-        smoothedDistance = null;
-        return automaticDistance;
+      stats.focusUniformReads++;
+      stats.lastAuto = Number.isFinite(Number(automaticDistance)) ? Number(automaticDistance) : String(automaticDistance);
+      removeInvalidFocus();
+      if (!active) {stats.lastOutput = stats.lastAuto;return automaticDistance;}
+      const d = distanceFor(active);
+      if (d === null) {stats.lastReason = 'clicked point is behind camera';return automaticDistance;}
+      const t = now();
+      if (focusValue === null) {
+        focusValue = Number.isFinite(Number(automaticDistance)) ? Number(automaticDistance) : d;
+        lastTick = t;
       }
-      for (let node=mesh; node; node=node.parent) {
-        if (node.visible === false) {
-          active = null;
-          smoothedDistance = null;
-          return automaticDistance;
-        }
-      }
-      if (!camera.getWorldDirection) {
-        active = null;
-        smoothedDistance = null;
-        return automaticDistance;
-      }
-      const world = localPoint && typeof mesh.localToWorld === 'function'
-        ? mesh.localToWorld(localPoint.clone()) : worldPoint;
-      const forward = camera.getWorldDirection(world.clone().sub(camera.position));
-      const distance = world.clone().sub(camera.position).dot(forward);
-      if (!Number.isFinite(distance) || distance <= 0) return automaticDistance;
-      // Focus shift is smooth, while the app retains complete control of blur strength.
-      const now = performance.now();
-      const elapsed = lastUpdate ? Math.min(100, now - lastUpdate) : 0;
-      if (smoothedDistance === null) {
-        smoothedDistance = Number.isFinite(Number(automaticDistance))
-          ? Number(automaticDistance) : distance;
-      }
-      const alpha = elapsed > 0 ? (1 - Math.exp(-elapsed / 125)) : 0;
-      smoothedDistance += (distance - smoothedDistance) * alpha;
-      lastUpdate = now;
-      return smoothedDistance;
+      const elapsed = Math.min(100,Math.max(0,t-lastTick));
+      const alpha = 1 - Math.exp(-elapsed/115);
+      focusValue += (d-focusValue)*alpha;
+      lastTick = t;
+      stats.focusUniformOverrides++;
+      stats.lastOutput = Number(focusValue.toFixed(5));
+      return focusValue;
     },
-    clear() { active = null; smoothedDistance = null; lastUpdate = 0; },
-    get targetMesh() { return active && active.mesh; },
+    clear() {active = null;focusValue = null;lastTick=0;stats.clickedMesh=null;stats.lastReason='cleared';},
+    get targetMesh() {return active && active.mesh;},
+    diagnostics() {return {...stats,active:!!active,scenes:recent.map(e=>({meshes:e.score,seen:e.seen}))};},
+    showDiagnostics() {
+      const data = JSON.stringify(this.diagnostics(),null,2);
+      console.info('[AnatomIQ DOF refocus diagnostics]\n'+data);
+      if (typeof alert === 'function') alert(data);
+      return data;
+    },
   };
-  window.__anatomiqDofRefocusState = state;
-  // For debugging only: window.__anatomiqDofRefocusState.clear()
+  document.addEventListener('keydown', e => {
+    if (e.altKey && e.shiftKey && String(e.key || '').toLowerCase() === 'd') {
+      e.preventDefault();
+      state.showDiagnostics();
+    }
+  }, true);
+  window[key]=state;
+  console.info('[AnatomIQ DOF refocus v2] active. Inspect: window.__anatomiqDofRefocusState.diagnostics()');
 })();
+
 
