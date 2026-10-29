@@ -51,7 +51,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69h'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69i'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -234,7 +234,7 @@ const DRAFT_KEY = 'anatomy-studio-project-v2';
 const OLD_DRAFT_KEY = 'anatomy-studio-project-v1';
 let chapters = [];
 let structureNoteOverrides=new Map(); // ANATOMIQ_LESSON_EXPERIENCE_249
-let practicalConfig=normalPractical(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
+let practicalConfig=normalizePracticalTargetDisplay(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
 let activeChapter = 0;
 const markers = new Map();
 const labelSVG = $('label-lines');
@@ -461,6 +461,7 @@ function draw(){
   __anat268DOF.render(scene,camera);
   const __lpR=__labelAudit.enabled?performance.now():0;
   updateAnnotationPositions();
+  practicalUpdateQuestionCallout();
   if(__labelAudit.enabled){
     const end=performance.now(),last=__labelAudit.lastFrame;
     __labelAudit.samples.push({moved,gap:last?__lpStart-last:0,controls:__lpC-__lpStart,
@@ -2715,7 +2716,7 @@ function snapshotProject(){
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
   if(teacherMode)publishPermissions={...currentPublishPermissions()};
-  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:normalPractical(practicalConfig)});
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:{...normalPractical(practicalConfig),markerStyle:practicalTargetDisplay(practicalConfig)}});
 }
 function verifyProjectModel(project){
   // ANATOMIQ_TRIQUETRUM_REFINEMENT_245: Every historical chapter must be an
@@ -3191,7 +3192,7 @@ function smartFocusGhost(mesh){
   },2700);
   polishOcclusionAt=0;invalidate(3);
 }
-function smartFocusCamera(label){
+function smartFocusCamera(label,{practicalKeepZoom=false,practicalDuration=1000,practicalInstant=false}={}){
   const structure=structures[label.s];
   const mesh=structure?.mesh;
   if(!mesh || !mesh.visible)return false;
@@ -3217,7 +3218,12 @@ function smartFocusCamera(label){
     chosenDistance=Math.max(0.04,label.fd);
     if(Array.isArray(label.ft)&&label.ft.length===3&&label.ft.every(Number.isFinite))
       aim.copy(anchor).add(new THREE.Vector3(...label.ft));
-  }else{
+  }
+  if(practicalKeepZoom){
+    const currentRadius=camera.position.distanceTo(controls.target);
+    if(Number.isFinite(currentRadius)&&currentRadius>0.04)chosenDistance=currentRadius;
+  }
+  if(!custom){
     // Older lessons do not have a saved face normal. Infer front/back from
     // the label's world location relative to the whole anatomical reference.
     sceneRoot.updateWorldMatrix(true,true);
@@ -3231,7 +3237,7 @@ function smartFocusCamera(label){
     let bestScore=Infinity,blocked=null;
     for(let i=0;i<candidates.length;i++){
       const candidate=new THREE.Vector3(...candidates[i]);
-      const from=aim.clone().addScaledVector(candidate,distance);
+      const from=aim.clone().addScaledVector(candidate,chosenDistance);
       const toward=anchor.clone().sub(from);const span=toward.length();
       smartFocusRay.set(from,toward.normalize());
       smartFocusRay.near=0;smartFocusRay.far=Math.max(0.001,span-Math.max(0.003,span*0.01));
@@ -3240,7 +3246,7 @@ function smartFocusCamera(label){
       if(score<bestScore){bestScore=score;direction=candidate;blocked=hits[0]?.object||null;}
       if(!hits.length && i===0)break;
     }
-    if(blocked && (teacherMode||studentExplore))smartFocusGhost(blocked);
+    if(blocked && !practicalActive && (teacherMode||studentExplore))smartFocusGhost(blocked);
     direction=direction||new THREE.Vector3(...radial);
   }
   const destination=(custom?anchor:aim).clone().addScaledVector(direction,chosenDistance);
@@ -3248,7 +3254,10 @@ function smartFocusCamera(label){
   camera.far=Math.max(12,chosenDistance*60);camera.updateProjectionMatrix();
   // Keep the same cancellable, reduced-motion-aware camera animation used by
   // all other orientation buttons. Do not store navigation as scene edits.
-  polishMoveCamera(destination,aim,{duration:1000,save:teacherMode});
+  if(practicalInstant){
+    polishCancelCamera();camera.position.copy(destination);controls.target.copy(aim);
+    camera.updateProjectionMatrix();controls.update();invalidateVisualOnly(2);
+  }else polishMoveCamera(destination,aim,{duration:practicalDuration,save:teacherMode});
   setPresetActive('');
   return true;
 }
@@ -3499,6 +3508,7 @@ function renderAnnotations(){
   invalidate(2);
 }
 function updateAnnotationPositions(){
+  if(practicalActive)return;
   if(__labelAudit.enabled && __labelAudit.mode==='no-labels')return;
   if(document.body.classList.contains('anat-labels-hidden'))return;
   if(!sceneRoot || !labels.length)return;
@@ -3635,7 +3645,7 @@ async function loadProject(data){
   // v1 scene links and v1 saved drafts are automatically treated as one-chapter lessons.
   chapters=(project.v===1?[project]:project.chapters).map(ch=>upgradeLegacyScene(ch,structures.length,sceneFingerprint));
   activeChapter=!teacherMode?0:(project.v===1?0:project.start);
-  practicalConfig=normalPractical(project.v===2?project.practical:null);
+  practicalConfig=normalizePracticalTargetDisplay(project.v===2?project.practical:null);
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode){
     // Old lessons have no 'ot' field: retain the legacy exploration-dependent toolbar.
@@ -3979,7 +3989,7 @@ $('new-project').addEventListener('click',()=>{
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
   restoreBonePaint([]);polishRestoreFade([]);structureNoteOverrides.clear();
   githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;noteLibraryState('Not yet saved to the library.');
-  chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
+  chapters=[];activeChapter=0;practicalConfig=normalizePracticalTargetDisplay(null);practicalNewLabelExpand=null;
   publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);labels=[];labelMode='shown';studentExplore=false;$('student-label-mode').value=labelMode;$('student-explore').checked=false;
   $('project-title').value='Skull exploration';$('scene-title').value='Skull: Exterior';
   Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
@@ -4039,7 +4049,7 @@ window.__AnatomIQWorkspaceBridge={
     restoreBonePaint([]);polishRestoreFade([]);structureNoteOverrides.clear();
     githubEditingRef=null;libraryLessonId=null;lastLibrarySnapshot=null;
     noteLibraryState('Not yet saved to the library.');
-    chapters=[];activeChapter=0;practicalConfig=normalPractical(null);practicalNewLabelExpand=null;
+    chapters=[];activeChapter=0;practicalConfig=normalizePracticalTargetDisplay(null);practicalNewLabelExpand=null;
     publishPermissions={...STUDY_PERMISSIONS};showPublishPermissions(publishPermissions);
     labels=[];labelMode='shown';studentExplore=false;
     $('student-label-mode').value=labelMode;$('student-explore').checked=false;
@@ -4440,6 +4450,126 @@ $('previous-chapter')?.addEventListener('click',event=>{
   if(practicalActive){event.preventDefault();event.stopImmediatePropagation();practicalLeave(true);}
 },true);
 
+// ANATOMIQ_PRACTICAL_QUESTION_CALLOUT_269I_LOCAL1
+// ANATOMIQ_PRACTICAL_LABEL_OCCLUSION_FOCUS_269I_LOCAL2
+// Independent one-question callout. Occlusion matches standard chapter labels;
+// cache the occluder index per question, ray-test only every 110 ms.
+let practicalQuestionCallout=null;
+function practicalTargetDisplay(source){
+  return source?.markerStyle==='yellow-dot'?'yellow-dot':'question-label';
+}
+function normalizePracticalTargetDisplay(source){
+  const normalized=normalPractical(source);
+  // Preexisting saved practicals retain their original yellow-dot presentation.
+  normalized.markerStyle=source && source.on && source.markerStyle===undefined
+    ?'yellow-dot':practicalTargetDisplay(source);
+  return normalized;
+}
+function practicalEnsureQuestionCallout(){
+  if(practicalQuestionCallout)return practicalQuestionCallout;
+  const original=$('label-overlay');
+  if(!original)throw new Error('Chapter label overlay is unavailable.');
+  const root=document.createElement('div');
+  root.id='anat-practical-question-callout';root.className='label-overlay anat-practical-question-callout';
+  root.style.display='none';root.setAttribute('aria-hidden','true');
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.classList.add('label-lines');svg.setAttribute('aria-hidden','true');
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('class','leader-line');
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('r','2.5');dot.setAttribute('class','leader-dot');
+  svg.append(line,dot);
+  const card=document.createElement('div');card.className='anatomy-label anat-practical-question-card';
+  const caption=document.createElement('span');caption.className='callout-text';card.append(caption);
+  root.append(svg,card);
+  original.insertAdjacentElement('afterend',root);
+  practicalQuestionCallout={root,svg,line,dot,card,caption,anchor:null,lastX:NaN,lastY:NaN,
+    occlusionAt:0,occluded:false};
+  return practicalQuestionCallout;
+}
+function practicalHideQuestionCallout(){
+  if(!practicalQuestionCallout)return;
+  practicalQuestionCallout.anchor=null;
+  practicalQuestionCallout.occlusionAt=0;
+  practicalQuestionCallout.occluded=false;
+  practicalQuestionCallout.root.style.display='none';
+  practicalQuestionCallout.root.setAttribute('aria-hidden','true');
+}
+function practicalSetQuestionCallout(question,number,plannedEye=null){
+  practicalHideQuestionCallout();
+  // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5: only teacher-placed labels use callouts.
+  if(question.type!=='label'||practicalTargetDisplay(practicalConfig)!=='question-label')return;
+  const mesh=structures[question.s]?.mesh;
+  if(!mesh || !mesh.visible)return;
+  const state=practicalEnsureQuestionCallout();
+  mesh.updateWorldMatrix(true,false);
+  let anchor;
+  if(question.type==='label' && Array.isArray(question.anchor) && question.anchor.length===3){
+    anchor=mesh.localToWorld(new THREE.Vector3(...question.anchor));
+  }else{
+    const bounds=new THREE.Box3().setFromObject(mesh);
+    if(bounds.isEmpty())return;
+    const center=bounds.getCenter(new THREE.Vector3());
+    // Use the camera's *destination*, not the prior chapter's camera, to pick
+    // the surface. This avoids starting ordinary-mesh questions on the back.
+    const eye=plannedEye||camera.position;
+    const direction=center.clone().sub(eye);
+    if(direction.lengthSq()>1e-9){
+      const ray=new THREE.Raycaster(eye,direction.normalize(),0.001);
+      const hit=ray.intersectObject(mesh,true)[0];
+      anchor=hit?.point?.clone()||center;
+    }else anchor=center;
+  }
+  state.anchor=anchor;
+  state.caption.textContent=`Question ${number}`; // Never place the anatomical answer in student-facing DOM.
+  state.lastX=NaN;state.lastY=NaN;
+  state.occlusionAt=0;state.occluded=false;
+  // Same eligible occluders as chapter labels. Rebuild only once per question,
+  // not on every animation frame; this is important on classroom Chromebooks.
+  polishOccluders=structures.filter(s=>s.mesh.visible && !polishFadedIndices.has(s.index) && !s.mesh.userData.smartLabelGhost).map(s=>s.mesh);
+  polishOcclusionIndex.update(polishOccluders);
+  practicalUpdateQuestionCallout();
+}
+function practicalUpdateQuestionCallout(){
+  const state=practicalQuestionCallout;
+  if(!state?.anchor || !practicalActive || practicalState?.questions?.[practicalState.index]?.type!=='label' || practicalTargetDisplay(practicalConfig)!=='question-label')return;
+  const pt=state.anchor.clone().project(camera);
+  if(pt.z < -1 || pt.z > 1 || Math.abs(pt.x)>1.1 || Math.abs(pt.y)>1.1){
+    state.root.style.display='none';state.root.setAttribute('aria-hidden','true');return;
+  }
+  const now=performance.now();
+  if(now>=state.occlusionAt){
+    state.occlusionAt=now+110; // same 110 ms cadence as chapter-label occlusion
+    const delta=state.anchor.clone().sub(camera.position),distance=delta.length();
+    if(distance<1e-7){state.occluded=true;}
+    else{
+      polishOcclusionRay.set(camera.position,delta.normalize());
+      polishOcclusionRay.near=0;
+      polishOcclusionRay.far=Math.max(0.001,distance-Math.max(0.004,distance*0.006));
+      state.occluded=polishOcclusionIndex.isOccluded(polishOcclusionRay);
+    }
+  }
+  if(state.occluded){
+    state.root.style.display='none';state.root.setAttribute('aria-hidden','true');return;
+  }
+  state.root.style.display='block';state.root.setAttribute('aria-hidden','false');
+  const w=stageWidth,h=stageHeight;
+  if(w<10||h<10)return;
+  const x=(pt.x+1)*w/2,y=(1-pt.y)*h/2;
+  if(Math.abs(x-state.lastX)<0.35 && Math.abs(y-state.lastY)<0.35)return;
+  const cardWidth=state.card.offsetWidth||100,cardHeight=state.card.offsetHeight||28;
+  let bx=x+26,by=y-cardHeight-12;
+  if(bx+cardWidth>w-8)bx=x-cardWidth-26;
+  bx=Math.max(8,Math.min(w-cardWidth-8,bx));
+  by=Math.max(8,Math.min(h-cardHeight-8,by));
+  state.card.style.left=`${bx}px`;state.card.style.top=`${by}px`;
+  const endX=bx>x?bx:bx+cardWidth;
+  const endY=by+cardHeight/2;
+  state.line.setAttribute('x1',String(x));state.line.setAttribute('y1',String(y));
+  state.line.setAttribute('x2',String(endX));state.line.setAttribute('y2',String(endY));
+  state.dot.setAttribute('cx',String(x));state.dot.setAttribute('cy',String(y));
+  state.lastX=x;state.lastY=y;
+}
+// END ANATOMIQ_PRACTICAL_QUESTION_CALLOUT_269I_LOCAL1
+
 // ANATOMIQ_PRACTICAL_2216 — lesson-level teacher editor and student 3D practical.
 function practicalPool(){
   if(!sceneRoot)return [];
@@ -4489,6 +4619,7 @@ function renderPracticalEditor(){
   const opts=$('practical-editor-options');opts.hidden=!practicalConfig.on;
   $('practical-eligible-count').textContent=`${eligible.length} of ${pool.length} eligible targets`;
   $('practical-question-count').value=String(practicalConfig.count);
+  $('practical-marker-style').value=practicalTargetDisplay(practicalConfig);
   $('practical-question-count').max=String(Math.max(1,Math.min(60,eligible.length)));
   $('practical-question-count').disabled=!eligible.length;
   $('practical-warning').textContent=!eligible.length?'Select at least one visible structure or label before publishing a practical.':practicalConfig.count>eligible.length?`Only ${eligible.length} eligible questions; the practical will use all of them.`:'Questions are randomized on every attempt. Labels must identify their anchored structure.';
@@ -4529,6 +4660,10 @@ function practicalBulk(enable){
   practicalConfig.off=[...off];renderPracticalEditor();queueDraft();
 }
 $('practical-enabled')?.addEventListener('change',e=>{practicalConfig.on=e.target.checked;renderPracticalEditor();queueDraft();});
+$('practical-marker-style')?.addEventListener('change',e=>{
+  practicalConfig.markerStyle=practicalTargetDisplay({markerStyle:e.target.value});
+  queueDraft();
+});
 $('practical-question-count')?.addEventListener('change',e=>{
   practicalConfig.count=Math.min(60,Math.max(1,Math.floor(Number(e.target.value)||15)));
   renderPracticalEditor();queueDraft();
@@ -4539,6 +4674,7 @@ $('practical-select-all')?.addEventListener('click',()=>practicalBulk(true));
 $('practical-select-none')?.addEventListener('click',()=>practicalBulk(false));
 
 function practicalClearHighlight(){
+  practicalHideQuestionCallout();
   if(practicalHighlight){
     practicalHighlight.mesh.material=practicalHighlight.original;
     for(const material of practicalHighlight.temporary)material.dispose();
@@ -4547,9 +4683,31 @@ function practicalClearHighlight(){
   if(practicalTargetMarker){scene.remove(practicalTargetMarker);practicalTargetMarker.geometry.dispose();practicalTargetMarker.material.dispose();practicalTargetMarker=null;}
   invalidate(2);
 }
+// ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5
+// Teacher-placed label -> marker only, NEVER recolor the underlying bone.
+// Anatomical mesh -> bone highlight only, regardless of the chosen label style.
+function practicalShouldHighlightMesh(question){return question.type!=='label';}
 function practicalSetHighlight(question){
   const s=structures[question.s];if(!s?.mesh?.visible||s.mesh.userData?.deferredAsset)throw new Error(`Quiz target not rendered: ${question.name}`);
-  const mesh=s.mesh,original=mesh.material;
+  const mesh=s.mesh;
+  if(!practicalShouldHighlightMesh(question)){
+    // The teacher's question-label mode uses the independent occlusion-aware
+    // callout. Yellow-dot mode creates only the existing position marker.
+    if(practicalTargetDisplay(practicalConfig)==='yellow-dot' &&
+       Array.isArray(question.anchor) && question.anchor.length===3 &&
+       question.anchor.every(Number.isFinite)){
+      mesh.updateWorldMatrix(true,false);
+      const anchor=mesh.localToWorld(new THREE.Vector3(...question.anchor));
+      const box=new THREE.Box3().setFromObject(mesh);
+      const radius=Math.max(.004,Math.min(.018,box.getSize(new THREE.Vector3()).length()*.035));
+      practicalTargetMarker=new THREE.Mesh(new THREE.SphereGeometry(radius,12,10),
+        new THREE.MeshBasicMaterial({color:0xffdb5a,depthTest:false}));
+      practicalTargetMarker.position.copy(anchor);practicalTargetMarker.renderOrder=999;
+      scene.add(practicalTargetMarker);
+    }
+    invalidate(2);return;
+  }
+  const original=mesh.material;
   const temporary=(Array.isArray(original)?original:[original]).map(material=>{
     const copy=material?.clone?.()||new THREE.MeshStandardMaterial({color:0x4df0b1});
     if(copy.color?.lerp)copy.color.lerp(new THREE.Color(0x68ffd1),0.65);
@@ -4558,44 +4716,159 @@ function practicalSetHighlight(question){
   });
   mesh.material=Array.isArray(original)?temporary:temporary[0];
   practicalHighlight={mesh,original,temporary};
-  if(question.type==='label'&&Array.isArray(question.anchor)&&question.anchor.length===3){
-    mesh.updateWorldMatrix(true,false);
-    const anchor=mesh.localToWorld(new THREE.Vector3(...question.anchor));
-    const box=new THREE.Box3().setFromObject(mesh);const radius=Math.max(.004,Math.min(.018,box.getSize(new THREE.Vector3()).length()*.035));
-    practicalTargetMarker=new THREE.Mesh(new THREE.SphereGeometry(radius,12,10),new THREE.MeshBasicMaterial({color:0xffdb5a,depthTest:false}));
-    practicalTargetMarker.position.copy(anchor);practicalTargetMarker.renderOrder=999;
-    scene.add(practicalTargetMarker);
-  }
   invalidate(3);
 }
-function practicalPositionCamera(q){
-  const mesh=structures[q.s]?.mesh;if(!mesh)return;
+// ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3
+// The underlying anatomy, not the randomized question number, determines
+// whether the camera can continue its previous orbit without resetting zoom.
+function practicalModelIdentity(q){
+  if(!q || !Number.isInteger(q.chapter))return null;
+  const chapter=chapters[q.chapter],structure=structures[q.s];
+  if(!chapter || !structure)return null;
+  // Changing visible layers/quality changes the active foundational model.
+  // A different saved chapter with matching model layers can still transition
+  // continuously, even if its labels or individual structure visibility differ.
+  const keys=['sb','dm','sm','dg','cv','rs','nv','ur','ly','cn','hd','te','ca'];
+  const layers=keys.map(k=>`${k}:${String(chapter[k]??'default')}`).join('|');
+  return `${chapter.m||'systems'}|${structure.system||'unclassified'}|${layers}`;
+}
+function practicalKeepCurrentView(previous,next){
+  const a=practicalModelIdentity(previous),b=practicalModelIdentity(next);
+  return Boolean(a && b && a===b);
+}
+// END ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3
+// ANATOMIQ_PRACTICAL_CAROUSEL_LOCAL4
+// One question at a time: keep a continuous orbit for nearby targets, but
+// slide two live views when the focus region changes substantially.
+function practicalQuestionWorldPoint(q){
+  const mesh=structures[q?.s]?.mesh;
+  if(!mesh)return null;
+  mesh.updateWorldMatrix(true,false);
+  if(q.type==='label'&&Array.isArray(q.anchor)&&q.anchor.length===3&&q.anchor.every(Number.isFinite))
+    return mesh.localToWorld(new THREE.Vector3(...q.anchor));
+  const bounds=new THREE.Box3().setFromObject(mesh);
+  return bounds.isEmpty()?null:bounds.getCenter(new THREE.Vector3());
+}
+function practicalCameraPlan(previous,next){
+  if(!previous)return {carousel:false,keepView:false,reason:'first'};
+  if(!practicalKeepCurrentView(previous,next))
+    return {carousel:true,keepView:false,reason:'different model/layers'};
+  // Different markings on the very same bone always keep the smooth orbit.
+  if(previous.s===next.s)return {carousel:false,keepView:true,reason:'same bone'};
+  const a=practicalQuestionWorldPoint(previous),b=practicalQuestionWorldPoint(next);
+  if(!a||!b)return {carousel:false,keepView:true,reason:'unknown anchors'};
+  const radius=Math.max(0.15,camera.position.distanceTo(controls.target));
+  // Region changes, not tiny adjacent bone markings, should slide. At a
+  // typical close-up radius, radius→tarsal clears this threshold easily.
+  const distant=a.distanceTo(b)>Math.max(0.24,radius*1.8);
+  return {carousel:distant,keepView:!distant,reason:distant?'distant targets':'nearby targets'};
+}
+function practicalFadeQuestionArrival(){
+  const root=practicalQuestionCallout?.root;
+  if(!root||root.style.display==='none'||document.hidden||
+     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+  try{root.animate?.([{opacity:0},{opacity:1}],{duration:280,easing:'ease-out'});}
+  catch(error){console.warn('Practical question label fade unavailable',error);}
+}
+// END ANATOMIQ_PRACTICAL_CAROUSEL_LOCAL4
+function practicalFocusViewForQuestion(q){
+  if(q.type!=='label'||!Array.isArray(q.anchor)||q.anchor.length!==3)return null;
+  const near=(a,b)=>Array.isArray(a)&&a.length===3 &&
+    a.every((v,i)=>Number.isFinite(v)&&Math.abs(v-b[i])<0.001);
+  // applyScene() has already installed this chapter's labels into `labels`.
+  const source=labels.find(l=>l.s===q.s && near(l.p,q.anchor));
+  if(source)return source; // preserves the teacher's custom focus view
+  // Some group annotations point to a secondary anchor. Reuse the surface
+  // and facing rule, but avoid applying a different anchor's saved offset.
+  const group=labels.find(l=>Array.isArray(l.g)&&l.g.some(a=>a.s===q.s&&near(a.p,q.anchor)));
+  if(group)return {s:q.s,p:q.anchor};
+  return {s:q.s,p:q.anchor}; // automatic standard-label focus for legacy items
+}
+function practicalPositionCamera(q,{keepView=false,instant=false}={}){
+  const label=practicalFocusViewForQuestion(q);
+  if(label && smartFocusCamera(label,{practicalKeepZoom:keepView,practicalDuration:keepView?720:1000,practicalInstant:instant}))return null;
+  const mesh=structures[q.s]?.mesh;if(!mesh)return null;
   const box=new THREE.Box3().setFromObject(mesh);
   if(box.isEmpty())return;
   const center=box.getCenter(new THREE.Vector3());
   const radius=box.getBoundingSphere(new THREE.Sphere()).radius;
   const c=chapters[q.chapter]?.cam||[];
-  const dir=new THREE.Vector3((c[0]||0)-(c[3]||0),(c[1]||0)-(c[4]||0),(c[2]||1)-(c[5]||0));
+  const dir=keepView?camera.position.clone().sub(controls.target):
+    new THREE.Vector3((c[0]||0)-(c[3]||0),(c[1]||0)-(c[4]||0),(c[2]||1)-(c[5]||0));
   if(dir.lengthSq()<0.001)dir.set(0,0,1);
-  const distance=Math.max(0.16,Math.min(6,radius*4.3));
-  polishMoveCamera(center.clone().addScaledVector(dir.normalize(),distance),center,{duration:340,save:false});
+  const distance=keepView?Math.max(0.04,camera.position.distanceTo(controls.target)):
+    Math.max(0.16,Math.min(6,radius*4.3));
+  const destination=center.clone().addScaledVector(dir.normalize(),distance);
+  if(instant){
+    polishCancelCamera();camera.position.copy(destination);controls.target.copy(center);
+    camera.updateProjectionMatrix();controls.update();invalidateVisualOnly(2);
+  }else polishMoveCamera(destination,center,{duration:keepView?720:340,save:false});
+  return destination;
 }
 async function practicalShowQuestion(){
   if(!practicalActive||!practicalState)return;
   const index=practicalState.index,q=practicalState.questions[index];
   if(!q)return;
   practicalClearHighlight();
+  practicalHideQuestionCallout();
   practicalBusy=true;
   const status=$('practical-message');status.textContent='Preparing 3D target…';
   $('practical-next').disabled=true;
+  let practicalCarouselControlsEnabled=null;
+  let practicalCarouselArrival=false;
   try{
     await ensureChapterAssets(chapters[q.chapter]);
     if(!practicalActive||!practicalState||practicalState.index!==index)return;
+    const practicalPlan=practicalCameraPlan(practicalState.lastShownQuestion,q);
+    const keepView=practicalPlan.keepView;
+    const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    let practicalCarousel=null;
+    if(practicalPlan.carousel&&!reducedMotion&&!document.hidden&&!__anat256LiveCarousel){
+      try{
+        polishCancelCamera();
+        shadows.update(camera,controls.target,true);
+        practicalCarousel=createLiveChapterCarousel({
+          THREE,scene,camera,renderer,stage:elements.stage,direction:1,
+          skipLabelFade:true, // Practical has its own single question callout
+          onSettled:()=>{
+            shadows.update(camera,controls.target,true);
+            __anat268DOF.onChapterSettled();
+            __anat268DOF.render(scene,camera);
+          }
+        });
+        if(practicalCarousel){
+          __anat256LiveCarousel=practicalCarousel;
+          __anat254IrisBusy=true;
+          practicalCarouselControlsEnabled=controls.enabled;
+          controls.enabled=false;
+          document.body.classList.add('practical-carousel-transition');
+        }
+      }catch(error){console.warn('Practical live carousel unavailable; showing target normally',error);}
+    }
+    // Save the live orbit immediately before changing chapters: applyScene()
+    // restores its recorded starting camera even when the anatomy is the same.
+    const fromEye=keepView?camera.position.clone():null;
+    const fromTarget=keepView?controls.target.clone():null;
     await applyScene(chapters[q.chapter]);
     if(!practicalActive||!practicalState||practicalState.index!==index)return;
-    practicalSetHighlight(q);practicalPositionCamera(q);
+    if(keepView && fromEye && fromTarget){
+      polishCancelCamera();
+      camera.position.copy(fromEye);controls.target.copy(fromTarget);
+      camera.updateProjectionMatrix();controls.update();
+    }
+    practicalSetHighlight(q);
+    const plannedEye=practicalPositionCamera(q,{keepView,instant:Boolean(practicalCarousel)});
+    if(practicalCarousel){
+      shadows.update(camera,controls.target,true);
+      // No label raycasts or DOF processing per carousel frame.
+      await practicalCarousel.play(scene,camera);
+      if(!practicalActive||!practicalState||practicalState.index!==index)return;
+    }
+    practicalSetQuestionCallout(q,index+1,plannedEye);
+    if(practicalCarousel)practicalCarouselArrival=true;
+    practicalState.lastShownQuestion=q;
     $('practical-progress').textContent=`QUESTION ${index+1} OF ${practicalState.questions.length}`;
-    status.textContent=q.type==='label'?'Identify the structure indicated by the highlighted marker.':'Identify the highlighted anatomical structure.';
+    status.textContent=q.type!=='label'?'Identify the highlighted anatomical structure.':practicalTargetDisplay(practicalConfig)==='question-label'?`Identify the structure indicated by Question ${index+1}.`:'Identify the structure indicated by the yellow marker.';
     const options=$('practical-options');options.replaceChildren();
     practicalState.selected=null;
     q.choices.forEach((name,i)=>{
@@ -4612,7 +4885,19 @@ async function practicalShowQuestion(){
     $('practical-next').textContent=index===practicalState.questions.length-1?'Finish practical':'Next question →';
     $('practical-question-content').hidden=false;$('practical-results').hidden=true;
   }catch(error){console.error('AnatomIQ Practical target failed',error);showToast(error.message);practicalLeave(true);}
-  finally{practicalBusy=false;}
+  finally{
+    // The main draw loop is suspended during the live two-scene slide.
+    // Always return rendering, orbit controls and overlay to normal state.
+    if(__anat256LiveCarousel && document.body.classList.contains('practical-carousel-transition')){
+      __anat256LiveCarousel.remove();__anat256LiveCarousel=null;
+      if(practicalCarouselControlsEnabled!==null)controls.enabled=practicalCarouselControlsEnabled;
+      __anat254IrisBusy=false;
+      document.body.classList.remove('practical-carousel-transition');
+      practicalUpdateQuestionCallout();invalidateVisualOnly(2);
+    }
+    if(practicalCarouselArrival)practicalFadeQuestionArrival();
+    practicalBusy=false;
+  }
 }
 let studentPracticalChapterScope='all';
 let studentPracticalSetupOpening=false;

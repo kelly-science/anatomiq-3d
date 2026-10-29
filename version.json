@@ -1,6 +1,6 @@
 {
-  "version": "2.2.69h",
+  "version": "2.2.69i",
   "channel": "beta",
   "published": "2026-10-28",
-  "notes": "Cinematic chapter transitions: staggered label and connector-line reveals, with progressively spaced timing, per-label jitter, and reduced-motion handling. Preserves 2.2.69g DOF, transparency, lighting, and model loading."
+  "notes": "Practical presentations: selectable question-label/yellow-dot markers for teacher-placed labels, occlusion-aware focus views, whole-bone highlighting without labels, continuous camera motion for nearby targets, and live carousel transitions between distant targets. Preserves 2.2.69h cascading chapter labels, cinematic DOF, lighting, model assets, and saved lessons."
 }
