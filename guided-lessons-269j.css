@@ -1,0 +1,39 @@
+/* ANATOMIQ_GUIDED_ACTIVITIES_269J — isolated, no WebGL/material changes. */
+#anat-guided-teacher {margin-top:12px}
+#anat-guided-teacher .anat-ga-settings {display:flex;align-items:center;justify-content:space-between;gap:12px}
+#anat-guided-teacher .anat-ga-buttons {display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}
+#anat-guided-teacher .anat-ga-editor-item {border:1px solid rgba(130,154,169,.3);border-radius:10px;padding:10px;margin:10px 0;background:rgba(128,150,168,.06)}
+.anat-ga-editor-header {display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.anat-ga-editor-header strong {flex:1;font-size:13px}
+.anat-ga-field {display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:12px;font-weight:600}
+.anat-ga-field .text-input {font-weight:400;min-width:0;max-width:100%}
+.anat-ga-mc-choice {display:flex;align-items:center;gap:7px;margin:5px 0}
+.anat-ga-mc-choice input.text-input {flex:1;min-width:0}
+#anat-guided-student[hidden],#anat-guided-teacher[hidden] {display:none!important}
+#anat-guided-student {position:absolute;right:14px;top:91px;z-index:65;width:min(335px,calc(100% - 28px));max-height:min(70vh,620px);overflow:auto;box-sizing:border-box;border-radius:15px;padding:15px;
+background:rgba(21,31,44,.95);color:#f1f6fc;border:1px solid rgba(182,211,232,.22);box-shadow:0 14px 35px rgba(0,0,0,.38);backdrop-filter:blur(14px)}
+#anat-guided-student h3 {font-size:17px;line-height:1.3;margin:10px 0}
+#anat-guided-student p {font-size:13px;line-height:1.5;margin:9px 0;color:#dce8f0}
+#anat-guided-student small {font-size:11px;color:#b7cad9}
+.anat-ga-head {display:flex;align-items:center;justify-content:space-between;gap:7px;border-bottom:1px solid rgba(226,241,252,.17);padding-bottom:10px}
+.anat-ga-choices {display:grid;gap:7px;margin-top:11px}
+.anat-ga-choices .button {text-align:left;white-space:normal;min-height:40px}
+.anat-ga-help {font-size:12px!important;color:#b6dce7!important}
+.anat-ga-feedback {padding:9px;border-radius:8px;background:rgba(130,160,185,.16)}
+.anat-ga-feedback.is-good {border-left:3px solid #5fd1b2}
+.anat-ga-feedback.is-error {border-left:3px solid #f0af68}
+.anat-ga-footer {display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:10px;border-top:1px solid rgba(226,241,252,.17)}
+.anat-ga-link {border:none;background:none;color:#bcddec;font:inherit;font-size:11px;cursor:pointer;text-decoration:underline}
+.anat-ga-complete .button {margin:10px 0}
+body.practical-active #anat-guided-student {display:none!important}
+body.anat-guided-identify #label-markers,body.anat-guided-identify #label-lines,body.anat-guided-identify #polish-student-labels,body.anat-guided-identify #anat-student-label-list-button {visibility:hidden!important;pointer-events:none!important}
+@media(max-width:700px){#anat-guided-student{top:auto;bottom:85px;right:8px;width:min(345px,calc(100% - 16px));max-height:48vh;padding:12px}}
+@media(prefers-reduced-motion:reduce){#anat-guided-student{scroll-behavior:auto}}
+
+body.anat-guided-identify #selection-content {display:none!important}
+
+/* Explore movement gate: lightweight CSS progress indicator; no 3D redraws. */
+.anat-ga-rotation-track{width:100%;height:9px;border-radius:99px;overflow:hidden;background:rgba(180,205,220,.22);margin:10px 0 4px}
+.anat-ga-rotation-progress{height:100%;border-radius:inherit;background:#70d2c0;transition:width .14s ease-out}
+.anat-ga-rotation-status{font-size:12px!important;color:#bddacb!important;margin:2px 0 10px!important;font-variant-numeric:tabular-nums}
+#anat-guided-student #anat-ga-explore:disabled{opacity:.52;cursor:not-allowed}

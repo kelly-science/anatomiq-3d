@@ -2,6 +2,7 @@
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=269j-guided-lessons'; // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
@@ -33,7 +34,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=260';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=269j-guided-lessons';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -51,7 +52,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.69i'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.69j'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -236,6 +237,23 @@ let chapters = [];
 let structureNoteOverrides=new Map(); // ANATOMIQ_LESSON_EXPERIENCE_249
 let practicalConfig=normalizePracticalTargetDisplay(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
 let activeChapter = 0;
+// Local guided-chapter pilot with measured Explore rotation. Separate from the practical engine and 3D rendering.
+const guided=createGuidedLessons({
+  isTeacher:()=>teacherMode,isPractical:()=>practicalActive,getChapter:()=>activeChapter,
+  getChapters:()=>chapters,getProjectTitle:()=>$('project-title').value,
+  getSelectedStructure:()=>selected,getCamera:()=>camera,getOrbitTarget:()=>controls.target,
+  getCanvasRect:()=>renderer.domElement.getBoundingClientRect(),
+  getLabel:(qi)=>labels.find(l=>l.qi===qi),
+  getLabelAnchor:(qi)=>{const l=labels.find(v=>v.qi===qi);return l?smartLabelAnchor(l):null;},
+  // ANATOMIQ_GUIDED_IDENTIFY_VISIBLE_SEARCH_269J2: chapter visibility, not whole-atlas inventory.
+  // chapterStructureVisible ignores temporary inspection masks and respects this chapter's
+  // system layers, hidden structures, tissue options and unavailable/deferred assets.
+  getTargets:()=>[
+    ...labels.filter(l=>chapterStructureVisible(structures[l.s])).map(l=>({key:'l:'+l.qi,label:'Teacher label: '+l.t})),
+    ...structures.filter(s=>chapterStructureVisible(s)).map(s=>({key:'s:'+s.index,label:'Structure: '+s.name+(s.side&&s.side!=='midline'?' ('+s.side+')':'')}))
+  ],
+  onTeacherChange:()=>queueDraft(),goChapter:(index)=>{void switchChapter(index);},notify:showToast
+});
 const markers = new Map();
 const labelSVG = $('label-lines');
 const labelContainer = $('label-markers');
@@ -1397,6 +1415,8 @@ renderer.domElement.addEventListener('pointerup',event=>{
     if(!placingLabel && !paintMode){isolated=false;setSelection(null);}
     return;
   }
+  const guidedStructure=structures.find(x=>x.mesh===hit.object);
+  if(!teacherMode && guided.handlePick(guidedStructure?.index??null,hit.point))return;
   if(!teacherMode && !studentPermissions.sn)return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
@@ -2716,7 +2736,7 @@ function snapshotProject(){
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
   if(teacherMode)publishPermissions={...currentPublishPermissions()};
-  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:{...normalPractical(practicalConfig),markerStyle:practicalTargetDisplay(practicalConfig)}});
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:{...normalPractical(practicalConfig),markerStyle:practicalTargetDisplay(practicalConfig)},guided:guided.serialize()});
 }
 function verifyProjectModel(project){
   // ANATOMIQ_TRIQUETRUM_REFINEMENT_245: Every historical chapter must be an
@@ -2775,7 +2795,8 @@ function renderChapterUI(){
     const tab=document.createElement('button');tab.className='chapter-tab practical-chapter-tab'+(practicalActive?' active':'');tab.type='button';
     tab.textContent='Practical';tab.setAttribute('aria-current',practicalActive?'step':'false');tab.addEventListener('click',()=>{if(!practicalActive)void startPractical();});tabs.append(tab);
   }
-  if(teacherMode)renderPracticalEditor();
+  if(teacherMode){renderPracticalEditor();guided.renderTeacher();}
+  else guided.renderStudent();
   if(!teacherMode)return;
   const list=$('teacher-chapter-list');list.replaceChildren();
   chapters.forEach((ch,i)=>{
@@ -2824,6 +2845,7 @@ function polishRevealChapter(layer){
  installChapterTransitionMenus();
 
 async function switchChapter(index){
+  if(!teacherMode&&!guided.canAdvance(index)){guided.focusPanel();return;}
   if(__anat254IrisBusy || !sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
   if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
   clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
@@ -2866,6 +2888,7 @@ async function switchChapter(index){
     polishCancelCamera();
     activeChapter=index;
     await applyScene(chapters[activeChapter]);
+    guided.onChapterChanged();
     renderChapterUI();
     if(!teacherMode)studentHistoryBegin();
   }finally{
@@ -2905,6 +2928,7 @@ function createChapter(duplicate){
     fresh.t=`Chapter ${chapters.length+1}`;
     if(!duplicate)fresh.labels=[];
     chapters.splice(activeChapter+1,0,fresh);
+    guided.addChapter(activeChapter,duplicate);
     if(Array.isArray(practicalConfig.chapters)){const at=activeChapter;practicalConfig.chapters=practicalConfig.chapters.map(i=>i>at?i+1:i);if(duplicate&&practicalConfig.chapters.includes(at))practicalConfig.chapters.push(at+1);}
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     activeChapter++;
@@ -2915,6 +2939,7 @@ function moveChapter(index,step){
   if(!teacherMode || index+step<0 || index+step>=chapters.length)return;
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   [chapters[index],chapters[index+step]]=[chapters[index+step],chapters[index]];
+  guided.moveChapter(index,step);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.map(i=>i===index?index+step:i===index+step?index:i);
   if(activeChapter===index)activeChapter=index+step;
   else if(activeChapter===index+step)activeChapter=index;
@@ -2924,6 +2949,7 @@ async function deleteChapter(index){
   if(!teacherMode || chapters.length===1 || !confirm(`Delete chapter "${chapters[index].t}"? This removes its labels and bone settings from this draft.`))return;
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   chapters.splice(index,1);
+  guided.deleteChapter(index);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.filter(i=>i!==index).map(i=>i>index?i-1:i);
   if(activeChapter>index)activeChapter--;
   else if(activeChapter===index)activeChapter=Math.min(index,chapters.length-1);
@@ -3660,6 +3686,7 @@ async function loadProject(data){
   else showPublishPermissions(publishPermissions);
   $('project-title').value=project.t;
   await applyScene(chapters[activeChapter]);
+  await guided.load(project.v===2?project.guided:null,project);
   renderChapterUI();
   if(!teacherMode){applyStudentPermissions();studentHistoryBegin();}
   document.title=project.t+' • AnatomIQ Studio';
@@ -3977,6 +4004,10 @@ $('scene-title').addEventListener('input',()=>{if(chapters.length){chapters[acti
 $('project-title').addEventListener('input',queueDraft);
 $('previous-chapter').addEventListener('click',()=>switchChapter(activeChapter-1));
 $('next-chapter').addEventListener('click',()=>switchChapter(activeChapter+1));
+// Guided Explore requires a genuine OrbitControls user gesture.
+controls.addEventListener('start',()=>guided.onOrbitStart());
+controls.addEventListener('change',()=>guided.onOrbitChange());
+controls.addEventListener('end',()=>guided.onOrbitEnd());
 $('add-chapter').addEventListener('click',()=>createChapter(false));
 $('duplicate-chapter').addEventListener('click',()=>createChapter(true));
 $('polish-publish-controls')?.appendChild(document.querySelector('.publish-options'));
@@ -3995,7 +4026,7 @@ $('new-project').addEventListener('click',()=>{
   Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
    legacyEyeVisibilityPending=false;
   elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
-  renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();saveDraft(false);resetHistory();
+  renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];guided.resetTeacher();renderChapterUI();saveDraft(false);resetHistory();
 });
 $('export-project').addEventListener('click',()=>{
   try{
@@ -4057,7 +4088,9 @@ window.__AnatomIQWorkspaceBridge={
     Object.assign(systemLayers,{skeletal:true,deep:false,superficial:true,digestive:false,cardiovascular:false,respiratory:false,nervous:false,urinary:false,lymphatic:false,connective:true,ocular:false});
     legacyEyeVisibilityPending=false;
     elements.teeth.checked=true;elements.cartilage.checked=true;setMode('skull');
-    renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];renderChapterUI();
+    renderAnnotations();renderLabelEditor();chapters=[snapshotScene()];
+    guided.resetTeacher(); // ANATOMIQ_GUIDED_WORKSPACE_BLANK_FIX_269J1: match the blank lesson's chapter count before save/history
+    renderChapterUI();
     resetHistory();saveDraft(false);
     document.title='New lesson • AnatomIQ Studio';
     return this.capture();
@@ -4921,7 +4954,7 @@ async function startPractical(chapterChoice=undefined){
   const qs=practicalAttempt(practicalPool(),structures,scopedConfig);
   studentPracticalChapterScope=chapterChoice;
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
-  practicalActive=true;practicalState={questions:qs,index:0,answers:[],selected:null};
+  practicalActive=true;guided.renderStudent();practicalState={questions:qs,index:0,answers:[],selected:null};
   setSelection(null);
   document.body.classList.add('practical-active');
   $('practical-panel').hidden=false;
@@ -4930,7 +4963,7 @@ async function startPractical(chapterChoice=undefined){
 }
 function practicalLeave(restoreChapter=false){
   practicalClearHighlight();practicalActive=false;practicalState=null;practicalBusy=false;
-  document.body.classList.remove('practical-active');$('practical-panel').hidden=true;
+  guided.renderStudent();document.body.classList.remove('practical-active');$('practical-panel').hidden=true;
   if(restoreChapter&&chapters[activeChapter])void applyScene(chapters[activeChapter]).then(renderChapterUI).catch(console.warn);
   else renderChapterUI();
 }
