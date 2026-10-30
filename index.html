@@ -454,13 +454,35 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
  <div id="practical-candidate-list" class="practical-candidate-list"></div>
  <small id="practical-candidate-footer" class="studio-hint"></small>
  </div></div></details></section>
+<!-- ANATOMIQ_GUIDED_CONTROLS_UI_269J_LOCAL: visual hierarchy only; original bindings preserved. -->
 <section id="anat-guided-teacher" class="annotation-editor teacher-only" aria-label="Guided chapter activities">
-  <details><summary>Guided Chapter Activities</summary>
-    <div class="anat-ga-settings"><label for="anat-ga-free">Explore Freely <small>Disable all student activities without deleting them</small></label><input type="checkbox" id="anat-ga-free"></div>
-    <p class="studio-hint">Create activities in each chapter. Students complete them before advancing; use Explore Freely for independent review.</p>
-    <strong id="anat-ga-title">Chapter activities</strong>
-    <div class="anat-ga-buttons"><button type="button" class="button small" data-anat-add="explore">+ Explore</button><button type="button" class="button small" data-anat-add="identify">+ Identify</button><button type="button" class="button small" data-anat-add="mc">+ Multiple Choice</button></div>
-    <small id="anat-ga-count">0 activities</small><div id="anat-ga-list"></div>
+  <details class="anat-ga-panel">
+    <summary class="anat-ga-panel-summary">
+      <span class="anat-ga-summary-copy"><strong>Guided Activities</strong><small>Interactive chapter tasks</small></span>
+    </summary>
+    <div class="anat-ga-content">
+      <div class="anat-ga-block anat-ga-mode-block">
+        <div class="anat-ga-eyebrow">STUDENT EXPERIENCE</div>
+        <label for="anat-ga-free" class="anat-ga-free-control">
+          <input type="checkbox" id="anat-ga-free">
+          <span class="anat-ga-free-copy"><strong>Explore freely</strong><small>Turn on to hide activities in Student View. Your activities stay saved.</small></span>
+        </label>
+      </div>
+      <div class="anat-ga-block anat-ga-activity-block">
+        <div class="anat-ga-eyebrow">CHAPTER SETUP</div>
+        <strong id="anat-ga-title" class="anat-ga-chapter-title">Chapter activities</strong>
+        <p class="anat-ga-instructions">Students complete these tasks before advancing to the next chapter.</p>
+        <div class="anat-ga-create-header">Add activity</div>
+        <div class="anat-ga-buttons anat-ga-create-actions">
+          <button type="button" class="button small" data-anat-add="explore">+ Explore</button>
+          <button type="button" class="button small" data-anat-add="identify">+ Identify</button>
+          <button type="button" class="button small" data-anat-add="mc">+ Multiple Choice</button>
+        </div>
+        <div class="anat-ga-count-row"><span>Created this chapter</span><small id="anat-ga-count">0 of 12 activities</small></div>
+        <div id="anat-ga-list"></div>
+        <p class="anat-ga-empty">No activities yet. Choose an activity type above to get started.</p>
+      </div>
+    </div>
   </details>
 </section>
 <section id="polish-student-controls" class="annotation-editor teacher-only" aria-label="Student controls">
@@ -725,7 +747,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
     </section>
   </div>
   <div id="app-toast" class="app-toast" role="status" hidden></div>
-  <link rel="stylesheet" href="./guided-lessons-269j.css?rev=269j-guided-lessons" />
+  <link rel="stylesheet" href="./guided-lessons-269j.css?rev=269j-guided-controls-ui-local" />
   <script type="module">
     // Installer changes the static import map to local files after they are downloaded.
     // Keep the import map before module execution for older managed Chromebooks.
