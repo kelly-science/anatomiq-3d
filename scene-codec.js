@@ -142,7 +142,7 @@ export function validatePermissions(p){
 }
 /** Projects contain one or more complete scene snapshots; old v1 single-scene links remain valid. */
 // ANATOMIQ_GUIDED_ACTIVITIES_269J — import-time shape validation also covers student links.
-import {validateGuided} from './guided-lessons-269j.mjs?rev=269j-guided-lessons';
+import {validateGuided} from './guided-lessons-269j.mjs?rev=270-guided-controls';
 export function validateProject(project) {
   if (project?.v === 1) return validateScene(project);
   if (!project || typeof project !== 'object' || Array.isArray(project) || project.v !== 2) throw new Error('This project format is unsupported.');
