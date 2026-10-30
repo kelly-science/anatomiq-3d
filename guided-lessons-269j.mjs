@@ -1,6 +1,8 @@
 // AnatomIQ Guided Chapter Activities — local 2.2.69i pilot.
 // No network, analytics, authentication, or model changes.
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
+import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
+const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
 export const GUIDED_TYPES = Object.freeze(['explore','identify','mc']);
 const MAX_STEPS = 12;
 // ANATOMIQ_GUIDED_IDENTIFY_VISIBLE_SEARCH_269J2: pure search helper (no render loop work).
@@ -79,6 +81,7 @@ export function validateGuided(input, count){
           throw Error('Choose a valid Explore rotation requirement.');
       }
       if(a.type==='identify' && !(Number.isInteger(a.targetStructure)&&a.targetStructure>=0&&a.targetStructure<2000 &&
+        (a.targetGroup===undefined||a.targetGroup===null||typeof a.targetGroup==='string'&&KNOWN_MUSCLE_GROUP_IDS.has(a.targetGroup)&&!a.targetLabel) &&
         (a.targetLabel===null||a.targetLabel===undefined||typeof a.targetLabel==='string'&&/^q-[0-9A-Za-z-]{4,62}$/.test(a.targetLabel))))
         throw Error('Choose a valid structure or teacher label for Identify.');
       if(a.type==='mc' && (!Array.isArray(a.options)||a.options.length<2||a.options.length>4||
@@ -245,7 +248,7 @@ export function createGuidedLessons(api){
         const status=document.createElement('small');status.className='anat-ga-target-status';status.setAttribute('role','status');
         const choices=api.getTargets();
         const redraw=()=>{
-          const selectedKey=a.targetLabel?`l:${a.targetLabel}`:`s:${a.targetStructure}`;
+          const selectedKey=a.targetGroup?`g:${a.targetGroup}`:a.targetLabel?`l:${a.targetLabel}`:`s:${a.targetStructure}`;
           const selectedTarget=choices.find(c=>c.key===selectedKey);
           const matches=searchIdentifyTargets(choices,search.value);
           select.replaceChildren();
@@ -270,8 +273,9 @@ export function createGuidedLessons(api){
         select.addEventListener('change',()=>{
           const key=select.value;if(!key)return;
           const [kind,val]=key.split(':');
-          if(kind==='s'){a.targetStructure=Number(val);a.targetLabel=null;}
-          else {const labelData=api.getLabel(val);if(!labelData)return;a.targetStructure=labelData.s;a.targetLabel=val;}
+          if(kind==='s'){a.targetStructure=Number(val);a.targetLabel=null;a.targetGroup=null;}
+          else if(kind==='g'){const group=api.getMuscleGroup(val);if(!group)return;a.targetStructure=group.members[0].index;a.targetLabel=null;a.targetGroup=val;}
+          else {const labelData=api.getLabel(val);if(!labelData)return;a.targetStructure=labelData.s;a.targetLabel=val;a.targetGroup=null;}
           api.onTeacherChange();
           // Selection changed: refresh the visible choice list without rebuilding the editor.
           status.textContent='Target selected. '+choices.length+' visible targets in this chapter.';
@@ -365,8 +369,14 @@ export function createGuidedLessons(api){
   function handlePick(index,point){
     if(!student()||!ready||!guided()||api.isPractical())return false;
     const a=currentActivity();if(a?.type!=='identify')return false;
-    let valid=index===a.targetStructure;
-    if(valid&&a.targetLabel){const label=api.getLabel(a.targetLabel);const anchor=api.getLabelAnchor(a.targetLabel);
+    // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1: teacher-created multi-anchor labels
+    // accept clicks on any original member mesh (not just the first anchor).
+    const chosenLabel=a.targetLabel?api.getLabel(a.targetLabel):null;
+    const groupAnchors=Array.isArray(chosenLabel?.g)&&chosenLabel.g.length?chosenLabel.g:null;
+    const nativeGroup=a.targetGroup?api.getMuscleGroup(a.targetGroup):null;
+    let valid=nativeGroup?nativeGroup.members.some(s=>s.index===index):
+      groupAnchors?[chosenLabel.s,...groupAnchors.map(v=>v.s)].includes(index):index===a.targetStructure;
+    if(valid&&a.targetLabel&&!groupAnchors){const label=api.getLabel(a.targetLabel);const anchor=api.getLabelAnchor(a.targetLabel);
       if(!label||!anchor||!point)valid=false;
       else {const camera=api.getCamera();const rect=api.getCanvasRect();
         const a2=anchor.clone().project(camera),p2=point.clone().project(camera);

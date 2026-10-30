@@ -80,6 +80,8 @@ export function validateScene(scene) {
       }
     }else if(label.gn!==undefined)throw new Error('Invalid group label number without group anchors.');
   }
+  // ANATOMIQ_MUSCLE_NATIVE_270: optional stable catalog identity for multi-anchor labels.
+  for(const label of scene.labels)if(label.mg!==undefined && (!label.g||typeof label.mg!=='string'||!(/^[a-z0-9-]{4,65}$/.test(label.mg))))throw new Error('Invalid whole-muscle label identity.');
   for(const label of scene.labels)if(label.qi!==undefined && (typeof label.qi!=='string'||!/^q-[0-9A-Za-z-]{4,62}$/.test(label.qi)))throw new Error('Invalid quiz label ID.');
   // Optional label study notes/photos and per-chapter faded structure IDs.
   for(const label of scene.labels){

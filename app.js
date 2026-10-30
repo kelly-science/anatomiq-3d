@@ -2,7 +2,8 @@
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=270-guided-controls'; // ANATOMIQ_GUIDED_ACTIVITIES_269J
+import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=270-native-muscles-local'; // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
@@ -34,7 +35,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=270-guided-controls';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=270-native-muscles-local';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -161,6 +162,110 @@ let isolated = false;
 // ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
 let structures = [];
+// ANATOMIQ_MUSCLE_GROUPS_270_STAGE1: Read-only parent groups from source-native muscle mesh names.
+// All IDs stay intact; group multi-selection is transient, labels use native group anchors.
+let muscleGroups=[];
+let activeMuscleGroup=null;
+let muscleGroupPanelOpen=true; // ANATOMIQ_WHOLE_MUSCLES_VISIBLE_270 — show catalog expanded on first use
+function muscleGroupSelect(group){
+  if(!group.ready || (!teacherMode && (!studentPermissions.st||!studentPermissions.sn||practicalActive)))return;
+  const eligible=group.members.filter(s=>chapterStructureVisible(s)&&s.mesh.visible);
+  if(eligible.length!==group.members.length){showToast('Reveal all muscle parts before selecting the whole muscle.');return;}
+  clearMultiHighlights();multiSelectedIndices.clear();
+  for(const s of eligible)multiSelectedIndices.add(s.index);
+  isolated=false;activeMuscleGroup=group.name;setSelection(eligible[0],true);focusSelected();
+  showToast(group.name+' · '+eligible.length+' component meshes selected.');
+}
+function muscleGroupReveal(group){
+  if(!teacherMode||!group.ready)return;
+  if(!['muscular','systems'].includes(mode))mode='systems'; // Teacher explicitly requested to reveal this muscle.
+  // An explicit teacher action: show each component without changing other systems.
+  systemLayers.superficial=true;systemLayers.deep=true;
+  for(const s of group.members)hidden.delete(s.mesh);
+  isolated=false;
+  updateSystemControls();updateLayerHeading();refreshVisibility();
+  showToast(group.name+' · all '+group.members.length+' parts revealed. Save your chapter to publish.');
+}
+function muscleGroupAnchor(s){
+  const geometry=s.mesh.geometry;
+  if(!geometry)return null;
+  if(!geometry.boundingBox)geometry.computeBoundingBox();
+  if(!geometry.boundingBox||geometry.boundingBox.isEmpty())return null;
+  const p=geometry.boundingBox.getCenter(new THREE.Vector3());
+  return {s:s.index,p:p.toArray().map(n=>round(n,5))};
+}
+function muscleGroupCreateLabel(group){
+  if(!teacherMode||!group.ready||!group.members.every(chapterStructureVisible)){
+    showToast('Reveal all components before adding the whole-muscle label.');return;
+  }
+  if(labels.length>=64){showToast('Maximum 64 annotations per chapter.');return;}
+  const anchors=group.members.map(muscleGroupAnchor);
+  if(anchors.some(a=>!a)){showToast('One muscle part has no usable geometry for a label.');return;}
+  // A standard multi-anchor teacher label: supported by saved lessons, Practical,
+  // student label navigation and Guided Identify (no virtual mesh index is saved).
+  const [first,...rest]=anchors;
+  const label={id:++labelSequence,qi:newPracticalLabelId(),...first,g:rest,
+    gn:groupLabelNumber(),mg:group.id,t:group.name,dx:24,dy:-31};
+  labels.push(label);practicalNewLabelExpand=label.id;
+  renderAnnotations();renderLabelEditor();renderPracticalEditor();queueDraft();
+  showToast(group.name+' label created. Save the lesson to include it in students’ Practical/Guided targets.');
+}
+// ANATOMIQ_MUSCLE_NATIVE_270: permanent virtual catalog entries using existing mesh IDs.
+// This is a catalog relation, not a mesh or scene index, so historical scenes remain valid.
+function nativeMuscleVisibleGroups(query=''){
+  // Teacher catalog is independent of the currently enabled muscle layers/mode.
+  // Students see a whole muscle only when every member is actually chapter-visible.
+  if(!teacherMode && (!['muscular','systems'].includes(mode)||!studentPermissions.st||!studentPermissions.sn||practicalActive))return [];
+  const text=String(query).toLowerCase();
+  return muscleGroups.filter(g=>
+    (teacherMode || (g.ready&&g.members.every(s=>chapterStructureVisible(s)&&s.mesh.visible))) &&
+    (!text||g.name.toLowerCase().includes(text)||g.members.some(s=>s.name.toLowerCase().includes(text))));
+}
+function renderNativeMuscleCatalog(frag,groups,createPart){
+  if(!groups.length)return;
+  const root=document.createElement('details');root.className='anat270-native-catalog';
+  root.open=muscleGroupPanelOpen||Boolean(elements.search.value.trim());
+  root.addEventListener('toggle',()=>{if(!elements.search.value.trim())muscleGroupPanelOpen=root.open;});
+  const heading=document.createElement('summary');heading.textContent='Whole muscles ('+groups.length+')';root.append(heading);
+  const hint=document.createElement('p');hint.className='anat270-native-hint';
+  hint.textContent=teacherMode?'Whole-muscle groups are listed here separately from Deep and Superficial muscle layers. Choose Reveal portions for a muscle that is hidden in this chapter.':'Select a whole muscle or expand it to explore its individual portions.';
+  root.append(hint);
+  for(const group of groups){
+    const item=document.createElement('div');item.className='anat270-native-entry';
+    const row=document.createElement('div');row.className='anat270-native-row';
+    const choose=document.createElement('button');choose.type='button';choose.className='bone-item anat270-native-select';
+    choose.textContent=group.name+(group.starred?' ★':'');
+    choose.setAttribute('aria-label','Select whole muscle: '+group.name);
+    choose.setAttribute('aria-pressed',String(activeMuscleGroup===group.name));
+    if(activeMuscleGroup===group.name)choose.classList.add('active');
+    const shown=group.members.filter(s=>chapterStructureVisible(s)&&s.mesh.visible).length;
+    choose.disabled=!group.ready||!group.members.every(chapterStructureVisible);
+    choose.title=!group.ready?'Source muscle components could not be resolved.':choose.disabled?'This chapter hides one or more portions. Choose Reveal portions.':'Select all '+group.members.length+' muscle portions';
+    choose.addEventListener('click',()=>{muscleGroupSelect(group);renderList();});
+    row.append(choose);item.append(row);
+    if(teacherMode){
+      const actions=document.createElement('div');actions.className='anat270-native-actions';
+      if(!group.ready){const warning=document.createElement('span');warning.className='anat270-native-warning';warning.textContent='Unavailable — source components not resolved';actions.append(warning);}
+      if(group.ready&&!group.members.every(chapterStructureVisible)){
+        const reveal=document.createElement('button');reveal.type='button';reveal.textContent='Reveal portions';
+        reveal.addEventListener('click',()=>{muscleGroupReveal(group);renderList();});actions.append(reveal);
+      }
+      const label=document.createElement('button');label.type='button';label.textContent='+ Whole-muscle label';
+      label.disabled=!group.ready||shown!==group.members.length;
+      label.addEventListener('click',()=>muscleGroupCreateLabel(group));actions.append(label);
+      item.append(actions);
+    }
+    const parts=document.createElement('details');parts.className='anat270-native-parts';
+    const summary=document.createElement('summary');summary.textContent='Individual portions · '+group.members.length;parts.append(summary);
+    for(const member of group.members){
+      if(!teacherMode && !chapterStructureVisible(member))continue;
+      parts.append(createPart(member));
+    }
+    item.append(parts);root.append(item);
+  }
+  frag.append(root);
+}
+
 let __anat268bSkeletalReady=null; // Resolved before a Teacher or Student lesson is shown.
 let triquetrumEntries = []; // ANATOMIQ_TRIQUETRUM_244
 let eyeStructures=[];
@@ -250,8 +355,10 @@ const guided=createGuidedLessons({
   // system layers, hidden structures, tissue options and unavailable/deferred assets.
   getTargets:()=>[
     ...labels.filter(l=>chapterStructureVisible(structures[l.s])).map(l=>({key:'l:'+l.qi,label:'Teacher label: '+l.t})),
+    ...muscleGroups.filter(g=>g.ready&&g.members.every(chapterStructureVisible)).map(g=>({key:'g:'+g.id,label:'Whole muscle: '+g.name})),
     ...structures.filter(s=>chapterStructureVisible(s)).map(s=>({key:'s:'+s.index,label:'Structure: '+s.name+(s.side&&s.side!=='midline'?' ('+s.side+')':'')}))
   ],
+  getMuscleGroup:(id)=>muscleGroups.find(g=>g.id===id&&g.ready)||null,
   onTeacherChange:()=>queueDraft(),goChapter:(index)=>{void switchChapter(index);},notify:showToast
 });
 const markers = new Map();
@@ -972,7 +1079,8 @@ function cancelPainting(){
 
 // Multi-selection is deliberately transient; hidden/fade/paint remain chapter-level.
 function multiTargets(){
-  if(!teacherMode)return selected?[selected]:[];
+  if(!teacherMode)return activeMuscleGroup&&studentPermissions.st&&studentPermissions.sn&&!practicalActive
+    ? [...multiSelectedIndices].map(i=>structures[i]).filter(Boolean) : selected?[selected]:[];
   const result=[...multiSelectedIndices].map(i=>structures[i]).filter(Boolean);
   return result.length?result:(selected?[selected]:[]);
 }
@@ -986,7 +1094,7 @@ function clearMultiHighlights(){
 }
 function syncMultiHighlights(){
   clearMultiHighlights();
-  if(!teacherMode||multiSelectedIndices.size<2)return;
+  if((!teacherMode && !(activeMuscleGroup&&studentPermissions.st&&studentPermissions.sn&&!practicalActive))||multiSelectedIndices.size<2)return;
   for(const s of multiTargets()){
     if(s===selected||!s.mesh.visible)continue;
     const base=displayMaterial(s);
@@ -1000,6 +1108,7 @@ function syncMultiHighlights(){
 }
 function pickMultiSelection(s,event,origin){
   if(!teacherMode||!s)return;
+  activeMuscleGroup=null;
   const additive=event.metaKey||event.ctrlKey;
   if(event.shiftKey&&origin==='list'){
     const ordered=[...elements.boneList.querySelectorAll('button.bone-item[data-structure-index]')]
@@ -1045,7 +1154,7 @@ window.addEventListener('anatomiq:skeletal-preset',event=>applySkeletonDivision(
 
 function setSelection(s,preserveMulti=false){
   clearMultiHighlights();
-  if(!preserveMulti){multiSelectedIndices.clear();if(teacherMode&&s)multiSelectedIndices.add(s.index);multiListAnchor=null;}
+  if(!preserveMulti){activeMuscleGroup=null;multiSelectedIndices.clear();if(teacherMode&&s)multiSelectedIndices.add(s.index);multiListAnchor=null;}
   if(selected){
     selected.mesh.material=displayMaterial(selected);
     disposeMaterial(selectedHighlight);
@@ -1058,7 +1167,7 @@ function setSelection(s,preserveMulti=false){
     if(displayMaterial(s))highlightSelection(s);
     elements.noSelection.hidden=true;
     elements.selectionContent.hidden=false;
-    elements.selName.textContent=teacherMode&&multiSelectedIndices.size>1?`${multiSelectedIndices.size} structures selected`:s.name;
+    elements.selName.textContent=activeMuscleGroup&&multiSelectedIndices.size>1?activeMuscleGroup:teacherMode&&multiSelectedIndices.size>1?`${multiSelectedIndices.size} structures selected`:s.name;
     elements.selSide.textContent=(s.side==='midline'?'Midline':s.side[0].toUpperCase()+s.side.slice(1)+' side')+' · '+s.tissue;
     elements.selCategory.textContent=s.system==='ocular'?'SPECIAL SENSES · EYE':(s.system==='connective'||isBaseConnective(s))?'CONNECTIVE TISSUE':s.system==='cardiovascular'?'CARDIOVASCULAR SYSTEM':s.system==='respiratory'?'RESPIRATORY SYSTEM':s.system==='nervous'?'NERVOUS SYSTEM':s.system==='digestive'?'DIGESTIVE SYSTEM':s.system==='muscular'?(s.layer==='deep muscles'?'DEEP MUSCULAR SYSTEM':'SUPERFICIAL MUSCULAR SYSTEM'):s.tissue==='tooth'?'DENTAL ANATOMY':s.tissue==='cartilage'?'CARTILAGE':'SKELETAL SYSTEM';
     elements.selDesc.textContent=anat249Description(s);
@@ -1272,9 +1381,14 @@ function renderList(){
     lastExplorerSelectedIndex=selected.index;
   }else if(teacherMode&&!selected){lastExplorerSelectedIndex=null;}
   const available=teacherMode ? structures : currentStructures().filter(s=>tissueVisible(s));
+  // ANATOMIQ_MUSCLE_NATIVE_270: catalog parents replace duplicate flat entries,
+  // but individual mesh entries remain available by expanding each parent.
+  const groupEntries=nativeMuscleVisibleGroups(text);
+  const groupMemberIDs=new Set(groupEntries.flatMap(g=>g.members.map(s=>s.index)));
   const found=available.filter(s=>s.name.toLowerCase().includes(text)
-    && (teacherMode ? (anatomyExplorerFilter==='all'||chapterStructureVisible(s)) : (studentExplore||s.mesh.visible)));
-  elements.count.textContent=found.length;
+    && (teacherMode ? (anatomyExplorerFilter==='all'||chapterStructureVisible(s)) : (studentExplore||s.mesh.visible))
+    && !groupMemberIDs.has(s.index));
+  elements.count.textContent=found.length+groupEntries.length;
   elements.clearSearch.hidden=!elements.search.value;
   const frag=document.createDocumentFragment();
   if(teacherMode){
@@ -1292,16 +1406,12 @@ function renderList(){
       restore.textContent='Show original view';restore.addEventListener('click',divisionClose);toolbar.append(restore);
     }
     frag.append(toolbar);
+    // Whole muscles now appear as native explorer entries below, with child meshes.
   }else if(divisionScope && divisionCanBrowse()){
     // Students who can navigate divisions must retain a way out after retiring the top breadcrumb.
     const restore=document.createElement('button');restore.type='button';restore.className='anat-explorer-restore';
     restore.textContent='Show original view';restore.addEventListener('click',divisionClose);
     frag.append(restore);
-  }
-  if(!teacherMode && !studentPermissions.st && !text){
-    const p=document.createElement('p');p.className='empty-list';p.textContent='Search for a structure above.';frag.appendChild(p);
-  }else if(!found.length){
-    const p=document.createElement('p');p.className='empty-list';p.textContent='No matching structures found.';frag.appendChild(p);
   }
   const createBoneButton=s=>{
     const b=document.createElement('button');b.dataset.structureIndex=s.index;b.className='bone-item'+(selected===s?' active':'')+(teacherMode&&multiSelectedIndices.has(s.index)?' multi-selected':'');
@@ -1340,6 +1450,13 @@ function renderList(){
     row.append(eye);
     return row;
   };
+  // ANATOMIQ_NATIVE_RENDER_ORDER_FIX_270: createBoneButton is initialized above.
+  renderNativeMuscleCatalog(frag,groupEntries,createBoneButton);
+  if(!teacherMode && !studentPermissions.st && !text){
+    const p=document.createElement('p');p.className='empty-list';p.textContent='Search for a structure above.';frag.appendChild(p);
+  }else if(!found.length && !groupEntries.length){
+    const p=document.createElement('p');p.className='empty-list';p.textContent='No matching structures found.';frag.appendChild(p);
+  }
   if((teacherMode || (studentPermissions.st && studentPermissions.sn)) && found.length){
     // ANATOMIQ_SINGLE_EXPLORER_2220: sidebar is the only full anatomy hierarchy.
     // View isolates temporarily; visibility button edits the chapter explicitly.
@@ -1493,6 +1610,9 @@ function prepareStructures(root){
   originalCardioStructureCount=catalog.originalCardioCount;originalCardioFingerprint=catalog.originalCardioFingerprint;
   sceneFingerprint=catalog.fullFingerprint;
   structures.forEach((entry,i)=>entry.index=i);
+  muscleGroups=resolveMuscleGroups(structures);
+  const unresolved=muscleGroups.filter(g=>!g.ready);
+  if(unresolved.length)console.warn("AnatomIQ muscle groups: unresolved source names",unresolved);
   const vertebraPilot=installVertebraPilot(structures,THREE,{invalidate,teacherMode,storage:window.localStorage}); // ANATOMIQ_VERTEBRA_PILOT_264
   const __detailedController=installSkeletalGeometryUpgrade(structures,THREE,{invalidate,teacherMode,storage:window.localStorage,pilot:vertebraPilot,boneAppearanceController:boneSurfaceController,materials,refreshAppearance:updateBoneMaterial,renderer});
   __anat268bSkeletalReady=teacherMode ? __detailedController.ready : () => __detailedController.apply('detailed'); // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265 ANATOMIQ_SKELETAL_MATERIALS_265B ANATOMIQ_SKELETAL_SELECTIVE_265C
@@ -2523,7 +2643,7 @@ function snapshotScene(){
     sb:systemLayers.skeletal,dm:systemLayers.deep,sm:systemLayers.superficial,dg:systemLayers.digestive,cv:systemLayers.cardiovascular,rs:systemLayers.respiratory,nv:systemLayers.nervous,ur:systemLayers.urinary,ly:systemLayers.lymphatic,cn:systemLayers.connective,cm:connectiveAvailable,ey:systemLayers.nervous,ci:!legacyConnectiveVisibilityPending,ro:respiratoryOpacity,hd:detailEnabled && (mode==='digestive'||(mode==='systems' && systemLayers.digestive)),
     cam:(teacherMode ? anat263StartForScene() : (cardioPreviewCamera||(divisionScope&&divisionSavedCamera?divisionSavedCamera:[...camera.position.toArray(),...controls.target.toArray()]))).map(n=>round(n,5)),
     labels:labels.map(l=>({s:l.s,qi:l.qi|| (l.qi=newPracticalLabelId()),p:l.p.map(n=>round(n,5)),t:l.t.trim(),dx:round(l.dx,1),dy:round(l.dy,1),...(l.d?{d:l.d.trim()}:{}),...(l.u?{u:l.u.trim()}:{} ),...(l.ln?{ln:l.ln.map(n=>round(n,5))}:{}),
-      ...(Array.isArray(l.g)?{g:l.g.map(a=>({s:a.s,p:a.p.map(n=>round(n,5)),...(a.ln?{ln:a.ln.map(n=>round(n,5))}:{})})),gn:l.gn}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
+      ...(Array.isArray(l.g)?{g:l.g.map(a=>({s:a.s,p:a.p.map(n=>round(n,5)),...(a.ln?{ln:a.ln.map(n=>round(n,5))}:{})})),gn:l.gn,...(l.mg?{mg:l.mg}:{})}:{}),...(l.fv?{fv:l.fv.map(n=>round(n,5)),fd:round(l.fd,5),...(l.ft?{ft:l.ft.map(n=>round(n,5))}:{})}:{})})),
     ...(polishFadedIndices.size?{fa:[...polishFadedIndices].sort((a,b)=>a-b)}:{}),
      ...(structureNoteOverrides.size?{sd:[...structureNoteOverrides.entries()].sort((a,b)=>a[0]-b[0]).map(([i,v])=>[i,v.location,v.notes])}:{}),
     ...(pc.length?{pc}:{})
@@ -3434,6 +3554,7 @@ function renderLabelEditor(){
           removeMember.addEventListener('click',()=>{
             if(idx===0){const next=label.g.shift();label.s=next.s;label.p=next.p;label.ln=next.ln;}
             else label.g.splice(idx-1,1);
+            delete label.mg; // Modified anchors are no longer a complete native muscle.
             if(!label.g.length){delete label.g;delete label.gn;}
             renderLabelEditor();renderAnnotations();queueDraft();
           });chip.append(removeMember);
