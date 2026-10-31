@@ -1,6 +1,6 @@
 {
-  "version": "2.2.72",
+  "version": "2.2.73",
   "channel": "experimental",
   "published": "2026-10-30",
-  "notes": "Optional camera-motion blur experiment. Includes all 2.2.71 Guided Chapter Activities unchanged."
+  "notes": "Motion blur defaults to Extreme across devices, with user override. Guided Activities unchanged."
 }

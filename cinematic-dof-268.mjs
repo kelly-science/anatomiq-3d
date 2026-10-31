@@ -1,4 +1,4 @@
-import {MOTION_FRAGMENT,createCameraMotionBlur} from './motion-blur-279.mjs'; // ANATOMIQ_MOTION_BLUR_279_EXPERIMENT
+import {MOTION_FRAGMENT,createCameraMotionBlur} from './motion-blur-279.mjs?rev=motionblur279b'; // ANATOMIQ_MOTION_BLUR_279_EXPERIMENT
 // AnatomIQ Studio 2.2.68a — zoom stability and carousel lighting handoff.
 // Same tested renderer, with direct camera focus, matched final tone mapping, and carousel handoff.
 // Scene-only postprocessing: native HTML labels, live chapter carousel, and

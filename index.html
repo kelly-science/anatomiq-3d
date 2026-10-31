@@ -715,10 +715,10 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
       <div class="render-settings-group" data-feature="anatomiq-motion-blur-279">
         <label for="settings-motion-blur"><strong>Motion Blur (Experimental)</strong></label>
         <select id="settings-motion-blur" class="text-input" aria-label="Camera motion blur intensity">
-          <option value="off">Off — no motion blur (default)</option>
+          <option value="off">Off — no motion blur</option>
           <option value="subtle">Subtle — light movement streaks</option>
           <option value="cinematic">Cinematic — game-style shutter blur</option>
-          <option value="extreme">Extreme — exaggerated speed effect</option>
+          <option value="extreme">Extreme — exaggerated speed effect (default)</option>
         </select>
         <p id="settings-motion-status" class="studio-hint" role="status" aria-live="polite"></p>
         <p class="studio-hint">Blurs only moving 3D anatomy during orbit, zoom and pan. Stops immediately when still. Labels, menus and activity controls stay sharp. Stored only on this device, not in lessons.</p>
@@ -796,7 +796,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
         } catch (e) { console.warn('Offline features unavailable:', e); }
       }
     }
-    await import('./app.js?rev=motionblur279a'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.70"></script>
   <script defer src="./interface-2221.js?rev=workspace241&v=2.2.70"></script>

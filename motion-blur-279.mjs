@@ -1,6 +1,7 @@
 // AnatomIQ Studio — experimental camera-motion blur, depth-aware, local preference.
 // Only the anatomy canvas is postprocessed; labels/activities are DOM overlays.
 export const MOTION_STORAGE_KEY = 'anatomiq-motion-blur-experiment-279';
+export const MOTION_DEFAULT_MIGRATION_KEY = 'anatomiq-motion-blur-extreme-default-279b';
 export const MOTION_PRESETS = Object.freeze({
   off: {strength:0,maxPixels:0},
   subtle: {strength:0.32,maxPixels:7},
@@ -49,13 +50,22 @@ vec4 anat279CameraMotionBlur(vec2 uv,float depth){
 }`;
 
 export function normalizeMotionPreset(value){
-  return Object.prototype.hasOwnProperty.call(MOTION_PRESETS,value)?value:'off';
+  return Object.prototype.hasOwnProperty.call(MOTION_PRESETS,value)?value:'extreme';
 }
-export function initialMotionPreset(store=globalThis.localStorage){
-  try{return normalizeMotionPreset(store?.getItem(MOTION_STORAGE_KEY));}
-  catch{return 'off';}
+export function initialMotionPreset(store){
+  try{
+    const deviceStore=store===undefined?globalThis.localStorage:store;
+    // One-time migration: apply Extreme to devices that used the previous Off default.
+    // After this first launch, preserve the user's own selection on this device.
+    if(deviceStore?.getItem(MOTION_DEFAULT_MIGRATION_KEY)!=='1'){
+      deviceStore?.setItem(MOTION_STORAGE_KEY,'extreme');
+      deviceStore?.setItem(MOTION_DEFAULT_MIGRATION_KEY,'1');
+      return 'extreme';
+    }
+    return normalizeMotionPreset(deviceStore?.getItem(MOTION_STORAGE_KEY));
+  }catch{return 'extreme';} // Privacy mode / disabled storage still defaults Extreme.
 }
-export function createCameraMotionBlur({THREE,selectElement,statusElement,invalidate,clock=()=>performance.now(),storage=globalThis.localStorage}){
+export function createCameraMotionBlur({THREE,selectElement,statusElement,invalidate,clock=()=>performance.now(),storage}){
   let mode=initialMotionPreset(storage),valid=false,previousTime=0,previousW=0,previousH=0;
   const lastVP=new THREE.Matrix4(),currentVP=new THREE.Matrix4(),inverseVP=new THREE.Matrix4();
   const uniforms={
@@ -77,7 +87,7 @@ export function createCameraMotionBlur({THREE,selectElement,statusElement,invali
     const next=normalizeMotionPreset(value);
     if(mode===next)return;
     mode=next;reset();
-    try{storage?.setItem(MOTION_STORAGE_KEY,mode);}catch{}
+    try{(storage===undefined?globalThis.localStorage:storage)?.setItem(MOTION_STORAGE_KEY,mode);}catch{}
     sync();invalidate(2);
   }
   function beginFrame(viewCamera,w,h){
