@@ -1,5 +1,5 @@
 {
-  "version": "2.2.70",
+  "version": "2.2.71",
   "channel": "beta",
   "published": "2026-10-29",
   "notes": "Guided Chapter Activities: clearer Teacher Studio sidebar with separate Student Experience and Chapter Setup controls, readable Explore Freely setting, larger Add Activity buttons, and explicit activity count and empty state; retains Explore rotation targets, searchable Identify, Multiple Choice, offline progress, completion PNG and existing practicals."

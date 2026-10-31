@@ -1,0 +1,438 @@
+{
+  "schema": "anatomiq-facial-alignment-workbench/v2",
+  "model": "ecorche.glb",
+  "units": "approx_mm_scaled_to_1700mm_body",
+  "sourceModelUrl": "/models/ecorche.glb",
+  "skullReference": {
+    "id": "native",
+    "file": "/models/skull-native-266d.glb"
+  },
+  "skullRegistration": {
+    "mode": "bounding-box-preview",
+    "previewOnly": true,
+    "scale": 0.00010594,
+    "translation": [
+      0.000462,
+      -0.094187,
+      0.007782
+    ],
+    "evaluation": "approximate-bounds-match",
+    "measuredHeightRatio": 1,
+    "measuredCenterDistanceModelUnits": 0
+  },
+  "bodyHeightModelUnits": 1.7103,
+  "worldUnitsPerApproxMm": 0.001006058824,
+  "translationSpace": "world XYZ; applied after rotation",
+  "rotationConvention": "Local mesh XYZ Euler degrees; postmultiply original local quaternion; rotate about source mesh geometry bounding-box center (not mesh origin)",
+  "rotationsDeg": {
+    "Left temporalis": [
+      0,
+      -1,
+      -2.5
+    ],
+    "Right temporalis": [
+      0,
+      0,
+      1.5
+    ],
+    "Left frontalis": [
+      0,
+      0,
+      0
+    ],
+    "Right frontalis": [
+      0,
+      2,
+      0
+    ],
+    "Left nasalis": [
+      4,
+      -1,
+      0
+    ],
+    "Right nasalis": [
+      0,
+      0,
+      0
+    ]
+  },
+  "offsets": {
+    "Left temporalis": [
+      0.5,
+      0,
+      0
+    ],
+    "Right temporalis": [
+      -3,
+      0,
+      0
+    ],
+    "Left frontalis": [
+      0,
+      0,
+      0
+    ],
+    "Right frontalis": [
+      0,
+      0,
+      1
+    ],
+    "Left nasalis": [
+      0,
+      0,
+      0
+    ],
+    "Right nasalis": [
+      -2,
+      0,
+      0
+    ]
+  },
+  "targets": {
+    "Left temporalis": {
+      "offsetApproxMm": [
+        0.5,
+        0,
+        0
+      ],
+      "rotationDegXYZ": [
+        0,
+        -1,
+        -2.5
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        -0.06913,
+        0.004029,
+        -0.002219
+      ],
+      "baseWorldPivot": [
+        0.0573,
+        1.6073,
+        0.02305
+      ],
+      "adjustedWorldPivot": [
+        0.057803,
+        1.6073,
+        0.02305
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          0.034899,
+          1.548509,
+          -0.034374
+        ],
+        "max": [
+          0.080707,
+          1.666091,
+          0.080474
+        ]
+      },
+      "sourceMeshName": "Left temporalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0.00019037,
+        -0.00872446,
+        -0.02181405,
+        0.99972396
+      ]
+    },
+    "Right temporalis": {
+      "offsetApproxMm": [
+        -3,
+        0,
+        0
+      ],
+      "rotationDegXYZ": [
+        0,
+        0,
+        1.5
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        0.039036,
+        0.002051,
+        0
+      ],
+      "baseWorldPivot": [
+        -0.0573,
+        1.6073,
+        0.02305
+      ],
+      "adjustedWorldPivot": [
+        -0.060318,
+        1.6073,
+        0.02305
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          -0.08123,
+          1.548812,
+          -0.034
+        ],
+        "max": [
+          -0.039407,
+          1.665788,
+          0.0801
+        ]
+      },
+      "sourceMeshName": "Right temporalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0,
+        0,
+        0.0130896,
+        0.99991433
+      ]
+    },
+    "Left frontalis": {
+      "offsetApproxMm": [
+        0,
+        0,
+        0
+      ],
+      "rotationDegXYZ": [
+        0,
+        0,
+        0
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "baseWorldPivot": [
+        0.0292,
+        1.64245,
+        0.08265
+      ],
+      "adjustedWorldPivot": [
+        0.0292,
+        1.64245,
+        0.08265
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          0,
+          1.6074,
+          0.0591
+        ],
+        "max": [
+          0.0584,
+          1.6775,
+          0.1062
+        ]
+      },
+      "sourceMeshName": "Left frontalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "Right frontalis": {
+      "offsetApproxMm": [
+        0,
+        0,
+        1
+      ],
+      "rotationDegXYZ": [
+        0,
+        2,
+        0
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        -0.002902,
+        0,
+        0.000037
+      ],
+      "baseWorldPivot": [
+        -0.0292,
+        1.64245,
+        0.08265
+      ],
+      "adjustedWorldPivot": [
+        -0.0292,
+        1.64245,
+        0.083656
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          -0.059204,
+          1.6074,
+          0.059101
+        ],
+        "max": [
+          0.000804,
+          1.6775,
+          0.108211
+        ]
+      },
+      "sourceMeshName": "Right frontalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0,
+        0.01745241,
+        0,
+        0.9998477
+      ]
+    },
+    "Left nasalis": {
+      "offsetApproxMm": [
+        0,
+        0,
+        0
+      ],
+      "rotationDegXYZ": [
+        4,
+        -1,
+        0
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        0.001849,
+        0.01126,
+        -0.110516
+      ],
+      "baseWorldPivot": [
+        0.0082,
+        1.5862,
+        0.1059
+      ],
+      "adjustedWorldPivot": [
+        0.0082,
+        1.5862,
+        0.1059
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          0.001311,
+          1.56558,
+          0.093523
+        ],
+        "max": [
+          0.015089,
+          1.60682,
+          0.118277
+        ]
+      },
+      "sourceMeshName": "Left nasalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0.03489817,
+        -0.00872122,
+        -0.00030455,
+        0.99935277
+      ]
+    },
+    "Right nasalis": {
+      "offsetApproxMm": [
+        -2,
+        0,
+        0
+      ],
+      "rotationDegXYZ": [
+        0,
+        0,
+        0
+      ],
+      "baseWorldOrigin": [
+        0,
+        0,
+        0
+      ],
+      "adjustedWorldOrigin": [
+        -0.002012,
+        0,
+        0
+      ],
+      "baseWorldPivot": [
+        -0.0082,
+        1.5862,
+        0.1059
+      ],
+      "adjustedWorldPivot": [
+        -0.010212,
+        1.5862,
+        0.1059
+      ],
+      "adjustedWorldBounds": {
+        "min": [
+          -0.016912,
+          1.5663,
+          0.095
+        ],
+        "max": [
+          -0.003512,
+          1.6061,
+          0.1168
+        ]
+      },
+      "sourceMeshName": "Right nasalis",
+      "baseLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "adjustedLocalQuaternionXYZW": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "generatedAt": "2026-10-30T22:12:05.704Z",
+  "targetMeshCount": 6,
+  "newSkullVerifiedForMainApp": false
+}

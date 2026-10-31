@@ -1,0 +1,20 @@
+/* ANATOMIQ_TF_ALIGNMENT_WORKBENCH_270 — teacher-only floating calibration panel */
+.tfw-panel[hidden]{display:none!important}
+.tfw-panel{position:fixed;right:24px;top:112px;z-index:10010;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 124px);overflow-y:auto;background:#142133;color:#f4f8fd;border:1px solid #566b88;border-radius:14px;box-shadow:0 18px 55px rgba(0,0,0,.52);font:13px/1.45 system-ui,-apple-system,sans-serif;padding:16px;box-sizing:border-box}
+.tfw-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-16px -16px 14px;padding:14px 16px;background:#1e3046;border-radius:14px 14px 0 0;cursor:move;touch-action:none}
+.tfw-header strong,.tfw-header small{display:block}.tfw-header strong{font-size:14px}.tfw-header small{color:#a6bbce;font-size:11px;font-weight:500;margin-top:2px}
+.tfw-panel .tfw-button{background:#263d54;color:#eff8ff;border:1px solid #526982;border-radius:8px;padding:8px 10px;font:inherit;font-weight:600;cursor:pointer}
+.tfw-panel .tfw-button:hover{background:#365571}.tfw-panel .tfw-close{padding:4px 10px;font-size:17px}.tfw-panel .tfw-export{background:#176e70;border-color:#39a2a4}
+.tfw-explain,.tfw-small,.tfw-footnote{margin:0 0 12px;color:#c2d3e0}.tfw-small{font-size:11px;margin-top:12px}.tfw-footnote{font-size:11px;margin:13px 0 0}
+.tfw-label{display:grid;gap:5px;font-weight:650;margin-bottom:10px}.tfw-picker{width:100%;background:#192a3c;color:#fff;padding:10px;border:1px solid #526982;border-radius:8px;font:inherit}
+.tfw-notice{font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.08em;color:#f8cf80;margin:8px 0 14px}
+.tfw-axis{margin:0 0 13px}.tfw-axis-name{display:block;color:#dae5ef;font-weight:600;margin-bottom:5px}
+.tfw-axis-controls{display:grid;grid-template-columns:32px minmax(0,1fr) 64px 32px;gap:6px;align-items:center}.tfw-panel .tfw-nudge{padding:6px 0;font-size:17px}.tfw-range{width:100%;min-width:0;accent-color:#43b4bb}.tfw-number{width:64px;padding:7px 5px;color:#fff;background:#1b2a40;border:1px solid #526982;border-radius:7px;box-sizing:border-box;text-align:right}
+.tfw-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tfw-actions .tfw-export{grid-column:1/-1}.tfw-panel>.tfw-button{width:100%;margin-top:9px}
+.tfw-panel button:focus-visible,.tfw-panel input:focus-visible,.tfw-panel select:focus-visible{outline:2px solid #8ad9f4;outline-offset:2px}
+@media (max-width:560px){.tfw-panel{top:64px;right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 74px)}}
+
+/* ANATOMIQ_TF_WORKBENCH_LAUNCHER_FIX_270: Teacher Studio quick access */
+#tfw-quick.tfw-menubar-quick{white-space:nowrap;cursor:pointer;border:1px solid rgba(125,187,205,.42);border-radius:7px;padding:6px 10px;margin-inline:6px;background:rgba(57,108,133,.19);color:inherit;font-weight:650}
+#tfw-quick.tfw-menubar-quick:hover{background:rgba(65,146,179,.3)}
+#tfw-quick.tfw-menubar-quick:focus-visible{outline:2px solid #8ad9f4;outline-offset:2px}

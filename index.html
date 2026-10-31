@@ -123,6 +123,8 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
       <div class="menu-group" data-menu="view">
         <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-view">View</button>
         <div id="menu-view" class="menu-dropdown" role="menu" aria-label="View" hidden>
+          <!-- ANATOMIQ_TF_WORKBENCH_LAUNCHER_FIX_270: first, not clipped by long menu -->
+          <div class="menu-separator" role="separator"></div>
           <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skull">Focus Skull Only</button>
           <button class="menu-item" role="menuitem" type="button" data-anatomy-preset="skeleton">Show Full Skeleton</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-cardiac="interior">Heart interior (valves & chordae)</button>
@@ -139,6 +141,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <button class="menu-item" role="menuitem" type="button" data-menu-click="reset-camera">Reset camera</button>
         </div>
       </div>
+      <!-- ANATOMIQ_TF_WORKBENCH_LAUNCHER_FIX_270: always-visible Teacher Studio shortcut -->
       <div class="menu-group menu-group-library" data-menu="library">
         <button type="button" class="menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="menu-library">Library</button>
         <div id="menu-library" class="menu-dropdown menu-library-dropdown" role="menu" aria-label="Library" hidden>
@@ -777,7 +780,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
         } catch (e) { console.warn('Offline features unavailable:', e); }
       }
     }
-    await import('./app.js?rev=270-native-muscles-explorer-visible-local'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=271-facial-pose'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.70"></script>
   <script defer src="./interface-2221.js?rev=workspace241&v=2.2.70"></script>

@@ -8,6 +8,7 @@ import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installCh
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
+import {applyApprovedFacialAlignment} from './facial-muscle-alignment-271.mjs?rev=271-facial-pose'; // ANATOMIQ_APPROVED_FACIAL_ALIGNMENT_271
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=269g-dof-alpha-handoff'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
@@ -53,7 +54,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.70'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.71'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -2116,6 +2117,17 @@ async function loadAnatomy(){
     // Adjust the original GLB's shared bone material without generating a
     // unique material for every anatomical mesh or altering paint overrides.
     finishSourceAnatomy(sceneRoot,surfaceMode);
+    // ANATOMIQ_APPROVED_FACIAL_ALIGNMENT_271: six signed-off muscle poses.
+    // Applies to the original Écorché root in teacher and student views,
+    // before catalog creation, without touching indices or saved lesson data.
+    try{
+      const facialResult=applyApprovedFacialAlignment(sceneRoot,THREE);
+      window.__AnatomIQFacialAlignmentStatus=facialResult;
+      if(facialResult.applied!==6)console.warn('Facial alignment not applied:',facialResult.reason);
+    }catch(error){
+      console.warn('Optional facial alignment unavailable:',error);
+      window.__AnatomIQFacialAlignmentStatus={applied:0,reason:String(error?.message||error)};
+    }
     boneSurfaceController=createBoneAppearanceController(sceneRoot,THREE,boneAppearance);
     window.__AnatomIQBoneStatus=()=>boneSurfaceController?.status?.()||{ready:false};
     console.info('AnatomIQ Natural Bone satin v3 status:',window.__AnatomIQBoneStatus()); // ANATOMIQ_NATURAL_BONE_SATIN_20261025 // ANATOMIQ_BONE_SATIN_SELECTOR_REPAIR_R4 // ANATOMIQ_NATURAL_BONE_PROMOTED_V1

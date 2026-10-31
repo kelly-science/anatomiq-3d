@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c1622">
+<title>AnatomIQ • Facial Alignment Workbench</title>
+<link rel="stylesheet" href="./styles.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "../../vendor/three/build/three.module.js",
+    "three/addons/": "../../vendor/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="brand"><span class="mark">✦</span><div><strong>AnatomIQ</strong><span>FACIAL ALIGNMENT WORKBENCH</span></div></div>
+  <div class="topmeta"><span id="build">Standalone experiment · Studio 2.2.70</span><span class="tag">LOCAL ONLY</span></div>
+</header>
+<main class="layout">
+  <aside class="panel left-panel">
+    <section>
+      <p class="eyebrow">REFERENCE ANATOMY</p>
+      <h2>Skull + facial muscles</h2>
+      <p class="muted">Isolated workspace using your existing AnatomIQ models. No lesson tools or Studio menus.</p>
+      <label for="skull-source" class="label">Skull model</label>
+      <select id="skull-source">
+        <option value="native">AnatomIQ new skull (266d)</option>
+        <option value="legacy">Alternate detailed skull</option>
+        <option value="ecorche">Original Écorché skull</option>
+      </select>
+      <div class="statusbox"><div class="statusline"><span class="dot" id="load-dot"></span><strong id="status-title">Preparing workbench…</strong></div><p id="status-detail">Loading models from this GitHub checkout.</p></div>
+      <label class="toggle"><input id="only-bones" type="checkbox"><span>Show only frontal, nasal & temporal bones</span></label>
+      <label class="toggle"><input id="base-skull" type="checkbox"><span>Overlay original skull for comparison</span></label>
+      <label class="toggle"><input id="show-other-muscles" type="checkbox" checked><span>Show all six alignment muscles</span></label>
+      <label class="range-label" for="skull-opacity">Skull opacity <output id="opacity-value">85%</output></label>
+      <input type="range" id="skull-opacity" min="10" max="100" value="85" step="5">
+      <div id="registration-warning" class="warning" hidden></div>
+      <button id="register-skull" class="button secondary" hidden>Match skull bounding boxes (preview only)</button>
+      <p class="footnote">Skull registration is measured and included in the export. If model bounds differ, auto-registration is only a visual approximation—not verified anatomy alignment.</p>
+    </section>
+    <section class="section-divider">
+      <p class="eyebrow">CAMERA</p>
+      <div class="button-row"><button class="button secondary" data-camera="front">Front</button><button class="button secondary" data-camera="back">Back</button><button class="button secondary" data-camera="left">Left</button><button class="button secondary" data-camera="right">Right</button></div>
+      <button class="button subtle full" id="fit">Refit skull and muscles</button>
+      <p class="footnote">Drag to rotate · Scroll to zoom · Right-drag to pan</p>
+    </section>
+  </aside>
+  <div class="viewport-wrap">
+    <div id="viewport"></div>
+    <div class="view-caption"><span class="live-dot"></span><span id="scene-label">Skull reference + facial muscle geometry</span></div>
+    <div class="axis-legend">X <b>left/right</b> &nbsp; Y <b>up/down</b> &nbsp; Z <b>front/back</b></div>
+    <div id="screen-error" class="screen-error" hidden></div>
+  </div>
+  <aside class="panel right-panel">
+    <section>
+      <p class="eyebrow">ADJUSTMENT</p>
+      <h2>Position muscles</h2>
+      <label for="muscle" class="label">Muscle</label>
+      <select id="muscle"></select>
+      <p class="muted small">Select a side, then make small position corrections. The selected muscle is outlined in cyan.</p>
+      <div id="axes"></div>
+      <div class="button-row small-gap"><button class="button secondary" id="reset-target">Reset muscle</button><button class="button secondary" id="reset-all">Reset all</button></div>
+      <p class="footnote">Offsets are approximate millimeters based on AnatomIQ's 1700 mm reference body height. Positive X/Y/Z follows the model's world axes.</p>
+    </section>
+    <section class="section-divider">
+      <p class="eyebrow">COORDINATES</p>
+      <div class="coord-block"><div>Offset (approx. mm)</div><code id="offset-coords">0, 0, 0</code></div>
+      <div class="coord-block"><div>Current world position</div><code id="world-coords">—</code></div>
+      <div class="coord-block"><div>Original world position</div><code id="original-coords">—</code></div>
+      <button class="button subtle full" id="copy-coords">Copy selected coordinates</button>
+    </section>
+    <section class="section-divider">
+      <p class="eyebrow">EXPORT & IMPORT</p>
+      <button class="button primary full" id="export-complete">Export all coordinates (6 muscles)</button>
+      <button class="button secondary full" id="export-legacy">Export 2.2.70 alignment (4 muscles)</button>
+      <button class="button subtle full" id="import-button">Import previous alignment…</button>
+      <input type="file" id="import-file" accept=".json,application/json" hidden>
+      <p class="footnote">The full file includes nasalis and exact model-space positions. The 2.2.70 export uses the existing four-muscle format; nasalis requires a later Studio integration patch.</p>
+    </section>
+  </aside>
+</main>
+<footer class="footer"><span id="footer-status">Standalone workspace · Changes saved only in this browser</span><span>No changes to AnatomIQ Studio or GLB files</span></footer>
+</div>
+<script type="module" src="./workbench.mjs"></script>
+</body>
+</html>

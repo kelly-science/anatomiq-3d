@@ -1,0 +1,27 @@
+{
+  "schema": "anatomiq-muscle-alignment/v1",
+  "model": "ecorche.glb",
+  "units": "approx_mm_scaled_to_1700mm_body",
+  "offsets": {
+    "Left temporalis": [
+      0,
+      0,
+      0
+    ],
+    "Right temporalis": [
+      0,
+      0,
+      0
+    ],
+    "Left frontalis": [
+      0,
+      0,
+      0
+    ],
+    "Right frontalis": [
+      0,
+      0,
+      0
+    ]
+  }
+}
