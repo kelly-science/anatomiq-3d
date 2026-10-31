@@ -1,6 +1,6 @@
 {
-  "version": "2.2.73",
+  "version": "2.2.75",
   "channel": "experimental",
-  "published": "2026-10-30",
-  "notes": "Motion blur defaults to Extreme across devices, with user override. Guided Activities unchanged."
+  "published": "2026-10-31",
+  "notes": "Offline cold-start repair, automatic recently opened lesson caching, and last-lesson fast restoration. No lesson data changed."
 }

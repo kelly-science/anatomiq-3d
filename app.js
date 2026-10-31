@@ -18,7 +18,7 @@ import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOM
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
-import {studentLink,parsePublicReference,fetchPublicLesson,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
+import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
 import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -55,7 +55,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.73'; // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.75'; // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -71,6 +71,19 @@ let skullGeometry='standard'; // Legacy independent skull loader retired; stable
 let skullDetailStats=null;
 
 const LOCAL_DIGESTIVE_MODEL='./models/anatomy-organs.glb';
+// Cache Storage is available to offline PWAs even when an HTTP HEAD request fails.
+async function offlineCapableAssetExists(path){
+  try{
+    if('caches' in window){
+      const hit=await caches.match(new URL(path,location.href).href,{ignoreSearch:true});
+      if(hit?.ok&&!/text\/html/i.test(hit.headers.get('content-type')||''))return true;
+    }
+  }catch(error){console.warn('Offline cache availability check:',error);}
+  if(navigator.onLine===false)return false;
+  try{const r=await fetch(path,{method:'HEAD'});
+      return r.ok&&!/text\/html/i.test(r.headers.get('content-type')||'');}
+  catch{return false;}
+}
 const DETAIL_MANIFEST='./models/digestive-structures.json';
 const DETAIL_MODEL_STANDARD='./models/digestive-standard.glb';
 const DETAIL_MODEL_SHARP='./models/digestive-detailed.glb';
@@ -1826,9 +1839,7 @@ async function loadDigestiveModel(){
   digestiveAvailable=false;digestiveSourceEntries=[];
   if(digestiveRoot){scene.remove(digestiveRoot);digestiveRoot=null;}
   // Core skeleton always functions if this optional file is absent. No CDN fallback.
-  let response;
-  try{response=await fetch(LOCAL_DIGESTIVE_MODEL,{method:'HEAD'});}catch{return;}
-  if(!response.ok||/text\/html/i.test(response.headers.get('content-type')||''))return;
+  if(!await offlineCapableAssetExists(LOCAL_DIGESTIVE_MODEL))return;
   let draco=null;
   try{
     const {DRACOLoader}=await import('three/addons/loaders/DRACOLoader.js');
@@ -2172,10 +2183,7 @@ async function createDeferredCatalog(){
   connectiveMetadata=await readOptionalManifest(CONNECTIVE_MANIFEST,validateConnectiveManifest);
   if(connectiveMetadata){connectiveEntriesList=connectiveEntries(asVirtualRoot(connectiveMetadata.structures.map(s=>s.id)),connectiveMetadata);connectiveAvailable=true;}
   // The 1.2 organ asset is kept only to preserve original scene indices.
-  try{
-    const response=await fetch(LOCAL_DIGESTIVE_MODEL,{method:'HEAD'});
-    legacyPresent=response.ok&&!/text\/html/i.test(response.headers.get('content-type')||'');
-  }catch{legacyPresent=false;}
+  legacyPresent=await offlineCapableAssetExists(LOCAL_DIGESTIVE_MODEL);
   if(legacyPresent){
     digestiveSourceEntries=digestiveMeshEntries(asVirtualRoot(LEGACY_DIGESTIVE_MESH_NAMES));
     digestiveAvailable=true;
@@ -2274,6 +2282,53 @@ async function ensureChapterAssets(chapter){
   for(const type of ['legacyDigestive','detailedDigestive','cardiovascular','respiratory','nervous','urinary','lymphatic','connective'])if(needed[type])await loadNeededAsset(type);
   if(needed.skull && skullGeometry==='detailed' && !skullDetailStats)await loadHighResolutionSkull();
 }
+// ANATOMIQ_RECENT_LESSONS_281 — cache-first student startup; update check never blocks 3D loading.
+let aiq281LoadedFromRecentCache=false;
+async function aiq281LoadPublishedLesson(ref){
+  const recent=window.AnatomIQRecentLessons281;
+  if(navigator.onLine!==false && recent?.pendingUpdate(location.hash)){
+    // An updated publication was found on an earlier launch. Fetch it now;
+    // fetchPublicLesson still falls back to the previous cached copy offline.
+    const updated=await fetchPublicLesson(ref);
+    if(!updated.offline){recent.markUpdate(location.hash,false);return updated;}
+  }
+  try{
+    if('caches' in window){
+      const cache=await caches.open('anatomiq-public-lessons-v1');
+      const stored=await cache.match(rawLessonURL(ref));
+      if(stored?.ok){
+        const project=validateProject(await stored.json());
+        aiq281LoadedFromRecentCache=true;
+        return {project,offline:navigator.onLine===false,fromCache:true};
+      }
+    }
+  }catch(error){console.warn('[AnatomIQ] Cached lesson invalid; trying published source:',error);}
+  return fetchPublicLesson(ref);
+}
+function aiq281CheckPublicationLater(ref,initialProject){
+  if(!ref||navigator.onLine===false)return;
+  const openedRoute=location.hash;
+  // A network request happens only after the visible 3D lesson finishes loading.
+  setTimeout(async()=>{
+    if(navigator.onLine===false)return;
+    try{
+      const url=rawLessonURL(ref);
+      const res=await fetch(`${url}?anatomiq-check=${Date.now()}`,{cache:'no-store',credentials:'omit'});
+      if(!res.ok)return;
+      const json=await res.text();
+      if(json.length>200000)return;
+      const newer=validateProject(JSON.parse(json));
+      if(JSON.stringify(newer)!==JSON.stringify(initialProject)){
+        // Do not replace the cached lesson until the student explicitly reopens
+        // online: the newer chapter may require different GLBs.
+        window.AnatomIQRecentLessons281?.markUpdate(openedRoute,true);
+        if(location.hash===openedRoute)showToast('An updated lesson is available; reopen online to use it.');
+      }
+    }catch(error){console.info('[AnatomIQ] Publication check deferred:',error?.message||error);}
+  },1500);
+}
+
+let activeLiveLessonRef=null; // Hoisted before the first student startup (fix TDZ).
 let studentStartupAttempts=0;
 async function loadAnatomy(){
   if(!teacherMode){
@@ -2290,14 +2345,13 @@ async function loadAnatomy(){
       if(location.hash.startsWith('#lesson=')){
         activeLiveLessonRef=parsePublicReference(location.hash);
         elements.loadDesc.textContent='Checking the latest published lesson on GitHub…';
-        const live=await fetchPublicLesson(activeLiveLessonRef);
+        const live=await aiq281LoadPublishedLesson(activeLiveLessonRef);
         studentProjectAtStartup=live.project;
         if(live.offline)elements.loadDesc.textContent='Offline: using the most recently cached published lesson.';
       }else studentProjectAtStartup=await decodeScene(location.hash.slice('#scene='.length));
     }
-    let localAvailable=false;
-    try{const response=await fetch(LOCAL_MODEL,{method:'HEAD'});localAvailable=response.ok && /model|octet-stream|binary|application/i.test(response.headers.get('content-type')||'application/octet-stream');}catch{}
-    const urls=localAvailable?[LOCAL_MODEL,REMOTE_MODEL,SECONDARY_MODEL]:[REMOTE_MODEL,SECONDARY_MODEL];
+    // Always attempt the same-origin GLB first; SW serves its cached GET offline.
+    const urls=[LOCAL_MODEL,REMOTE_MODEL,SECONDARY_MODEL];
     let loaded=null,lastError;
     for(const url of urls){
       try{loaded=await loadGLB(url);currentModelURL=url;break;}catch(e){lastError=e;console.warn('Model source unavailable:',url,e);}
@@ -2422,8 +2476,17 @@ async function loadAnatomy(){
     studentStartupAttempts=0;
     setStatus(teacherMode?'Studio ready':'Student view');
     elements.offlineButton.hidden=false;
-    if(teacherMode)cacheOffline(); // Student offline prep is opt-in, never a hidden whole-lesson download.
-    else elements.offlineButton.textContent='Save lesson offline';
+    if(teacherMode)cacheOffline(); // Preserve explicit teacher full-offline behavior.
+    else {
+      // Opening a student lesson is now enough to start preparing offline access.
+      // The viewer is already usable; this does not hold its startup spinner.
+      window.AnatomIQRecentLessons281?.remember(location.hash,studentProjectAtStartup?.t||'Anatomy lesson');
+      elements.offlineButton.textContent='Preparing lesson offline…';
+      elements.offlineButton.disabled=false;
+      void messageWorker('CACHE_OFFLINE');
+      if(aiq281LoadedFromRecentCache&&activeLiveLessonRef)
+        aiq281CheckPublicationLater(activeLiveLessonRef,studentProjectAtStartup);
+    }
   }catch(err){
     console.warn('AnatomIQ startup attempt failed',err);
     const message=String(err?.message||err||'');
@@ -2619,14 +2682,23 @@ window.addEventListener('offline',()=>{if(sceneRoot)setStatus(offlineReady?'Offl
 async function messageWorker(type) {
   if (!('serviceWorker' in navigator)) return;
   try {
-    const registration = await navigator.serviceWorker.ready;
-    registration.active?.postMessage({type,model:currentModelURL,renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),respiratory:teacherMode&&respiratoryAvailable,respiratoryMode:respiratoryGeometry,nervous:teacherMode&&nervousAvailable,nervousMode:nervousGeometry,urinary:teacherMode&&urinaryAvailable,urinaryMode:urinaryGeometry,lymphatic:teacherMode&&lymphaticAvailable,lymphaticMode:lymphaticGeometry,lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry,respiratoryGeometry,nervousGeometry,urinaryGeometry,lymphaticGeometry,connectiveGeometry}):[]});
-  } catch (error) { console.warn('Offline setup unavailable:',error); }
+    const registration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Offline worker not active. Reopen while online.')),7000))
+    ]);
+    registration.active?.postMessage({type,route:!teacherMode?location.hash:'',model:LOCAL_MODEL,lessonURL:(!teacherMode&&activeLiveLessonRef)?rawLessonURL(activeLiveLessonRef):'',renderer:window.__ANATOMY_RENDERER_SOURCE||'external',organs:teacherMode&&digestiveAvailable,detail:teacherMode&&detailAvailable,detailMode:digestiveGeometry,cardio:teacherMode&&cardioAvailable,cardioMode:cardioGeometry,skullDetail:skullGeometry==='detailed'&&Boolean(skullDetailStats?.upgraded),respiratory:teacherMode&&respiratoryAvailable,respiratoryMode:respiratoryGeometry,nervous:teacherMode&&nervousAvailable,nervousMode:nervousGeometry,urinary:teacherMode&&urinaryAvailable,urinaryMode:urinaryGeometry,lymphatic:teacherMode&&lymphaticAvailable,lymphaticMode:lymphaticGeometry,lessonModels:!teacherMode?offlineLessonFiles(studentProjectAtStartup,{digestiveGeometry,cardioGeometry,skullGeometry,respiratoryGeometry,nervousGeometry,urinaryGeometry,lymphaticGeometry,connectiveGeometry}):[]});
+  } catch (error) {
+    console.warn('Offline setup unavailable:',error);
+    offlineReady=false;
+    const info=document.getElementById('settings-offline');if(info)info.textContent=String(error?.message||error);
+    if(sceneRoot){elements.offlineButton.disabled=false;elements.offlineButton.textContent='Retry offline save';}
+  }
 }
 function cacheOffline() {
   if (!sceneRoot) return;
   elements.offlineButton.hidden = false;
   elements.offlineButton.disabled = false;
+  offlineReady=false;
   elements.offlineButton.textContent = 'Saving offline…';
   setStatus('Preparing offline');
   messageWorker('CACHE_OFFLINE');
@@ -2640,11 +2712,31 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
       elements.offlineButton.textContent = `Saving ${msg.completed}/${msg.total}`;
     }
     if (msg.type === 'OFFLINE_STATUS' && sceneRoot) {
-      offlineReady = !!msg.complete;
-      setStatus(offlineReady ? 'Ready offline' : 'Viewer ready');
+      if(!teacherMode && msg.route && msg.route!==location.hash)return;
+      // A cache inspection is not proof of a real iOS cold start, but it is
+      // substantially stronger than counting attempted downloads.
+      offlineReady = !!msg.complete && !!navigator.serviceWorker.controller;
+      if(!teacherMode)window.AnatomIQRecentLessons281?.markReady(msg.route||location.hash,offlineReady);
+      const missing=(msg.missing||[]).slice(0,8);
+      const details=missing.length?'Missing: '+missing.join(', '):
+        !navigator.serviceWorker.controller?'Service worker is not controlling this window yet.':'';
+      setStatus(offlineReady ? 'Ready offline' : 'Offline incomplete',offlineReady?'':'error');
       elements.offlineButton.textContent = offlineReady ? '✓ Offline ready' : 'Retry offline save';
+      elements.offlineButton.title=offlineReady?'Cached startup files and lesson assets verified; test in Airplane Mode.':details;
       elements.offlineButton.disabled = offlineReady;
+      const info=document.getElementById('settings-offline');
+      if(info){info.textContent=offlineReady?`Verified cache · ${msg.completed}/${msg.total}`:
+        `Incomplete · ${msg.completed}/${msg.total}${missing.length?' · '+missing.join(', '):''}`;
+        info.title=details;}
+      window.__AnatomIQOfflineDiagnostics={...msg,controlled:!!navigator.serviceWorker.controller,checkedAt:new Date().toISOString()};
+      if(!offlineReady)console.warn('[AnatomIQ offline] Cache incomplete',window.__AnatomIQOfflineDiagnostics);
     }
+  });
+  document.getElementById('offline-verify-280')?.addEventListener('click',()=>void messageWorker('CHECK_OFFLINE'));
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!sceneRoot)return;
+    if(!teacherMode&&!offlineReady)void messageWorker('CACHE_OFFLINE');
+    else void messageWorker('CHECK_OFFLINE');
   });
   navigator.serviceWorker.register('./sw.js').catch(error => {
     console.warn('Service worker registration failed:',error);
@@ -4040,7 +4132,6 @@ const CLOUD_TARGETS_KEY='anatomiq-cloud-lesson-targets-v1';
 let cloudToken=''; // Memory only. Never written to localStorage, URLs, lessons or a file.
 let cloudVerified=null;
 let cloudBusy=false;
-let activeLiveLessonRef=null;
 let githubEditingRef=null; // Current published source, held in memory only.
 function cloudSavedPreferences(){
   try{return JSON.parse(localStorage.getItem(CLOUD_PREFS_KEY)||'{}')||{};}catch{return {};}
@@ -4634,8 +4725,7 @@ async function checkLocalAssets(){
   display.textContent='Checking…';
   const statuses=await Promise.all(LOCAL_ASSETS.map(async ([path,label])=>{
     try {
-      const result=await fetch(path,{method:'HEAD',cache:'no-store'});
-      return {label,ok:result.ok && !/text\/html/i.test(result.headers.get('content-type')||'')};
+      return {label,ok:await offlineCapableAssetExists(path)};
     } catch {return {label,ok:false};}
   }));
   const missing=statuses.filter(x=>!x.ok).map(x=>x.label);

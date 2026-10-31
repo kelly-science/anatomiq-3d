@@ -1,3 +1,4 @@
+importScripts('./offline-shell-280.js'); // ANATOMIQ_OFFLINE_RELIABILITY_280
 // ANATOMIQ_FADE_DETAILS_239_20261026 — UI relocation, BVH renderer retained.
 // ANATOMIQ_VIEW_FADE_237_20261026 — presentation-only UI controls; model caches unchanged.
 /* ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026 */
@@ -7,10 +8,9 @@
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-shell-2.2.71-271-hotspot-dissect-carry-278-local-motionblur279b'; // ANATOMIQ_STUDENT_LABEL_LIST_252 // ANATOMIQ_SELECTION_STUDENT_251 // ANATOMIQ_LESSON_RENAME_250 // ANATOMIQ_LESSON_EXPERIENCE_249 // ANATOMIQ_TYPOGRAPHY_248 // ANATOMIQ_TAB_SIZING_247 // ANATOMIQ_TAB_MENU_POLISH_246 // ANATOMIQ_TRIQUETRUM_244
+const VERSION='anatomy-shell-2.2.75-offline281'; // ANATOMIQ_STUDENT_LABEL_LIST_252 // ANATOMIQ_SELECTION_STUDENT_251 // ANATOMIQ_LESSON_RENAME_250 // ANATOMIQ_LESSON_EXPERIENCE_249 // ANATOMIQ_TYPOGRAPHY_248 // ANATOMIQ_TAB_SIZING_247 // ANATOMIQ_TAB_MENU_POLISH_246 // ANATOMIQ_TRIQUETRUM_244
 const POLISH_MODELS='anatomiq-models-persistent-v1';
-const SHELL=['./app.js?rev=motionblur279b','./cinematic-dof-268.mjs?rev=motionblur279b','./motion-blur-279.mjs?rev=motionblur279b','./dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local','./hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local','./painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local','./investigation-272.mjs?rev=271-hotspot-dissect-carry-278-local','./investigation-272.css?rev=271-hotspot-dissect-carry-278-local','./guided-lessons-269j.mjs?rev=271-hotspot-dissect-carry-278-local','./app.js?rev=271-hotspot-dissect-carry-278-local','./scene-codec.js?rev=271-hotspot-dissect-carry-278-local','./investigation-272.mjs?rev=271-investigations-label-dissect-local','./investigation-272.css?rev=271-investigations-label-dissect-local','./guided-lessons-269j.mjs?rev=271-investigations-label-dissect-local','./scene-codec.js?rev=271-investigations-label-dissect-local','./app.js?rev=271-investigations-label-dissect-local','./investigation-272.mjs?rev=271-investigations-local','./investigation-272.css?rev=271-investigations-local','./guided-lessons-269j.mjs?rev=271-investigations-local','./scene-codec.js?rev=271-investigations-local','./app.js?rev=271-investigations-local','./app.js?rev=271-facial-pose','./facial-muscle-alignment-271.mjs?rev=271-facial-pose','./facial-muscle-alignment-271.json?rev=271-facial-pose','./native-muscle-catalog.css?rev=270-native-muscles-local','./muscle-groups-270.mjs?rev=270-native-muscles-local','./guided-lessons-269j.mjs?rev=270-native-muscles-local','./app.js?rev=270-native-muscles-explorer-visible-local','./scene-codec.js?rev=270-native-muscles-local','./muscle-groups-270.mjs?rev=270-muscle-groups-stage1-local','./muscle-groups-270.css?rev=270-muscle-groups-stage1-local','./app.js?rev=270-guided-controls','./guided-lessons-269j.mjs?rev=270-guided-controls','./guided-lessons-269j.css?rev=270-guided-controls','./scene-codec.js?rev=270-guided-controls','./guided-lessons-269j.mjs?rev=269j-guided-lessons','./guided-lessons-269j.css?rev=269j-guided-controls-ui-local','./guided-lessons-269j.css?rev=269j-guided-lessons','./scene-codec.js?rev=269j-guided-lessons','./app.js?rev=269j-guided-lessons','./cinematic-dof-268.mjs?rev=269g-dof-alpha-handoff','./chapter-live-carousel-256.mjs?rev=269h-label-cascade','./app.js?rev=stable269a-recovery','./skeletal-geometry-265.mjs?rev=recovery268c','./app.js?rev=stable269','./student-practical-chapters-269.mjs?rev=269','./app.js?rev=stable268b','./skeletal-geometry-265.mjs?rev=268b','./global-geometry-quality.js?rev=268b','./cinematic-dof-268.mjs?rev=stable268a','./app.js?rev=stable268a','./cinematic-dof-268.mjs?rev=stable268','./app.js?rev=stable268','./app.js?rev=stable267','./skeletal-geometry-265.mjs?rev=267','./bone-smoothing-265e.mjs','./skull-stable-267.mjs?rev=267','./models/skull-native-266d.glb?rev=skull267','./models/skull-native-266d-report.json?rev=skull267','./models/skeletal-detailed-265c.glb?rev=265c','./models/skeletal-detailed-265c-report.json?rev=265c','./app.js?rev=skull266','./vertebra-detail-264.mjs?rev=264','./app.js?rev=vertebra264','./chapter-start-263.css?rev=263','./app.js?rev=chapter263','./label-callouts-262.css?rev=262','./app.js?rev=labels262','./label-inline-261.css?rev=261','./app.js?rev=labels261','./chapter-live-carousel-256.mjs?rev=261','./chapter-carousel-255.mjs?rev=261','./label-groups-260.css?rev=260','./app.js?rev=labels260','./scene-codec.js?rev=260','./chapter-iris-254.mjs?rev=259','./chapter-carousel-255.mjs?rev=259','./chapter-live-carousel-256.mjs?rev=259','./app.js?rev=carousel259','./chapter-live-carousel-256.mjs?rev=257','./app.js?rev=carousel257','./chapter-live-carousel-256.mjs?rev=256','./chapter-carousel-255.mjs?rev=255','./app.js?rev=live256','./chapter-iris-254.mjs?rev=255','./app.js?rev=chapter253','./student-label-list-252.css?rev=252','./app.js?rev=student252','./student-selection-251.css?rev=251','./app.js?rev=student251','./lesson-renaming-250.css?rev=250','./workspace-tabs-241.js?rev=250','./app.js?rev=lesson250','./lesson-experience-249.js?rev=249','./lesson-experience-249.css?rev=249','./app.js?rev=lesson249','./typography-248.css?rev=248','./app.js?rev=typography248','./tab-menu-polish-246.css?rev=247','./app.js?rev=tabsize247','./app.js?rev=triquetrum245','./triquetrum-extension.mjs?rev=245','./models/triquetrum-extension.json?rev=245','./app.js?rev=triquetrum244','./triquetrum-extension.mjs?rev=244','./models/triquetrum-extension.json?rev=244','./app.js?rev=labelorder242','./label-reorder-242.js?rev=242','./label-order-242.css?rev=242','./app.js?rev=workspace241','./interface-2221.js?rev=workspace241','./workspace-tabs-241.js?rev=241','./workspace-tabs-241.css?rev=241','./app.js?rev=tools240','./interface-2221.js?rev=tools240','./teacher-tools-2240.js?rev=240','./teacher-tools-2240.css?rev=240','./label-occlusion-bvh.js?rev=238','./app.js?rev=labelbvh238','./app.js?rev=fadepanel239r2','./view-menu-polish.js?rev=fadepanel239r2','./interface-2221.js?rev=fadepanel239r2','./chapter-bar-width-234.css?rev=234','./chapter-bar-width-234.js?rev=234','./responsive-chapters-panels.css?rev=233','./responsive-chapters-panels.js?rev=233','./','./index.html','./styles.css','./view-menu-polish.js','./view-menu-polish.css','./skeletal-views-2217.mjs','./selection-2217.css','./anatomy-divisions-2218.mjs','./anatomy-divisions-2218.css','./anatomy-sidebar-2219.mjs','./anatomy-sidebar-2219.css','./app.js','./app.js?rev=2.2.29-natural-bone-approved-v1','./bone-appearance.js','./bone-appearance.js?rev=natural-bone-approved-detail-v1',
-  './practical-quiz.js','./smart-label-focus.js','./lesson-publishing.js','./github-token-vault.js','./scene-codec.js','./scene-assets.js','./library-store.js','./github-library-embed.mjs?rev=20261026','./github-library-embed.css?rev=20261026','./github-library-embed.mjs?rev=235','./app.js?rev=2.2.29-natural-bone-approved-v1-github-preview-edit-235','./scene-history.js','./structure-layout.js','./digestive-model.js','./digestive-detail.js','./render-performance.js','./surface-lighting.js','./dynamic-shadows.js','./system-layers.js','./cardiovascular-model.js','./respiratory-model.js','./nervous-model.js','./urinary-model.js','./lymphatic-model.js','./connective-model.js','./connective-model.js?rev=cartilage-20261025','./lymphatic-drainage.svg','./kidney-interior.svg','./cardio-presentation.js','./cardio-class-core.js','./cardio-vascular-audit.js','./skeletal-detail.js','./skull-geometry.js','./global-geometry-quality.js?rev=232','./skull-preferences.js','./version.json','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const SHELL=self.ANATOMIQ_OFFLINE_SHELL_280;
 const LOCAL_RENDERER=[
   './vendor/three/build/three.module.js',
   './vendor/three/examples/jsm/controls/OrbitControls.js',
@@ -48,7 +48,12 @@ self.addEventListener('fetch',event=>{
   if(!ALLOWED_ORIGINS.has(url.origin))return;
   event.respondWith((async()=>{
     const cache=await caches.open(VERSION);
-    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'}) || await (await caches.open(POLISH_MODELS)).match(request);
+    const sameOrigin=url.origin===self.location.origin;
+    const modelFile=sameOrigin&&/\/models\/[^/]+\.(?:glb|json)$/i.test(url.pathname);
+    const staticFile=sameOrigin&&/\.(?:js|mjs|css)$/i.test(url.pathname);
+    const cached=await cache.match(request,{ignoreSearch:request.mode==='navigate'})
+      || ((modelFile||staticFile)?await cache.match(request,{ignoreSearch:true}):null)
+      || await (await caches.open(POLISH_MODELS)).match(request);
     // Model assets and their manifests must revalidate together against the
     // deployed GitHub Pages files. Old cache-first behaviour could combine a
     // new manifest with an older GLB, breaking anatomy after deployments.
@@ -156,32 +161,86 @@ self.addEventListener('message',event=>{
   const source=event.source;
   event.waitUntil((async()=>{
     const cache=await caches.open(VERSION);
-    let modelURL='';
-    try{
-      const url=new URL(event.data.model,self.location.href);
-      if(ALLOWED_ORIGINS.has(url.origin)&&/\.glb$/i.test(url.pathname))modelURL=url.href;
-    }catch{}
-    if(!modelURL){source?.postMessage({type:'OFFLINE_STATUS',complete:false,message:'Model URL unavailable'});return;}
-    const renderer=event.data.renderer==='local'?LOCAL_RENDERER:REMOTE_RENDERER;
-    // A student's explicit offline request caches the published lesson's
-    // required chapter assets (not every model installed in the repository).
-    const lessonAllow=/^(?:models\/(?:anatomy-organs|digestive-(?:standard|detailed)|cardiovascular-(?:standard|detailed)|respiratory-(?:standard|detailed)|nervous-(?:standard|detailed)|urinary-(?:standard|detailed)|lymphatic-(?:standard|detailed)|skull-detailed)\.glb|models\/(?:digestive|cardiovascular|respiratory|nervous|urinary|lymphatic|skull)-structures\.json|vendor\/three\/examples\/jsm\/(?:loaders\/DRACOLoader\.js|libs\/draco\/gltf\/(?:draco_decoder\.wasm|draco_wasm_wrapper\.js)))$/;
-    const lessonModels=Array.isArray(event.data.lessonModels)
-      ? event.data.lessonModels.filter(path=>typeof path==='string'&&lessonAllow.test(path)).map(path=>'./'+path)
-      : [];
-    const urls=[...SHELL,...renderer,modelURL,...lessonModels,...(event.data.organs?['./models/anatomy-organs.glb','./vendor/three/examples/jsm/loaders/DRACOLoader.js','./vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm','./vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js']:[]),...(event.data.detail?['./models/digestive-structures.json',event.data.detailMode==='detailed'?'./models/digestive-detailed.glb':'./models/digestive-standard.glb']:[]),...(event.data.cardio?['./models/cardiovascular-structures.json',event.data.cardioMode==='detailed'?'./models/cardiovascular-detailed.glb':'./models/cardiovascular-standard.glb']:[]),...(event.data.respiratory?['./models/respiratory-structures.json',event.data.respiratoryMode==='detailed'?'./models/respiratory-detailed.glb':'./models/respiratory-standard.glb']:[]),...(event.data.nervous?['./models/nervous-structures.json',event.data.nervousMode==='detailed'?'./models/nervous-detailed.glb':'./models/nervous-standard.glb']:[]),...(event.data.lymphatic?['./models/lymphatic-structures.json',event.data.lymphaticMode==='detailed'?'./models/lymphatic-detailed.glb':'./models/lymphatic-standard.glb']:[]),...(event.data.urinary?['./models/urinary-structures.json',event.data.urinaryMode==='detailed'?'./models/urinary-detailed.glb':'./models/urinary-standard.glb']:[]),...(event.data.skullDetail?['./models/skull-structures.json','./models/skull-detailed.glb']:[])].map(path=>new URL(path,self.location.href).href);
-    let done=0;
+    const route=typeof event.data.route==='string'&&event.data.route.startsWith('#')?event.data.route.slice(0,12000):'';
+    const full=event.data.type==='CACHE_OFFLINE';
+    const modelURL=new URL('./models/ecorche.glb',self.location.href).href;
+    const isValid=async(response,url)=>{
+      if(!response?.ok || response.type==='opaque')return false;
+      if(/text\/html/i.test(response.headers.get('content-type')||''))return false;
+      if(/\.glb$/i.test(new URL(url).pathname)){
+        const length=Number(response.headers.get('content-length')||0);
+        if(length>0&&length<28)return false;
+      }
+      return true;
+    };
+    const allow=/^(?:models\/(?:anatomy-organs|digestive-(?:standard|detailed)|cardiovascular-(?:standard|detailed)|respiratory-(?:standard|detailed)|nervous-(?:standard|detailed)|urinary-(?:standard|detailed)|lymphatic-(?:standard|detailed)|connective-(?:standard|detailed)|skull-detailed)\.glb|models\/(?:digestive|cardiovascular|respiratory|nervous|urinary|lymphatic|connective|skull)-structures\.json|vendor\/three\/examples\/jsm\/(?:loaders\/DRACOLoader\.js|libs\/draco\/gltf\/(?:draco_decoder\.wasm|draco_wasm_wrapper\.js)))$/;
+    const lessonModels=Array.isArray(event.data.lessonModels)?event.data.lessonModels.filter(x=>typeof x==='string'&&allow.test(x)).map(x=>'./'+x):[];
+    const extras=[
+      './models/skeletal-detailed-265c.glb?rev=265c',
+      './models/skeletal-detailed-265c-report.json?rev=265c',
+      './models/skull-native-266d.glb?rev=skull267',
+      './models/skull-native-266d-report.json?rev=skull267',
+      './models/triquetrum-extension.json?rev=245',
+      './models/realistic-human-eye.glb?rev=2215',
+      ...(event.data.organs?['./models/anatomy-organs.glb']:[]),
+      ...(event.data.detail?['./models/digestive-structures.json',`./models/digestive-${event.data.detailMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.cardio?['./models/cardiovascular-structures.json',`./models/cardiovascular-${event.data.cardioMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.respiratory?['./models/respiratory-structures.json',`./models/respiratory-${event.data.respiratoryMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.nervous?['./models/nervous-structures.json',`./models/nervous-${event.data.nervousMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.lymphatic?['./models/lymphatic-structures.json',`./models/lymphatic-${event.data.lymphaticMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.urinary?['./models/urinary-structures.json',`./models/urinary-${event.data.urinaryMode==='detailed'?'detailed':'standard'}.glb`]:[]),
+      ...(event.data.skullDetail?['./models/skull-structures.json','./models/skull-detailed.glb']:[])
+    ];
+    const urls=[...new Set([...SHELL,modelURL,...lessonModels,...extras].map(path=>new URL(path,self.location.href).href))];
+    let completed=0;
+    const missing=[];
     for(const url of urls){
-      let saved=await cache.match(url)||await (await caches.open(POLISH_MODELS)).match(url);
-      if(!saved&&event.data.type==='CACHE_OFFLINE'){
+      let saved=await cache.match(url);
+      // A currently active cache may have the same static model saved without a
+      // query suffix, but readiness records must use THIS build's actual URL.
+      if(!(await isValid(saved,url)))saved=null;
+      if(!saved&&full){
         try{
           const response=await fetch(url,{cache:'no-cache'});
-          if(response.ok&&(response.type==='basic'||response.type==='cors')){await cache.put(url,response.clone());if(/\/models\/[^/]+\.(?:glb|json)$/i.test(new URL(url).pathname)){try{await (await caches.open(POLISH_MODELS)).put(url,response.clone());}catch(error){console.warn('Model pinning limited by storage:',error);}}saved=response;}
-        }catch(e){console.warn('Offline asset missing',url,e);}
+          if(await isValid(response,url)){
+            await cache.put(url,response.clone());
+            saved=await cache.match(url);
+          }
+        }catch(error){console.warn('[AnatomIQ] Offline asset not saved',url,error);}
       }
-      if(saved)done++;
-      source?.postMessage({type:'OFFLINE_PROGRESS',completed:done,total:urls.length});
+      if(saved&&await isValid(saved,url))completed++;
+      else missing.push(new URL(url).pathname.split('/').slice(-2).join('/'));
+      source?.postMessage({type:'OFFLINE_PROGRESS',completed,total:urls.length});
     }
-    source?.postMessage({type:'OFFLINE_STATUS',complete:done===urls.length,completed:done,total:urls.length});
-  })());
+    // Published student lessons are cached independently from the SW. Verify
+    // that the exact lesson can also be reopened without raw.githubusercontent.
+    const lesson=String(event.data.lessonURL||'');
+    if(lesson){
+      const safe=/^https:\/\/raw\.githubusercontent\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/.+\/lessons\/[a-z0-9-]+\.json$/i.test(lesson);
+      urls.push(lesson);
+      let stored=safe?await (await caches.open('anatomiq-public-lessons-v1')).match(lesson):null;
+      if(!stored&&safe&&full){
+        try{
+          const res=await fetch(lesson,{cache:'no-store',credentials:'omit'});
+          if(res.ok&&/json|text\/plain/i.test(res.headers.get('content-type')||'application/json')){
+            const text=await res.clone().text();
+            JSON.parse(text); // A parse failure must not result in "offline ready".
+            await (await caches.open('anatomiq-public-lessons-v1')).put(lesson,res);
+            stored=await (await caches.open('anatomiq-public-lessons-v1')).match(lesson);
+          }
+        }catch(error){console.warn('[AnatomIQ] Lesson not saved offline',error);}
+      }
+      if(stored?.ok)completed++;else missing.push('Published lesson JSON');
+      source?.postMessage({type:'OFFLINE_PROGRESS',completed,total:urls.length});
+    }
+    // A status is never based on attempted downloads, earlier cache versions,
+    // or the older persistent model cache: only current-build cache responses.
+    const complete=completed===urls.length;
+    source?.postMessage({type:'OFFLINE_STATUS',route,complete,completed,total:urls.length,
+      missing:missing.slice(0,15),message:complete?'All current app and model assets cached.':'Missing offline assets'});
+  })().catch(error=>{
+    console.error('[AnatomIQ] Offline preparation error',error);
+    source?.postMessage({type:'OFFLINE_STATUS',route:typeof event.data.route==='string'?event.data.route:'',complete:false,completed:0,total:0,
+      missing:[],message:'Offline cache error: '+String(error?.message||error)});
+  }));
 });
