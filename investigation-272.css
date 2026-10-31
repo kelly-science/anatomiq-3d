@@ -1,0 +1,55 @@
+/* ANATOMIQ_INVESTIGATIONS_273 — teacher hotspot and dissect controls */
+#anat-guided-teacher .anat-ga-create-actions{grid-template-columns:repeat(2,minmax(0,1fr));}
+#anat-guided-teacher .anat-ga-investigate-editor{display:grid;gap:9px;margin:10px 0;min-width:0;}
+#anat-guided-teacher .anat-ga-investigate-editor .text-input{width:100%;min-width:0;box-sizing:border-box;}
+#anat-guided-teacher .anat-investigation-teacher-set{display:grid;gap:7px;padding:9px;border:1px solid rgba(125,176,205,.25);border-radius:9px;}
+#anat-guided-teacher .anat-investigation-teacher-set.is-armed{border-color:#55cbff;background:rgba(85,203,255,.07);}
+#anat-guided-teacher .anat-investigate-teacher-checks{max-height:190px;overflow:auto;border:1px solid rgba(125,176,205,.25);border-radius:8px;padding:7px;display:grid;gap:5px;}
+#anat-guided-teacher .anat-investigate-teacher-checks label{display:flex;align-items:flex-start;gap:7px;line-height:1.3;font-size:12px;}
+#anat-guided-teacher .anat-investigate-teacher-checks input{margin-top:2px;flex:0 0 auto;}
+#anat-guided-student .anat-investigate-progress{display:grid;gap:7px;margin:12px 0;}
+#anat-guided-student .anat-investigate-progress span{font-size:12px;line-height:1.4;color:var(--text-muted,#b4c8d7);}
+#anat-guided-student .anat-investigate-progress .done{color:#8fe5bd;}
+#anat-guided-student .anat-investigate-action{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;}
+#anat-guided-student .anat-investigate-action button{min-width:0;white-space:normal;}
+#anat-guided-student .anat-investigate-small{font-size:11px;line-height:1.45;color:#bad0df;}
+#anat-guided-student .anat-dissect-summary{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:600;margin-top:9px;}
+#anat-guided-student .anat-dissect-track{height:7px;border-radius:20px;overflow:hidden;background:#31495b;margin:7px 0;}
+#anat-guided-student .anat-dissect-track span{display:block;background:#75d2ac;height:100%;transition:width .18s ease;}
+#anat-guided-student .anat-dissect-list{max-height:154px;overflow:auto;display:grid;gap:5px;padding:7px;border:1px solid rgba(125,176,205,.25);border-radius:8px;}
+#anat-guided-student .anat-dissect-list span{font-size:11px;line-height:1.35;}
+#anat-guided-student .anat-dissect-list .done{color:#8fe5bd;}
+#anat-guided-student .anat-dissect-toggle[aria-pressed="true"]{background:#276a81;color:white;border-color:#58c5ec;}
+#anat-guided-student .anat-hotspot-tip{font-size:11px;color:#d6e8f3;margin-top:8px;}
+
+/* ANATOMIQ_PAINTED_HOTSPOT_274 — teacher surface painting */
+#anat-guided-teacher .anat-paint-region{background:rgba(234,44,57,.07);border-color:rgba(245,56,68,.48)}
+#anat-guided-teacher .anat-paint-region.is-armed{border-color:#ff3b4a;box-shadow:0 0 0 2px #ff3b4a55 inset}
+#anat-guided-teacher .anat-paint-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#anat-guided-teacher .anat-paint-actions button{min-width:0;white-space:normal;line-height:1.35}
+#anat-guided-teacher .anat-paint-actions button:last-child{grid-column:1/-1}
+#anat-guided-teacher .anat-paint-region input[type=range]{width:100%;accent-color:#ff3b4a}
+
+/* ANATOMIQ_RED_BRUSH_REPAIR_275 — visible paint mode feedback */
+body.anat-red-paint-armed #canvas-container{outline:2px solid #ff3b4a;outline-offset:-3px}
+body.anat-red-paint-armed #canvas-container canvas{cursor:crosshair !important;touch-action:none}
+#anat-guided-teacher .anat-paint-region.is-armed small{color:#ff5665;font-weight:700}
+
+
+/* ANATOMIQ_HOTSPOT_FEEDBACK_277 — attempt warning and mandatory chapter restart. */
+#anat-guided-student .anat-hotspot-attempts{display:flex;justify-content:space-between;gap:8px;align-items:center;
+  padding:10px 11px;border:1px solid rgba(114,174,203,.35);border-radius:9px;margin:9px 0 5px;font-size:12px;}
+#anat-guided-student .anat-hotspot-attempts span{font-variant-numeric:tabular-nums;color:#d5e7f0;}
+#anat-guided-student .anat-hotspot-limit-note{font-size:11px;line-height:1.45;color:#b9ced9;margin:5px 0 10px;}
+#anat-guided-student .anat-hotspot-final-warning{border:1px solid #ffbd5b;border-radius:10px;
+  padding:11px 12px;background:rgba(162,84,19,.22);color:#ffe0b1;font-size:12px;font-weight:700;line-height:1.5;margin:9px 0;}
+#anat-guided-student .anat-hotspot-lockout{padding:18px 15px;border:2px solid #eb5267;
+  border-radius:12px;background:rgba(123,24,42,.20);text-align:center;display:grid;gap:10px;}
+#anat-guided-student .anat-hotspot-lockout h3{margin:0;color:#ffdce0;font-size:18px;}
+#anat-guided-student .anat-hotspot-lockout p{font-size:12px;line-height:1.55;margin:0;color:#fae1e4;}
+#anat-guided-student .anat-hotspot-lockout-glyph{font-size:30px;color:#ff6577;font-weight:900;line-height:1;}
+#anat-guided-student .anat-hotspot-lockout button{margin-top:8px;}
+
+/* ANATOMIQ_DISSECTION_CARRY_278 */
+#anat-guided-teacher .anat-dissect-carry-field{display:flex;align-items:center;gap:8px;margin:12px 0;font-weight:650;}
+#anat-guided-student .anat-dissect-carry-note{border-left:3px solid #5bc3a5;padding:7px 10px;margin:8px 0;color:#a5ebd7;font-size:12px;}

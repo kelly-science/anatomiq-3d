@@ -1,9 +1,14 @@
 // AnatomIQ Guided Chapter Activities — local 2.2.69i pilot.
+// ANATOMIQ_PAINTED_HOTSPOT_274 — painted multi-bone Label editor and preview-safe drafts.
 // No network, analytics, authentication, or model changes.
+import {INVESTIGATION_TYPES,INVESTIGATION_ROTATIONS,investigationRotation,validateInvestigation,relationshipPick,revealReady,relationshipReady,rotationSatisfied,paintedHotspotAccepted,labelReady,dissectionProgress,dissectReady} from './investigation-272.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_INVESTIGATIONS_272
+import {migrateLabelPaint,validPaintRegion,addPaintPoint} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local';
+import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPTS,restartChapterAnswers} from './hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_HOTSPOT_FEEDBACK_277
+import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
-export const GUIDED_TYPES = Object.freeze(['explore','identify','mc']);
+export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect']);
 const MAX_STEPS = 12;
 // ANATOMIQ_GUIDED_IDENTIFY_VISIBLE_SEARCH_269J2: pure search helper (no render loop work).
 export function searchIdentifyTargets(choices, query){
@@ -58,16 +63,16 @@ export function normalizeGuided(input, count){
   const src = input && typeof input==='object' && !Array.isArray(input) ? input : FALLBACK;
   return {free: src.free===true,
     chapters:Array.from({length:count},(_,i)=>Array.isArray(src.chapters?.[i])?
-      src.chapters[i].map(x=>structuredClone(x)):[])};
+      src.chapters[i].map(x=>migrateLabelPaint(structuredClone(x))):[])};
 }
 export function validateGuided(input, count){
   if(input===undefined)return true;
   if(!input||typeof input!=='object'||Array.isArray(input)||typeof input.free!=='boolean'
      ||!Array.isArray(input.chapters)||input.chapters.length!==count)throw Error('Invalid guided lesson settings.');
   const used=new Set();
-  for(const steps of input.chapters){
+  for(const [chapterIndex,steps] of input.chapters.entries()){
     if(!Array.isArray(steps)||steps.length>MAX_STEPS)throw Error('Each chapter supports up to 12 activities.');
-    for(const a of steps){
+    for(const [activityIndex,a] of steps.entries()){
       if(!a||typeof a!=='object'||!GUIDED_TYPES.includes(a.type)||typeof a.id!=='string'
          ||!/^act-[a-zA-Z0-9-]{4,80}$/.test(a.id)||used.has(a.id))throw Error('Invalid activity identity or type.');
       used.add(a.id);
@@ -75,6 +80,8 @@ export function validateGuided(input, count){
          typeof a.prompt!=='string'||!a.prompt.trim()||a.prompt.length>600||
          typeof a.hint!=='string'||a.hint.length>300||typeof a.feedback!=='string'||a.feedback.length>500)
          throw Error('Invalid activity instructions or feedback.');
+      if(INVESTIGATION_TYPES.includes(a.type)){try{validateInvestigation(a); }
+        catch(error){throw Error(`Chapter ${chapterIndex+1}, activity ${activityIndex+1} (${a.title||a.type}): ${error.message}`);}}
       if(a.type==='explore'){
         if(!['rotate','self'].includes(a.action))throw Error('Invalid explore action.');
         if(a.rotationDegrees!==undefined&&!ROTATION_CHOICES.includes(a.rotationDegrees))
@@ -157,7 +164,7 @@ function downloadCompletionPNG(name,title,chapters,done,total,firstTry){
 export function createGuidedLessons(api){
   let config=normalizeGuided(null,1),projectKey='',currentProject=null,studentProgress={answers:{},chapter:0},
     ready=false,storageOK=true,orbitMeter=null,orbitActivityId=null,orbitLastShown=-1,feedback='',feedbackGood=false,studentName='',
-    teacherMounted=false,studentMounted=false,session=0;
+    teacherMounted=false,studentMounted=false,session=0,investigationCandidate=null,teacherHotspotId=null,paintPreviewId=null,studentHotspotArmed=false,dissectArmed=false; // ANATOMIQ_INVESTIGATIONS_273
   const teacherRoot=byId('anat-guided-teacher');const studentRoot=byId('anat-guided-student');
   const student=()=>!api.isTeacher();
   const steps=(chapter=api.getChapter())=>config.chapters[chapter]||[];
@@ -168,9 +175,48 @@ export function createGuidedLessons(api){
   const totals=()=>({total:allSteps().length,done:allSteps().filter(completed).length,
     firstTry:allSteps().filter(a=>answers()[a.id]?.done&&answers()[a.id]?.attempts===1).length});
   function touch(){if(!api.isTeacher())return;api.onTeacherChange();renderTeacher();}
+  const teacherPaintActivity=()=>steps().find(step=>step.id===teacherHotspotId&&step.type==='label');
+  function stopTeacherPaint(saveStroke=true){
+    const wasPainting=!!teacherHotspotId;teacherHotspotId=null;
+    if(wasPainting)api.setTeacherPaintMode?.(false);
+    if(saveStroke){api.onTeacherChange();renderTeacher();}
+  }
+  function teacherPaintStatus(message){
+    const a=teacherPaintActivity();
+    if(!a)return;
+    const el=byId('anat-paint-points-'+a.id);
+    if(el)el.textContent=message;
+  }
+  function teacherPaintSample(index,worldPoint,normal=null){
+    const a=teacherPaintActivity();
+    if(!api.isTeacher()||!a||!worldPoint?.clone)return false;
+    // The former getTargets() dropdown gate could silently reject valid surface
+    // hits (including painted areas spanning several chapter bones). Instead,
+    // check the actual visible chapter structure through the model API.
+    if(api.canPaintStructure?.(index)===false){
+      teacherPaintStatus('That structure is hidden or unavailable in this chapter. Reveal it and try again.');
+      return false;
+    }
+    const p=api.getStructureLocalPoint?.(index,worldPoint);
+    if(!p){teacherPaintStatus('Could not read this bone’s surface coordinates.');return false;}
+    const previous=[...(a.paintRegions||[])].reverse().find(x=>x.s===index);
+    const spacing=previous?api.getStructureWorldPaintDistance?.(index,previous.p,p):null;
+    const result=addPaintPoint(a.paintRegions||[],index,p,a.brushMm||8,normal?.toArray?.()||null,spacing);
+    if(result.added){
+      a.paintRegions=result.regions;
+      api.showTeacherPaintRegions?.(a.paintRegions);
+      teacherPaintStatus(`RED PAINT ACTIVE — ${a.paintRegions.length} samples across ${new Set(a.paintRegions.map(s=>s.s)).size} structures`);
+    }else if(result.reason==='limit'){
+      teacherPaintStatus('Paint limit reached on this structure. Stop painting or clear this area.');
+    }else if(result.reason==='invalid'){
+      teacherPaintStatus('Paint not recorded: '+(result.detail||'Invalid surface sample.'));
+    }
+    return result.added||result.reason==='near';
+  }
   function serialize(){const saved=structuredClone(config);validateGuided(saved,api.getChapters().length);return saved;}
   async function load(value,project){
     const thisSession=++session;
+    stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;
     config=normalizeGuided(value,api.getChapters().length);validateGuided(config,api.getChapters().length);
     currentProject=project;projectKey=progressKey({...project,guided:config});
     studentProgress={key:projectKey,answers:{},chapter:0,updatedAt:Date.now()};feedback='';resetOrbitMeter();ready=false;
@@ -178,13 +224,19 @@ export function createGuidedLessons(api){
       const recovered=await readProgress(projectKey);
       if(thisSession!==session)return;
       if(recovered?.answers&&typeof recovered.answers==='object')studentProgress={...studentProgress,...recovered,key:projectKey};
+      for(const a of allSteps())if(!completed(a)&&studentProgress.answers[a.id]){
+        const prior=studentProgress.answers[a.id];
+        if(a.type==='reveal')studentProgress.answers[a.id]={...prior,actionDone:false,targetPicked:false};
+        if(a.type==='label')studentProgress.answers[a.id]={...prior,hotspotCorrect:false};
+        if(a.type==='dissect')studentProgress.answers[a.id]={...prior,hiddenIndices:[]};
+      }
       storageOK=!!(await writeProgress(studentProgress));
     }
-    if(thisSession!==session)return;ready=true;renderTeacher();renderStudent();
+    if(thisSession!==session)return;ready=true;syncInheritedDissection();renderTeacher();renderStudent();
   }
-  function onChapterChanged(){feedback='';resetOrbitMeter();
+  function onChapterChanged(){stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearTeacherHotspot?.();feedback='';resetOrbitMeter();
     if(student()&&ready&&guided()){studentProgress.chapter=api.getChapter();save();}
-    renderTeacher();renderStudent();}
+    syncInheritedDissection();renderTeacher();renderStudent();}
   function insertActivity(type){
     if(!api.isTeacher())return;
     const current=steps();if(current.length>=MAX_STEPS){api.notify('Maximum 12 activities per chapter.');return;}
@@ -202,18 +254,41 @@ export function createGuidedLessons(api){
       base.targetLabel=kind==='l'?value:null;
     }
     if(type==='mc'){base.options=['Option A','Option B','Option C','Option D'];base.correct=0;}
+    if(INVESTIGATION_TYPES.includes(type)){
+      const available=api.getTargets().filter(c=>c.key.startsWith('s:')).map(c=>Number(c.key.slice(2)));
+      if(available.length<(type==='relationship'?2:1)){
+        api.notify('Enable enough visible chapter structures before adding an investigation.');return;
+      }
+      base.rotationDegrees=30;
+      if(type==='reveal'){
+        base.title='Reveal & identify';base.prompt='Manipulate the skull to reveal and identify the specified structure.';
+        base.targetStructure=available[0];base.targetLabel=null;
+        base.action=available.length>=2?'hide':'isolate';
+        base.obstructionStructure=available.find(n=>n!==base.targetStructure)??null;
+      }else if(type==='relationship'){
+        base.title='Find the anatomical relationship';base.prompt='Select the two bones that form the named relationship.';
+        base.firstStructure=available[0];base.secondStructure=available[1];
+      }else if(type==='label'){
+        base.title='Place an anatomical hotspot';base.prompt='Inspect the model and place a 3D hotspot on the requested landmark.';
+        base.paintRegions=[];base.brushMm=8;base.attemptLimit=DEFAULT_NEW_HOTSPOT_ATTEMPTS;
+        base.rotationDegrees=0;
+      }else if(type==='dissect'){
+        base.title='Dissect to reveal anatomy';base.prompt='Use the Dissect tool to remove every required structure.';
+        base.hideStructures=[available[0]];base.rotationDegrees=0;base.keepHiddenForNext=false;
+      }
+    }
     current.push(base);touch();
   }
   function update(i,key,value){const activity=steps()[i];if(!activity)return;activity[key]=value;api.onTeacherChange();}
   function renderTeacher(){
-    if(!teacherRoot||!api.isTeacher())return;teacherMounted=true;
+    if(!teacherRoot||!api.isTeacher())return;teacherMounted=true;api.clearTeacherHotspot?.();
     const free=teacherRoot.querySelector('#anat-ga-free');if(free)free.checked=config.free;
     const heading=teacherRoot.querySelector('#anat-ga-title');if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     const list=teacherRoot.querySelector('#anat-ga-list');if(!list)return;list.replaceChildren();
     for(const [i,a] of steps().entries()){
       const wrapper=document.createElement('section');wrapper.className='anat-ga-editor-item';
       const header=document.createElement('div');header.className='anat-ga-editor-header';
-      header.innerHTML=`<strong>${i+1}. ${a.type==='mc'?'Multiple choice':a.type==='identify'?'Identify':'Explore'}</strong>`;
+      header.innerHTML=`<strong>${i+1}. ${a.type==='mc'?'Multiple choice':a.type==='identify'?'Identify':a.type==='reveal'?'Reveal & Identify':a.type==='relationship'?'Relationships':a.type==='label'?'Label hotspot':a.type==='dissect'?'Dissect':'Explore'}</strong>`;
       for(const [label,delta] of [['↑',-1],['↓',1]]){
         const b=document.createElement('button');b.type='button';b.className='button small subtle';b.textContent=label;
         b.disabled=i+delta<0||i+delta>=steps().length;
@@ -282,6 +357,140 @@ export function createGuidedLessons(api){
           status.classList.remove('anat-ga-target-warning');
         });
         redraw();label.append(search,select,status);wrapper.append(label);
+      }else if(INVESTIGATION_TYPES.includes(a.type)){
+        const block=document.createElement('div');block.className='anat-ga-investigate-editor';
+        const structureOptions=()=>api.getTargets().filter(c=>c.key.startsWith('s:'));
+        const addPicker=(title,fieldKey,labels=false)=>{
+          const label=document.createElement('label');label.className='anat-ga-field';label.textContent=title;
+          const search=document.createElement('input');search.className='text-input';search.type='search';search.placeholder='Search chapter structures…';
+          const select=document.createElement('select');select.className='text-input';
+          const feedback=document.createElement('small');feedback.className='anat-ga-target-status';
+          const options=labels?api.getTargets().filter(c=>c.key.startsWith('s:')||c.key.startsWith('l:')):structureOptions();
+          const targetKey=()=>labels&&a.targetLabel?'l:'+a.targetLabel:'s:'+a[fieldKey];
+          const fill=()=>{
+            const chosen=targetKey(),query=search.value.toLowerCase().trim();
+            const matches=options.filter(o=>o.label.toLowerCase().includes(query));
+            const selected=options.find(o=>o.key===chosen);
+            select.replaceChildren();
+            const shown=selected&&!matches.includes(selected)?[selected,...matches]:matches;
+            for(const opt of shown){const item=document.createElement('option');item.value=opt.key;item.textContent=opt.label;select.append(item);}
+            select.value=selected?chosen:'';
+            feedback.textContent=selected?`${matches.length} matching chapter targets`:'Selected structure is not visible in this chapter.';
+          };
+          select.addEventListener('change',()=>{
+            const [kind,value]=select.value.split(':');
+            if(kind==='s'){
+              const chosen=Number(value);
+              if(a.type==='relationship' && (fieldKey==='firstStructure'?chosen===a.secondStructure:chosen===a.firstStructure)){
+                api.notify('Choose two different bones for a relationship.');fill();return;
+              }
+              if(a.type==='reveal' && (fieldKey==='obstructionStructure'?chosen===a.targetStructure:a.action==='hide'&&chosen===a.obstructionStructure)){
+                api.notify('Target and obstruction must be different bones.');fill();return;
+              }
+              a[fieldKey]=chosen;if(labels)a.targetLabel=null;
+              if(a.type==='label'){a.hotspot=null;teacherHotspotId=null;api.clearTeacherHotspot?.();}
+            }
+            else if(kind==='l'&&labels){const target=api.getLabel(value);if(!target)return;
+              if(a.type==='reveal'&&a.action==='hide'&&target.s===a.obstructionStructure){api.notify('Target and obstruction must be different.');fill();return;}
+              a[fieldKey]=target.s;a.targetLabel=value;}
+            api.onTeacherChange();
+          });
+          search.addEventListener('input',fill);fill();label.append(search,select,feedback);block.append(label);
+        };
+        const addSelect=(title,values,initial,change)=>{
+          const label=document.createElement('label');label.className='anat-ga-field';label.textContent=title;
+          const choice=document.createElement('select');choice.className='text-input';
+          for(const [value,text] of values){const opt=document.createElement('option');opt.value=value;opt.textContent=text;choice.append(opt);}
+          choice.value=String(initial);choice.addEventListener('change',()=>change(choice.value));
+          label.append(choice);block.append(label);
+        };
+        addSelect('Required real model rotation',INVESTIGATION_ROTATIONS.map(deg=>[String(deg),deg===0?'Off — no rotation required':deg+'°']),investigationRotation(a),v=>update(i,'rotationDegrees',Number(v)));
+        if(a.type==='reveal'){
+          addSelect('Required model action',[['hide','Hide an obstructing bone'],['isolate','Isolate the target bone']],a.action,v=>{
+            if(v==='hide' && (!Number.isInteger(a.obstructionStructure)||a.obstructionStructure===a.targetStructure)){
+              const alternate=structureOptions().find(c=>Number(c.key.slice(2))!==a.targetStructure);
+              if(!alternate){api.notify('Show a second bone before using Hide mode.');renderTeacher();return;}
+              a.obstructionStructure=Number(alternate.key.slice(2));
+            }
+            update(i,'action',v);renderTeacher();});
+          addPicker('Bone or teacher marker to identify','targetStructure',true);
+          if(a.action==='hide')addPicker('Bone students must hide first','obstructionStructure');
+        }else if(a.type==='relationship'){
+          addPicker('First bone in the relationship','firstStructure');
+          addPicker('Second bone in the relationship','secondStructure');
+        }else if(a.type==='label'){
+          addSelect('Student hotspot attempt limit',
+            [['0','Unlimited — no chapter restart'],...Array.from({length:10},(_,i)=>[String(i+1),`${i+1} attempt${i?'s':''}`])],
+            a.attemptLimit??0, v=>update(i,'attemptLimit',Number(v)));
+          const region=document.createElement('div');region.className='anat-investigation-teacher-set anat-paint-region';
+          if(teacherHotspotId===a.id)region.classList.add('is-armed');
+          const width=document.createElement('label');width.className='anat-ga-field';width.textContent='Paint brush radius (approx. mm)';
+          const size=document.createElement('input');size.type='range';size.min='2';size.max='35';size.step='1';size.value=String(a.brushMm||8);
+          const sizeValue=document.createElement('strong');sizeValue.textContent=size.value+' mm';
+          size.addEventListener('input',()=>{a.brushMm=Number(size.value);sizeValue.textContent=size.value+' mm';api.onTeacherChange();});
+          width.append(size,sizeValue);region.append(width);
+          const controls=document.createElement('div');controls.className='anat-paint-actions';
+          const paint=document.createElement('button');paint.type='button';paint.className='button primary small';
+          paint.textContent=teacherHotspotId===a.id?'Stop painting':'Paint correct area';
+          paint.addEventListener('click',()=>{
+            const active=teacherHotspotId===a.id;stopTeacherPaint(false);
+            paintPreviewId=a.id;
+            if(!active){teacherHotspotId=a.id;api.setTeacherPaintMode?.(true);}
+            renderTeacher();
+            if(!active)teacherPaintStatus('RED BRUSH ON — drag across a visible 3D bone to paint the correct area.');
+          });
+          const clear=document.createElement('button');clear.type='button';clear.className='button small subtle';clear.textContent='Clear paint';
+          clear.disabled=!a.paintRegions?.length;
+          clear.addEventListener('click',()=>{a.paintRegions=[];paintPreviewId=a.id;api.showTeacherPaintRegions?.([]);touch();});
+          const show=document.createElement('button');show.type='button';show.className='button small subtle';show.textContent='Show painted area';
+          show.addEventListener('click',()=>{paintPreviewId=a.id;api.showTeacherPaintRegions?.(a.paintRegions||[]);});
+          controls.append(paint,clear,show);region.append(controls);
+          const note=document.createElement('small');note.id='anat-paint-points-'+a.id;
+          const used=new Set((a.paintRegions||[]).map(s=>s.s)).size;
+          note.textContent=(a.paintRegions?.length||0)?`RED PAINT SAVED — ${a.paintRegions.length} samples across ${used} structures`:
+            'No target painted yet. Click Paint correct area, then drag across the visible skull. The area should turn RED.';
+          region.append(note);
+          if(teacherHotspotId===a.id){
+            const tip=document.createElement('small');tip.textContent='RED BRUSH ON. Drag across visible skull bones; the painted area should appear immediately. Stop painting to orbit again.';
+            region.append(tip);
+          }
+          block.append(region);
+        }else if(a.type==='dissect'){
+          const available=structureOptions();
+          const title=document.createElement('strong');title.textContent='Structures students must dissect';block.append(title);
+          const hint=document.createElement('small');hint.textContent='Select the exact structures. Every checked structure must be hidden for completion.';block.append(hint);
+          const filter=document.createElement('input');filter.type='search';filter.className='text-input';filter.placeholder='Search chapter structures…';block.append(filter);
+          const checks=document.createElement('div');checks.className='anat-investigate-teacher-checks';
+          const count=document.createElement('small');
+          const redraw=()=>{
+            const query=filter.value.trim().toLowerCase();checks.replaceChildren();
+            for(const item of available.filter(x=>x.label.toLowerCase().includes(query))){
+              const idx=Number(item.key.slice(2));const row=document.createElement('label');
+              const input=document.createElement('input');input.type='checkbox';input.checked=a.hideStructures.includes(idx);
+              input.addEventListener('change',()=>{
+                const next=new Set(a.hideStructures);
+                if(input.checked){if(next.size>=64){api.notify('Maximum 64 structures per Dissect activity.');input.checked=false;return;}next.add(idx);}
+                else next.delete(idx);
+                if(next.size===0){api.notify('Choose at least one required structure.');input.checked=true;return;}
+                a.hideStructures=[...next];api.onTeacherChange();
+                count.textContent=`${a.hideStructures.length} required structures`;
+              });row.append(input,document.createTextNode(item.label));checks.append(row);
+            }
+          };
+          filter.addEventListener('input',redraw);redraw();
+          count.textContent=`${a.hideStructures.length} required structures`;
+          block.append(checks,count);
+          // ANATOMIQ_DISSECTION_CARRY_278 — optional chapter-scoped retained dissection.
+          const persist=document.createElement('label');persist.className='anat-ga-field anat-dissect-carry-field';
+          const checkbox=document.createElement('input');checkbox.type='checkbox';
+          checkbox.checked=a.keepHiddenForNext===true;
+          checkbox.addEventListener('change',()=>update(i,'keepHiddenForNext',checkbox.checked));
+          persist.append(checkbox,document.createTextNode(' Keep structures hidden for next activity'));
+          block.append(persist);
+          const missing=a.hideStructures.filter(idx=>!available.some(x=>x.key==='s:'+idx));
+          if(missing.length){const warning=document.createElement('small');warning.textContent=missing.length+' previously selected structures are no longer visible in the chapter.';block.append(warning);}
+        }
+        wrapper.append(block);
       }else{
         for(let j=0;j<a.options.length;j++){
           const line=document.createElement('label');line.className='anat-ga-mc-choice';
@@ -303,26 +512,47 @@ export function createGuidedLessons(api){
       field('Feedback shown after completion','feedback',true);
       list.append(wrapper);
     }
+    const preview=steps().find(a=>a.id===teacherHotspotId&&a.type==='label')||
+      steps().find(a=>a.id===paintPreviewId&&a.type==='label');
+    api.showTeacherPaintRegions?.(preview?.paintRegions||[]);
     const count=teacherRoot.querySelector('#anat-ga-count');if(count)count.textContent=`${steps().length} of ${MAX_STEPS} activities`;
   }
   function save(){if(!ready||!student()||!guided())return;studentProgress.updatedAt=Date.now();
     void writeProgress(studentProgress).then(ok=>{storageOK=ok;updateSavedIndicator();});}
   function updateSavedIndicator(){const el=byId('anat-ga-saved');if(el)el.textContent=storageOK?'Saved on this device':'Progress storage unavailable — finish in one session';}
+  // ANATOMIQ_DISSECTION_CARRY_278 — derive inherited cuts from *completed* prior
+  // Dissect activities only. In-progress cuts are never replayed from local storage.
+  function inheritedHidden(){
+    const active=currentActivity();
+    return inheritedDissectionIndices(steps(),answers(),active?.id??null);
+  }
+  function dissectEvidence(activity){
+    return dissectionEvidenceWithCarry(activity,answers()[activity.id],inheritedHidden());
+  }
+  function syncInheritedDissection(){
+    if(!student()||!ready||!guided())return;
+    api.setInvestigationHiddenIndices?.(inheritedHidden());
+  }
   function complete(a,attempted=true){
     if(completed(a))return;
+    // Keep the successful 3D check visible for the rest of the chapter.
+    if(INVESTIGATION_TYPES.includes(a.type)){api.resetInvestigation?.();if(a.type!=='label')api.clearStudentHotspot?.();investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;}
     const old=answers()[a.id]||{};
     studentProgress.answers[a.id]={...old,done:true,attempts:Math.max(1,old.attempts||Number(attempted))};
+    syncInheritedDissection();
     feedback=a.feedback||'Activity complete.';feedbackGood=true;resetOrbitMeter();save();renderStudent();
   }
   function fail(a){const old=answers()[a.id]||{};studentProgress.answers[a.id]={...old,done:false,attempts:(old.attempts||0)+1};
     feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
   function currentActivity(){return steps().find(a=>!completed(a));}
-  function resetOrbitMeter(){orbitMeter?.end();orbitMeter=null;orbitActivityId=null;orbitLastShown=-1;}
+  function resetOrbitMeter(){orbitMeter?.end();orbitMeter=null;orbitActivityId=null;orbitLastShown=-1;investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;}
   function ensureOrbitMeter(activity){
-    if(!activity||activity.type!=='explore'||activity.action!=='rotate')return null;
+    if(!activity||(activity.type!=='explore'&&INVESTIGATION_TYPES.includes(activity.type)&&investigationRotation(activity)===0)||
+      (activity.type==='explore'&&activity.action!=='rotate')||
+      (activity.type!=='explore'&&!INVESTIGATION_TYPES.includes(activity.type)))return null;
     if(orbitActivityId!==activity.id){
       resetOrbitMeter();orbitActivityId=activity.id;
-      orbitMeter=createRotationMeter(requiredRotation(activity),answers()[activity.id]?.rotationProgressDeg||0);
+      orbitMeter=createRotationMeter(activity.type==='explore'?requiredRotation(activity):investigationRotation(activity),answers()[activity.id]?.rotationProgressDeg||0);
     }
     return orbitMeter;
   }
@@ -357,18 +587,117 @@ export function createGuidedLessons(api){
     const old=orbitMeter.value;
     orbitMeter.change(api.getCamera(),api.getOrbitTarget());
     if(orbitMeter.value===old)return;
-    refreshRotationUI(activity,orbitMeter);
-    if(orbitMeter.unlocked){recordRotation(activity,orbitMeter);save();}
+    if(activity.type==='explore')refreshRotationUI(activity,orbitMeter);
+    if(orbitMeter.unlocked){
+      recordRotation(activity,orbitMeter);save();
+      if(activity.type==='relationship'&&relationshipReady(activity,answers()[activity.id])){complete(activity);return;}
+      if(activity.type==='reveal'&&revealReady(activity,answers()[activity.id])){complete(activity);return;}
+      if(activity.type==='label'&&labelReady(activity,answers()[activity.id])){complete(activity);return;}
+      if(activity.type==='dissect'&&dissectReady(activity,dissectEvidence(activity))){complete(activity);return;}
+      if(INVESTIGATION_TYPES.includes(activity.type))renderStudent();
+    }
   }
   function onOrbitEnd(){
     if(!orbitMeter?.active)return;
     const activity=currentActivity();
     if(activity?.id===orbitActivityId){recordRotation(activity,orbitMeter);save();}
     orbitMeter.end();
+    if(activity&&INVESTIGATION_TYPES.includes(activity.type)){
+      const evidence=answers()[activity.id];
+      if((activity.type==='reveal'&&revealReady(activity,evidence))||
+         (activity.type==='relationship'&&relationshipReady(activity,evidence))||
+         (activity.type==='label'&&labelReady(activity,evidence))||
+         (activity.type==='dissect'&&dissectReady(activity,dissectEvidence(activity)))){complete(activity);return;}
+      renderStudent();
+    }
   }
-  function handlePick(index,point){
+  function investigationTargetMatches(a,index,point){
+    if(index!==a.targetStructure)return false;
+    if(!a.targetLabel)return true;
+    const anchor=api.getLabelAnchor(a.targetLabel);
+    if(!anchor||!point||!api.getLabel(a.targetLabel))return false;
+    const camera=api.getCamera(),rect=api.getCanvasRect();
+    const a2=anchor.clone().project(camera),p2=point.clone().project(camera);
+    return a2.z>=-1&&a2.z<=1&&Math.hypot((a2.x-p2.x)*rect.width/2,(a2.y-p2.y)*rect.height/2)<=44;
+  }
+  function handleInvestigationPick(a,index,point,normal=null){
+    if(!Number.isInteger(index))return true;
+    const prior=answers()[a.id]||{};
+    if(a.type==='label'){
+      const retry=hotspotAttemptState(a,prior);
+      if(retry.locked)return true; // This chapter must be restarted first.
+      if(prior.hotspotCorrect)return true; // Never overwrite an accepted green check.
+      if(!a.paintRegions?.length){feedback='Teacher has not painted the target area yet.';feedbackGood=false;renderStudent();return true;}
+      if(!studentHotspotArmed){feedback='Select Place 3D hotspot first.';feedbackGood=false;renderStudent();return true;}
+      const good=!!point&&paintedHotspotAccepted(a,index,point.toArray(),sample=>api.getHotspotWorldPoint?.(sample),normal?.toArray?.()||null);
+      api.showStudentHotspot?.(point,good);
+      studentProgress.answers[a.id]={...prior,hotspotCorrect:good,attempts:(prior.attempts||0)+1};
+      const state=hotspotAttemptState(a,studentProgress.answers[a.id]);
+      if(!good){
+        if(state.locked){studentHotspotArmed=false;feedback='';feedbackGood=false;}
+        else {feedback=a.hint?`Incorrect location. Hint: ${a.hint}`:'Incorrect location — try another point on the model.';feedbackGood=false;}
+        save();renderStudent();return true;
+      }
+      studentHotspotArmed=false;
+      if(labelReady(a,answers()[a.id]))complete(a);
+      else{feedback='Hotspot accepted. Complete the rotation requirement.';feedbackGood=true;save();renderStudent();}
+      return true;
+    }
+    if(a.type==='dissect'){
+      if(!dissectArmed){feedback='Turn on the Dissect tool before selecting structures.';feedbackGood=false;renderStudent();return true;}
+      if(!a.hideStructures.includes(index)){
+        feedback='This structure is not on the required dissection checklist.';feedbackGood=false;renderStudent();return true;
+      }
+      if((prior.hiddenIndices||[]).includes(index))return true;
+      if(!api.investigationAction?.('hide',index)){
+        feedback='This structure cannot be dissected in the current chapter view.';feedbackGood=false;renderStudent();return true;
+      }
+      const hiddenIndices=[...(prior.hiddenIndices||[]),index];
+      studentProgress.answers[a.id]={...prior,hiddenIndices};
+      if(dissectReady(a,dissectEvidence(a)))complete(a);
+      else{const count=dissectionProgress(a,hiddenIndices);feedback=`${count.completed} dissected · ${count.remaining.length} remaining.`;feedbackGood=true;save();renderStudent();}
+      return true;
+    }
+    if(a.type==='relationship'){
+      const pick=relationshipPick(prior.selectedStructures||[],index,a.firstStructure,a.secondStructure);
+      const attempts=(prior.attempts||0)+(pick.valid?0:1);
+      studentProgress.answers[a.id]={...prior,selectedStructures:pick.selected,attempts};
+      if(!pick.valid){failFromAlreadyIncremented(a);return true;}
+      if(relationshipReady(a,answers()[a.id]))complete(a);
+      else {feedback=pick.done?'Both bones found. Finish rotating to verify.':'Bone selected. Find its partner.';
+        feedbackGood=true;save();renderStudent();}
+      return true;
+    }
+    // Reveal: the first pick is the student's candidate for a physical hide/isolate action.
+    if(!prior.actionDone){investigationCandidate=index;feedback='';renderStudent();return true;}
+    const good=investigationTargetMatches(a,index,point);
+    studentProgress.answers[a.id]={...prior,targetPicked:good,attempts:(prior.attempts||0)+(good?0:1)};
+    if(!good){failFromAlreadyIncremented(a);return true;}
+    if(revealReady(a,answers()[a.id]))complete(a);
+    else{feedback='Correct location. Complete the required rotation.';feedbackGood=true;save();renderStudent();}
+    return true;
+  }
+  function performInvestigationAction(a){
+    if(a.type!=='reveal'||investigationCandidate===null)return;
+    const target=investigationCandidate;
+    if(a.action==='hide'&&target!==a.obstructionStructure){investigationCandidate=null;fail(a);return;}
+    if(a.action==='isolate'&&target!==a.targetStructure){investigationCandidate=null;fail(a);return;}
+    if(!api.investigationAction?.(a.action,target)){
+      feedback='That structure cannot be manipulated in the current chapter.';
+      feedbackGood=false;renderStudent();return;
+    }
+    const prev=answers()[a.id]||{};
+    studentProgress.answers[a.id]={...prev,actionDone:true,actionIndex:target,targetPicked:false};
+    investigationCandidate=null;feedback='Model changed. Now select the requested target on the 3D model.';
+    feedbackGood=true;save();renderStudent();
+  }
+  // Brush strokes are handled on pointer drag by the 3D viewer (not its click-to-select handler).
+  function handleTeacherHotspotPick(){return false;}
+  function handlePick(index,point,normal=null){
     if(!student()||!ready||!guided()||api.isPractical())return false;
-    const a=currentActivity();if(a?.type!=='identify')return false;
+    const a=currentActivity();
+    if(INVESTIGATION_TYPES.includes(a?.type))return handleInvestigationPick(a,index,point,normal);
+    if(a?.type!=='identify')return false;
     // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1: teacher-created multi-anchor labels
     // accept clicks on any original member mesh (not just the first anchor).
     const chosenLabel=a.targetLabel?api.getLabel(a.targetLabel):null;
@@ -388,6 +717,8 @@ export function createGuidedLessons(api){
     return true;
   }
   function canAdvance(target){if(!student()||!ready||!guided()||api.isPractical()||target<=api.getChapter())return true;
+    const pendingLabel=currentActivity();
+    if(pendingLabel?.type==='label'&&hotspotAttemptState(pendingLabel,answers()[pendingLabel.id]).locked){feedback='Restart this chapter before continuing.';renderStudent();return false;}
     const pending=Array.from({length:target-api.getChapter()},(_,i)=>api.getChapter()+i).find(ch=>(config.chapters[ch]||[]).some(a=>!completed(a)));
     if(pending!==undefined){feedback=`Complete chapter ${pending+1} activities before continuing.`;feedbackGood=false;renderStudent();return false;}
     return true;
@@ -395,7 +726,7 @@ export function createGuidedLessons(api){
   function renderStudent(){
     if(!studentRoot||!student())return;studentMounted=true;
     const active=ready&&guided()&&!api.isPractical();studentRoot.hidden=!active;
-    const identify=active&&currentActivity()?.type==='identify';document.body.classList.toggle('anat-guided-identify',!!identify);
+    const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
     if(!active)return;
     const {done,total,firstTry}=totals();const step=currentActivity();
     const completeAll=done===total;
@@ -411,6 +742,16 @@ export function createGuidedLessons(api){
       if(api.getChapter()<api.getChapters().length-1)inner+='<button class="button primary full" id="anat-ga-next-chapter" type="button">Next chapter →</button>';
     }else{
       const index=steps().indexOf(step)+1;
+      const lockedLabel=step.type==='label'&&hotspotAttemptState(step,answers()[step.id]).locked;
+      if(lockedLabel){
+        const limit=hotspotAttemptState(step,answers()[step.id]).limit;
+        inner+=`<section class="anat-hotspot-lockout" role="alert" aria-live="assertive">
+          <div class="anat-hotspot-lockout-glyph" aria-hidden="true">✕</div>
+          <h3>Attempt limit reached</h3>
+          <p>You used all ${limit} hotspot attempts. You must restart <strong>Chapter ${api.getChapter()+1}</strong> before trying again.</p>
+          <p>All activities in this chapter will reset. Earlier chapters remain completed.</p>
+          <button class="button primary full" id="anat-ga-restart-chapter" type="button">Restart Chapter ${api.getChapter()+1}</button></section>`;
+      }else{
       inner+=`<div class="anat-ga-task"><small>Chapter ${api.getChapter()+1} · Activity ${index} of ${steps().length}</small><h3>${esc(step.title)}</h3>
       <p>${esc(step.prompt)}</p>`;
       if(step.type==='explore'){
@@ -427,9 +768,51 @@ export function createGuidedLessons(api){
           inner+='<p class="anat-ga-help">Explore the anatomy, then continue when ready.</p><button class="button primary full" type="button" id="anat-ga-explore">Continue</button>';
         }
       }
+      else if(INVESTIGATION_TYPES.includes(step.type)){
+        const evidence=answers()[step.id]||{},meter=ensureOrbitMeter(step),angle=investigationRotation(step);
+        const rotationDone=angle===0||!!meter?.unlocked;
+        let checklist=`<div class="anat-investigate-progress">`;
+        if(angle>0)checklist+=`<span class="${rotationDone?'done':''}">${rotationDone?'✓':'○'} Rotate model ${angle}° (${Math.floor(meter?.value||0)}°)</span>`;
+        if(step.type==='reveal'){
+          checklist+=`<span class="${evidence.actionDone?'done':''}">${evidence.actionDone?'✓':'○'} ${step.action==='hide'?'Hide the obstructing bone':'Isolate the target'}</span>
+          <span class="${evidence.targetPicked?'done':''}">${evidence.targetPicked?'✓':'○'} Identify the target in 3D</span></div>`;
+          const candidateReady=Number.isInteger(investigationCandidate);
+          if(!evidence.actionDone)checklist+=`<p class="anat-investigate-small">Click a bone, then use the action button. Only model interactions count.</p>
+            <div class="anat-investigate-action"><button class="button primary" id="anat-ga-model-action" ${candidateReady?'':'disabled'}>${step.action==='hide'?'Hide selected bone':'Isolate selected bone'}</button>
+            <button class="button subtle" id="anat-ga-model-reset">Restore model</button></div>`;
+          else checklist+=`<div class="anat-investigate-action"><button class="button subtle full" id="anat-ga-model-reset">Restore / retry</button></div>`;
+        }else if(step.type==='relationship'){
+          const selected=evidence.selectedStructures||[];
+          checklist+=`<span class="${selected.length>=1?'done':''}">${selected.length>=1?'✓':'○'} First bone (${Math.min(2,selected.length)}/2)</span>
+            <span class="${selected.length>=2?'done':''}">${selected.length>=2?'✓':'○'} Second related bone</span></div>
+            <p class="anat-investigate-small">Select the two related bones directly on the 3D model.</p>`;
+        }else if(step.type==='label'){
+          const attempts=hotspotAttemptState(step,evidence);
+          checklist+=`<span class="${evidence.hotspotCorrect?'done':''}">${evidence.hotspotCorrect?'✓':'○'} Place a hotspot within the correct 3D area</span></div>
+            ${attempts.limit?`<div class="anat-hotspot-attempts" role="status"><strong>Hotspot attempts</strong><span>${attempts.used}/${attempts.limit} used · ${attempts.remaining} remaining</span></div>
+              ${attempts.finalChance?'<div class="anat-hotspot-final-warning" role="alert">⚠ Final attempt! Another incorrect click will require you to restart this chapter.</div>':
+                '<p class="anat-hotspot-limit-note">If you use every attempt, you must restart this chapter.</p>'}`:''}
+            <p class="anat-hotspot-tip">${step.paintRegions?.length?'Inspect the model and place a hotspot where you believe the landmark is located.':'Teacher must paint a correct area before this can be completed.'}</p>
+            <button class="button primary full" id="anat-ga-hotspot-arm" type="button" aria-pressed="${studentHotspotArmed}" ${step.paintRegions?.length?'':'disabled'}>${studentHotspotArmed?'Placing hotspot — click model':'Place 3D hotspot'}</button>`;
+        }else if(step.type==='dissect'){
+          const found=dissectionProgress(step,dissectEvidence(step).hiddenIndices);
+          const pct=Math.floor(found.completed/found.required*100);
+          const displayName=id=>api.getStructureName?.(id)||('Structure #'+id);
+          checklist+=`<span class="${found.done?'done':''}">${found.done?'✓':'○'} Hide all required structures</span></div>
+            ${step.keepHiddenForNext===true?'<p class="anat-dissect-carry-note">Completed dissection stays hidden for later activities in this chapter.</p>':''}
+            <div class="anat-dissect-summary"><span>${found.completed} dissected</span><span>${found.remaining.length} remaining</span></div>
+            <div class="anat-dissect-track" role="progressbar" aria-label="Structures dissected" aria-valuemin="0" aria-valuemax="${found.required}" aria-valuenow="${found.completed}"><span style="width:${pct}%"></span></div>
+            <button class="button primary full anat-dissect-toggle" id="anat-ga-dissect-arm" type="button" aria-pressed="${dissectArmed}">${dissectArmed?'Dissect ON — click structures':'Dissect tool (Hide)'}</button>
+            <p class="anat-investigate-small">Select the required structures directly in the 3D viewer to hide them. Unlisted structures do not count.</p>
+            <div class="anat-dissect-list">${step.hideStructures.map(id=>`<span class="${found.remaining.includes(id)?'':'done'}">${found.remaining.includes(id)?'○':'✓'} ${esc(displayName(id))}</span>`).join('')}</div>
+            <button class="button subtle full" id="anat-ga-model-reset" type="button">Restore dissection / retry</button>`;
+        }
+        inner+=checklist;
+      }
       else if(step.type==='identify')inner+='<p class="anat-ga-help">Click the correct structure or landmark in the 3D viewer. Anatomical labels are temporarily hidden.</p>';
       else inner+=`<div class="anat-ga-choices">${step.options.map((o,i)=>`<button class="button subtle full" data-anat-choice="${i}" type="button">${esc(o)}</button>`).join('')}</div>`;
       inner+='</div>';
+      } // end unlocked activity content
     }
     if(feedback)inner+=`<p class="anat-ga-feedback ${feedbackGood?'is-good':'is-error'}" role="status">${esc(feedback)}</p>`;
     if(studentProgress.chapter!==api.getChapter() && !completeAll && api.getChapters()[studentProgress.chapter])
@@ -447,7 +830,47 @@ export function createGuidedLessons(api){
       studentProgress.answers[step.id]={...(answers()[step.id]||{}),attempts:(answers()[step.id]?.attempts||0)+1,lastChoice:chosen};
       if(chosen===step.correct)complete(step);else failFromAlreadyIncremented(step);
     }));
-    byId('anat-ga-next-chapter')?.addEventListener('click',()=>api.goChapter(api.getChapter()+1));
+    byId('anat-ga-hotspot-arm')?.addEventListener('click',()=>{
+      if(step?.type!=='label'||!step.paintRegions?.length||hotspotAttemptState(step,answers()[step.id]).locked||answers()[step.id]?.hotspotCorrect)return;
+      studentHotspotArmed=!studentHotspotArmed;feedback='';renderStudent();
+    });
+    byId('anat-ga-dissect-arm')?.addEventListener('click',()=>{
+      if(step?.type!=='dissect')return;
+      dissectArmed=!dissectArmed;feedback='';renderStudent();
+    });
+    byId('anat-ga-model-action')?.addEventListener('click',()=>{if(step?.type==='reveal')performInvestigationAction(step);});
+    byId('anat-ga-model-reset')?.addEventListener('click',()=>{
+      api.resetInvestigation?.();investigationCandidate=null;
+      if(step?.type==='reveal'){
+        const prior=answers()[step.id]||{};
+        studentProgress.answers[step.id]={...prior,actionDone:false,targetPicked:false};
+      }
+      if(step?.type==='dissect'){
+        const prior=answers()[step.id]||{};
+        studentProgress.answers[step.id]={...prior,hiddenIndices:[]};
+      }
+      syncInheritedDissection();
+      api.clearStudentHotspot?.();
+      feedback='Model restored. Earlier retained dissections remain hidden.';feedbackGood=true;save();renderStudent();
+    });
+    byId('anat-ga-restart-chapter')?.addEventListener('click',async()=>{
+      const button=byId('anat-ga-restart-chapter');if(button){button.disabled=true;button.textContent='Restarting chapter…';}
+      const chapter=api.getChapter();
+      try{
+        api.resetInvestigation?.();api.clearStudentHotspot?.();
+        studentProgress.answers=restartChapterAnswers(answers(),steps(chapter));
+        studentProgress.chapter=chapter;studentProgress.updatedAt=Date.now();
+        // Persist cleared chapter answers before any scene restore can reload guided state.
+        storageOK=await writeProgress(studentProgress);
+        await api.resetChapterScene?.();
+        syncInheritedDissection();
+        feedback='Chapter restarted. Begin again with activity 1.';feedbackGood=true;
+        resetOrbitMeter();save();renderStudent();
+      }catch(error){
+        feedback='Could not restore the original chapter model. Try again: '+String(error?.message||error);feedbackGood=false;renderStudent();
+      }
+    });
+    byId('anat-ga-next-chapter')?.addEventListener('click' ,()=>api.goChapter(api.getChapter()+1));
     byId('anat-ga-resume')?.addEventListener('click',()=>api.goChapter(studentProgress.chapter));
     byId('anat-ga-name')?.addEventListener('input',e=>{studentName=e.target.value;});
     byId('anat-ga-png')?.addEventListener('click',()=>{
@@ -457,7 +880,7 @@ export function createGuidedLessons(api){
     });
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
       if(!window.confirm('Restart this lesson? This deletes locally saved activity answers for this lesson only.'))return;
-      await removeProgress(projectKey);studentProgress={key:projectKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
+      await removeProgress(projectKey);api.resetInvestigation?.();studentProgress={key:projectKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
     });
   }
   function failFromAlreadyIncremented(a){feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -469,7 +892,8 @@ export function createGuidedLessons(api){
     }
   }
   bind();
-  return {load,serialize,renderTeacher,renderStudent,onChapterChanged,handlePick,onOrbitStart,onOrbitChange,onOrbitEnd,canAdvance,focusPanel,
+  return {load,serialize,renderTeacher,renderStudent,onChapterChanged,handlePick,handleTeacherHotspotPick,teacherPaintSample,teacherPaintStatus,
+    isTeacherPainting:()=>api.isTeacher()&&!!teacherHotspotId,stopTeacherPainting:()=>stopTeacherPaint(true),endTeacherPaintStroke:()=>{if(teacherHotspotId){api.onTeacherChange();renderTeacher();}},onOrbitStart,onOrbitChange,onOrbitEnd,canAdvance,focusPanel,
     addChapter(index,duplicate){config.chapters.splice(index+1,0,duplicate?structuredClone(config.chapters[index]).map(a=>({...a,id:uid()})):[]);touch();},
     moveChapter(index,delta){[config.chapters[index],config.chapters[index+delta]]=[config.chapters[index+delta],config.chapters[index]];touch();},
     deleteChapter(index){config.chapters.splice(index,1);touch();},

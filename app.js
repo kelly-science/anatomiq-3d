@@ -3,7 +3,8 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=270-native-muscles-local'; // ANATOMIQ_GUIDED_ACTIVITIES_269J
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=271-hotspot-dissect-carry-278-local';
+import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
@@ -162,6 +163,15 @@ let multiListAnchor=null;
 let isolated = false;
 // ANATOMIQ_NATIVE_EYES_2213: preserve embedded Écorché eye meshes in an optional independent layer.
 const hidden = new Set();
+// ANATOMIQ_INVESTIGATIONS_272 — temporary Student View investigation overlays.
+// These are never serialized into chapter visibility or exported lessons.
+const __anatInvestigationHidden=new Set();
+let __anatInvestigationFocus=null;
+function __anatInvestigationReset(){
+  const used=__anatInvestigationHidden.size||__anatInvestigationFocus!==null;
+  __anatInvestigationHidden.clear();__anatInvestigationFocus=null;
+  if(used&&sceneRoot)refreshVisibility();
+}
 let structures = [];
 // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1: Read-only parent groups from source-native muscle mesh names.
 // All IDs stay intact; group multi-selection is transient, labels use native group anchors.
@@ -344,6 +354,9 @@ let structureNoteOverrides=new Map(); // ANATOMIQ_LESSON_EXPERIENCE_249
 let practicalConfig=normalizePracticalTargetDisplay(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
 let activeChapter = 0;
 // Local guided-chapter pilot with measured Explore rotation. Separate from the practical engine and 3D rendering.
+// Teacher-only painted surface overlays; registered on original meshes after loading.
+let __anat274PaintLayer=null, __anat274PriorOrbit=true;
+const __anat274GetLayer=()=>__anat274PaintLayer??=(createPaintOverlayLayer(THREE,index=>structures[index]?.mesh));
 const guided=createGuidedLessons({
   isTeacher:()=>teacherMode,isPractical:()=>practicalActive,getChapter:()=>activeChapter,
   getChapters:()=>chapters,getProjectTitle:()=>$('project-title').value,
@@ -360,6 +373,65 @@ const guided=createGuidedLessons({
     ...structures.filter(s=>chapterStructureVisible(s)).map(s=>({key:'s:'+s.index,label:'Structure: '+s.name+(s.side&&s.side!=='midline'?' ('+s.side+')':'')}))
   ],
   getMuscleGroup:(id)=>muscleGroups.find(g=>g.id===id&&g.ready)||null,
+  // Only real, on-screen chapter structures may be manipulated by the guided student.
+  investigationAction:(action,index)=>{
+    const s=structures[index];
+    if(teacherMode||practicalActive||!s||!chapterStructureVisible(s)||!s.mesh.visible||!['hide','isolate'].includes(action))return false;
+    if(action==='hide')__anatInvestigationHidden.add(s.mesh);
+    else __anatInvestigationFocus=s.index;
+    refreshVisibility();return true;
+  },
+  resetInvestigation:()=>__anatInvestigationReset(),
+  // ANATOMIQ_DISSECTION_CARRY_278 — only student transient visibility is changed.
+  setInvestigationHiddenIndices:(indices)=>{
+    if(teacherMode||practicalActive||!Array.isArray(indices))return false;
+    const next=new Set(indices.map(i=>structures[i]?.mesh).filter(Boolean));
+    const changed=__anatInvestigationFocus!==null||next.size!==__anatInvestigationHidden.size||
+      [...next].some(mesh=>!__anatInvestigationHidden.has(mesh));
+    if(!changed)return true;
+    __anatInvestigationHidden.clear();for(const mesh of next)__anatInvestigationHidden.add(mesh);
+    __anatInvestigationFocus=null;refreshVisibility();return true;
+  },
+  getStructureLocalPoint:(index,worldPoint)=>{
+    const mesh=structures[index]?.mesh;
+    return mesh&&worldPoint?.clone?mesh.worldToLocal(worldPoint.clone()).toArray():null;
+  },
+  // ANATOMIQ_PAINT_COORDINATE_FIX_276 — world-scale stroke spacing for scaled skull meshes.
+  getStructureWorldPaintDistance:(index,p0,p1)=>{
+    const mesh=structures[index]?.mesh;
+    if(!mesh||!Array.isArray(p0)||!Array.isArray(p1)||p0.length!==3||p1.length!==3)return null;
+    mesh.updateWorldMatrix(true,false);
+    const start=new THREE.Vector3(...p0).applyMatrix4(mesh.matrixWorld);
+    const end=new THREE.Vector3(...p1).applyMatrix4(mesh.matrixWorld);
+    return start.distanceTo(end);
+  },
+  getHotspotWorldPoint:spot=>{
+    const mesh=structures[spot?.s]?.mesh;
+    return mesh&&Array.isArray(spot?.p)&&spot.p.length===3?
+      mesh.localToWorld(new THREE.Vector3(...spot.p)).toArray():null;
+  },
+  showTeacherHotspot:(spot,radiusMm)=>{
+    const mesh=structures[spot?.s]?.mesh;
+    if(!mesh||!Array.isArray(spot?.p))return;
+    const world=mesh.localToWorld(new THREE.Vector3(...spot.p));
+    __anat273Marker('teacher',world,Math.max(3,Math.min(100,radiusMm||20))*__anat273UnitsPerMm,0x53ceff);
+  },
+  clearTeacherHotspot:()=>__anat273Clear('teacher'),
+  showTeacherPaintRegions:samples=>{__anat274GetLayer().show(samples);invalidateVisualOnly(2);},
+  clearTeacherPaintRegions:()=>{__anat274PaintLayer?.clear();invalidateVisualOnly(2);},
+  setTeacherPaintMode:enabled=>{
+    // Prevent OrbitControls from consuming brush drags. Restore its previous state.
+    if(enabled){__anat274PriorOrbit=controls.enabled;controls.enabled=false;}
+    else controls.enabled=__anat274PriorOrbit;
+    renderer.domElement.style.cursor=enabled?'crosshair':'';
+    document.body.classList.toggle('anat-red-paint-armed',!!enabled);
+    invalidateVisualOnly(2);
+  },
+  // ANATOMIQ_HOTSPOT_FEEDBACK_277 — visible surface feedback, not floating spheres.
+  showStudentHotspot:(point,correct)=>__anat277ShowFeedback(point,correct),
+  clearStudentHotspot:()=>__anat277ClearFeedback(),
+  resetChapterScene:()=>studentHistoryCommand('reset'),
+  getStructureName:index=>structures[index]?.name||null,
   onTeacherChange:()=>queueDraft(),goChapter:(index)=>{void switchChapter(index);},notify:showToast
 });
 const markers = new Map();
@@ -417,6 +489,66 @@ const treeExpanded = new Map();
 
 
 const scene = new THREE.Scene();
+// ANATOMIQ_INVESTIGATIONS_273 — transient 3D hotspot markers. Never saved to scenes.
+const __anat273Markers={teacher:null,student:null};
+let __anat277WrongMarker=null,__anat277WrongTimer=null; // ANATOMIQ_HOTSPOT_FEEDBACK_277
+const __anat273UnitsPerMm=0.001006058824; // Existing 1.7103 model-unit body / 1700 mm
+function __anat273Clear(kind){
+  const mesh=__anat273Markers[kind];if(!mesh)return;
+  mesh.parent?.remove(mesh);mesh.geometry.dispose();mesh.material.dispose();__anat273Markers[kind]=null;
+}
+function __anat273Marker(kind,point,radius,color){
+  __anat273Clear(kind);
+  if(!point)return;
+  const mesh=new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.002,radius),16,12),
+    new THREE.MeshBasicMaterial({color,wireframe:kind==='teacher',transparent:true,opacity:kind==='teacher'?0.65:0.9,
+      depthTest:false,depthWrite:false}));
+  mesh.position.copy(point);mesh.renderOrder=9999;scene.add(mesh);__anat273Markers[kind]=mesh;
+}
+// Student feedback uses camera-facing 3D glyphs anchored at the actual surface click.
+// A green check persists until the chapter changes/restarts; a red X fades quickly.
+function __anat277DisposeSprite(sprite){
+  if(!sprite)return;
+  sprite.parent?.remove(sprite);sprite.material?.map?.dispose();sprite.material?.dispose();
+}
+function __anat277ClearWrong(){
+  if(__anat277WrongTimer!==null){clearTimeout(__anat277WrongTimer);__anat277WrongTimer=null;}
+  __anat277DisposeSprite(__anat277WrongMarker);__anat277WrongMarker=null;
+  invalidateVisualOnly(2);
+}
+function __anat277ClearFeedback(){
+  __anat277ClearWrong();
+  __anat277DisposeSprite(__anat273Markers.student);__anat273Markers.student=null;
+  invalidateVisualOnly(2);
+}
+function __anat277Glyph(correct){
+  const canvas=document.createElement('canvas');canvas.width=96;canvas.height=96;
+  const c=canvas.getContext('2d');if(!c)return null;
+  c.beginPath();c.arc(48,48,38,0,2*Math.PI);
+  c.fillStyle=correct?'#098945':'#cf2239';c.fill();
+  c.strokeStyle='#fff';c.lineWidth=6;c.stroke();
+  c.beginPath();c.strokeStyle='#fff';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
+  if(correct){c.moveTo(26,48);c.lineTo(43,64);c.lineTo(71,32);}
+  else {c.moveTo(32,32);c.lineTo(64,64);c.moveTo(64,32);c.lineTo(32,64);}
+  c.stroke();
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));
+  marker.scale.set(0.025,0.025,1);marker.renderOrder=9999;return marker;
+}
+function __anat277ShowFeedback(point,correct){
+  if(!point?.clone)return;
+  if(correct){__anat277ClearWrong();__anat277DisposeSprite(__anat273Markers.student);}
+  else __anat277ClearWrong();
+  const marker=__anat277Glyph(correct);if(!marker)return;
+  marker.position.copy(point);scene.add(marker);
+  if(correct)__anat273Markers.student=marker;
+  else {
+    __anat277WrongMarker=marker;
+    __anat277WrongTimer=setTimeout(()=>{__anat277WrongTimer=null;__anat277DisposeSprite(__anat277WrongMarker);__anat277WrongMarker=null;invalidateVisualOnly(2);},1100);
+  }
+  invalidateVisualOnly(2);
+}
+
 const camera = new THREE.PerspectiveCamera(38, 1, 0.001, 60);
 camera.position.set(0, 1.7, 0.85);
 // Keep quality specific to this device/profile; shared lessons remain visually identical
@@ -856,7 +988,9 @@ function refreshVisibility(transient=false){
     const inspecting=Boolean(cardioPreviewIDs && s.system==='cardiovascular');
     s.mesh.visible = (divisionScope ? divisionScope.has(s.index) : layerEnabled(s)) && (divisionScope && teacherMode ? true : tissueVisible(s))
       && (divisionScope ? true : (inspecting ? cardioPreviewIDs.has(s.sourceName) : !hidden.has(s.mesh)))
-      && (!isolated||(teacherMode?multiSelectedIndices.has(s.index):s===selected));
+      && (!isolated||(teacherMode?multiSelectedIndices.has(s.index):s===selected))
+      && !__anatInvestigationHidden.has(s.mesh)
+      && (__anatInvestigationFocus===null||__anatInvestigationFocus===s.index);
   }
   // Approved assembled skull: never reveal the five retired original-only nasal meshes
   // when a saved lesson or chapter restores its visibility bitset. Their IDs remain intact.
@@ -1520,6 +1654,59 @@ function renderList(){
   }
 }
 
+// ANATOMIQ_RED_BRUSH_REPAIR_275 — document-capture brush supports canvas overlays and reports misses.
+// This capture path runs only while teacher paint mode is active and within the 3D viewer.
+let __anat275BrushPointer=null,__anat275LastPixel=null;
+function __anat275InsideViewer(x,y){
+  const r=renderer.domElement.getBoundingClientRect();
+  return r.width>0&&r.height>0&&x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;
+}
+function __anat275OnControl(target){
+  return !!target?.closest?.('button,input,select,textarea,a,[role="button"],.chapter-nav,.viewer-top,.viewer-bottom,.practical-panel');
+}
+function __anat275PaintAt(x,y){
+  const rect=renderer.domElement.getBoundingClientRect();
+  if(!__anat275InsideViewer(x,y))return false;
+  pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);
+  raycaster.setFromCamera(pointer,camera);
+  // Use the same raycastable anatomy as ordinary structure selection. Do not hit
+  // our surface overlay or any other decorative child mesh.
+  const pickable=currentlyVisible().filter(s=>s.mesh?.geometry&&s.mesh.visible);
+  const hit=raycaster.intersectObjects(pickable.map(s=>s.mesh),false)[0];
+  if(!hit){guided.teacherPaintStatus?.('No anatomy surface detected. Click a visible bone, not the background.');return false;}
+  const structure=pickable.find(s=>s.mesh===hit.object);
+  if(!structure){guided.teacherPaintStatus?.('Anatomy hit could not be mapped to a structure.');return false;}
+  return guided.teacherPaintSample?.(structure.index,hit.point.clone(),hit.face?.normal?.clone())===true;
+}
+document.addEventListener('pointerdown',event=>{
+  if(!guided.isTeacherPainting?.()||event.button!==0||!__anat275InsideViewer(event.clientX,event.clientY)||__anat275OnControl(event.target))return;
+  __anat275BrushPointer=event.pointerId;__anat275LastPixel={x:event.clientX,y:event.clientY};
+  __anat275PaintAt(event.clientX,event.clientY);
+  event.preventDefault();event.stopImmediatePropagation();
+},true);
+document.addEventListener('pointermove',event=>{
+  if(!guided.isTeacherPainting?.()||event.pointerId!==__anat275BrushPointer)return;
+  const previous=__anat275LastPixel||{x:event.clientX,y:event.clientY};
+  const d=Math.hypot(event.clientX-previous.x,event.clientY-previous.y);
+  const steps=Math.min(18,Math.max(1,Math.ceil(d/7)));
+  for(let j=1;j<=steps;j++){
+    const t=j/steps;__anat275PaintAt(previous.x+(event.clientX-previous.x)*t,previous.y+(event.clientY-previous.y)*t);
+  }
+  __anat275LastPixel={x:event.clientX,y:event.clientY};
+  event.preventDefault();event.stopImmediatePropagation();
+},true);
+function __anat275FinishStroke(event){
+  if(event.pointerId!==__anat275BrushPointer)return;
+  if(guided.isTeacherPainting?.()){
+    __anat275PaintAt(event.clientX,event.clientY);
+    guided.endTeacherPaintStroke?.();
+  }
+  __anat275BrushPointer=null;__anat275LastPixel=null;
+  event.preventDefault();event.stopImmediatePropagation();
+}
+document.addEventListener('pointerup',__anat275FinishStroke,true);
+document.addEventListener('pointercancel',__anat275FinishStroke,true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&guided.isTeacherPainting?.())guided.stopTeacherPainting?.();},true);
 let press={x:0,y:0};
 renderer.domElement.addEventListener('pointerdown',event=>{press={x:event.clientX,y:event.clientY};});
 renderer.domElement.addEventListener('pointerup',event=>{
@@ -1535,9 +1722,13 @@ renderer.domElement.addEventListener('pointerup',event=>{
   }
   const guidedStructure=structures.find(x=>x.mesh===hit.object);
   if(!teacherMode && guided.handlePick(guidedStructure?.index??null,hit.point))return;
-  if(!teacherMode && !studentPermissions.sn)return;
   const s=structures.find(x=>x.mesh===hit.object);
   if(!s)return;
+  // Investigation model clicks are valid even when student name labels are off.
+  // The Guided controller itself rejects inactive/practical-mode picks.
+  if(teacherMode && !placingLabel && !paintMode && guided.handleTeacherHotspotPick?.(s.index,hit.point.clone()))return;
+  if(!teacherMode && guided.handlePick?.(s.index,hit.point.clone(),hit.face?.normal?.clone()))return;
+  if(!teacherMode && !studentPermissions.sn)return;
   if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)&&!placingLabel){
     isolated=false;pickMultiSelection(s,event,'model');return;
   }
