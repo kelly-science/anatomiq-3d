@@ -1,3 +1,4 @@
+import {MOTION_FRAGMENT,createCameraMotionBlur} from './motion-blur-279.mjs'; // ANATOMIQ_MOTION_BLUR_279_EXPERIMENT
 // AnatomIQ Studio 2.2.68a — zoom stability and carousel lighting handoff.
 // Same tested renderer, with direct camera focus, matched final tone mapping, and carousel handoff.
 // Scene-only postprocessing: native HTML labels, live chapter carousel, and
@@ -44,9 +45,10 @@ uniform float uNear;
 uniform float uFar;
 uniform float uFocus;
 uniform float uIntensity;
+${MOTION_FRAGMENT}
 void main(){
-  vec4 sharp=texture2D(tSharp,vUv);
   float depth=texture2D(tDepth,vUv).r;
+  vec4 sharp=anat279CameraMotionBlur(vUv,depth);
   float realDepth=uNear*uFar/max(0.000001,(uFar-depth*(uFar-uNear)));
   float sharpZone=max(0.008,uFocus*0.035);
   float falloff=max(0.025,uFocus*0.26);
@@ -75,6 +77,7 @@ void main(){
 
 export function createCinematicDepthOfField({THREE,renderer,camera,controls,invalidate,selectElement,statusElement}){
   const settings={preset:initialPreset()};
+  const motion=createCameraMotionBlur({THREE,selectElement:document.getElementById('settings-motion-blur'),statusElement:document.getElementById('settings-motion-status'),invalidate});
   const size=new THREE.Vector2();
   let colorTarget=null,softTarget=null,quad=null,blurMaterial=null,combineMaterial=null;
   let hardwareFailure=false,screen=null,settleStartedAt=null;
@@ -127,6 +130,7 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
       uniforms:{tSharp:{value:colorTarget.texture},tSoft:{value:softTarget.texture},tDepth:{value:colorTarget.depthTexture},
         uNear:{value:camera.near},uFar:{value:camera.far},uFocus:{value:0.5},uIntensity:{value:0.75}},
       transparent:false,depthTest:false,depthWrite:false,toneMapped:true});
+    Object.assign(combineMaterial.uniforms,motion.uniforms);
     return {screenCamera,screenScene};
   }
   function status(message){if(statusElement)statusElement.textContent=message;}
@@ -143,6 +147,7 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     const bw=Math.max(1,Math.ceil(w*0.5)),bh=Math.max(1,Math.ceil(h*0.5));
     if(softTarget.width!==bw || softTarget.height!==bh)softTarget.setSize(bw,bh);
     const cfg=DOF_PRESETS[settings.preset];
+    motion.beginFrame(viewCamera,w,h);
     const distance=viewCamera.position.distanceTo(controls.target);
     // OrbitControls already invalidates on camera changes. Using the current
     // focus distance avoids a trailing blur plane and endless redraws on zoom.
@@ -159,10 +164,13 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
       renderer.autoClear=true;
       renderer.setRenderTarget(colorTarget);renderer.clear();
       renderer.render(scene,viewCamera);
-      renderer.setRenderTarget(softTarget);renderer.clear();
-      quad.material=blurMaterial;renderer.render(screen.screenScene,screen.screenCamera);
+      if(settings.preset!=='off'){
+        renderer.setRenderTarget(softTarget);renderer.clear();
+        quad.material=blurMaterial;renderer.render(screen.screenScene,screen.screenCamera);
+      }
       renderer.setRenderTarget(null);renderer.clear();
       quad.material=combineMaterial;renderer.render(screen.screenScene,screen.screenCamera);
+      motion.commitFrame();
     }finally{
       renderer.setRenderTarget(previousTarget);
       renderer.autoClear=previousAutoClear;
@@ -172,17 +180,18 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     const next=normalizedPreset(preset);
     settings.preset=hardwareFailure?'off':next;
     settleStartedAt=null;
-    if(settings.preset==='off')release(); // Reclaim GPU buffers when turned off.
+    if(settings.preset==='off'&&!motion.enabled)release(); // Reclaim buffers if BOTH effects are off.
+    motion.reset();
     safePersist(settings.preset);
     syncUI();invalidate(2);
   }
   function render(scene,viewCamera){
-    if(settings.preset==='off'||hardwareFailure){
+    if((settings.preset==='off'&&!motion.enabled)||hardwareFailure){
       renderer.render(scene,viewCamera);return;
     }
     try{drawWithDepth(scene,viewCamera);}
     catch(error){
-      hardwareFailure=true;settings.preset='off';
+      hardwareFailure=true;settings.preset='off';motion.select('off');motion.reset();
       release();safePersist('off');syncUI();
       status('Depth of field unavailable on this device — original renderer restored.');
       console.warn('AnatomIQ depth of field disabled after a WebGL error:',error);
@@ -193,9 +202,10 @@ export function createCinematicDepthOfField({THREE,renderer,camera,controls,inva
     // Called after the live carousel restores its full-size viewport and
     // before its settled frame. Shadow synchronization stays in app.js.
     settleStartedAt=clock();
+    motion.reset(); // Never smear the outgoing chapter into the new chapter.
   }
   // The same control is available from the application Settings dialog.
   if(selectElement)selectElement.addEventListener('change',()=>select(selectElement.value));
   syncUI();
-  return {render,select,onChapterSettled,get mode(){return settings.preset;},dispose:release};
+  return {render,select,onChapterSettled,resetMotion:motion.reset,get mode(){return settings.preset;},get motionMode(){return motion.mode;},dispose:release};
 }
