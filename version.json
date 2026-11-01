@@ -1,6 +1,6 @@
 {
-  "version": "2.2.78",
+  "version": "2.2.79",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Explicit GitHub and school-tracked student links, canonical public lesson URLs, typed-URL teacher dashboard navigation. Existing guided, offline, and Google backend preserved."
+  "notes": "Google Apps Script identity iframe handshake compatibility and refreshed PWA cache; existing activities and offline features preserved."
 }

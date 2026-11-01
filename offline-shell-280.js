@@ -106,7 +106,7 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./cloud-progress-283.css?rev=283",
-  "./cloud-progress-283.js?rev=285",
+  "./cloud-progress-283.js?rev=287",
   "./app.js?rev=motionblur279b&offline=281&progress=285",
   "./guided-lessons-269j.mjs?rev=283-cloud-progress",
   "./index.html",

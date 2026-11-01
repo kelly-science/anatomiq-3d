@@ -15,7 +15,11 @@
     try {
       const url = new URL(value);
       return url.protocol === 'https:' && (url.hostname === 'script.google.com' ||
-        url.hostname === 'script.googleusercontent.com' || url.hostname.endsWith('.script.googleusercontent.com'));
+        url.hostname === 'script.googleusercontent.com' ||
+        url.hostname.endsWith('.script.googleusercontent.com') ||
+        // Apps Script HTML Service typically uses <random>-script.googleusercontent.com.
+        // Keep this strict: only a Google-owned host, HTTPS, and our parent frame.
+        url.hostname.endsWith('-script.googleusercontent.com')); // ANATOMIQ_SCHOOL_HANDSHAKE_287
     } catch { return false; }
   }
   function notify() {
