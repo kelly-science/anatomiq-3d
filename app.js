@@ -3,7 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=271-hotspot-dissect-carry-278-local';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=283-cloud-progress';
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
@@ -55,7 +55,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.75'; // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.76'; // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4148,6 +4148,7 @@ function cloudCurrentLessonSlug(){
   try{return githubEditingRef?.slug||target?.slug||normalizeSlug($('project-title').value||'lesson');}catch{return 'anatomy-lesson';}
 }
 function cloudOpenPublishing(){
+  window.AnatomIQCloudProgress283?.preparePublish(!guided.config.free && guided.config.chapters.some(ch=>ch.length>0));
   const preferences=cloudSavedPreferences();
   $('cloud-owner').value=githubEditingRef?.owner||cloudVerified?.owner||preferences.owner||'';
   $('cloud-repo').value=githubEditingRef?.repo||cloudVerified?.repo||preferences.repo||'';
@@ -4216,6 +4217,7 @@ $('cloud-publish').addEventListener('click',async()=>{
   if(!cloudVerified||!cloudToken){cloudSetStatus('Connect or unlock your GitHub publishing credential first.',true);return;}
   cloudSetBusy(true);cloudSetStatus('Checking the existing lesson on GitHub…');
   try{
+    window.AnatomIQCloudProgress283?.capturePublish(!guided.config.free && guided.config.chapters.some(ch=>ch.length>0));
     const r=lessonRef($('cloud-owner').value,$('cloud-repo').value,$('cloud-branch').value,$('cloud-slug').value);
     if(r.owner.toLowerCase()!==cloudVerified.owner.toLowerCase()||r.repo.toLowerCase()!==cloudVerified.repo.toLowerCase()||r.branch!==cloudVerified.branch)
       throw new Error('Repository settings changed. Disconnect and reconnect before publishing.');
@@ -4236,12 +4238,19 @@ $('cloud-publish').addEventListener('click',async()=>{
       noteLibraryState(`✓ Saved and published: ${project.t}`);
     }catch(error){console.warn('GitHub publish succeeded; local library save failed:',error);}
     const link=studentLink(location.href,r);
-    $('cloud-student-url').value=link;
-    $('cloud-embed-url').value=studentLink(location.href,r,{embed:true});
+    const tracked=window.AnatomIQCloudProgress283?.wrapLink(link)||link;
+    $('cloud-student-url').value=tracked;
+    // Google login portals should be opened in a top-level tab, including from Schoology.
+    $('cloud-embed-url').value=tracked===link ? studentLink(location.href,r,{embed:true}) : tracked;
     $('cloud-publish-results').hidden=false;
     cloudSetStatus(`✓ ${result.updated?'Updated':'Published'} on GitHub. Existing student links remain unchanged. Commit ${result.commit.slice(0,8)}. Students may need to refresh (GitHub raw CDN propagation can take a moment).`);
   }catch(error){cloudSetStatus(error.message,true);}
   finally{cloudSetBusy(false);}
+});
+$('aiq283-dashboard')?.addEventListener('click',()=>{
+  const url=window.AnatomIQCloudProgress283?.teacherDashboardURL();
+  if(url)window.open(url,'_blank','noopener');
+  else cloudSetStatus('Enter the deployed Apps Script URL first.',true);
 });
 $('cloud-copy-url').addEventListener('click',async()=>{
   const input=$('cloud-student-url');

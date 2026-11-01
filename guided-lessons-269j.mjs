@@ -135,34 +135,49 @@ async function removeProgress(key){
     tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});return true;}
   catch{return false;}finally{db?.close();}
 }
-function downloadCompletionPNG(name,title,chapters,done,total,firstTry){
-  const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=760;
+async function downloadCompletionPNG(name,title,chapters,done,total,firstTry,identity=null,cloudStatus=''){
+  // ANATOMIQ_CLOUD_PROGRESS_283 — verified school email and sync state on screenshot.
+  const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=780;
   const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas unavailable on this device.');
-  const gradient=ctx.createLinearGradient(0,0,1200,760);gradient.addColorStop(0,'#0e1b29');gradient.addColorStop(1,'#1e3442');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,1200,760);
+  const gradient=ctx.createLinearGradient(0,0,1200,780);gradient.addColorStop(0,'#0e1b29');gradient.addColorStop(1,'#1e3442');
+  ctx.fillStyle=gradient;ctx.fillRect(0,0,1200,780);
   ctx.fillStyle='#76d9cc';ctx.fillRect(75,76,8,620);
   ctx.fillStyle='#f1f7fc';ctx.font='bold 39px system-ui, sans-serif';ctx.fillText('AnatomIQ Studio',110,145);
-  ctx.font='bold 62px system-ui, sans-serif';ctx.fillText('LESSON COMPLETE',110,260);
-  const wrap=(value,x,y,width,size,lineHeight)=>{
-    ctx.font=`${size}px system-ui, sans-serif`;
-    let line='',lines=0;for(const word of String(value).split(/\s+/)){
-      const test=line?line+' '+word:word;if(ctx.measureText(test).width>width&&line){ctx.fillText(line,x,y+lines*lineHeight);lines++;line=word;}
-      else line=test;if(lines>=3)break;}
-    if(lines<4)ctx.fillText(line,x,y+lines*lineHeight);
-  };
-  ctx.font='30px system-ui, sans-serif';wrap(title,110,345,950,31,43);
-  ctx.fillStyle='#bed0dd';ctx.font='27px system-ui, sans-serif';ctx.fillText(`Student: ${name}`,110,440);
-  ctx.fillText(`Chapters: ${chapters}     Activities: ${done}/${total}`,110,510);
-  ctx.fillText(`Correct on first attempt: ${firstTry}`,110,555);
-  ctx.fillText(`Completed: ${new Date().toLocaleString()}`,110,612);
-  ctx.font='20px system-ui, sans-serif';ctx.fillStyle='#97b0bf';
-  ctx.fillText('Generated from locally saved activity results · Submit this PNG to Schoology',110,681);
-  const anchor=document.createElement('a');anchor.download='AnatomIQ-Lesson-Complete.png';anchor.href=canvas.toDataURL('image/png');
-  document.body.append(anchor);anchor.click();anchor.remove();
+  ctx.font='bold 60px system-ui, sans-serif';ctx.fillText('LESSON COMPLETE',110,252);
+  function line(text,y,size=27,color='#c5d8e6'){
+    ctx.fillStyle=color;ctx.font=`${size}px system-ui, sans-serif`;
+    let value=String(text);while(ctx.measureText(value).width>950&&value.length>8)value=value.slice(0,-4)+'…';
+    ctx.fillText(value,110,y);
+  }
+  line(title,325,32,'#eef8fc');
+  if(identity?.email){
+    line(`School Google account: ${identity.email}`,405,26);
+    line(`Class period: ${identity.period}`,450,26);
+    line(`Chapters: ${chapters}    Activities: ${done}/${total}`,514);
+    line(`Correct on first attempt: ${firstTry}`,557);
+    line(`Completed: ${new Date().toLocaleString()}`,605,23);
+    line(cloudStatus||'Saved on this device — cloud verification pending',650,21,'#79decf');
+  }else{
+    line(`Student: ${name}`,405);
+    line(`Chapters: ${chapters}    Activities: ${done}/${total}`,480);
+    line(`Correct on first attempt: ${firstTry}`,530);
+    line(`Completed: ${new Date().toLocaleString()}`,605,23);
+    line('Locally saved activity results — submit to Schoology',655,19,'#a2bac9');
+  }
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+  if(!blob)throw Error('Could not create the completion image.');
+  const filename='AnatomIQ-Lesson-Complete.png';
+  if(navigator.share&&navigator.canShare){
+    const file=new File([blob],filename,{type:'image/png'});
+    try{if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'AnatomIQ Lesson Complete'});return;}}
+    catch(error){if(error?.name==='AbortError')return;}
+  }
+  const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+  anchor.download=filename;anchor.href=url;document.body.append(anchor);anchor.click();anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
-
 export function createGuidedLessons(api){
-  let config=normalizeGuided(null,1),projectKey='',currentProject=null,studentProgress={answers:{},chapter:0},
+  let config=normalizeGuided(null,1),projectKey='',storageKey='',currentProject=null,studentProgress={answers:{},chapter:0},hadLocalProgress=false,
     ready=false,storageOK=true,orbitMeter=null,orbitActivityId=null,orbitLastShown=-1,feedback='',feedbackGood=false,studentName='',
     teacherMounted=false,studentMounted=false,session=0,investigationCandidate=null,teacherHotspotId=null,paintPreviewId=null,studentHotspotArmed=false,dissectArmed=false; // ANATOMIQ_INVESTIGATIONS_273
   const teacherRoot=byId('anat-guided-teacher');const studentRoot=byId('anat-guided-student');
@@ -173,7 +188,7 @@ export function createGuidedLessons(api){
   const answers=()=>studentProgress.answers||{};
   const completed=a=>!!answers()[a.id]?.done;
   const totals=()=>({total:allSteps().length,done:allSteps().filter(completed).length,
-    firstTry:allSteps().filter(a=>answers()[a.id]?.done&&answers()[a.id]?.attempts===1).length});
+    firstTry:allSteps().filter(a=>a.type!=='explore'&&answers()[a.id]?.done&&answers()[a.id]?.attempts===1).length});
   function touch(){if(!api.isTeacher())return;api.onTeacherChange();renderTeacher();}
   const teacherPaintActivity=()=>steps().find(step=>step.id===teacherHotspotId&&step.type==='label');
   function stopTeacherPaint(saveStroke=true){
@@ -219,11 +234,19 @@ export function createGuidedLessons(api){
     stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;
     config=normalizeGuided(value,api.getChapters().length);validateGuided(config,api.getChapters().length);
     currentProject=project;projectKey=progressKey({...project,guided:config});
-    studentProgress={key:projectKey,answers:{},chapter:0,updatedAt:Date.now()};feedback='';resetOrbitMeter();ready=false;
-    if(student()&&guided()){
-      const recovered=await readProgress(projectKey);
+    storageKey=projectKey;
+    if(student()&&guided()&&window.AnatomIQCloudProgress283?.enabled){
+      // Never read another student's answers from the legacy lesson-only key.
+      await window.AnatomIQCloudProgress283.waitForIdentity();
       if(thisSession!==session)return;
-      if(recovered?.answers&&typeof recovered.answers==='object')studentProgress={...studentProgress,...recovered,key:projectKey};
+      storageKey=window.AnatomIQCloudProgress283.progressStorageKey(projectKey);
+      if(!storageKey)throw Error('A verified school Google account is required to restore this lesson.');
+    }
+    studentProgress={key:storageKey,answers:{},chapter:0,updatedAt:Date.now()};hadLocalProgress=false;feedback='';resetOrbitMeter();ready=false;
+    if(student()&&guided()){
+      const recovered=await readProgress(storageKey);
+      if(thisSession!==session)return;
+      if(recovered?.answers&&typeof recovered.answers==='object'){studentProgress={...studentProgress,...recovered,key:storageKey};hadLocalProgress=true;}
       for(const a of allSteps())if(!completed(a)&&studentProgress.answers[a.id]){
         const prior=studentProgress.answers[a.id];
         if(a.type==='reveal')studentProgress.answers[a.id]={...prior,actionDone:false,targetPicked:false};
@@ -232,7 +255,10 @@ export function createGuidedLessons(api){
       }
       storageOK=!!(await writeProgress(studentProgress));
     }
-    if(thisSession!==session)return;ready=true;syncInheritedDissection();renderTeacher();renderStudent();
+    if(thisSession!==session)return;ready=true;
+    const availableCloud=window.AnatomIQCloudProgress283?.getRemote(projectKey);
+    if(availableCloud)await restoreCloud(availableCloud);
+    syncInheritedDissection();renderTeacher();renderStudent();
   }
   function onChapterChanged(){stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearTeacherHotspot?.();feedback='';resetOrbitMeter();
     if(student()&&ready&&guided()){studentProgress.chapter=api.getChapter();save();}
@@ -517,9 +543,39 @@ export function createGuidedLessons(api){
     api.showTeacherPaintRegions?.(preview?.paintRegions||[]);
     const count=teacherRoot.querySelector('#anat-ga-count');if(count)count.textContent=`${steps().length} of ${MAX_STEPS} activities`;
   }
-  function save(){if(!ready||!student()||!guided())return;studentProgress.updatedAt=Date.now();
-    void writeProgress(studentProgress).then(ok=>{storageOK=ok;updateSavedIndicator();});}
-  function updateSavedIndicator(){const el=byId('anat-ga-saved');if(el)el.textContent=storageOK?'Saved on this device':'Progress storage unavailable — finish in one session';}
+  function cloudSnapshot(){
+    const scored=allSteps().filter(a=>a.type!=='explore');
+    return {projectKey,title:api.getProjectTitle(),chapter:api.getChapter(),
+      total:allSteps().length,done:allSteps().filter(completed).length,graded:scored.length,
+      firstTry:scored.filter(a=>completed(a)&&answers()[a.id]?.attempts===1).length,
+      answers:structuredClone(studentProgress.answers),updatedAt:studentProgress.updatedAt};
+  }
+  async function restoreCloud(data){
+    if(!ready||!student()||!guided()||!data||data.projectKey!==projectKey||!data.answers||typeof data.answers!=='object')return;
+    const remoteUpdated=Number(data.updatedAt)||0,localUpdated=Number(studentProgress.updatedAt)||0;
+    if(hadLocalProgress && localUpdated>=remoteUpdated){
+      if(localUpdated>remoteUpdated && Object.keys(studentProgress.answers).length)
+        window.AnatomIQCloudProgress283?.enqueue(cloudSnapshot());
+      return;
+    }
+    // The cloud record belongs to the same validated guided-project content key.
+    studentProgress={...studentProgress,answers:structuredClone(data.answers),chapter:Number(data.chapter)||0,updatedAt:remoteUpdated};
+    hadLocalProgress=true;
+    storageOK=await writeProgress(studentProgress);
+    syncInheritedDissection();renderStudent();
+    if(Number(data.chapter)>api.getChapter() && Number(data.chapter)<api.getChapters().length)
+      void api.goChapter(Number(data.chapter));
+  }
+  function save(){if(!ready||!student()||!guided())return;studentProgress.updatedAt=Date.now();hadLocalProgress=true;
+    void writeProgress(studentProgress).then(ok=>{storageOK=ok;updateSavedIndicator();});
+    window.AnatomIQCloudProgress283?.enqueue(cloudSnapshot());
+  }
+  function updateSavedIndicator(){
+    const el=byId('anat-ga-saved');
+    if(el)el.textContent=!storageOK?'Progress storage unavailable — finish in one session':
+      (window.AnatomIQCloudProgress283?.enabled?window.AnatomIQCloudProgress283.statusText():'Saved on this device');
+    const status=byId('aiq283-cert-status');if(status)status.textContent=window.AnatomIQCloudProgress283?.statusText()||'';
+  }
   // ANATOMIQ_DISSECTION_CARRY_278 — derive inherited cuts from *completed* prior
   // Dissect activities only. In-progress cuts are never replayed from local storage.
   function inheritedHidden(){
@@ -734,9 +790,13 @@ export function createGuidedLessons(api){
     let inner=header;
     if(completeAll){
       inner+=`<div class="anat-ga-complete"><h3>Lesson Complete!</h3><p>You've completed ${total} guided activities across ${api.getChapters().length} chapters.</p>
-        <label class="anat-ga-field">Student name for Schoology image<input class="text-input" id="anat-ga-name" maxlength="70" autocomplete="name" placeholder="First and last name" value="${esc(studentName)}"></label>
+        ${window.AnatomIQCloudProgress283?.enabled
+          ? (()=>{const identity=window.AnatomIQCloudProgress283.state().identity;
+              return identity?`<div class="aiq283-identity"><strong>School Google account</strong><span>${esc(identity.email)}</span><span>Period ${esc(identity.period)}</span><small id="aiq283-cert-status">${esc(window.AnatomIQCloudProgress283.statusText())}</small></div>`:
+                '<p class="aiq283-identity">Waiting for school account verification…</p>';})()
+          : `<label class="anat-ga-field">Student name for Schoology image<input class="text-input" id="anat-ga-name" maxlength="70" autocomplete="name" placeholder="First and last name" value="${esc(studentName)}"></label>`}
         <button id="anat-ga-png" class="button primary full" type="button">Save completion PNG</button>
-        <small>Upload the PNG to your Schoology assignment. The image records local completion, not a secured exam.</small></div>`;
+        <small>Upload this image to Schoology if requested. A screenshot alone is not proof of authenticated submission.</small></div>`;
     }else if(!step){
       inner+=`<h3>Chapter complete</h3><p>All activities in this chapter are finished.</p>`;
       if(api.getChapter()<api.getChapters().length-1)inner+='<button class="button primary full" id="anat-ga-next-chapter" type="button">Next chapter →</button>';
@@ -873,14 +933,17 @@ export function createGuidedLessons(api){
     byId('anat-ga-next-chapter')?.addEventListener('click' ,()=>api.goChapter(api.getChapter()+1));
     byId('anat-ga-resume')?.addEventListener('click',()=>api.goChapter(studentProgress.chapter));
     byId('anat-ga-name')?.addEventListener('input',e=>{studentName=e.target.value;});
-    byId('anat-ga-png')?.addEventListener('click',()=>{
-      const name=studentName.trim();if(!name){byId('anat-ga-name')?.focus();return api.notify('Enter a student name before saving the completion image.');}
-      try{downloadCompletionPNG(name,api.getProjectTitle(),api.getChapters().length,done,total,firstTry);}
+    byId('anat-ga-png')?.addEventListener('click',async()=>{
+      const cloud=window.AnatomIQCloudProgress283?.state();
+      if(cloud?.enabled&&!cloud.identity)return api.notify('Confirm your school Google account before saving the completion image.');
+      const name=cloud?.identity?.email||studentName.trim();
+      if(!name){byId('anat-ga-name')?.focus();return api.notify('Enter a student name before saving the completion image.');}
+      try{await downloadCompletionPNG(name,api.getProjectTitle(),api.getChapters().length,done,total,firstTry,cloud?.identity,window.AnatomIQCloudProgress283?.statusText());}
       catch(error){api.notify('Could not save PNG: '+error.message);}
     });
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
       if(!window.confirm('Restart this lesson? This deletes locally saved activity answers for this lesson only.'))return;
-      await removeProgress(projectKey);api.resetInvestigation?.();studentProgress={key:projectKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
+      await removeProgress(storageKey);api.resetInvestigation?.();studentProgress={key:storageKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
     });
   }
   function failFromAlreadyIncremented(a){feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -892,6 +955,12 @@ export function createGuidedLessons(api){
     }
   }
   bind();
+  window.addEventListener('anatomiq:cloud-restore',event=>{void restoreCloud(event.detail?.progress);});
+  window.addEventListener('anatomiq:cloud-ready',()=>{
+    if(ready&&hadLocalProgress&&Object.keys(studentProgress.answers).length)
+      window.AnatomIQCloudProgress283?.enqueue(cloudSnapshot());
+  });
+  window.addEventListener('anatomiq:cloud-state',updateSavedIndicator);
   return {load,serialize,renderTeacher,renderStudent,onChapterChanged,handlePick,handleTeacherHotspotPick,teacherPaintSample,teacherPaintStatus,
     isTeacherPainting:()=>api.isTeacher()&&!!teacherHotspotId,stopTeacherPainting:()=>stopTeacherPaint(true),endTeacherPaintStroke:()=>{if(teacherHotspotId){api.onTeacherChange();renderTeacher();}},onOrbitStart,onOrbitChange,onOrbitEnd,canAdvance,focusPanel,
     addChapter(index,duplicate){config.chapters.splice(index+1,0,duplicate?structuredClone(config.chapters[index]).map(a=>({...a,id:uid()})):[]);touch();},

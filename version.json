@@ -1,6 +1,6 @@
 {
-  "version": "2.2.75",
+  "version": "2.2.76",
   "channel": "experimental",
   "published": "2026-10-31",
-  "notes": "Offline cold-start repair, automatic recently opened lesson caching, and last-lesson fast restoration. No lesson data changed."
+  "notes": "Optional teacher-managed Google Apps Script school progress pilot, class-period dashboard, and personalized completion certificate. Offline features retained."
 }

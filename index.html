@@ -577,6 +577,14 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <button id="cloud-disconnect" type="button" class="button small subtle" hidden>Disconnect</button>
           <button id="cloud-export-json" type="button" class="button small subtle">Download lesson JSON</button>
         </div>
+        <!-- ANATOMIQ_CLOUD_PROGRESS_283 — optional school-account tracking. -->
+        <div class="aiq283-publish">
+          <label><input type="checkbox" id="aiq283-track" /> <strong>Track guided activities with school Google account</strong></label>
+          <label for="aiq283-script-url">Google Apps Script deployment URL</label>
+          <input id="aiq283-script-url" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" />
+          <small id="aiq283-publish-hint">School progress tracking is available for guided chapter activities.</small>
+          <button id="aiq283-dashboard" type="button" class="button small subtle">Open teacher progress dashboard</button>
+        </div>
         <button id="cloud-publish" type="button" class="button primary full">Publish / Update Live Lesson</button>
         <p id="cloud-publish-status" class="studio-hint" role="status" aria-live="polite">Connect to a public GitHub repository to publish.</p>
         <div id="cloud-publish-results" hidden>
@@ -774,6 +782,8 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
   <link rel="stylesheet" href="./muscle-groups-270.css?rev=270-muscle-groups-stage1-local" />
   <link rel="stylesheet" href="./investigation-272.css?rev=271-hotspot-dissect-carry-278-local" />
   <link rel="stylesheet" href="./native-muscle-catalog.css?rev=270-native-muscles-local" />
+  <link rel="stylesheet" href="./cloud-progress-283.css?rev=283" />
+  <script src="./cloud-progress-283.js?rev=283"></script>
   <script src="./recent-lessons-281.js?rev=281"></script>
   <script type="module">
     // Installer changes the static import map to local files after they are downloaded.
@@ -795,7 +805,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           .catch(e=>console.warn('[AnatomIQ] Offline worker unavailable:',e));
       }
     }
-    await import('./app.js?rev=motionblur279b&offline=281'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b&offline=281&progress=283'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.75"></script>
   <script defer src="./interface-2221.js?rev=workspace241&v=2.2.75"></script>
