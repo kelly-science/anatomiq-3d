@@ -7,6 +7,7 @@ import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPT
 import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
+import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=293'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
 export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect','short']); // ANATOMIQ_SHORT_ANSWER_290 // ANATOMIQ_SHORT_AFTER_DISTRICT_292
@@ -185,6 +186,7 @@ export function createGuidedLessons(api){
     teacherMounted=false,studentMounted=false,session=0,investigationCandidate=null,teacherHotspotId=null,paintPreviewId=null,studentHotspotArmed=false,dissectArmed=false; // ANATOMIQ_INVESTIGATIONS_273
   let completionPending=false,stopSuccess=null;
   const teacherRoot=byId('anat-guided-teacher');const studentRoot=byId('anat-guided-student');
+  const studentVisuals=createGuidedVisuals(document);
   const student=()=>!api.isTeacher();
   const steps=(chapter=api.getChapter())=>config.chapters[chapter]||[];
   const allSteps=()=>config.chapters.flat();
@@ -235,6 +237,7 @@ export function createGuidedLessons(api){
   function serialize(){const saved=structuredClone(config);validateGuided(saved,api.getChapters().length);return saved;}
   async function load(value,project){
     const thisSession=++session;
+    stopSuccess?.();stopSuccess=null;completionPending=false;studentVisuals.reset(studentRoot);api.clearGuidedVisuals?.();
     stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;
     config=normalizeGuided(value,api.getChapters().length);validateGuided(config,api.getChapters().length);
     currentProject=project;projectKey=progressKey({...project,guided:config});
@@ -264,7 +267,7 @@ export function createGuidedLessons(api){
     if(availableCloud)await restoreCloud(availableCloud);
     syncInheritedDissection();renderTeacher();renderStudent();
   }
-  function onChapterChanged(){stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearTeacherHotspot?.();feedback='';resetOrbitMeter();
+  function onChapterChanged(){stopSuccess?.();stopSuccess=null;completionPending=false;studentVisuals.reset(studentRoot);api.clearGuidedVisuals?.();stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearTeacherHotspot?.();feedback='';resetOrbitMeter();
     if(student()&&ready&&guided()){studentProgress.chapter=api.getChapter();save();}
     syncInheritedDissection();renderTeacher();renderStudent();}
   function insertActivity(type){
@@ -619,7 +622,16 @@ export function createGuidedLessons(api){
     syncInheritedDissection();
     feedback='';feedbackGood=true;resetOrbitMeter();save();
     completionPending=true;const cueSession=session;
-    stopSuccess=showActivitySuccess(()=>{completionPending=false;stopSuccess=null;if(cueSession===session)renderStudent();});
+    studentVisuals.exit(studentRoot);studentVisuals.cursor(false,api.getCanvasElement?.());
+    stopSuccess=showActivitySuccess(()=>{
+      completionPending=false;stopSuccess=null;
+      if(cueSession!==session)return;
+      // Clear nonpersistent hotspot feedback and transient color flashes only.
+      // Deliberately retain dissection carry, teacher labels and saved answers.
+      api.clearStudentHotspot?.();api.clearGuidedVisuals?.();
+      studentVisuals.cursor(false,api.getCanvasElement?.());
+      renderStudent();studentVisuals.enter(studentRoot);
+    });
   }
   function fail(a){const old=answers()[a.id]||{};studentProgress.answers[a.id]={...old,done:false,attempts:(old.attempts||0)+1};
     feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -728,7 +740,8 @@ export function createGuidedLessons(api){
     if(a.type==='dissect'){
       if(!dissectArmed){feedback='Turn on the Dissect tool before selecting structures.';feedbackGood=false;renderStudent();return true;}
       if(!a.hideStructures.includes(index)){
-        feedback='This structure is not on the required dissection checklist.';feedbackGood=false;renderStudent();return true;
+         api.flashGuidedStructure?.(index,false);
+         feedback='This structure is not on the required dissection checklist.';feedbackGood=false;renderStudent();return true;
       }
       if((prior.hiddenIndices||[]).includes(index))return true;
       if(!api.investigationAction?.('hide',index)){
@@ -795,8 +808,8 @@ export function createGuidedLessons(api){
         const dx=(a2.x-p2.x)*rect.width/2,dy=(a2.y-p2.y)*rect.height/2;
         valid=a2.z>=-1&&a2.z<=1&&Math.hypot(dx,dy)<=44;}
     }
-    if(valid){studentProgress.answers[a.id]={...(answers()[a.id]||{}),attempts:((answers()[a.id]?.attempts)||0)+1};complete(a);}
-    else fail(a);
+    if(valid){api.flashGuidedStructure?.(index,true);studentProgress.answers[a.id]={...(answers()[a.id]||{}),attempts:((answers()[a.id]?.attempts)||0)+1};complete(a);}
+    else {api.flashGuidedStructure?.(index,false);fail(a);}
     return true;
   }
   function canAdvance(target){if(!student()||!ready||!guided()||api.isPractical()||target<=api.getChapter())return true;
@@ -811,8 +824,9 @@ export function createGuidedLessons(api){
     if(!studentRoot||!student())return;studentMounted=true;
     const active=ready&&guided()&&!api.isPractical();studentRoot.hidden=!active;
     const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
-    if(!active)return;
+    if(!active){studentVisuals.cursor(false,api.getCanvasElement?.());return;}
     const {done,total,firstTry}=totals();const step=currentActivity();
+     studentVisuals.cursor(!!(step?.type==='label'&&studentHotspotArmed),api.getCanvasElement?.());
     const completeAll=done===total;
     const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
     let inner=header;

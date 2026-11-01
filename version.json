@@ -1,6 +1,6 @@
 {
-  "version": "2.2.84",
+  "version": "2.2.85",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Guided short answer activities and student submissions; teacher-only manual grading in optional Apps Script companion."
+  "notes": "Student guided activity card fades, transient scene cleanup, red hotspot cursor, and timed green/red structure selection cues."
 }

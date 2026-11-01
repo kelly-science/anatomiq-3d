@@ -1,0 +1,32 @@
+/* AnatomIQ 2.2.85: only the Student View activity panel and armed hotspot cursor. */
+#anat-guided-student.anat293-card-exiting {
+  opacity:0!important;
+  transform:translateY(-7px);
+  transition:opacity 260ms ease-in,transform 260ms ease-in;
+  pointer-events:none;
+}
+#anat-guided-student.anat293-card-entering {
+  animation:anat293-card-in 340ms cubic-bezier(.18,.72,.25,1) both;
+}
+@keyframes anat293-card-in {
+  from {opacity:0;transform:translateY(10px)}
+  to {opacity:1;transform:translateY(0)}
+}
+.anat293-hotspot-ring {
+  position:fixed;
+  width:58px;height:58px;
+  box-sizing:border-box;
+  transform:translate(-50%,-50%);
+  border:3px solid rgba(255,64,77,.83);
+  background:rgba(255,58,74,.18);
+  border-radius:50%;
+  box-shadow:0 0 0 5px rgba(255,66,80,.085),0 0 15px rgba(255,67,78,.19);
+  z-index:9998;
+  pointer-events:none;
+}
+.anat293-hotspot-ring[hidden]{display:none!important}
+canvas.anat293-hotspot-armed {cursor:none!important}
+@media (prefers-reduced-motion:reduce) {
+  #anat-guided-student.anat293-card-exiting {transition:none;opacity:0!important;transform:none}
+  #anat-guided-student.anat293-card-entering {animation:none;opacity:1;transform:none}
+}

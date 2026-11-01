@@ -1,9 +1,11 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292",
+  "./guided-visuals-293.mjs?rev=293",
+  "./guided-visuals-293.css?rev=293",
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293",
   "./guided-student-288.css?rev=288",
   "./guided-student-288.mjs?rev=288",
-  "./guided-lessons-269j.mjs?rev=292-short-answer-after-district",
+  "./guided-lessons-269j.mjs?rev=293-guided-visual-cues",
 "./short-answer-290.css?rev=290",
   "./",
   "./anatomy-divisions-2218.css",

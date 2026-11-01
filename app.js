@@ -3,7 +3,8 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=292-short-answer-after-district';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=293-guided-visual-cues';
+import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=293'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
@@ -55,7 +56,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.84'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.85'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -370,11 +371,15 @@ let activeChapter = 0;
 // Teacher-only painted surface overlays; registered on original meshes after loading.
 let __anat274PaintLayer=null, __anat274PriorOrbit=true;
 const __anat274GetLayer=()=>__anat274PaintLayer??=(createPaintOverlayLayer(THREE,index=>structures[index]?.mesh));
+const __anat293Flasher=createGuidedFlasher(THREE,index=>structures[index]?.mesh,()=>invalidate(2));
 const guided=createGuidedLessons({
   isTeacher:()=>teacherMode,isPractical:()=>practicalActive,getChapter:()=>activeChapter,
   getChapters:()=>chapters,getProjectTitle:()=>$('project-title').value,
   getSelectedStructure:()=>selected,getCamera:()=>camera,getOrbitTarget:()=>controls.target,
   getCanvasRect:()=>renderer.domElement.getBoundingClientRect(),
+  getCanvasElement:()=>renderer.domElement,
+  flashGuidedStructure:(index,correct)=>__anat293Flasher.flash(index,correct),
+  clearGuidedVisuals:()=>__anat293Flasher.clear(),
   getLabel:(qi)=>labels.find(l=>l.qi===qi),
   getLabelAnchor:(qi)=>{const l=labels.find(v=>v.qi===qi);return l?smartLabelAnchor(l):null;},
   // ANATOMIQ_GUIDED_IDENTIFY_VISIBLE_SEARCH_269J2: chapter visibility, not whole-atlas inventory.
