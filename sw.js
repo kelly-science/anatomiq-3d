@@ -164,10 +164,19 @@ self.addEventListener('message',event=>{
     const route=typeof event.data.route==='string'&&event.data.route.startsWith('#')?event.data.route.slice(0,12000):'';
     const full=event.data.type==='CACHE_OFFLINE';
     const modelURL=new URL('./models/ecorche.glb',self.location.href).href;
+    // ANATOMIQ_OFFLINE_HTML_READINESS_282 — HTML is REQUIRED for the
+    // app's homepage and index.html, but invalid for script/model assets.
     const isValid=async(response,url)=>{
       if(!response?.ok || response.type==='opaque')return false;
-      if(/text\/html/i.test(response.headers.get('content-type')||''))return false;
-      if(/\.glb$/i.test(new URL(url).pathname)){
+      const candidate=new URL(url);
+      const appRoot=new URL('./',self.location.href).pathname;
+      const isAppDocument=candidate.origin===self.location.origin &&
+        (candidate.pathname===appRoot || candidate.pathname===appRoot+'index.html');
+      const contentType=(response.headers.get('content-type')||'').toLowerCase();
+      if(isAppDocument){
+        if(!contentType.includes('text/html'))return false;
+      }else if(contentType.includes('text/html'))return false;
+      if(/\.glb$/i.test(candidate.pathname)){
         const length=Number(response.headers.get('content-length')||0);
         if(length>0&&length<28)return false;
       }
