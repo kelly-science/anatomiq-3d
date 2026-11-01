@@ -6,6 +6,7 @@ import {migrateLabelPaint,validPaintRegion,addPaintPoint} from './painted-hotspo
 import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPTS,restartChapterAnswers} from './hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_HOTSPOT_FEEDBACK_277
 import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
+import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
 import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=293'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
@@ -88,6 +89,10 @@ export function validateGuided(input, count){
         if(!['rotate','self'].includes(a.action))throw Error('Invalid explore action.');
         if(a.rotationDegrees!==undefined&&!ROTATION_CHOICES.includes(a.rotationDegrees))
           throw Error('Choose a valid Explore rotation requirement.');
+        if(a.rotationDirection!==undefined && !['free','left','right','up','down'].includes(a.rotationDirection))
+          throw Error('Choose a valid Explore direction.');
+        if(a.action==='rotate' && requiredRotation(a)>directionMaxDegrees(rotationDirection(a)))
+          throw Error('Vertical rotation requirements cannot exceed 90°.');
       }
       if(a.type==='identify' && !(Number.isInteger(a.targetStructure)&&a.targetStructure>=0&&a.targetStructure<2000 &&
         (a.targetGroup===undefined||a.targetGroup===null||typeof a.targetGroup==='string'&&KNOWN_MUSCLE_GROUP_IDS.has(a.targetGroup)&&!a.targetLabel) &&
@@ -276,7 +281,7 @@ export function createGuidedLessons(api){
     const base={id:uid(),type,title:type==='explore'?'Explore the anatomy':type==='identify'?'Identify the structure':'Check your understanding',
       prompt:type==='explore'?'Rotate the model and examine the structures.':type==='identify'?'Select the indicated structure on the model.':'Choose the correct answer.',
       hint:'',feedback:''};
-    if(type==='explore'){base.action='rotate';base.rotationDegrees=DEFAULT_ROTATION_DEGREES;}
+    if(type==='explore'){base.action='rotate';base.rotationDegrees=DEFAULT_ROTATION_DEGREES;base.rotationDirection='free';}
     if(type==='identify'){
       const visible=api.getTargets();
       const selectedKey='s:'+api.getSelectedStructure()?.index;
@@ -347,6 +352,19 @@ export function createGuidedLessons(api){
           choice.value=String(requiredRotation(a));
           choice.addEventListener('change',()=>update(i,'rotationDegrees',Number(choice.value)));
           amount.append(choice);wrapper.append(amount);
+           const directionLabel=document.createElement('label');directionLabel.className='anat-ga-field';directionLabel.textContent='Rotation direction';
+           const directionChoice=document.createElement('select');directionChoice.className='text-input';
+           for(const [value,label] of [['free','Free Rotate (any direction)'],['left','Left'],['right','Right'],['up','Up'],['down','Down']]){
+             const option=document.createElement('option');option.value=value;option.textContent=label;directionChoice.append(option);
+           }
+           directionChoice.value=rotationDirection(a);
+           directionChoice.addEventListener('change',()=>{
+             const newDirection=directionChoice.value;
+             a.rotationDirection=newDirection;
+             if(a.rotationDegrees>directionMaxDegrees(newDirection))a.rotationDegrees=90;
+             api.onTeacherChange();renderTeacher();
+           });
+           directionLabel.append(directionChoice);wrapper.append(directionLabel); // ANATOMIQ_ROTATION_TEACHER_294
         }
       }else if(a.type==='identify'){
         const label=document.createElement('label');label.className='anat-ga-field';label.textContent='Correct target (visible in this chapter)';
@@ -643,14 +661,17 @@ export function createGuidedLessons(api){
       (activity.type!=='explore'&&!INVESTIGATION_TYPES.includes(activity.type)))return null;
     if(orbitActivityId!==activity.id){
       resetOrbitMeter();orbitActivityId=activity.id;
-      orbitMeter=createRotationMeter(activity.type==='explore'?requiredRotation(activity):investigationRotation(activity),answers()[activity.id]?.rotationProgressDeg||0);
+      const prior=answers()[activity.id]||{};
+       orbitMeter=activity.type==='explore'&&rotationDirection(activity)!=='free'
+         ?createDirectedRotationMeter(requiredRotation(activity),rotationDirection(activity),prior.rotationSignedDeg??prior.rotationProgressDeg??0)
+         :createRotationMeter(activity.type==='explore'?requiredRotation(activity):investigationRotation(activity),prior.rotationProgressDeg||0);
     }
     return orbitMeter;
   }
   function recordRotation(activity,meter){
     if(!meter||!activity)return;
     const prior=answers()[activity.id]||{};
-    studentProgress.answers[activity.id]={...prior,rotationProgressDeg:Math.round(meter.value*100)/100};
+    studentProgress.answers[activity.id]={...prior,rotationProgressDeg:Math.round(meter.value*100)/100,...(activity.type==='explore'&&rotationDirection(activity)!=='free'?{rotationSignedDeg:Math.round(meter.signed*100)/100}:{})};
   }
   function refreshRotationUI(activity,meter){
     const degree=byId('anat-ga-rotation-degrees');
@@ -660,7 +681,7 @@ export function createGuidedLessons(api){
     const percent=Math.min(100,Math.floor(meter.value/requiredRotation(activity)*100));
     if(orbitLastShown!==percent){
       orbitLastShown=percent;
-      degree.textContent=`${Math.floor(meter.value)}° / ${requiredRotation(activity)}°`;
+      degree.textContent=`${rotationDirectionLabel(activity)} · ${Math.floor(meter.value)}° / ${requiredRotation(activity)}°`;
       progress.style.width=percent+'%';
       progress.parentElement?.setAttribute('aria-valuenow',String(percent));
     }
@@ -862,7 +883,7 @@ export function createGuidedLessons(api){
           const needed=requiredRotation(step),percent=Math.min(100,Math.floor(meter.value/needed*100));
           inner+=`<div class="anat-ga-rotation-track" role="progressbar" aria-label="Model rotation completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
             <div id="anat-ga-rotation-progress" class="anat-ga-rotation-progress" style="width:${percent}%"></div></div>
-          <p class="anat-ga-rotation-status" id="anat-ga-rotation-degrees">${Math.floor(meter.value)}° / ${needed}°</p>
+          <p class="anat-ga-rotation-status" id="anat-ga-rotation-degrees">${rotationDirectionLabel(step)} · ${Math.floor(meter.value)}° / ${needed}°</p>
           <button class="button primary full" type="button" id="anat-ga-explore" ${!meter.unlocked?'disabled':''}>Continue</button>`;
           orbitLastShown=percent;
         }else{

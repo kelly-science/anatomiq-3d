@@ -1,6 +1,6 @@
 {
-  "version": "2.2.85",
+  "version": "2.2.86",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Student guided activity card fades, transient scene cleanup, red hotspot cursor, and timed green/red structure selection cues."
+  "notes": "Explore directions: Free Rotate, Left, Right, Up, Down; directional rotation counts net progress and cancels reversals."
 }
