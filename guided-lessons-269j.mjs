@@ -6,6 +6,7 @@ import {migrateLabelPaint,validPaintRegion,addPaintPoint} from './painted-hotspo
 import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPTS,restartChapterAnswers} from './hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_HOTSPOT_FEEDBACK_277
 import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
+import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
 export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect']);
@@ -180,6 +181,7 @@ export function createGuidedLessons(api){
   let config=normalizeGuided(null,1),projectKey='',storageKey='',currentProject=null,studentProgress={answers:{},chapter:0},hadLocalProgress=false,
     ready=false,storageOK=true,orbitMeter=null,orbitActivityId=null,orbitLastShown=-1,feedback='',feedbackGood=false,studentName='',
     teacherMounted=false,studentMounted=false,session=0,investigationCandidate=null,teacherHotspotId=null,paintPreviewId=null,studentHotspotArmed=false,dissectArmed=false; // ANATOMIQ_INVESTIGATIONS_273
+  let completionPending=false,stopSuccess=null;
   const teacherRoot=byId('anat-guided-teacher');const studentRoot=byId('anat-guided-student');
   const student=()=>!api.isTeacher();
   const steps=(chapter=api.getChapter())=>config.chapters[chapter]||[];
@@ -596,7 +598,9 @@ export function createGuidedLessons(api){
     const old=answers()[a.id]||{};
     studentProgress.answers[a.id]={...old,done:true,attempts:Math.max(1,old.attempts||Number(attempted))};
     syncInheritedDissection();
-    feedback=a.feedback||'Activity complete.';feedbackGood=true;resetOrbitMeter();save();renderStudent();
+    feedback='';feedbackGood=true;resetOrbitMeter();save();
+    completionPending=true;const cueSession=session;
+    stopSuccess=showActivitySuccess(()=>{completionPending=false;stopSuccess=null;if(cueSession===session)renderStudent();});
   }
   function fail(a){const old=answers()[a.id]||{};studentProgress.answers[a.id]={...old,done:false,attempts:(old.attempts||0)+1};
     feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -632,11 +636,13 @@ export function createGuidedLessons(api){
     button.disabled=!meter.unlocked;
   }
   function onOrbitStart(){
+    if(completionPending)return;
     if(!student()||!ready||!guided()||api.isPractical())return;
     const activity=currentActivity(),meter=ensureOrbitMeter(activity);
     if(meter)meter.begin(api.getCamera(),api.getOrbitTarget());
   }
   function onOrbitChange(){
+    if(completionPending)return;
     if(!student()||!ready||!guided()||api.isPractical()||!orbitMeter?.active)return;
     const activity=currentActivity();
     if(!activity||activity.id!==orbitActivityId)return;
@@ -654,6 +660,7 @@ export function createGuidedLessons(api){
     }
   }
   function onOrbitEnd(){
+    if(completionPending)return;
     if(!orbitMeter?.active)return;
     const activity=currentActivity();
     if(activity?.id===orbitActivityId){recordRotation(activity,orbitMeter);save();}
@@ -750,6 +757,7 @@ export function createGuidedLessons(api){
   // Brush strokes are handled on pointer drag by the 3D viewer (not its click-to-select handler).
   function handleTeacherHotspotPick(){return false;}
   function handlePick(index,point,normal=null){
+    if(completionPending)return true;
     if(!student()||!ready||!guided()||api.isPractical())return false;
     const a=currentActivity();
     if(INVESTIGATION_TYPES.includes(a?.type))return handleInvestigationPick(a,index,point,normal);
@@ -780,13 +788,14 @@ export function createGuidedLessons(api){
     return true;
   }
   function renderStudent(){
+    if(completionPending)return;
     if(!studentRoot||!student())return;studentMounted=true;
     const active=ready&&guided()&&!api.isPractical();studentRoot.hidden=!active;
     const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
     if(!active)return;
     const {done,total,firstTry}=totals();const step=currentActivity();
     const completeAll=done===total;
-    const header=`<div class="anat-ga-head"><strong>Guided Lesson</strong><span>${done}/${total} complete</span></div>`;
+    const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
     let inner=header;
     if(completeAll){
       inner+=`<div class="anat-ga-complete"><h3>Lesson Complete!</h3><p>You've completed ${total} guided activities across ${api.getChapters().length} chapters.</p>
@@ -812,20 +821,19 @@ export function createGuidedLessons(api){
           <p>All activities in this chapter will reset. Earlier chapters remain completed.</p>
           <button class="button primary full" id="anat-ga-restart-chapter" type="button">Restart Chapter ${api.getChapter()+1}</button></section>`;
       }else{
-      inner+=`<div class="anat-ga-task"><small>Chapter ${api.getChapter()+1} · Activity ${index} of ${steps().length}</small><h3>${esc(step.title)}</h3>
+      inner+=`<div class="anat-ga-task"><h3>${esc(step.title)}</h3>
       <p>${esc(step.prompt)}</p>`;
       if(step.type==='explore'){
         const meter=ensureOrbitMeter(step);
         if(meter){
           const needed=requiredRotation(step),percent=Math.min(100,Math.floor(meter.value/needed*100));
-          inner+=`<p class="anat-ga-help">Rotate the 3D model at least ${needed}° to unlock Continue. Zooming and panning do not count.</p>
-          <div class="anat-ga-rotation-track" role="progressbar" aria-label="Model rotation completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+          inner+=`<div class="anat-ga-rotation-track" role="progressbar" aria-label="Model rotation completed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
             <div id="anat-ga-rotation-progress" class="anat-ga-rotation-progress" style="width:${percent}%"></div></div>
           <p class="anat-ga-rotation-status" id="anat-ga-rotation-degrees">${Math.floor(meter.value)}° / ${needed}°</p>
           <button class="button primary full" type="button" id="anat-ga-explore" ${!meter.unlocked?'disabled':''}>Continue</button>`;
           orbitLastShown=percent;
         }else{
-          inner+='<p class="anat-ga-help">Explore the anatomy, then continue when ready.</p><button class="button primary full" type="button" id="anat-ga-explore">Continue</button>';
+          inner+='<button class="button primary full" type="button" id="anat-ga-explore">Continue</button>';
         }
       }
       else if(INVESTIGATION_TYPES.includes(step.type)){
@@ -837,7 +845,7 @@ export function createGuidedLessons(api){
           checklist+=`<span class="${evidence.actionDone?'done':''}">${evidence.actionDone?'✓':'○'} ${step.action==='hide'?'Hide the obstructing bone':'Isolate the target'}</span>
           <span class="${evidence.targetPicked?'done':''}">${evidence.targetPicked?'✓':'○'} Identify the target in 3D</span></div>`;
           const candidateReady=Number.isInteger(investigationCandidate);
-          if(!evidence.actionDone)checklist+=`<p class="anat-investigate-small">Click a bone, then use the action button. Only model interactions count.</p>
+          if(!evidence.actionDone)checklist+=`
             <div class="anat-investigate-action"><button class="button primary" id="anat-ga-model-action" ${candidateReady?'':'disabled'}>${step.action==='hide'?'Hide selected bone':'Isolate selected bone'}</button>
             <button class="button subtle" id="anat-ga-model-reset">Restore model</button></div>`;
           else checklist+=`<div class="anat-investigate-action"><button class="button subtle full" id="anat-ga-model-reset">Restore / retry</button></div>`;
@@ -845,39 +853,36 @@ export function createGuidedLessons(api){
           const selected=evidence.selectedStructures||[];
           checklist+=`<span class="${selected.length>=1?'done':''}">${selected.length>=1?'✓':'○'} First bone (${Math.min(2,selected.length)}/2)</span>
             <span class="${selected.length>=2?'done':''}">${selected.length>=2?'✓':'○'} Second related bone</span></div>
-            <p class="anat-investigate-small">Select the two related bones directly on the 3D model.</p>`;
+            `;
         }else if(step.type==='label'){
           const attempts=hotspotAttemptState(step,evidence);
           checklist+=`<span class="${evidence.hotspotCorrect?'done':''}">${evidence.hotspotCorrect?'✓':'○'} Place a hotspot within the correct 3D area</span></div>
             ${attempts.limit?`<div class="anat-hotspot-attempts" role="status"><strong>Hotspot attempts</strong><span>${attempts.used}/${attempts.limit} used · ${attempts.remaining} remaining</span></div>
               ${attempts.finalChance?'<div class="anat-hotspot-final-warning" role="alert">⚠ Final attempt! Another incorrect click will require you to restart this chapter.</div>':
                 '<p class="anat-hotspot-limit-note">If you use every attempt, you must restart this chapter.</p>'}`:''}
-            <p class="anat-hotspot-tip">${step.paintRegions?.length?'Inspect the model and place a hotspot where you believe the landmark is located.':'Teacher must paint a correct area before this can be completed.'}</p>
+            ${!step.paintRegions?.length?'<p class="anat-hotspot-tip">Teacher must paint a correct area before this can be completed.</p>':''}
             <button class="button primary full" id="anat-ga-hotspot-arm" type="button" aria-pressed="${studentHotspotArmed}" ${step.paintRegions?.length?'':'disabled'}>${studentHotspotArmed?'Placing hotspot — click model':'Place 3D hotspot'}</button>`;
         }else if(step.type==='dissect'){
           const found=dissectionProgress(step,dissectEvidence(step).hiddenIndices);
           const pct=Math.floor(found.completed/found.required*100);
           const displayName=id=>api.getStructureName?.(id)||('Structure #'+id);
-          checklist+=`<span class="${found.done?'done':''}">${found.done?'✓':'○'} Hide all required structures</span></div>
-            ${step.keepHiddenForNext===true?'<p class="anat-dissect-carry-note">Completed dissection stays hidden for later activities in this chapter.</p>':''}
-            <div class="anat-dissect-summary"><span>${found.completed} dissected</span><span>${found.remaining.length} remaining</span></div>
-            <div class="anat-dissect-track" role="progressbar" aria-label="Structures dissected" aria-valuemin="0" aria-valuemax="${found.required}" aria-valuenow="${found.completed}"><span style="width:${pct}%"></span></div>
+          checklist+=`</div>
             <button class="button primary full anat-dissect-toggle" id="anat-ga-dissect-arm" type="button" aria-pressed="${dissectArmed}">${dissectArmed?'Dissect ON — click structures':'Dissect tool (Hide)'}</button>
-            <p class="anat-investigate-small">Select the required structures directly in the 3D viewer to hide them. Unlisted structures do not count.</p>
+            
             <div class="anat-dissect-list">${step.hideStructures.map(id=>`<span class="${found.remaining.includes(id)?'':'done'}">${found.remaining.includes(id)?'○':'✓'} ${esc(displayName(id))}</span>`).join('')}</div>
-            <button class="button subtle full" id="anat-ga-model-reset" type="button">Restore dissection / retry</button>`;
+            <button class="button subtle anat-ga-reset-compact" id="anat-ga-model-reset" type="button" aria-label="Restore dissection and retry" title="Restore dissection and retry">↺</button>`;
         }
         inner+=checklist;
       }
-      else if(step.type==='identify')inner+='<p class="anat-ga-help">Click the correct structure or landmark in the 3D viewer. Anatomical labels are temporarily hidden.</p>';
+      else if(step.type==='identify'){} // Student acts on teacher-generated prompt in the 3D viewer.
       else inner+=`<div class="anat-ga-choices">${step.options.map((o,i)=>`<button class="button subtle full" data-anat-choice="${i}" type="button">${esc(o)}</button>`).join('')}</div>`;
       inner+='</div>';
       } // end unlocked activity content
     }
-    if(feedback)inner+=`<p class="anat-ga-feedback ${feedbackGood?'is-good':'is-error'}" role="status">${esc(feedback)}</p>`;
+    if(feedback&&!feedbackGood)inner+=`<p class="anat-ga-feedback ${feedbackGood?'is-good':'is-error'}" role="status">${esc(feedback)}</p>`;
     if(studentProgress.chapter!==api.getChapter() && !completeAll && api.getChapters()[studentProgress.chapter])
       inner+=`<button class="button subtle full" id="anat-ga-resume" type="button">Resume chapter ${studentProgress.chapter+1}</button>`;
-    inner+=`<div class="anat-ga-footer"><small id="anat-ga-saved">${storageOK?'Saved on this device':'Progress storage unavailable'}</small>
+    if(completeAll)inner+=`<div class="anat-ga-footer"><small id="anat-ga-saved">${storageOK?'Saved on this device':'Progress storage unavailable'}</small>
       <button type="button" id="anat-ga-reset" class="anat-ga-link">Restart lesson</button></div>`;
     studentRoot.innerHTML=inner;
     byId('anat-ga-explore')?.addEventListener('click',()=>{

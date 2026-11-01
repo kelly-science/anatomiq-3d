@@ -1,0 +1,32 @@
+/* AnatomIQ 2.2.80 · student guided activities only. Teacher controls untouched. */
+#anat-guided-student .anat-ga-head {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  border-bottom:1px solid rgba(216,240,252,.16); padding-bottom:10px;
+  font-size:15px; font-variant-numeric:tabular-nums;
+}
+#anat-guided-student .anat-ga-head strong{font-size:17px;letter-spacing:-.015em}
+#anat-guided-student .anat-ga-head span{font-weight:700;color:#d0e9f1}
+#anat-guided-student .anat-ga-lesson-track{height:4px;margin:10px 0 16px;border-radius:8px;overflow:hidden;background:rgba(163,192,213,.16)}
+#anat-guided-student .anat-ga-lesson-track>span{height:100%;display:block;background:#65d1c2;transition:width .25s ease}
+#anat-guided-student .anat-ga-task h3{font-size:18px;line-height:1.28;margin:0 0 7px;letter-spacing:-.012em}
+#anat-guided-student .anat-ga-task>p:not(.anat-ga-feedback){font-size:14px;line-height:1.48;margin:0 0 13px;color:#e2eff7}
+#anat-guided-student .anat-ga-choices{margin-top:12px}
+#anat-guided-student .anat-investigate-progress{margin:8px 0;gap:7px}
+#anat-guided-student .anat-investigate-progress:empty{display:none}
+#anat-guided-student .anat-investigate-progress span{font-size:12px}
+#anat-guided-student .anat-dissect-toggle{margin:10px 0 12px;min-height:42px;font-size:13px}
+#anat-guided-student .anat-dissect-list{max-height:190px;padding:10px;gap:11px}
+#anat-guided-student .anat-dissect-list span{font-size:13px;line-height:1.5}
+#anat-guided-student .anat-ga-reset-compact{float:right;min-height:28px;padding:3px 9px;font-size:13px;margin:6px 0 0}
+#anat-guided-student .anat-ga-feedback.is-error{margin-top:10px}
+body.anat-ga-success-active #anat-guided-student{pointer-events:none;opacity:.45;transition:opacity .15s ease}
+.anat-ga-success-overlay{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;pointer-events:all;background:rgba(8,23,36,.22)}
+.anat-ga-success-ring{display:grid;place-items:center;width:clamp(104px,22vmin,154px);aspect-ratio:1;border-radius:50%;background:rgba(17,77,82,.68);box-shadow:0 0 0 12px rgba(82,220,188,.07),0 0 60px rgba(75,242,193,.24);animation:anat-ga-pop 1s ease-out both}
+.anat-ga-success-ring svg{width:100%;height:100%;overflow:visible}
+.anat-ga-success-circle{fill:none;stroke:#83f2d3;stroke-width:5;stroke-linecap:round;stroke-dasharray:308;stroke-dashoffset:308;transform:rotate(-90deg);transform-origin:center;animation:anat-ga-circle .45s ease-out .08s forwards}
+.anat-ga-success-check{fill:none;stroke:#a1ffdd;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:81;stroke-dashoffset:81;animation:anat-ga-check .33s ease-out .42s forwards}
+@keyframes anat-ga-circle{to{stroke-dashoffset:0}}
+@keyframes anat-ga-check{to{stroke-dashoffset:0}}
+@keyframes anat-ga-pop{0%{transform:scale(.76);opacity:0}22%{transform:scale(1.06);opacity:1}38%{transform:scale(1)}82%{opacity:1}100%{transform:scale(1.04);opacity:0}}
+@media(max-width:700px){#anat-guided-student .anat-ga-head{font-size:13px}#anat-guided-student .anat-ga-task h3{font-size:17px}#anat-guided-student .anat-ga-task>p{font-size:13px}}
+@media(prefers-reduced-motion:reduce){.anat-ga-success-ring,.anat-ga-success-circle,.anat-ga-success-check{animation:none;opacity:1;stroke-dashoffset:0}#anat-guided-student .anat-ga-lesson-track>span{transition:none}}

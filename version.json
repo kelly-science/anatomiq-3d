@@ -1,6 +1,6 @@
 {
-  "version": "2.2.79",
+  "version": "2.2.80",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Google Apps Script identity iframe handshake compatibility and refreshed PWA cache; existing activities and offline features preserved."
+  "notes": "Student guided-activity UI simplified; centered success cue between questions. Cloud progress, offline mode, answers, 3D models preserved."
 }
