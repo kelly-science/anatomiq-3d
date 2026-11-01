@@ -589,6 +589,14 @@ export function createGuidedLessons(api){
   }
   function syncInheritedDissection(){
     if(!student()||!ready||!guided())return;
+    // ANATOMIQ_PUBLISH_DISSECTION_289: keep carried dissections during the lesson; restore on final completion.
+    const activities=allSteps();
+    if(activities.length>0 && activities.every(completed)){
+      // These APIs clear *temporary* student hiding, not teacher-authored scene visibility.
+      api.resetInvestigation?.();
+      api.setInvestigationHiddenIndices?.([]);
+      return;
+    }
     api.setInvestigationHiddenIndices?.(inheritedHidden());
   }
   function complete(a,attempted=true){

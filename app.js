@@ -3,7 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=288-student-clean';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=289-final-dissection';
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
@@ -55,7 +55,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.80'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.81'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4245,10 +4245,12 @@ $('cloud-publish').addEventListener('click',async()=>{
     const r=lessonRef($('cloud-owner').value,$('cloud-repo').value,$('cloud-branch').value,$('cloud-slug').value);
     if(r.owner.toLowerCase()!==cloudVerified.owner.toLowerCase()||r.repo.toLowerCase()!==cloudVerified.repo.toLowerCase()||r.branch!==cloudVerified.branch)
       throw new Error('Repository settings changed. Disconnect and reconnect before publishing.');
-    // Canonical remote GitHub Pages URL; never give students localhost or 127.0.0.1.
-    const canonicalBase=`https://${r.owner.toLowerCase()}.github.io/${r.repo}/`;
-    if(selectedTracking && (r.owner.toLowerCase()!=='kelly-science' || r.repo.toLowerCase()!=='anatomiq-3d'))
-      throw new Error('This Apps Script pilot is configured for kelly-science/anatomiq-3d only.');
+    // ANATOMIQ_PUBLISH_DISSECTION_289 — the viewer lives in anatomiq-3d; lessons can live in a separate repo.
+    // This is deliberately a fixed trusted origin, never a localhost URL or user-entered host.
+    const canonicalBase='https://kelly-science.github.io/anatomiq-3d/';
+    if(selectedTracking && (r.owner.toLowerCase()!=='kelly-science' ||
+       !['anatomiq-3d','anatomiq-lessons'].includes(r.repo.toLowerCase())))
+      throw new Error('School tracking supports the kelly-science/anatomiq-lessons and anatomiq-3d repositories.');
     const standardStudentLink=studentLink(canonicalBase,r);
     const trackedStudentLink=selectedTracking?cloudClient.wrapLink(standardStudentLink):'';
     if(selectedTracking && (!trackedStudentLink.startsWith('https://script.google.com/macros/s/') ||

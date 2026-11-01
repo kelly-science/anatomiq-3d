@@ -1,6 +1,6 @@
 {
-  "version": "2.2.80",
+  "version": "2.2.81",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Student guided-activity UI simplified; centered success cue between questions. Cloud progress, offline mode, answers, 3D models preserved."
+  "notes": "School-tracked publishing supports the separate lesson repo; student view always uses AnatomIQ Pages. Restore temporary dissections on full lesson completion; progress retained."
 }
