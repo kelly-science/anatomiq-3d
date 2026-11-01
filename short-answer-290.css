@@ -1,0 +1,7 @@
+/* ANATOMIQ_SHORT_ANSWER_290 — student answers match the compact activity-card design. */
+#anat-guided-student .anat-short-answer-290 {display:grid;gap:10px;margin-top:12px;min-width:0}
+#anat-guided-student #anat-ga-short-response {width:100%;box-sizing:border-box;min-height:122px;line-height:1.5;resize:vertical;padding:12px 14px;white-space:pre-wrap}
+#anat-guided-student .anat-short-answer-actions {display:flex;gap:12px;align-items:center;justify-content:space-between}
+#anat-guided-student #anat-ga-short-count {font-size:12px;opacity:.7;font-variant-numeric:tabular-nums}
+#anat-guided-student #anat-ga-short-submit {min-height:42px;min-width:140px}
+@media (max-width:600px) {#anat-guided-student #anat-ga-short-response {min-height:150px;font-size:16px} #anat-guided-student #anat-ga-short-submit{flex:1}}

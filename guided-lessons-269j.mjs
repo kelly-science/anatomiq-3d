@@ -9,7 +9,7 @@ export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
-export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect']);
+export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect','short']); // ANATOMIQ_SHORT_ANSWER_290 // ANATOMIQ_SHORT_AFTER_DISTRICT_292
 const MAX_STEPS = 12;
 // ANATOMIQ_GUIDED_IDENTIFY_VISIBLE_SEARCH_269J2: pure search helper (no render loop work).
 export function searchIdentifyTargets(choices, query){
@@ -92,7 +92,9 @@ export function validateGuided(input, count){
         (a.targetGroup===undefined||a.targetGroup===null||typeof a.targetGroup==='string'&&KNOWN_MUSCLE_GROUP_IDS.has(a.targetGroup)&&!a.targetLabel) &&
         (a.targetLabel===null||a.targetLabel===undefined||typeof a.targetLabel==='string'&&/^q-[0-9A-Za-z-]{4,62}$/.test(a.targetLabel))))
         throw Error('Choose a valid structure or teacher label for Identify.');
-      if(a.type==='mc' && (!Array.isArray(a.options)||a.options.length<2||a.options.length>4||
+      if(a.type==='short' && (!Number.isInteger(a.maxPoints)||a.maxPoints<1||a.maxPoints>20))
+         throw Error('Short answer point value must be between 1 and 20.'); // ANATOMIQ_SHORT_ANSWER_290
+       if(a.type==='mc' && (!Array.isArray(a.options)||a.options.length<2||a.options.length>4||
           a.options.some(s=>typeof s!=='string'||!s.trim()||s.length>160)||
           !Number.isInteger(a.correct)||a.correct<0||a.correct>=a.options.length))
         throw Error('Multiple choice needs 2–4 answers and one correct selection.');
@@ -190,7 +192,7 @@ export function createGuidedLessons(api){
   const answers=()=>studentProgress.answers||{};
   const completed=a=>!!answers()[a.id]?.done;
   const totals=()=>({total:allSteps().length,done:allSteps().filter(completed).length,
-    firstTry:allSteps().filter(a=>a.type!=='explore'&&answers()[a.id]?.done&&answers()[a.id]?.attempts===1).length});
+    firstTry:allSteps().filter(a=>a.type!=='explore'&&a.type!=='short'&&answers()[a.id]?.done&&answers()[a.id]?.attempts===1).length});
   function touch(){if(!api.isTeacher())return;api.onTeacherChange();renderTeacher();}
   const teacherPaintActivity=()=>steps().find(step=>step.id===teacherHotspotId&&step.type==='label');
   function stopTeacherPaint(saveStroke=true){
@@ -281,7 +283,8 @@ export function createGuidedLessons(api){
       base.targetStructure=kind==='s'?Number(value):api.getLabel(value)?.s;
       base.targetLabel=kind==='l'?value:null;
     }
-    if(type==='mc'){base.options=['Option A','Option B','Option C','Option D'];base.correct=0;}
+    if(type==='short'){base.title='Short answer';base.prompt='Respond to the question in your own words.';base.maxPoints=5;}
+     if(type==='mc'){base.options=['Option A','Option B','Option C','Option D'];base.correct=0;}
     if(INVESTIGATION_TYPES.includes(type)){
       const available=api.getTargets().filter(c=>c.key.startsWith('s:')).map(c=>Number(c.key.slice(2)));
       if(available.length<(type==='relationship'?2:1)){
@@ -316,7 +319,7 @@ export function createGuidedLessons(api){
     for(const [i,a] of steps().entries()){
       const wrapper=document.createElement('section');wrapper.className='anat-ga-editor-item';
       const header=document.createElement('div');header.className='anat-ga-editor-header';
-      header.innerHTML=`<strong>${i+1}. ${a.type==='mc'?'Multiple choice':a.type==='identify'?'Identify':a.type==='reveal'?'Reveal & Identify':a.type==='relationship'?'Relationships':a.type==='label'?'Label hotspot':a.type==='dissect'?'Dissect':'Explore'}</strong>`;
+      header.innerHTML=`<strong>${i+1}. ${a.type==='short'?'Short answer':a.type==='mc'?'Multiple choice':a.type==='identify'?'Identify':a.type==='reveal'?'Reveal & Identify':a.type==='relationship'?'Relationships':a.type==='label'?'Label hotspot':a.type==='dissect'?'Dissect':'Explore'}</strong>`;
       for(const [label,delta] of [['↑',-1],['↓',1]]){
         const b=document.createElement('button');b.type='button';b.className='button small subtle';b.textContent=label;
         b.disabled=i+delta<0||i+delta>=steps().length;
@@ -385,7 +388,15 @@ export function createGuidedLessons(api){
           status.classList.remove('anat-ga-target-warning');
         });
         redraw();label.append(search,select,status);wrapper.append(label);
+      }else if(a.type==='short'){
+        const scoring=document.createElement('label');scoring.className='anat-ga-field';scoring.textContent='Maximum points';
+        const points=document.createElement('input');points.className='text-input';points.type='number';points.min='1';points.max='20';points.step='1';
+        points.value=String(a.maxPoints||5);points.addEventListener('change',()=>{
+          const n=Number(points.value);if(Number.isInteger(n)&&n>=1&&n<=20)update(i,'maxPoints',n);
+          else {points.value=String(a.maxPoints||5);api.notify('Choose 1–20 points.');}
+        });scoring.append(points);wrapper.append(scoring);
       }else if(INVESTIGATION_TYPES.includes(a.type)){
+
         const block=document.createElement('div');block.className='anat-ga-investigate-editor';
         const structureOptions=()=>api.getTargets().filter(c=>c.key.startsWith('s:'));
         const addPicker=(title,fieldKey,labels=false)=>{
@@ -546,7 +557,7 @@ export function createGuidedLessons(api){
     const count=teacherRoot.querySelector('#anat-ga-count');if(count)count.textContent=`${steps().length} of ${MAX_STEPS} activities`;
   }
   function cloudSnapshot(){
-    const scored=allSteps().filter(a=>a.type!=='explore');
+    const scored=allSteps().filter(a=>a.type!=='explore'&&a.type!=='short');
     return {projectKey,title:api.getProjectTitle(),chapter:api.getChapter(),
       total:allSteps().length,done:allSteps().filter(completed).length,graded:scored.length,
       firstTry:scored.filter(a=>completed(a)&&answers()[a.id]?.attempts===1).length,
@@ -882,8 +893,14 @@ export function createGuidedLessons(api){
         }
         inner+=checklist;
       }
-      else if(step.type==='identify'){} // Student acts on teacher-generated prompt in the 3D viewer.
-      else inner+=`<div class="anat-ga-choices">${step.options.map((o,i)=>`<button class="button subtle full" data-anat-choice="${i}" type="button">${esc(o)}</button>`).join('')}</div>`;
+      else if(step.type==='short'){
+         const prior=answers()[step.id]||{};
+         inner+=`<div class="anat-short-answer-290"><textarea id="anat-ga-short-response" class="text-input" maxlength="800" rows="5" aria-label="Your short answer" placeholder="Type your answer here…">${esc(prior.draft||'')}</textarea>
+           <div class="anat-short-answer-actions"><span id="anat-ga-short-count" aria-live="off">${String(prior.draft||'').length}/800</span>
+           <button class="button primary" type="button" id="anat-ga-short-submit" ${String(prior.draft||'').trim()?'':'disabled'}>Submit answer</button></div></div>`;
+       }
+       else if(step.type==='identify'){} // Student acts on teacher-generated prompt in the 3D viewer.
+      else if(step.type==='mc')inner+=`<div class="anat-ga-choices">${step.options.map((o,i)=>`<button class="button subtle full" data-anat-choice="${i}" type="button">${esc(o)}</button>`).join('')}</div>`;
       inner+='</div>';
       } // end unlocked activity content
     }
@@ -903,7 +920,29 @@ export function createGuidedLessons(api){
       studentProgress.answers[step.id]={...(answers()[step.id]||{}),attempts:(answers()[step.id]?.attempts||0)+1,lastChoice:chosen};
       if(chosen===step.correct)complete(step);else failFromAlreadyIncremented(step);
     }));
-    byId('anat-ga-hotspot-arm')?.addEventListener('click',()=>{
+    // ANATOMIQ_SHORT_ANSWER_290 — local draft first; cloud sync only after submission.
+     const shortArea=byId('anat-ga-short-response');
+     if(shortArea&&step?.type==='short'){
+       let saveTimer=null;
+       shortArea.addEventListener('input',()=>{
+         const text=shortArea.value.slice(0,800);
+         studentProgress.answers[step.id]={...(answers()[step.id]||{}),type:'short',draft:text};
+         const count=byId('anat-ga-short-count'),submit=byId('anat-ga-short-submit');
+         if(count)count.textContent=text.length+'/800';if(submit)submit.disabled=!text.trim();
+         clearTimeout(saveTimer);
+         const key=storageKey,projectSession=session;
+         saveTimer=setTimeout(()=>{if(projectSession===session&&key===storageKey){void writeProgress(studentProgress).then(ok=>{storageOK=ok;});}},450);
+       });
+       byId('anat-ga-short-submit')?.addEventListener('click',()=>{
+         if(completed(step)||completionPending)return;
+         const text=shortArea.value.trim();if(!text){shortArea.focus();return;}
+         clearTimeout(saveTimer);
+         studentProgress.answers[step.id]={...(answers()[step.id]||{}),type:'short',response:text,draft:'',
+           questionTitle:step.title,questionPrompt:step.prompt,maxPoints:step.maxPoints,submittedAt:Date.now(),attempts:1};
+         complete(step);
+       });
+     }
+     byId('anat-ga-hotspot-arm')?.addEventListener('click',()=>{
       if(step?.type!=='label'||!step.paintRegions?.length||hotspotAttemptState(step,answers()[step.id]).locked||answers()[step.id]?.hotspotCorrect)return;
       studentHotspotArmed=!studentHotspotArmed;feedback='';renderStudent();
     });

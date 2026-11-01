@@ -1,6 +1,6 @@
 {
-  "version": "2.2.83",
+  "version": "2.2.84",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Allow domain-specific Google Workspace Apps Script links for tracked students and teacher dashboard; preserve guided lessons and Short Answer grading."
+  "notes": "Guided short answer activities and student submissions; teacher-only manual grading in optional Apps Script companion."
 }
