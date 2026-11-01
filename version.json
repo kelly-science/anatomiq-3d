@@ -1,6 +1,6 @@
 {
-  "version": "2.2.76",
+  "version": "2.2.78",
   "channel": "experimental",
-  "published": "2026-10-31",
-  "notes": "Optional teacher-managed Google Apps Script school progress pilot, class-period dashboard, and personalized completion certificate. Offline features retained."
+  "published": "2026-11-01",
+  "notes": "Explicit GitHub and school-tracked student links, canonical public lesson URLs, typed-URL teacher dashboard navigation. Existing guided, offline, and Google backend preserved."
 }

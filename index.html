@@ -583,17 +583,27 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <label for="aiq283-script-url">Google Apps Script deployment URL</label>
           <input id="aiq283-script-url" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" />
           <small id="aiq283-publish-hint">School progress tracking is available for guided chapter activities.</small>
-          <button id="aiq283-dashboard" type="button" class="button small subtle">Open teacher progress dashboard</button>
+          <a id="aiq283-dashboard" href="#" target="_blank" rel="noopener noreferrer" class="button small subtle">Open teacher progress dashboard ↗</a>
         </div>
         <button id="cloud-publish" type="button" class="button primary full">Publish / Update Live Lesson</button>
         <p id="cloud-publish-status" class="studio-hint" role="status" aria-live="polite">Connect to a public GitHub repository to publish.</p>
         <div id="cloud-publish-results" hidden>
-          <label class="field-label" for="cloud-student-url">Permanent live student URL</label>
+          <label class="field-label" for="cloud-student-url">Standard Student Link — GitHub (no school sign-in)</label>
           <textarea id="cloud-student-url" class="share-url" rows="2" readonly></textarea>
-          <div class="cloud-actions"><button id="cloud-copy-url" type="button" class="button small">Copy student URL</button><button id="cloud-preview" type="button" class="button small subtle">Open student view ↗</button></div>
+          <div class="cloud-actions"><button id="cloud-copy-url" type="button" class="button small">Copy standard link</button><button id="cloud-preview" type="button" class="button small subtle">Open standard student view ↗</button></div>
           <label class="field-label" for="cloud-embed-url">Schoology embedded viewer URL</label>
           <textarea id="cloud-embed-url" class="share-url" rows="2" readonly></textarea>
           <button id="cloud-copy-embed" type="button" class="button small">Copy Schoology URL</button>
+          <!-- ANATOMIQ_PUBLISH_LINKS_285: separately generated, verified Apps Script link. -->
+          <section id="aiq285-tracked-results" class="aiq283-publish" style="display:none" hidden>
+            <label class="field-label" for="aiq285-tracked-url"><strong>Tracked Student Link — School Google login required</strong></label>
+            <textarea id="aiq285-tracked-url" class="share-url" rows="3" readonly></textarea>
+            <div class="cloud-actions">
+              <button id="aiq285-copy-tracked" type="button" class="button small primary">Copy tracked link</button>
+              <button id="aiq285-preview-tracked" type="button" class="button small subtle">Open tracked student view ↗</button>
+            </div>
+            <p class="studio-hint">Share this Apps Script URL for class-period progress tracking. The standard GitHub link above does not require school sign-in or record cloud progress. Open the tracked link in a normal browser tab, not inside a Schoology iframe.</p>
+          </section>
         </div>
         <p class="footnote">Published lesson JSON is public and can be inspected by anyone. Do not use this as secure exam access control. Image references must already be publicly hosted. Use Snapshot links above when the lesson must not change.</p>
       </details>
@@ -783,7 +793,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
   <link rel="stylesheet" href="./investigation-272.css?rev=271-hotspot-dissect-carry-278-local" />
   <link rel="stylesheet" href="./native-muscle-catalog.css?rev=270-native-muscles-local" />
   <link rel="stylesheet" href="./cloud-progress-283.css?rev=283" />
-  <script src="./cloud-progress-283.js?rev=283"></script>
+  <script src="./cloud-progress-283.js?rev=285"></script>
   <script src="./recent-lessons-281.js?rev=281"></script>
   <script type="module">
     // Installer changes the static import map to local files after they are downloaded.
@@ -805,7 +815,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           .catch(e=>console.warn('[AnatomIQ] Offline worker unavailable:',e));
       }
     }
-    await import('./app.js?rev=motionblur279b&offline=281&progress=283'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b&offline=281&progress=285'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.75"></script>
   <script defer src="./interface-2221.js?rev=workspace241&v=2.2.75"></script>

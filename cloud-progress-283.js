@@ -125,10 +125,17 @@
       throw new Error('To track progress, enter your deployed Google Apps Script web-app URL.');
     configure(input.value, wantsTracking);
   }
-  function teacherDashboardURL() {
-    const cfg = storedConfig();
-    if (!cfg.url) return null;
-    const u = new URL(cfg.url);
+  // ANATOMIQ_PUBLISH_LINKS_285: the dashboard opens directly from the visible
+  // typed URL; no publish/Google sheet write is required to save a setting first.
+  function teacherDashboardURL(typedURL) {
+    const input = String(typedURL || '').trim() || storedConfig().url || '';
+    if (!input) return null;
+    const u = new URL(input);
+    if (u.protocol !== 'https:' || u.hostname !== 'script.google.com' ||
+        !/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname))
+      throw new Error('Enter a valid deployed Apps Script URL ending in /exec.');
+    u.search = '';
+    u.hash = '';
     u.searchParams.set('view', 'teacher');
     return u.href;
   }
@@ -137,8 +144,12 @@
     if (!cfg.tracked) return original;
     if (!cfg.url) throw new Error('Set the school progress web-app URL before publishing.');
     const u = new URL(original);
-    if (u.origin !== root.location.origin || !/^#lesson=/.test(u.hash))
-      throw new Error('Cloud tracking requires a published GitHub lesson (#lesson=…), not a snapshot link.');
+    // A teacher may publish from localhost. Always require the actual
+    // canonical public lesson, never a localhost or snapshot URL.
+    if (u.origin !== 'https://kelly-science.github.io' || u.pathname !== '/anatomiq-3d/' ||
+        !/^#lesson=[a-z0-9-]+\/[a-z0-9_.-]+\/[a-z0-9-]+@[a-z0-9._%/-]+$/i.test(u.hash) ||
+        u.search)
+      throw new Error('Cloud tracking requires a published kelly-science.github.io/anatomiq-3d/ lesson link.');
     const endpoint = new URL(cfg.url);
     endpoint.searchParams.set('lesson', original);
     if (opts.embedded) endpoint.searchParams.set('embed', '1');
