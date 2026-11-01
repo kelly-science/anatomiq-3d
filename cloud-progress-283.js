@@ -96,11 +96,31 @@
     try { return JSON.parse(root.localStorage.getItem(SETTINGS_KEY) || '{}') || {}; }
     catch { return {}; }
   }
+  // ANATOMIQ_DISTRICT_PORTAL_291 — Google owns both regular and Workspace web-app paths.
+  // Never trust an arbitrary hostname or a URL just because it contains "script.google".
+  function validAppsScriptEndpoint(value) {
+    try {
+      const u = new URL(value);
+      return u.protocol === 'https:' && u.hostname === 'script.google.com' &&
+        !u.username && !u.password && !u.port &&
+        /^\/(?:macros\/s|a\/macros\/(?:[a-z0-9-]+\.)+[a-z]{2,63}\/s)\/[a-z0-9_-]+\/exec$/i.test(u.pathname);
+    } catch { return false; }
+  }
+  function validTrackedLink(tracked, original) {
+    if (!validAppsScriptEndpoint(tracked) || !original) return false;
+    try {
+      const u = new URL(tracked);
+      return !u.hash && u.searchParams.size === 1 &&
+        u.searchParams.getAll('lesson').length === 1 &&
+        u.searchParams.get('lesson') === original &&
+        u.href !== original;
+    } catch { return false; }
+  }
   function configure(url, tracked) {
     const current = { url: String(url || '').trim(), tracked: Boolean(tracked) };
     if (current.url) {
       const u = new URL(current.url);
-      if (u.protocol !== 'https:' || u.hostname !== 'script.google.com' || !u.pathname.endsWith('/exec'))
+      if (!validAppsScriptEndpoint(u.href))
         throw new Error('Enter the deployed Google Apps Script web-app URL ending in /exec.');
       current.url = u.origin + u.pathname;
     }
@@ -135,8 +155,7 @@
     const input = String(typedURL || '').trim() || storedConfig().url || '';
     if (!input) return null;
     const u = new URL(input);
-    if (u.protocol !== 'https:' || u.hostname !== 'script.google.com' ||
-        !/^\/macros\/s\/[^/]+\/exec$/.test(u.pathname))
+    if (!validAppsScriptEndpoint(u.href))
       throw new Error('Enter a valid deployed Apps Script URL ending in /exec.');
     u.search = '';
     u.hash = '';
@@ -197,7 +216,7 @@
   }
   root.AnatomIQCloudProgress283 = {
     enabled, lessonId, enqueue, getRemote, progressStorageKey, waitForIdentity, state: getState, onChange(f) { listeners.add(f); return () => listeners.delete(f); },
-    storedConfig, configure, wrapLink, preparePublish, capturePublish, teacherDashboardURL,
+    storedConfig, configure, wrapLink, preparePublish, capturePublish, teacherDashboardURL, validTrackedLink,
     statusText() {
       if (!enabled) return 'Saved on this device';
       return status === 'synced' ? 'Saved to school Google account' :

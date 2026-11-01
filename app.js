@@ -55,7 +55,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.81'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.83'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4253,8 +4253,8 @@ $('cloud-publish').addEventListener('click',async()=>{
       throw new Error('School tracking supports the kelly-science/anatomiq-lessons and anatomiq-3d repositories.');
     const standardStudentLink=studentLink(canonicalBase,r);
     const trackedStudentLink=selectedTracking?cloudClient.wrapLink(standardStudentLink):'';
-    if(selectedTracking && (!trackedStudentLink.startsWith('https://script.google.com/macros/s/') ||
-       !trackedStudentLink.includes('?lesson=') || trackedStudentLink===standardStudentLink))
+    // ANATOMIQ_DISTRICT_PORTAL_291: validate the genuine Google-hosted portal including Workspace /a/macros/<domain>/s/ URLs.
+    if(selectedTracking && !cloudClient.validTrackedLink(trackedStudentLink,standardStudentLink))
       throw new Error('The Google Apps Script student link could not be generated. The lesson was not published.');
     const known=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
     const safeUpdate=known && known.owner.toLowerCase()===r.owner.toLowerCase() && known.repo.toLowerCase()===r.repo.toLowerCase() && known.branch===r.branch && known.slug===r.slug;

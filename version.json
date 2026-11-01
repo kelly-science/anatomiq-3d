@@ -1,6 +1,6 @@
 {
-  "version": "2.2.81",
+  "version": "2.2.83",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "School-tracked publishing supports the separate lesson repo; student view always uses AnatomIQ Pages. Restore temporary dissections on full lesson completion; progress retained."
+  "notes": "Allow domain-specific Google Workspace Apps Script links for tracked students and teacher dashboard; preserve guided lessons and Short Answer grading."
 }
