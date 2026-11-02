@@ -3,7 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=296&certificate=299&mistakes=303&delivery=305';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=308-final-practical';
 import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=295&fullscreen=305'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
@@ -38,7 +38,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=270-native-muscles-local';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=308-final-practical';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -56,7 +56,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.96'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.97'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -375,6 +375,7 @@ const __anat293Flasher=createGuidedFlasher(THREE,index=>structures[index]?.mesh,
 const guided=createGuidedLessons({
   isTeacher:()=>teacherMode,isPractical:()=>practicalActive,getChapter:()=>activeChapter,
   getChapters:()=>chapters,getProjectTitle:()=>$('project-title').value,
+  practicalEnabled:()=>practicalConfig.on,startFinalPractical:()=>startPractical('all'),
   getSelectedStructure:()=>selected,getCamera:()=>camera,getOrbitTarget:()=>controls.target,
   getCanvasRect:()=>renderer.domElement.getBoundingClientRect(),
   getCanvasElement:()=>renderer.domElement,
@@ -3234,9 +3235,9 @@ function renderChapterUI(){
   syncGuidedAccess();
   const count=chapters.length;
   if(!count)return;
-  const nav=$('chapter-nav');nav.hidden=count<2 && !(practicalConfig.on&&!teacherMode&&!guidedAccessActive());
-  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on&&!guidedAccessActive()?' + practical':''}`;
-  $('chapter-progress').textContent=practicalActive?`PRACTICAL · FINAL CHAPTER`:`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode&&!guidedAccessActive()?1:0)}`;
+  const nav=$('chapter-nav');nav.hidden=count<2&&!(practicalConfig.on&&!teacherMode&&(!guidedAccessActive()||guided.isFinalPracticalEnabled()));
+  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on&&(!guidedAccessActive()||guided.isFinalPracticalEnabled())?' + practical':''}`;
+  $('chapter-progress').textContent=practicalActive?'PRACTICAL · FINAL CHAPTER':`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode&&(!guidedAccessActive()||guided.isFinalPracticalEnabled())?1:0)}`;
   $('previous-chapter').disabled=activeChapter===0&&!practicalActive;
   $('next-chapter').disabled=(activeChapter===count-1&&(teacherMode||!practicalConfig.on||guidedAccessActive()))||practicalActive;
   const tabs=$('chapter-tabs');tabs.replaceChildren();
@@ -3248,6 +3249,14 @@ function renderChapterUI(){
   if(!teacherMode&&practicalConfig.on&&!guidedAccessActive()){
     const tab=document.createElement('button');tab.className='chapter-tab practical-chapter-tab'+(practicalActive?' active':'');tab.type='button';
     tab.textContent='Practical';tab.setAttribute('aria-current',practicalActive?'step':'false');tab.addEventListener('click',()=>{if(!practicalActive)void startPractical();});tabs.append(tab);
+  }
+  // ANATOMIQ_GUIDED_FINAL_PRACTICAL_308 — the final chapter tab is locked until guided questions finish.
+  if(!teacherMode&&guided.isFinalPracticalEnabled()){
+    const tab=document.createElement('button');tab.type='button';tab.className='chapter-tab practical-chapter-tab'+(practicalActive?' active':'');
+    tab.textContent='Final Practical';tab.disabled=!guided.canStartFinalPractical()||practicalActive;
+    tab.title=tab.disabled&&!practicalActive?'Finish the guided activities first.':'';
+    tab.addEventListener('click',()=>{if(guided.canStartFinalPractical())void startPractical('all');});
+    tabs.append(tab);
   }
   if(teacherMode){renderPracticalEditor();guided.renderTeacher();}
   else guided.renderStudent();
@@ -5268,7 +5277,9 @@ function practicalBulk(enable){
   }
   practicalConfig.off=[...off];renderPracticalEditor();queueDraft();
 }
-$('practical-enabled')?.addEventListener('change',e=>{practicalConfig.on=e.target.checked;renderPracticalEditor();queueDraft();});
+$('practical-enabled')?.addEventListener('change',e=>{practicalConfig.on=e.target.checked;
+   if(!practicalConfig.on)delete guided.config.finalPractical;
+   renderPracticalEditor();guided.renderTeacher();queueDraft();});
 $('practical-marker-style')?.addEventListener('change',e=>{
   practicalConfig.markerStyle=practicalTargetDisplay({markerStyle:e.target.value});
   queueDraft();
@@ -5531,7 +5542,8 @@ async function practicalShowQuestion(){
 let studentPracticalChapterScope='all';
 let studentPracticalSetupOpening=false;
 async function startPractical(chapterChoice=undefined){
-  if(guidedAccessActive())return;
+  if(guidedAccessActive()&&!guided.canStartFinalPractical())return;
+  if(guidedAccessActive()&&chapterChoice===undefined)chapterChoice='all';
   if(teacherMode||!practicalConfig.on||practicalBusy)return;
   if(practicalActive){renderChapterUI();return;}
   // The chooser precedes question generation; the teacher's allowed chapters are the upper limit.
@@ -5551,6 +5563,7 @@ async function startPractical(chapterChoice=undefined){
   const qs=practicalAttempt(practicalPool(),structures,scopedConfig);
   studentPracticalChapterScope=chapterChoice;
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
+  $('practical-exit').textContent='Exit';
   practicalActive=true;guided.renderStudent();practicalState={questions:qs,index:0,answers:[],selected:null};
   setSelection(null);
   document.body.classList.add('practical-active');
@@ -5568,6 +5581,9 @@ function practicalFinish(){
   if(!practicalState)return;
   practicalClearHighlight();
   const result=gradePractical(practicalState.questions,practicalState.answers);
+  // ANATOMIQ_GUIDED_FINAL_PRACTICAL_308 — persist a submitted result before allowing the lesson certificate.
+  const guidedFinal=guided.isFinalPracticalEnabled()&&guided.canStartFinalPractical();
+  const finalSaved=guidedFinal&&guided.finishFinalPractical(result);
   $('practical-question-content').hidden=true;$('practical-results').hidden=false;
   $('practical-result-score').textContent=`${result.percent}%`;
   $('practical-result-detail').textContent=`${result.correct} of ${result.total} correct`;
@@ -5580,7 +5596,8 @@ function practicalFinish(){
     item.append(heading,text);missed.append(item);
   });
   $('practical-progress').textContent='PRACTICAL COMPLETE';
-  $('practical-message').textContent='Your results are shown only in this browser. A retake will generate a new shuffle.';
+  $('practical-message').textContent=finalSaved?'Final practical complete. Your score has been saved. Select View Lesson Certificate to finish.':'Your results are shown only in this browser. A retake will generate a new shuffle.';
+  if(finalSaved)$('practical-exit').textContent='View Lesson Certificate';
 }
 $('practical-next')?.addEventListener('click',()=>{
   if(!practicalActive||practicalBusy||!practicalState?.selected)return;

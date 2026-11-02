@@ -1,6 +1,6 @@
 {
-  "version": "2.2.96",
+  "version": "2.2.97",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Practical group labels show all saved anchor connectors or dots as one graded question."
+  "notes": "Optional guided final Practical, scored and saved before lesson completion."
 }

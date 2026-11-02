@@ -1,0 +1,12 @@
+/* ANATOMIQ_GUIDED_FINAL_PRACTICAL_308: allow only the unlocked final assessment while Guided Access is active. */
+body.student-mode.anat-guided-access.practical-active #practical-panel:not([hidden]) {
+  display:block !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+.anat308-final-field{display:flex;align-items:center;gap:.65rem;margin:12px 0;padding:12px;border:1px solid #4b6474;border-radius:10px;color:inherit;cursor:pointer}
+.anat308-final-field input{width:18px;height:18px;flex:none}
+.anat308-final-card{padding:12px 0 5px}
+.anat308-final-card small{color:#93c6ca;letter-spacing:.05em;text-transform:uppercase;font-weight:700}
+.anat308-final-card h3{margin:8px 0}
+.anat308-practical-result{color:#8ee2d0;font-weight:650}
