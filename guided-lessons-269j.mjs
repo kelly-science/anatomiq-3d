@@ -6,6 +6,7 @@ import {migrateLabelPaint,validPaintRegion,addPaintPoint} from './painted-hotspo
 import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPTS,restartChapterAnswers} from './hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_HOTSPOT_FEEDBACK_277
 import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299'; // ANATOMIQ_CERTIFICATE_NAME_299
+import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,renderAttemptLedger} from './guided-attempts-303.mjs?rev=303'; // ANATOMIQ_GUIDED_ATTEMPTS_303
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
@@ -99,6 +100,8 @@ export function validateGuided(input, count){
         (a.targetGroup===undefined||a.targetGroup===null||typeof a.targetGroup==='string'&&KNOWN_MUSCLE_GROUP_IDS.has(a.targetGroup)&&!a.targetLabel) &&
         (a.targetLabel===null||a.targetLabel===undefined||typeof a.targetLabel==='string'&&/^q-[0-9A-Za-z-]{4,62}$/.test(a.targetLabel))))
         throw Error('Choose a valid structure or teacher label for Identify.');
+      if(a.type==='dissect'&&a.attemptLimit!==undefined&&!validHotspotAttemptLimit(a.attemptLimit))
+        throw Error('Dissection mistake limit must be Unlimited or 1–10.');
       if(a.type==='short' && (!Number.isInteger(a.maxPoints)||a.maxPoints<1||a.maxPoints>20))
          throw Error('Short answer point value must be between 1 and 20.'); // ANATOMIQ_SHORT_ANSWER_290
        if(a.type==='mc' && (!Array.isArray(a.options)||a.options.length<2||a.options.length>4||
@@ -316,7 +319,7 @@ export function createGuidedLessons(api){
         base.rotationDegrees=0;
       }else if(type==='dissect'){
         base.title='Dissect to reveal anatomy';base.prompt='Use the Dissect tool to remove every required structure.';
-        base.hideStructures=[available[0]];base.rotationDegrees=0;base.keepHiddenForNext=false;
+        base.hideStructures=[available[0]];base.rotationDegrees=0;base.keepHiddenForNext=false;base.attemptLimit=DEFAULT_DISSECTION_MISTAKES;
       }
     }
     current.push(base);touch();
@@ -519,7 +522,10 @@ export function createGuidedLessons(api){
           }
           block.append(region);
         }else if(a.type==='dissect'){
-          const available=structureOptions();
+          addSelect('Student dissection mistake limit',
+             [['0','Unlimited — no chapter restart'],...Array.from({length:10},(_,n)=>[String(n+1),`${n+1} mistake${n?'s':''}`])],
+             a.attemptLimit??DEFAULT_DISSECTION_MISTAKES, v=>update(i,'attemptLimit',Number(v)));
+           const available=structureOptions();
           const title=document.createElement('strong');title.textContent='Structures students must dissect';block.append(title);
           const hint=document.createElement('small');hint.textContent='Select the exact structures. Every checked structure must be hidden for completion.';block.append(hint);
           const filter=document.createElement('input');filter.type='search';filter.className='text-input';filter.placeholder='Search chapter structures…';block.append(filter);
@@ -763,10 +769,13 @@ export function createGuidedLessons(api){
     }
     if(a.type==='dissect'){
 
-      if(!a.hideStructures.includes(index)){
+      if(dissectMistakeState(a,prior).locked)return true;
+       if(!a.hideStructures.includes(index)){
          api.flashGuidedStructure?.(index,false);
-         feedback='This structure is not on the required dissection checklist.';feedbackGood=false;renderStudent();return true;
-      }
+         const name=api.getStructureName?.(index)||('Structure #'+index);
+         studentProgress.answers[a.id]=recordDissectionMistake(a,prior,index,name);
+         feedback='';feedbackGood=false;save();renderStudent();return true;
+       }
       if((prior.hiddenIndices||[]).includes(index))return true;
       if(!api.investigationAction?.('hide',index)){
         feedback='This structure cannot be dissected in the current chapter view.';feedbackGood=false;renderStudent();return true;
@@ -838,7 +847,8 @@ export function createGuidedLessons(api){
   }
   function canAdvance(target){if(!student()||!ready||!guided()||api.isPractical()||target<=api.getChapter())return true;
     const pendingLabel=currentActivity();
-    if(pendingLabel?.type==='label'&&hotspotAttemptState(pendingLabel,answers()[pendingLabel.id]).locked){feedback='Restart this chapter before continuing.';renderStudent();return false;}
+    if((pendingLabel?.type==='label'&&hotspotAttemptState(pendingLabel,answers()[pendingLabel.id]).locked)||
+        (pendingLabel?.type==='dissect'&&dissectMistakeState(pendingLabel,answers()[pendingLabel.id]).locked)){feedback='Restart this chapter before continuing.';renderStudent();return false;}
     const pending=Array.from({length:target-api.getChapter()},(_,i)=>api.getChapter()+i).find(ch=>(config.chapters[ch]||[]).some(a=>!completed(a)));
     if(pending!==undefined){feedback=`Complete chapter ${pending+1} activities before continuing.`;feedbackGood=false;renderStudent();return false;}
     return true;
@@ -850,7 +860,7 @@ export function createGuidedLessons(api){
     const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
     if(!active){studentVisuals.cursor(false,api.getCanvasElement?.());return;}
     const {done,total,firstTry}=totals();const step=currentActivity();
-     studentVisuals.cursor(!!(step?.type==='label' && step.paintRegions?.length && !hotspotAttemptState(step,answers()[step.id]).locked && !answers()[step.id]?.hotspotCorrect),api.getCanvasElement?.(),step?.type==='dissect') /* ANATOMIQ_AUTO_GUIDED_TOOLS_296 */; // ANATOMIQ_DISSECT_SCALPEL_295
+     studentVisuals.cursor(!!(step?.type==='label' && step.paintRegions?.length && !hotspotAttemptState(step,answers()[step.id]).locked && !answers()[step.id]?.hotspotCorrect),api.getCanvasElement?.(),(step?.type==='dissect'&&!dissectMistakeState(step,answers()[step.id]).locked)) /* ANATOMIQ_AUTO_GUIDED_TOOLS_296 */; // ANATOMIQ_DISSECT_SCALPEL_295
     const completeAll=done===total;
      const lockedCertificateName=certificateNames.get(storageKey);
     const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
@@ -870,13 +880,15 @@ export function createGuidedLessons(api){
     }else{
       const index=steps().indexOf(step)+1;
       const lockedLabel=step.type==='label'&&hotspotAttemptState(step,answers()[step.id]).locked;
-      if(lockedLabel){
-        const limit=hotspotAttemptState(step,answers()[step.id]).limit;
+      const lockedDissect=step.type==='dissect'&&dissectMistakeState(step,answers()[step.id]).locked;
+      if(lockedLabel||lockedDissect){
+        const limit=lockedDissect?dissectMistakeState(step,answers()[step.id]).limit:hotspotAttemptState(step,answers()[step.id]).limit;
         inner+=`<section class="anat-hotspot-lockout" role="alert" aria-live="assertive">
           <div class="anat-hotspot-lockout-glyph" aria-hidden="true">✕</div>
-          <h3>Attempt limit reached</h3>
-          <p>You used all ${limit} hotspot attempts. You must restart <strong>Chapter ${api.getChapter()+1}</strong> before trying again.</p>
-          <p>All activities in this chapter will reset. Earlier chapters remain completed.</p>
+          <h3>${lockedDissect?'Mistake limit reached':'Attempt limit reached'}</h3>
+          ${renderAttemptLedger(step,answers()[step.id]||{})}
+          <p>${lockedDissect?'You used all '+limit+' dissection mistakes.':'You used all '+limit+' hotspot attempts.'} Restart <strong>Chapter ${api.getChapter()+1}</strong> to try again.</p>
+          <p>Earlier chapters remain completed.</p>
           <button class="button primary full" id="anat-ga-restart-chapter" type="button">Restart Chapter ${api.getChapter()+1}</button></section>`;
       }else{
       inner+=`<div class="anat-ga-task"><h3>${esc(step.title)}</h3>
@@ -915,9 +927,6 @@ export function createGuidedLessons(api){
         }else if(step.type==='label'){
           const attempts=hotspotAttemptState(step,evidence);
           checklist+=`<span class="${evidence.hotspotCorrect?'done':''}">${evidence.hotspotCorrect?'✓':'○'} Place a hotspot within the correct 3D area</span></div>
-            ${attempts.limit?`<div class="anat-hotspot-attempts" role="status"><strong>Hotspot attempts</strong><span>${attempts.used}/${attempts.limit} used · ${attempts.remaining} remaining</span></div>
-              ${attempts.finalChance?'<div class="anat-hotspot-final-warning" role="alert">⚠ Final attempt! Another incorrect click will require you to restart this chapter.</div>':
-                '<p class="anat-hotspot-limit-note">If you use every attempt, you must restart this chapter.</p>'}`:''}
             ${!step.paintRegions?.length?'<p class="anat-hotspot-tip">Teacher must paint a correct area before this can be completed.</p>':''}
             `;
         }else if(step.type==='dissect'){
@@ -931,6 +940,7 @@ export function createGuidedLessons(api){
             <button class="button subtle anat-ga-reset-compact" id="anat-ga-model-reset" type="button" aria-label="Restore dissection and retry" title="Restore dissection and retry">↺</button>`;
         }
         inner+=checklist;
+         if(step.type==='label'||step.type==='dissect')inner+=renderAttemptLedger(step,evidence);
       }
       else if(step.type==='short'){
          const prior=answers()[step.id]||{};

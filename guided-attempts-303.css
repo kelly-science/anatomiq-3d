@@ -1,0 +1,12 @@
+/* Student-only Guided Access error indicators. Matches AnatomIQ dark activity cards. */
+.anat303-ledger {margin:14px 0 4px;padding:12px 13px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(15,27,40,.55);}
+.anat303-ledger-head {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;color:#e9f2f8;font-size:.94rem;}
+.anat303-ledger-head small {color:#a9bac7;font-weight:600;}
+.anat303-attempt-list {display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;}
+.anat303-attempt {display:inline-flex;align-items:center;gap:6px;font-size:.9rem;line-height:1.3;min-height:24px;}
+.anat303-x {display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:1.14rem;line-height:1;}
+.anat303-attempt.is-used {color:#ffd9db;}
+.anat303-attempt.is-used .anat303-x {color:#ff6571;}
+.anat303-attempt.is-available .anat303-x {color:#657889;opacity:.75;}
+.anat-hotspot-lockout .anat303-ledger {text-align:left;}
+@media (prefers-reduced-motion:reduce){.anat303-x {transition:none}}
