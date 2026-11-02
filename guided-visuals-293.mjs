@@ -5,7 +5,18 @@
 export function createGuidedVisuals(doc=document) {
   let canvas=null, ring=null, move=null, leave=null, down=null;
   let entering=null;
-  function cursor(on, target) {
+  let scalpelCanvas=null; // ANATOMIQ_DISSECT_SCALPEL_295
+  function cursor(on, target, scalpelOn=false) {
+    // Only the actual 3D canvas receives the scalpel; all other UI stays normal.
+    // Always remove the old cursor before returning to hotspot or normal mode.
+    if(scalpelCanvas && (scalpelCanvas!==target || !scalpelOn || on)) {
+      scalpelCanvas.classList.remove('anat295-scalpel-armed');
+      scalpelCanvas=null;
+    }
+    if(scalpelOn && !on && target) {
+      target.classList.add('anat295-scalpel-armed');
+      scalpelCanvas=target;
+    }
     if (on && target===canvas && ring) return;
     if (canvas) {
       canvas.classList.remove('anat293-hotspot-armed');

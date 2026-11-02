@@ -1,0 +1,6 @@
+/* AnatomIQ 2.2.87 — visual cursor only while the student Dissect tool is armed.
+   Do not affect the hotspot placement cursor, buttons, or teacher editing. */
+canvas.anat295-scalpel-armed,
+canvas.anat295-scalpel-armed:active {
+  cursor: url('./scalpel-cursor-295.png?rev=295') 6 6, crosshair !important;
+}

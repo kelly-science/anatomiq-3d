@@ -1,5 +1,10 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
+  "./scalpel-cursor-295.png?rev=295",
+  "./guided-scalpel-295.css?rev=295",
+  "./guided-visuals-293.mjs?rev=295",
+  "./guided-lessons-269j.mjs?rev=295-scalpel-cursor",
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295",
   "./rotation-progress-294.mjs?rev=294",
   "./guided-lessons-269j.mjs?rev=294-directional-rotation",
   "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294",

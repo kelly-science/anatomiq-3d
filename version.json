@@ -1,6 +1,6 @@
 {
-  "version": "2.2.86",
+  "version": "2.2.87",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Explore directions: Free Rotate, Left, Right, Up, Down; directional rotation counts net progress and cancels reversals."
+  "notes": "Scalpel cursor on 3D canvas while Dissect tool is armed; restores normal and hotspot cursors on exit."
 }

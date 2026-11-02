@@ -8,7 +8,7 @@ import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissecti
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
-import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=293'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
+import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=295'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
 export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect','short']); // ANATOMIQ_SHORT_ANSWER_290 // ANATOMIQ_SHORT_AFTER_DISTRICT_292
@@ -847,7 +847,7 @@ export function createGuidedLessons(api){
     const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
     if(!active){studentVisuals.cursor(false,api.getCanvasElement?.());return;}
     const {done,total,firstTry}=totals();const step=currentActivity();
-     studentVisuals.cursor(!!(step?.type==='label'&&studentHotspotArmed),api.getCanvasElement?.());
+     studentVisuals.cursor(!!(step?.type==='label'&&studentHotspotArmed),api.getCanvasElement?.(),!!(step?.type==='dissect'&&dissectArmed)); // ANATOMIQ_DISSECT_SCALPEL_295
     const completeAll=done===total;
     const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
     let inner=header;
