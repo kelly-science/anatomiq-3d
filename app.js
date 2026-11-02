@@ -56,7 +56,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.88'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.89'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -339,7 +339,7 @@ function applyStudentPermissions(){
   document.querySelector('.viewer-tip').textContent=studentPermissions.sn
     ? 'Drag to rotate · Scroll to zoom · Click bones to identify'
     : 'Drag to rotate · Scroll or pinch to zoom';
-  $('details-toggle').hidden=!studentPermissions.sn;
+$('details-toggle').hidden=!studentPermissions.sn || guidedAccessActive();
   // Schoology embeds and assessment views should dedicate the available space to the model.
   if(!studentPermissions.ss && !studentPermissions.st)elements.sidebar.classList.remove('open');
   renderList();
@@ -452,6 +452,25 @@ const guided=createGuidedLessons({
   getStructureName:index=>structures[index]?.name||null,
   onTeacherChange:()=>queueDraft(),goChapter:(index)=>{void switchChapter(index);},notify:showToast
 });
+// ANATOMIQ_GUIDED_ACCESS_297 — one read-only gate for Student View UI and actions.
+function guidedAccessActive(){
+  const c=guided.config;
+  return !teacherMode && c?.free===false && Array.isArray(c.chapters) &&
+    c.chapters.some(ch=>Array.isArray(ch)&&ch.length>0);
+}
+function syncGuidedAccess(){
+  const restricted=guidedAccessActive(),body=document.body;
+  const wasRestricted=body.classList.contains('anat-guided-access');
+  body.classList.toggle('anat-guided-access',restricted);
+  if(restricted){
+    elements.sidebar.classList.remove('open');
+    openDetails(false);
+    if(!wasRestricted && selected)setSelection(null);
+    $('details-toggle').hidden=true;
+  } else if(!teacherMode){
+    $('details-toggle').hidden=!studentPermissions.sn;
+  }
+}
 const markers = new Map();
 const labelSVG = $('label-lines');
 const labelContainer = $('label-markers');
@@ -768,6 +787,7 @@ function isSkull(name,tissue){
   return /(?:frontal bone|parietal bone|temporal bone|occipital bone|sphenoid|ethmoid|mandible|maxilla|zygomatic|lacrimal|nasal bone|palatine|vomer|inferior nasal concha|septal nasal cartilage|nasal cartilage)/.test(n);
 }
 function openDetails(open) {
+  if(guidedAccessActive())open=false;
   elements.infoSidebar.classList.toggle('open',open);
   elements.detailsToggle.setAttribute('aria-expanded',String(open));
 }
@@ -1522,6 +1542,7 @@ function toggleExplorerStructure(s){
   refreshVisibility();
 }
 function renderList(){
+  if(guidedAccessActive()){elements.boneList.replaceChildren();return;}
   const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
   document.body.classList.toggle('student-has-query',!teacherMode && Boolean(text));
   // Teachers can browse all loaded systems, including chapters that currently hide them.
@@ -1746,6 +1767,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
   // The Guided controller itself rejects inactive/practical-mode picks.
   if(teacherMode && !placingLabel && !paintMode && guided.handleTeacherHotspotPick?.(s.index,hit.point.clone()))return;
   if(!teacherMode && guided.handlePick?.(s.index,hit.point.clone(),hit.face?.normal?.clone()))return;
+  if(guidedAccessActive())return; // The lesson owns every model click.
   if(!teacherMode && !studentPermissions.sn)return;
   if(teacherMode&&(event.shiftKey||event.metaKey||event.ctrlKey)&&!placingLabel){
     isolated=false;pickMultiSelection(s,event,'model');return;
@@ -2568,6 +2590,7 @@ $('eye-focus').addEventListener('click',()=>{
 });
 // Independent visibility toggles. Keep the camera, labels, colors, and hidden-mesh edits intact.
 async function changeSystemLayer(system){
+  if(guidedAccessActive())return;
   divisionNavReset(false);
   if(!sceneRoot||studentAssetBusy||(!teacherMode&&!studentExplore&&studentPermissions.ot===false))return;
   if(!teacherMode && (system==='digestive' || system==='cardiovascular'||system==='respiratory'||system==='nervous'||system==='urinary'||system==='lymphatic'||system==='connective')){
@@ -2681,8 +2704,8 @@ $('clear-selection').addEventListener('click',()=>{isolated=false;setSelection(n
 for(const b of document.querySelectorAll('.preset'))b.addEventListener('click',()=>orient(b.dataset.view));
 $('zoom-in').addEventListener('click',()=>{camera.position.lerp(controls.target,0.18);controls.update();invalidate(2);queueDraft();});
 $('zoom-out').addEventListener('click',()=>{camera.position.sub(controls.target).multiplyScalar(1.22).add(controls.target);controls.update();invalidate(2);queueDraft();});
-$('menu-toggle').addEventListener('click',()=>{openDetails(false);elements.sidebar.classList.toggle('open');});
-elements.detailsToggle.addEventListener('click',()=>{elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
+$('menu-toggle').addEventListener('click',()=>{if(guidedAccessActive())return;openDetails(false);elements.sidebar.classList.toggle('open');});
+elements.detailsToggle.addEventListener('click',()=>{if(guidedAccessActive())return;elements.sidebar.classList.remove('open');openDetails(!elements.infoSidebar.classList.contains('open'));});
 elements.retry.addEventListener('click',()=>{studentStartupAttempts=0;void loadAnatomy();});
 window.addEventListener('keydown',event=>{if(event.key==='Escape'&&(placingLabel||paintMode)){if(placingLabel)cancelPlacing();if(paintMode)cancelPainting();return;}if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='f')orient('front');if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.toLowerCase()==='b')orient('back');if(event.key==='Escape'){isolated=false;setSelection(null);elements.sidebar.classList.remove('open');openDetails(false);}});
 
@@ -3091,6 +3114,7 @@ function studentHistoryQueue(){
   studentHistoryTimer=setTimeout(studentHistoryPush,65);
 }
 async function studentHistoryCommand(action){
+  if(guidedAccessActive() && action!=='reset')return;
   if(teacherMode||studentHistoryApplying||!sceneRoot||studentAssetBusy||studentHistoryIndex<0)return;
   if(studentHistoryChapter!==activeChapter){studentHistoryBegin();return;}
   if(action!=='reset')studentHistoryPush();
@@ -3207,20 +3231,21 @@ function anat250EditChapterTitle(index,button){
 }
 
 function renderChapterUI(){
+  syncGuidedAccess();
   const count=chapters.length;
   if(!count)return;
-  const nav=$('chapter-nav');nav.hidden=count<2 && !(practicalConfig.on&&!teacherMode);
-  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on?' + practical':''}`;
-  $('chapter-progress').textContent=practicalActive?`PRACTICAL · FINAL CHAPTER`:`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode?1:0)}`;
+  const nav=$('chapter-nav');nav.hidden=count<2 && !(practicalConfig.on&&!teacherMode&&!guidedAccessActive());
+  $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on&&!guidedAccessActive()?' + practical':''}`;
+  $('chapter-progress').textContent=practicalActive?`PRACTICAL · FINAL CHAPTER`:`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode&&!guidedAccessActive()?1:0)}`;
   $('previous-chapter').disabled=activeChapter===0&&!practicalActive;
-  $('next-chapter').disabled=(activeChapter===count-1&&(teacherMode||!practicalConfig.on))||practicalActive;
+  $('next-chapter').disabled=(activeChapter===count-1&&(teacherMode||!practicalConfig.on||guidedAccessActive()))||practicalActive;
   const tabs=$('chapter-tabs');tabs.replaceChildren();
   chapters.forEach((ch,i)=>{
     const b=document.createElement('button');b.type='button';b.className='chapter-tab'+(i===activeChapter?' active':'');
     b.textContent=ch.t;b.title=ch.t;b.setAttribute('aria-current',i===activeChapter?'step':'false');
     b.addEventListener('click',()=>switchChapter(i));tabs.append(b);
   });
-  if(!teacherMode&&practicalConfig.on){
+  if(!teacherMode&&practicalConfig.on&&!guidedAccessActive()){
     const tab=document.createElement('button');tab.className='chapter-tab practical-chapter-tab'+(practicalActive?' active':'');tab.type='button';
     tab.textContent='Practical';tab.setAttribute('aria-current',practicalActive?'step':'false');tab.addEventListener('click',()=>{if(!practicalActive)void startPractical();});tabs.append(tab);
   }
@@ -5415,6 +5440,7 @@ async function practicalShowQuestion(){
 let studentPracticalChapterScope='all';
 let studentPracticalSetupOpening=false;
 async function startPractical(chapterChoice=undefined){
+  if(guidedAccessActive())return;
   if(teacherMode||!practicalConfig.on||practicalBusy)return;
   if(practicalActive){renderChapterUI();return;}
   // The chooser precedes question generation; the teacher's allowed chapters are the upper limit.

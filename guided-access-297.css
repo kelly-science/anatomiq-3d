@@ -1,0 +1,19 @@
+/* ANATOMIQ_GUIDED_ACCESS_297 — Student View only. Not an authentication mechanism. */
+body.student-mode.anat-guided-access .workspace { grid-template-columns:minmax(0,1fr)!important; }
+body.student-mode.anat-guided-access #left-sidebar,
+body.student-mode.anat-guided-access #info-sidebar,
+body.student-mode.anat-guided-access #details-toggle,
+body.student-mode.anat-guided-access #menu-toggle,
+body.student-mode.anat-guided-access #practical-panel,
+body.student-mode.anat-guided-access .practical-chapter-tab,
+body.student-mode.anat-guided-access #anat-student-label-list-button,
+body.student-mode.anat-guided-access #polish-student-labels,
+body.student-mode.anat-guided-access #polish-label-toggle,
+body.student-mode.anat-guided-access .mode-tabs,
+body.student-mode.anat-guided-access .view-presets,
+body.student-mode.anat-guided-access .studio-menubar,
+body.student-mode.anat-guided-access .viewer-quality-control,
+body.student-mode.anat-guided-access #restore-all { display:none!important; }
+body.student-mode.anat-guided-access #label-overlay { visibility:hidden!important;pointer-events:none!important; }
+/* Retain 3D model, chapter navigator, camera reset, zoom controls, and the guided card. */
+body.student-mode.anat-guided-access #anat-guided-student { z-index:4; }

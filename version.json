@@ -1,6 +1,6 @@
 {
-  "version": "2.2.88",
+  "version": "2.2.89",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Guided Dissect and Hotspot activate automatically; monochrome equal-width scalpel glyph."
+  "notes": "Guided Access: activity-only student controls; structure details, practical, search, labels and system switching locked."
 }
