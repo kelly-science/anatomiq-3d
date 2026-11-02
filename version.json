@@ -1,6 +1,6 @@
 {
-  "version": "2.2.94",
+  "version": "2.2.95",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Fullscreen 3D hotspot cursor and reliable certificate image download in browsers."
+  "notes": "Clean View effects menu; Cinematic Motion Blur and Subtle Depth of Field as browser-local defaults."
 }

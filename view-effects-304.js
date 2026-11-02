@@ -5,13 +5,23 @@
   'use strict';
   if (window.AnatomIQViewEffects304) return;
   const EFFECTS = Object.freeze({
-    motion: {label:'Motion Blur', control:'settings-motion-blur', defaultOn:'extreme',
+    motion: {label:'Motion Blur', control:'settings-motion-blur', defaultOn:'cinematic',
       lastKey:'anatomiq-view-motion-restore-304'},
-    dof: {label:'Depth of Field', control:'settings-dof-mode', defaultOn:'cinematic',
+    dof: {label:'Depth of Field', control:'settings-dof-mode', defaultOn:'subtle',
       lastKey:'anatomiq-view-dof-restore-304'}
   });
   function storageRead(key){try{return localStorage.getItem(key);}catch{return null;}}
   function storageWrite(key,value){try{localStorage.setItem(key,value);}catch{}}
+  // One-time browser-only default refresh; no saved lesson state changes.
+  if(storageRead('anatomiq-view-defaults-migrated-306')!=='1'){
+    const currentMotion=storageRead('anatomiq-motion-blur-experiment-279');
+    const currentDof=storageRead('anatomiq-depth-of-field-v1');
+    if(currentMotion===null || currentMotion==='extreme' || currentMotion==='cinematic')
+      storageWrite('anatomiq-view-motion-restore-304','cinematic');
+    if(currentDof===null || currentDof==='cinematic' || currentDof==='subtle')
+      storageWrite('anatomiq-view-dof-restore-304','subtle');
+    storageWrite('anatomiq-view-defaults-migrated-306','1');
+  } // ANATOMIQ_VIEW_DEFAULTS_306
   function selectFor(kind){return document.getElementById(EFFECTS[kind]?.control);}
   function isOn(kind){const select=selectFor(kind);return !!select && select.value!=='off';}
   function sync(){
@@ -45,8 +55,7 @@
   function append(root,{student=false}={}){
     if(!root||root.querySelector('[data-anat-view-effect]'))return;
     const divider=document.createElement('div');divider.className='menu-separator';divider.setAttribute('role','separator');
-    const caption=document.createElement('div');caption.className='view-menu-caption';caption.textContent='ACCESSIBILITY';
-    root.append(divider,caption);
+    root.append(divider); // ANATOMIQ_VIEW_DEFAULTS_306
     for(const kind of ['motion','dof']){
       const item=document.createElement('button');
       item.type='button';item.className='menu-item';

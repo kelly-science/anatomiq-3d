@@ -1,4 +1,4 @@
-import {MOTION_FRAGMENT,createCameraMotionBlur} from './motion-blur-279.mjs?rev=motionblur279b'; // ANATOMIQ_MOTION_BLUR_279_EXPERIMENT
+import {MOTION_FRAGMENT,createCameraMotionBlur} from './motion-blur-279.mjs?rev=motionblur279b&defaults=306'; // ANATOMIQ_MOTION_BLUR_279_EXPERIMENT
 // AnatomIQ Studio 2.2.68a — zoom stability and carousel lighting handoff.
 // Same tested renderer, with direct camera focus, matched final tone mapping, and carousel handoff.
 // Scene-only postprocessing: native HTML labels, live chapter carousel, and
@@ -9,13 +9,24 @@ export const DOF_PRESETS=Object.freeze({
   subtle:{radius:2.0,intensity:0.72},
   cinematic:{radius:3.8,intensity:1.0}
 });
+export const DOF_DEFAULT_MIGRATION_KEY='anatomiq-dof-subtle-default-306';
 export function normalizedPreset(value){
-  return Object.prototype.hasOwnProperty.call(DOF_PRESETS,value)?value:'cinematic';
+  return Object.prototype.hasOwnProperty.call(DOF_PRESETS,value)?value:'subtle';
 }
 export function initialPreset(store=globalThis.localStorage){
-  try { return normalizedPreset(store?.getItem(DOF_STORAGE_KEY)); }
-  catch { return 'cinematic'; }
+  try{
+    // Replace the old Cinematic default, but preserve an explicit Off.
+    if(store?.getItem(DOF_DEFAULT_MIGRATION_KEY)!=='1'){
+      const old=store?.getItem(DOF_STORAGE_KEY);
+      const next=(old==null || old==='cinematic')?'subtle':normalizedPreset(old);
+      store?.setItem(DOF_STORAGE_KEY,next);
+      store?.setItem(DOF_DEFAULT_MIGRATION_KEY,'1');
+      return next;
+    }
+    return normalizedPreset(store?.getItem(DOF_STORAGE_KEY));
+  }catch{return 'subtle';}
 }
+// ANATOMIQ_VIEW_DEFAULTS_306
 const VERTEX=`varying vec2 vUv;
 void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}`;
 const BLUR_FRAGMENT=`precision highp float;

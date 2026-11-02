@@ -1,5 +1,9 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
+  "./motion-blur-279.mjs?rev=motionblur279b&defaults=306",
+  "./cinematic-dof-268.mjs?rev=motionblur279b&defaults=306",
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306",
+  "./view-effects-304.js?rev=304&defaults=306",
   "./hotspot-cursor-305.svg?rev=305",
   "./certificate-delivery-305.mjs?rev=305",
   "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305",

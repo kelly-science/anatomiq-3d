@@ -1,7 +1,7 @@
 // AnatomIQ Studio — experimental camera-motion blur, depth-aware, local preference.
 // Only the anatomy canvas is postprocessed; labels/activities are DOM overlays.
 export const MOTION_STORAGE_KEY = 'anatomiq-motion-blur-experiment-279';
-export const MOTION_DEFAULT_MIGRATION_KEY = 'anatomiq-motion-blur-extreme-default-279b';
+export const MOTION_DEFAULT_MIGRATION_KEY = 'anatomiq-motion-blur-cinematic-default-306'; // ANATOMIQ_VIEW_DEFAULTS_306
 export const MOTION_PRESETS = Object.freeze({
   off: {strength:0,maxPixels:0},
   subtle: {strength:0.32,maxPixels:7},
@@ -50,21 +50,23 @@ vec4 anat279CameraMotionBlur(vec2 uv,float depth){
 }`;
 
 export function normalizeMotionPreset(value){
-  return Object.prototype.hasOwnProperty.call(MOTION_PRESETS,value)?value:'extreme';
+  return Object.prototype.hasOwnProperty.call(MOTION_PRESETS,value)?value:'cinematic';
 }
 export function initialMotionPreset(store){
   try{
     const deviceStore=store===undefined?globalThis.localStorage:store;
-    // One-time migration: apply Extreme to devices that used the previous Off default.
-    // After this first launch, preserve the user's own selection on this device.
+    // Migrate the old Extreme default without overriding a deliberate Off.
     if(deviceStore?.getItem(MOTION_DEFAULT_MIGRATION_KEY)!=='1'){
-      deviceStore?.setItem(MOTION_STORAGE_KEY,'extreme');
+      const old=deviceStore?.getItem(MOTION_STORAGE_KEY);
+      const next=(old==null || old==='extreme')?'cinematic':normalizeMotionPreset(old);
+      deviceStore?.setItem(MOTION_STORAGE_KEY,next);
       deviceStore?.setItem(MOTION_DEFAULT_MIGRATION_KEY,'1');
-      return 'extreme';
+      return next;
     }
     return normalizeMotionPreset(deviceStore?.getItem(MOTION_STORAGE_KEY));
-  }catch{return 'extreme';} // Privacy mode / disabled storage still defaults Extreme.
+  }catch{return 'cinematic';}
 }
+// ANATOMIQ_VIEW_DEFAULTS_306
 export function createCameraMotionBlur({THREE,selectElement,statusElement,invalidate,clock=()=>performance.now(),storage}){
   let mode=initialMotionPreset(storage),valid=false,previousTime=0,previousW=0,previousH=0;
   const lastVP=new THREE.Matrix4(),currentVP=new THREE.Matrix4(),inverseVP=new THREE.Matrix4();
