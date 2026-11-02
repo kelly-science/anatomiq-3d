@@ -1,6 +1,6 @@
 {
-  "version": "2.2.87",
+  "version": "2.2.88",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Scalpel cursor on 3D canvas while Dissect tool is armed; restores normal and hotspot cursors on exit."
+  "notes": "Guided Dissect and Hotspot activate automatically; monochrome equal-width scalpel glyph."
 }

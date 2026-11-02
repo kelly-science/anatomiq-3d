@@ -743,7 +743,7 @@ export function createGuidedLessons(api){
       if(retry.locked)return true; // This chapter must be restarted first.
       if(prior.hotspotCorrect)return true; // Never overwrite an accepted green check.
       if(!a.paintRegions?.length){feedback='Teacher has not painted the target area yet.';feedbackGood=false;renderStudent();return true;}
-      if(!studentHotspotArmed){feedback='Select Place 3D hotspot first.';feedbackGood=false;renderStudent();return true;}
+
       const good=!!point&&paintedHotspotAccepted(a,index,point.toArray(),sample=>api.getHotspotWorldPoint?.(sample),normal?.toArray?.()||null);
       api.showStudentHotspot?.(point,good);
       studentProgress.answers[a.id]={...prior,hotspotCorrect:good,attempts:(prior.attempts||0)+1};
@@ -759,7 +759,7 @@ export function createGuidedLessons(api){
       return true;
     }
     if(a.type==='dissect'){
-      if(!dissectArmed){feedback='Turn on the Dissect tool before selecting structures.';feedbackGood=false;renderStudent();return true;}
+
       if(!a.hideStructures.includes(index)){
          api.flashGuidedStructure?.(index,false);
          feedback='This structure is not on the required dissection checklist.';feedbackGood=false;renderStudent();return true;
@@ -847,7 +847,7 @@ export function createGuidedLessons(api){
     const identify=active&&(currentActivity()?.type==='identify'||INVESTIGATION_TYPES.includes(currentActivity()?.type));document.body.classList.toggle('anat-guided-identify',!!identify);
     if(!active){studentVisuals.cursor(false,api.getCanvasElement?.());return;}
     const {done,total,firstTry}=totals();const step=currentActivity();
-     studentVisuals.cursor(!!(step?.type==='label'&&studentHotspotArmed),api.getCanvasElement?.(),!!(step?.type==='dissect'&&dissectArmed)); // ANATOMIQ_DISSECT_SCALPEL_295
+     studentVisuals.cursor(!!(step?.type==='label' && step.paintRegions?.length && !hotspotAttemptState(step,answers()[step.id]).locked && !answers()[step.id]?.hotspotCorrect),api.getCanvasElement?.(),step?.type==='dissect') /* ANATOMIQ_AUTO_GUIDED_TOOLS_296 */; // ANATOMIQ_DISSECT_SCALPEL_295
     const completeAll=done===total;
     const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
     let inner=header;
@@ -915,13 +915,13 @@ export function createGuidedLessons(api){
               ${attempts.finalChance?'<div class="anat-hotspot-final-warning" role="alert">⚠ Final attempt! Another incorrect click will require you to restart this chapter.</div>':
                 '<p class="anat-hotspot-limit-note">If you use every attempt, you must restart this chapter.</p>'}`:''}
             ${!step.paintRegions?.length?'<p class="anat-hotspot-tip">Teacher must paint a correct area before this can be completed.</p>':''}
-            <button class="button primary full" id="anat-ga-hotspot-arm" type="button" aria-pressed="${studentHotspotArmed}" ${step.paintRegions?.length?'':'disabled'}>${studentHotspotArmed?'Placing hotspot — click model':'Place 3D hotspot'}</button>`;
+            `;
         }else if(step.type==='dissect'){
           const found=dissectionProgress(step,dissectEvidence(step).hiddenIndices);
           const pct=Math.floor(found.completed/found.required*100);
           const displayName=id=>api.getStructureName?.(id)||('Structure #'+id);
           checklist+=`</div>
-            <button class="button primary full anat-dissect-toggle" id="anat-ga-dissect-arm" type="button" aria-pressed="${dissectArmed}">${dissectArmed?'Dissect ON — click structures':'Dissect tool (Hide)'}</button>
+            
             
             <div class="anat-dissect-list">${step.hideStructures.map(id=>`<span class="${found.remaining.includes(id)?'':'done'}">${found.remaining.includes(id)?'○':'✓'} ${esc(displayName(id))}</span>`).join('')}</div>
             <button class="button subtle anat-ga-reset-compact" id="anat-ga-model-reset" type="button" aria-label="Restore dissection and retry" title="Restore dissection and retry">↺</button>`;
@@ -977,14 +977,6 @@ export function createGuidedLessons(api){
          complete(step);
        });
      }
-     byId('anat-ga-hotspot-arm')?.addEventListener('click',()=>{
-      if(step?.type!=='label'||!step.paintRegions?.length||hotspotAttemptState(step,answers()[step.id]).locked||answers()[step.id]?.hotspotCorrect)return;
-      studentHotspotArmed=!studentHotspotArmed;feedback='';renderStudent();
-    });
-    byId('anat-ga-dissect-arm')?.addEventListener('click',()=>{
-      if(step?.type!=='dissect')return;
-      dissectArmed=!dissectArmed;feedback='';renderStudent();
-    });
     byId('anat-ga-model-action')?.addEventListener('click',()=>{if(step?.type==='reveal')performInvestigationAction(step);});
     byId('anat-ga-model-reset')?.addEventListener('click',()=>{
       api.resetInvestigation?.();investigationCandidate=null;
