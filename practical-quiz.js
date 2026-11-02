@@ -65,7 +65,11 @@ export function practicalCandidates(chapters,structures){
       if(seenLabels.has(signature))continue;
       seenLabels.add(signature);
       raw.push({key,type:'label',s:label.s,chapter:ci,name,
-        system:s.system||'',tissue:s.tissue||'',side:s.side||'',anchor:Array.isArray(label.p)?label.p:null});
+        system:s.system||'',tissue:s.tissue||'',side:s.side||'',anchor:Array.isArray(label.p)?label.p:null,
+        // ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307: all visible group-label anchors are one graded target.
+        anchors:[{s:label.s,p:label.p},...(Array.isArray(label.g)?label.g:[])].filter(a=>
+          Number.isInteger(a?.s)&&a.s>=0&&a.s<chapter.n&&a.s<structures.length&&
+          isVisible(a.s)&&structures[a.s]&&Array.isArray(a.p)&&a.p.length===3&&a.p.every(Number.isFinite))});
     }
   });
   const byAnswer=new Map();

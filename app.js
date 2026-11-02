@@ -16,7 +16,7 @@ import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATO
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
-import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js';
+import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js?rev=307';
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -56,7 +56,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.95'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.96'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5025,6 +5025,13 @@ function practicalEnsureQuestionCallout(){
 }
 function practicalHideQuestionCallout(){
   if(!practicalQuestionCallout)return;
+  // ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307 — remove prior group connectors when the question changes.
+  for(const line of (practicalQuestionCallout.groupLines||[]).slice(1))line.remove();
+  for(const dot of (practicalQuestionCallout.groupDots||[]).slice(1))dot.remove();
+  practicalQuestionCallout.groupAnchors=[];
+  practicalQuestionCallout.groupLines=[practicalQuestionCallout.line];
+  practicalQuestionCallout.groupDots=[practicalQuestionCallout.dot];
+  practicalQuestionCallout.groupOccluded=[];
   practicalQuestionCallout.anchor=null;
   practicalQuestionCallout.occlusionAt=0;
   practicalQuestionCallout.occluded=false;
@@ -5057,6 +5064,22 @@ function practicalSetQuestionCallout(question,number,plannedEye=null){
     }else anchor=center;
   }
   state.anchor=anchor;
+  // ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307 — keep the original question card; draw every group anchor.
+  state.groupAnchors=[anchor];state.groupLines=[state.line];state.groupDots=[state.dot];
+  state.groupOccluded=[false];
+  for(const extra of (Array.isArray(question.anchors)?question.anchors.slice(1):[])){
+    const target=structures[extra.s]?.mesh;
+    if(!target?.visible||!Array.isArray(extra.p)||extra.p.length!==3||!extra.p.every(Number.isFinite))continue;
+    target.updateWorldMatrix(true,false);
+    const point=target.localToWorld(new THREE.Vector3(...extra.p));
+    const leader=document.createElementNS('http://www.w3.org/2000/svg','line');
+    leader.setAttribute('class','leader-line');
+    const marker=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    marker.setAttribute('r','2.5');marker.setAttribute('class','leader-dot');
+    state.svg.append(leader,marker);
+    state.groupAnchors.push(point);state.groupLines.push(leader);state.groupDots.push(marker);
+    state.groupOccluded.push(false);
+  }
   state.caption.textContent=`Question ${number}`; // Never place the anatomical answer in student-facing DOM.
   state.lastX=NaN;state.lastY=NaN;
   state.occlusionAt=0;state.occluded=false;
@@ -5066,9 +5089,57 @@ function practicalSetQuestionCallout(question,number,plannedEye=null){
   polishOcclusionIndex.update(polishOccluders);
   practicalUpdateQuestionCallout();
 }
+
+// ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307 — one question card, many anchor connectors.
+function practicalUpdateGroupQuestionCallout(state){
+  const w=stageWidth,h=stageHeight;
+  if(w<10||h<10)return;
+  const now=performance.now(),refreshOcclusion=now>=state.occlusionAt;
+  if(refreshOcclusion)state.occlusionAt=now+110;
+  const visible=[];
+  state.groupAnchors.forEach((anchor,i)=>{
+    const projected=anchor.clone().project(camera);
+    const onScreen=projected.z>=-1&&projected.z<=1&&Math.abs(projected.x)<=1.1&&Math.abs(projected.y)<=1.1;
+    if(onScreen&&refreshOcclusion){
+      const delta=anchor.clone().sub(camera.position),distance=delta.length();
+      if(distance<1e-7)state.groupOccluded[i]=true;
+      else{
+        polishOcclusionRay.set(camera.position,delta.normalize());
+        polishOcclusionRay.near=0;
+        polishOcclusionRay.far=Math.max(.001,distance-Math.max(.004,distance*.006));
+        state.groupOccluded[i]=polishOcclusionIndex.isOccluded(polishOcclusionRay);
+      }
+    }
+    const allowed=onScreen&&!state.groupOccluded[i];
+    state.groupLines[i].style.display=allowed?'':'none';
+    state.groupDots[i].style.display=allowed?'':'none';
+    if(allowed)visible.push({i,x:(projected.x+1)*w/2,y:(1-projected.y)*h/2});
+  });
+  if(!visible.length){
+    state.root.style.display='none';state.root.setAttribute('aria-hidden','true');return;
+  }
+  state.root.style.display='block';state.root.setAttribute('aria-hidden','false');
+  const x=visible.reduce((n,p)=>n+p.x,0)/visible.length;
+  const y=visible.reduce((n,p)=>n+p.y,0)/visible.length;
+  const cardWidth=state.card.offsetWidth||100,cardHeight=state.card.offsetHeight||28;
+  let bx=x+26,by=y-cardHeight-12;
+  if(bx+cardWidth>w-8)bx=x-cardWidth-26;
+  bx=Math.max(8,Math.min(w-cardWidth-8,bx));
+  by=Math.max(8,Math.min(h-cardHeight-8,by));
+  state.card.style.left=`${bx}px`;state.card.style.top=`${by}px`;
+  for(const pt of visible){
+    const line=state.groupLines[pt.i],dot=state.groupDots[pt.i];
+    const endpointX=bx>pt.x?bx:bx+cardWidth;
+    const endpointY=by+cardHeight/2;
+    line.setAttribute('x1',String(pt.x));line.setAttribute('y1',String(pt.y));
+    line.setAttribute('x2',String(endpointX));line.setAttribute('y2',String(endpointY));
+    dot.setAttribute('cx',String(pt.x));dot.setAttribute('cy',String(pt.y));
+  }
+}
 function practicalUpdateQuestionCallout(){
   const state=practicalQuestionCallout;
   if(!state?.anchor || !practicalActive || practicalState?.questions?.[practicalState.index]?.type!=='label' || practicalTargetDisplay(practicalConfig)!=='question-label')return;
+  if(state.groupAnchors?.length>1){practicalUpdateGroupQuestionCallout(state);return;}
   const pt=state.anchor.clone().project(camera);
   if(pt.z < -1 || pt.z > 1 || Math.abs(pt.x)>1.1 || Math.abs(pt.y)>1.1){
     state.root.style.display='none';state.root.setAttribute('aria-hidden','true');return;
@@ -5211,8 +5282,27 @@ $('practical-chapter-filter')?.addEventListener('change',e=>{practicalFilter=e.t
 $('practical-select-all')?.addEventListener('click',()=>practicalBulk(true));
 $('practical-select-none')?.addEventListener('click',()=>practicalBulk(false));
 
+
+// ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307 — extra temporary yellow target dots.
+let practicalGroupDotMarkers=[];
+function practicalAddGroupDots(question){
+  for(const extra of (Array.isArray(question.anchors)?question.anchors.slice(1):[])){
+    const mesh=structures[extra.s]?.mesh;
+    if(!mesh?.visible||!Array.isArray(extra.p)||extra.p.length!==3||!extra.p.every(Number.isFinite))continue;
+    mesh.updateWorldMatrix(true,false);
+    const point=mesh.localToWorld(new THREE.Vector3(...extra.p));
+    const box=new THREE.Box3().setFromObject(mesh);
+    const radius=Math.max(.004,Math.min(.018,box.getSize(new THREE.Vector3()).length()*.035));
+    const dot=new THREE.Mesh(new THREE.SphereGeometry(radius,12,10),
+      new THREE.MeshBasicMaterial({color:0xffdb5a,depthTest:false}));
+    dot.position.copy(point);dot.renderOrder=999;
+    scene.add(dot);practicalGroupDotMarkers.push(dot);
+  }
+}
 function practicalClearHighlight(){
   practicalHideQuestionCallout();
+  for(const dot of practicalGroupDotMarkers){scene.remove(dot);dot.geometry.dispose();dot.material.dispose();}
+  practicalGroupDotMarkers=[];
   if(practicalHighlight){
     practicalHighlight.mesh.material=practicalHighlight.original;
     for(const material of practicalHighlight.temporary)material.dispose();
@@ -5243,6 +5333,7 @@ function practicalSetHighlight(question){
       practicalTargetMarker.position.copy(anchor);practicalTargetMarker.renderOrder=999;
       scene.add(practicalTargetMarker);
     }
+    if(practicalTargetDisplay(practicalConfig)==='yellow-dot')practicalAddGroupDots(question);
     invalidate(2);return;
   }
   const original=mesh.material;

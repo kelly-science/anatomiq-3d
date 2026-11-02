@@ -1,6 +1,6 @@
 {
-  "version": "2.2.95",
+  "version": "2.2.96",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Clean View effects menu; Cinematic Motion Blur and Subtle Depth of Field as browser-local defaults."
+  "notes": "Practical group labels show all saved anchor connectors or dots as one graded question."
 }
