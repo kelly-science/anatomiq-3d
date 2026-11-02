@@ -14,7 +14,9 @@ body.student-mode.anat-guided-access .view-presets,
 body.student-mode.anat-guided-access .studio-menubar,
 body.student-mode.anat-guided-access .viewer-quality-control,
 body.student-mode.anat-guided-access #restore-all { display:none!important; }
-body.student-mode.anat-guided-access #label-overlay { visibility:hidden!important;pointer-events:none!important; }
+/* ANATOMIQ_GUIDED_LABEL_CONNECTOR_HIDE_310 — hide teacher-authored callouts and their entire SVG leader layer.
+   Guided student view only; activity-specific practical/hotspot callouts stay intact. */
+body.student-mode.anat-guided-access #label-overlay { display:none!important; visibility:hidden!important;pointer-events:none!important; }
 /* Retain 3D model, chapter navigator, camera reset, zoom controls, and the guided card. */
 body.student-mode.anat-guided-access #anat-guided-student { z-index:4; }
 

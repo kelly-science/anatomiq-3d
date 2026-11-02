@@ -1,6 +1,6 @@
 {
-  "version": "2.2.97",
+  "version": "2.2.98",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Optional guided final Practical, scored and saved before lesson completion."
+  "notes": "Hide teacher-authored label connectors and dots during guided student activities."
 }
