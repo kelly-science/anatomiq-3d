@@ -1,5 +1,5 @@
 /* AnatomIQ 2.2.88 — monochrome, equal-width scalpel. Cursor only on guided Dissect canvas. */
 canvas.anat295-scalpel-armed,
 canvas.anat295-scalpel-armed:active {
-  cursor: url('./scalpel-cursor-296.png?rev=296') 6 6, crosshair !important;
+  cursor: url('./scalpel-cursor-296.png?rev=302&scalpel302=1') 6 6, crosshair !important;
 }
