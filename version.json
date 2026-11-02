@@ -1,6 +1,6 @@
 {
-  "version": "2.2.93",
+  "version": "2.2.94",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "View menu accessibility switches for local-only Motion Blur and Depth of Field, in Studio and Student View."
+  "notes": "Fullscreen 3D hotspot cursor and reliable certificate image download in browsers."
 }

@@ -30,3 +30,13 @@ canvas.anat293-hotspot-armed {cursor:none!important}
   #anat-guided-student.anat293-card-exiting {transition:none;opacity:0!important;transform:none}
   #anat-guided-student.anat293-card-entering {animation:none;opacity:1;transform:none}
 }
+
+/* ANATOMIQ_FULLSCREEN_CERTIFICATE_305: fallback if the canvas itself is fullscreen. */
+.anat305-fullscreen-ring { z-index:2147483647!important; }
+canvas.anat293-hotspot-armed.anat305-fullscreen-canvas {
+  cursor:url('./hotspot-cursor-305.svg?rev=305') 29 29, crosshair!important;
+}
+.anat-ga-certificate-direct {
+  display:block;margin:.6rem auto 0;text-align:center;
+  color:inherit;text-decoration:underline;text-underline-offset:3px;
+}

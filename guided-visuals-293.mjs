@@ -6,6 +6,18 @@ export function createGuidedVisuals(doc=document) {
   let canvas=null, ring=null, move=null, leave=null, down=null;
   let entering=null;
   let scalpelCanvas=null; // ANATOMIQ_DISSECT_SCALPEL_295
+  // ANATOMIQ_FULLSCREEN_CERTIFICATE_305: fullscreen establishes a top-layer subtree.
+  // A ring appended to body cannot appear above a fullscreen viewer.
+  function mountRing(){
+    if(!canvas||!ring)return;
+    const full=doc.fullscreenElement||doc.webkitFullscreenElement;
+    const canvasFull=full===canvas;
+    canvas.classList.toggle('anat305-fullscreen-canvas',canvasFull);
+    const host=full && !canvasFull && full.contains?.(canvas) ? full : doc.body;
+    if(ring.parentNode!==host)host.appendChild(ring);
+    ring.classList.toggle('anat305-fullscreen-ring',host!==doc.body);
+    ring.hidden=true;
+  }
   function cursor(on, target, scalpelOn=false) {
     // Only the actual 3D canvas receives the scalpel; all other UI stays normal.
     // Always remove the old cursor before returning to hotspot or normal mode.
@@ -17,21 +29,25 @@ export function createGuidedVisuals(doc=document) {
       target.classList.add('anat295-scalpel-armed');
       scalpelCanvas=target;
     }
-    if (on && target===canvas && ring) return;
+    if (on && target===canvas && ring) {mountRing();return;}
     if (canvas) {
-      canvas.classList.remove('anat293-hotspot-armed');
+      canvas.classList.remove('anat293-hotspot-armed','anat305-fullscreen-canvas');
       canvas.removeEventListener('pointermove',move);
       canvas.removeEventListener('pointerleave',leave);
       canvas.removeEventListener('pointerdown',down);
     }
-    ring?.remove();ring=null;canvas=null;move=null;leave=null;down=null;
+    doc.removeEventListener('fullscreenchange',mountRing);
+     doc.removeEventListener('webkitfullscreenchange',mountRing);
+     ring?.remove();ring=null;canvas=null;move=null;leave=null;down=null;
     if (!on || !target) return;
     canvas=target;
     ring=doc.createElement('div');
     ring.className='anat293-hotspot-ring';
     ring.setAttribute('aria-hidden','true');
     ring.hidden=true;
-    doc.body.append(ring);
+    mountRing();
+    doc.addEventListener('fullscreenchange',mountRing);
+    doc.addEventListener('webkitfullscreenchange',mountRing);
     move=e=>{
       ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';
       ring.hidden=false;

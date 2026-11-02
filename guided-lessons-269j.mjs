@@ -6,11 +6,12 @@ import {migrateLabelPaint,validPaintRegion,addPaintPoint} from './painted-hotspo
 import {hotspotAttemptState,validHotspotAttemptLimit,DEFAULT_NEW_HOTSPOT_ATTEMPTS,restartChapterAnswers} from './hotspot-attempts-277.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_HOTSPOT_FEEDBACK_277
 import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissection-carry-278.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_DISSECTION_CARRY_278
 import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299'; // ANATOMIQ_CERTIFICATE_NAME_299
+import {deliverCertificatePNG,certificateDownloadURL,resetCertificateDownload} from './certificate-delivery-305.mjs?rev=305'; // ANATOMIQ_FULLSCREEN_CERTIFICATE_305
 import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,renderAttemptLedger} from './guided-attempts-303.mjs?rev=303'; // ANATOMIQ_GUIDED_ATTEMPTS_303
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
-import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=295'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
+import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=295&fullscreen=305'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
 export const GUIDED_TYPES = Object.freeze(['explore','identify','mc','reveal','relationship','label','dissect','short']); // ANATOMIQ_SHORT_ANSWER_290 // ANATOMIQ_SHORT_AFTER_DISTRICT_292
@@ -177,18 +178,7 @@ async function downloadCompletionPNG(name,title,chapters,done,total,firstTry,ide
     line(`Completed: ${new Date().toLocaleString()}`,605,23);
     line('Locally saved activity results — submit to Schoology',655,19,'#a2bac9');
   }
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
-  if(!blob)throw Error('Could not create the completion image.');
-  const filename='AnatomIQ-Lesson-Certificate.png';
-  if(navigator.share&&navigator.canShare){
-    const file=new File([blob],filename,{type:'image/png'});
-    try{if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'AnatomIQ Lesson Complete'});return true;}}
-    catch(error){if(error?.name==='AbortError')return false;}
-  }
-  const url=URL.createObjectURL(blob),anchor=document.createElement('a');
-  anchor.download=filename;anchor.href=url;document.body.append(anchor);anchor.click();anchor.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),30000);
-   return true;
+  return deliverCertificatePNG(canvas,'AnatomIQ-Lesson-Certificate.png');
 }
 export function createGuidedLessons(api){
   let config=normalizeGuided(null,1),projectKey='',storageKey='',currentProject=null,studentProgress={answers:{},chapter:0},hadLocalProgress=false,
@@ -873,6 +863,7 @@ export function createGuidedLessons(api){
                 '<p class="aiq283-identity">Waiting for school account verification…</p>';})()
           : (lockedCertificateName ? `<p class="anat-ga-field">Student: <strong>${esc(lockedCertificateName)}</strong></p>` : `<label class="anat-ga-field">Student name for certificate<input class="text-input" id="anat-ga-name" maxlength="70" autocomplete="name" placeholder="First and last name" value="${esc(studentName)}"></label>`)}
         <button id="anat-ga-png" class="button primary full" type="button">Save Lesson Certificate</button>
+        ${certificateDownloadURL()?`<a id="anat-ga-certificate-direct" class="anat-ga-certificate-direct" href="${esc(certificateDownloadURL())}" download="AnatomIQ-Lesson-Certificate.png" target="_blank" rel="noopener">Open or download certificate PNG</a>`:''}
         <small>Upload this image to Schoology if requested. A screenshot alone is not proof of authenticated submission.</small></div>`;
     }else if(!step){
       inner+=`<h3>Chapter complete</h3><p>All activities in this chapter are finished.</p>`;
@@ -1049,7 +1040,7 @@ export function createGuidedLessons(api){
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
       if(!window.confirm('Restart this lesson? This deletes locally saved activity answers for this lesson only.'))return;
       if(certificateNames.get(storageKey)&&!certificateNames.clear(storageKey))return api.notify('Browser storage could not reset the certificate.');
-       studentName='';await removeProgress(storageKey);api.resetInvestigation?.();studentProgress={key:storageKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
+       resetCertificateDownload();studentName='';await removeProgress(storageKey);api.resetInvestigation?.();studentProgress={key:storageKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
     });
   }
   function failFromAlreadyIncremented(a){feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
