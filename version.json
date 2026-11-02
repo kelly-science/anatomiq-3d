@@ -1,6 +1,6 @@
 {
-  "version": "2.2.89",
+  "version": "2.2.90",
   "channel": "experimental",
   "published": "2026-11-01",
-  "notes": "Guided Access: activity-only student controls; structure details, practical, search, labels and system switching locked."
+  "notes": "Guided Access: hide and disable responsive panel chevrons on narrow screens."
 }

@@ -32,6 +32,8 @@
     workspace.classList.add('anat-panels-enabled');
     body.classList.add('anat-responsive-panels');
     const permitted=side=>{
+      // ANATOMIQ_GUIDED_PANEL298: Guided Access suppresses both responsive panel controls.
+      if(body.classList.contains('student-mode') && body.classList.contains('anat-guided-access'))return false;
       if(!body.classList.contains('student-mode'))return true;
       return side==='left'?(body.classList.contains('student-tree')||body.classList.contains('student-search'))
         :body.classList.contains('student-names');
@@ -48,7 +50,7 @@
         // Preserve compatibility with app.js's existing mobile drawer state.
         // Fullscreen Student View relocates details into the viewer and owns its floating toggle.
         // Never override that independent fullscreen presentation.
-        if(side==='right'&&panel.classList.contains('anat-floating-info')){
+        if(side==='right'&&visible&&panel.classList.contains('anat-floating-info')){
           // The fullscreen drawer has its own visibility control and must remain interactive.
           panel.inert=false;
         }else{

@@ -17,3 +17,18 @@ body.student-mode.anat-guided-access #restore-all { display:none!important; }
 body.student-mode.anat-guided-access #label-overlay { visibility:hidden!important;pointer-events:none!important; }
 /* Retain 3D model, chapter navigator, camera reset, zoom controls, and the guided card. */
 body.student-mode.anat-guided-access #anat-guided-student { z-index:4; }
+
+/* ANATOMIQ_GUIDED_PANEL298: block the separately generated panel-edge chevrons.
+   Stronger than responsive-chapters-panels.css on desktop and narrow screens. */
+body.student-mode.anat-guided-access.anat-responsive-panels .workspace #anat-toggle-details,
+body.student-mode.anat-guided-access.anat-responsive-panels .workspace #anat-toggle-explorer {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.student-mode.anat-guided-access.anat-responsive-panels .workspace.anat-panels-enabled > #info-sidebar,
+body.student-mode.anat-guided-access.anat-responsive-panels .workspace.anat-panels-enabled > #left-sidebar {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
