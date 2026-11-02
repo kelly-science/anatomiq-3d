@@ -64,7 +64,7 @@
     const dd=document.createElement('div');dd.className='menu-dropdown';dd.hidden=true;dd.setAttribute('role','menu');
     dd.setAttribute('aria-label',label);
     const menuId=`anat-student-menu-${label.toLowerCase()}`;dd.id=menuId;trigger.setAttribute('aria-controls',menuId);
-    trigger.addEventListener('click',()=>toggleStudentMenu(group));
+    trigger.addEventListener('click',()=>{window.AnatomIQViewEffects304?.sync();toggleStudentMenu(group);});
     trigger.addEventListener('keydown',e=>{
       if(e.key==='ArrowDown'){e.preventDefault();toggleStudentMenu(group);dd.querySelector('.menu-item')?.focus();}
       if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
@@ -101,6 +101,7 @@
     }
     view.append(divider(),button('Reset Chapter',resetStudentChapter,{id:'anat-student-reset-chapter'}),divider(),button('Show / Hide Labels',toggleLabels,{id:'anat-student-toggle-labels'}));
     view.append(button('Enter Full Screen',toggleFullscreen,{id:'anat-student-fullscreen'}));
+    window.AnatomIQViewEffects304?.append(view,{student:true}); // ANATOMIQ_VIEW_ACCESSIBILITY_304
     const settings=createStudentGroup('Settings');
     settings.append(createQuickQuality('student'));
     const help=createStudentGroup('Help');

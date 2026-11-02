@@ -81,6 +81,7 @@ function buildMenu(root){
   root.append(el('div','view-menu-caption','CAMERA'));
   for(const [name,value] of [['Front','front'],['Back','back'],['Left','left'],['Right','right']])root.append(option(name,{menuView:value}));
   root.append(option('Reset Camera',{menuClick:'reset-camera'}));
+  window.AnatomIQViewEffects304?.append(root); // ANATOMIQ_VIEW_ACCESSIBILITY_304
 }
 function activateProxy(code){
   const [kind,preset]=code.split(':',2);
@@ -112,6 +113,7 @@ export function installViewMenuPolish(){
     }
     const action=event.target.closest('.menu-item');
     if(!action)return;
+    if(action.dataset.anatViewEffect){window.AnatomIQViewEffects304?.toggle(action.dataset.anatViewEffect);return;}
     if(action.dataset.viewSystem){
       const tab=document.querySelector('.mode-tab[data-system="'+action.dataset.viewSystem+'"]');
       if(tab&&!tab.disabled)tab.click();

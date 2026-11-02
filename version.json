@@ -1,6 +1,6 @@
 {
-  "version": "2.2.92",
+  "version": "2.2.93",
   "channel": "experimental",
-  "published": "2026-11-01",
-  "notes": "Guided Dissect mistake limits and labeled Hotspot attempt indicators with chapter restart."
+  "published": "2026-11-02",
+  "notes": "View menu accessibility switches for local-only Motion Blur and Depth of Field, in Studio and Student View."
 }
