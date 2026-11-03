@@ -1,4 +1,5 @@
 /* ANATOMIQ_FLYOUT_MENUS_324
+ * ANATOMIQ_TEACHER_FLYOUTS_325: clickable parent rows, explicit Show System, synced teacher View rebuild.
  * macOS-inspired hover / keyboard / touch flyouts for AnatomIQ View menus.
  * Reuses the existing Settings selectors; no saved scene or lesson data changes.
  */
@@ -34,7 +35,7 @@
       const index=items.indexOf(document.activeElement);
       if(event.key==='Escape'||event.key==='ArrowLeft'){
         event.preventDefault();event.stopPropagation();
-        const restore=active?.trigger;close();restore?.focus();
+        const restore=active?.trigger;close();(restore?.querySelector?.('.view-system-button')||restore)?.focus();
       }else if(event.key==='ArrowDown'||event.key==='ArrowUp'){
         event.preventDefault();event.stopPropagation();
         items[(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length]?.focus();
@@ -103,9 +104,31 @@
     const group=anchor.closest('.view-system-group');
     const hidden=group?.querySelector('.view-submenu');
     if(!hidden)return false;
-    for(const source of hidden.querySelectorAll('button.menu-item')){
-      const item=checkedOption(source.textContent.replace(/^\s*✓\s*/,''),false);
-      item.classList.toggle('anat324-disabled',source.disabled);
+    const system=group.dataset.system;
+    const sourceButton=group.querySelector('.view-system-button');
+    const current=sourceButton?.getAttribute('aria-checked')==='true';
+    const title=(sourceButton?.textContent||system||'System').replace(/^\s*✓\s*/, '').trim();
+    // A system parent behaves like a real nested macOS menu. Instead of
+    // selecting the system when clicked, its first submenu action performs it.
+    // The actual mode-tab remains the only source of application state.
+    const show=checkedOption('Show '+title,current);
+    show.setAttribute('role','menuitemcheckbox');
+    show.setAttribute('aria-checked',String(current));
+    show.disabled=!!sourceButton?.disabled;
+    show.addEventListener('click',event=>{
+      event.preventDefault();event.stopPropagation();
+      if(show.disabled)return;
+      const tab=[...document.querySelectorAll('.mode-tab[data-system]')].find(x=>x.dataset.system===system);
+      close();if(tab&&!tab.disabled)tab.click();closeParentMenu(anchor);
+    });
+    portal.append(show);
+    const sourceItems=[...hidden.querySelectorAll('button.menu-item')];
+    if(sourceItems.length){
+      const divider=element('div','anat324-submenu-divider');
+      divider.setAttribute('role','separator');portal.append(divider);
+    }
+    for(const source of sourceItems){
+      const item=checkedOption(source.textContent.replace(/^\s*✓\s*/, '').trim(),false);
       item.disabled=source.disabled;
       item.setAttribute('role','menuitem');
       if(source.getAttribute('aria-checked')!=null){
@@ -116,8 +139,8 @@
       item.addEventListener('click',event=>{
         event.preventDefault();event.stopPropagation();
         close();
-        // Source item stays inside the original View menu, so existing handlers
-        // for skeletal, teeth, eye, muscle and cardio presets remain canonical.
+        // Existing teacher handlers still own skeletal, connective, muscular,
+        // cardiovascular, respiratory, nervous, and other supported views.
         if(!source.disabled)source.click();
         closeParentMenu(anchor);
       });
@@ -200,8 +223,10 @@
       // Original inline list stays available to existing source handlers but is
       // visually removed; its chevron toggle is no longer an interactive target.
       group.querySelector('.view-submenu-toggle')?.setAttribute('hidden','');
-      source.hidden=true;
-      group.dataset.open='false';
+      // Avoid a MutationObserver loop: setting hidden=true repeatedly itself
+      // produces an observed hidden-attribute mutation in Chromium.
+      if(!source.hidden)source.hidden=true;
+      if(group.dataset.open!=='false')group.dataset.open='false';
     }
   }
   function upgrade(root){
@@ -233,20 +258,21 @@
       root.addEventListener('keydown',e=>{
         const trigger=triggerFor(e);
         if(!trigger)return;
-        if(e.key==='ArrowRight'||e.key==='Enter'&&e.altKey){
-          e.preventDefault();e.stopPropagation();open(trigger,{focusFirst:true});
+        const systemParent=trigger.classList.contains('anat324-system-head');
+        if(e.key==='ArrowRight'|| (systemParent && (e.key==='Enter'||e.key===' ')) || e.key==='Enter'&&e.altKey){
+          e.preventDefault();e.stopImmediatePropagation();open(trigger,{focusFirst:true});
         }else if(e.key==='Escape'){close();}
       },true);
       root.addEventListener('click',e=>{
         const trigger=triggerFor(e);
-        // Effect parent is a menu action; it opens the flyout on click or tap.
-        if(trigger?.dataset.anat324Effect){
-          e.preventDefault();e.stopPropagation();open(trigger,{focusFirst:false});
+        // Capture before view-menu-polish.js: clicking a system parent now
+        // opens its special views, instead of activating the system too early.
+        if(trigger && (trigger.dataset.anat324Effect || trigger.classList.contains('anat324-system-head'))){
+          e.preventDefault();e.stopImmediatePropagation();open(trigger,{focusFirst:false});
         }
       },true);
-      // Touching a system row opens its submenu, while mouse-clicking the name
-      // retains the existing select-system behavior. Intercept before root's
-      // original delegated click handler via a document capture listener below.
+      // A system row is a submenu parent for mouse, keyboard and touch.
+      // Only Show [System] inside the popup selects the primary system.
       new MutationObserver(()=>upgrade(root)).observe(root,{childList:true,attributes:true,attributeFilter:['hidden']});
     }
     upgrade(root);
@@ -286,18 +312,12 @@
       }
       if(e.pointerType==='touch'){
         const row=e.target.closest?.('.anat324-system-head');
-        if(row){
-          row.dataset.anat324Touched='1';open(row);
-        }
+        if(row)open(row);
       }
       if(active && !portal.contains(e.target) && !active.trigger.contains(e.target) &&
          !e.target.closest?.('.menu-trigger'))close();
     },true);
     document.addEventListener('click',e=>{
-      const row=e.target.closest?.('.anat324-system-head');
-      if(row?.dataset.anat324Touched==='1'){
-        row.dataset.anat324Touched='';e.preventDefault();e.stopImmediatePropagation();open(row);return;
-      }
       if(active && !portal.contains(e.target) && !active.trigger.contains(e.target) &&
          !e.target.closest?.('.menu-trigger'))close();
     },true);
@@ -306,7 +326,7 @@
     window.addEventListener('scroll',()=>{if(active)position(active.trigger);},true);
     window.addEventListener('hashchange',close);
     document.addEventListener('fullscreenchange',close);
-    window.AnatomIQFlyout324=Object.freeze({close,sync:syncChecks,upgrade:detect});
+    window.AnatomIQFlyout324=Object.freeze({close,sync:syncChecks,upgrade:detect,teacherMenus:'325'});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
   else install();
