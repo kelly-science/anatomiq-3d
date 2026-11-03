@@ -49,14 +49,15 @@ import {normalizeShadowMode,createDynamicShadows,configureAnatomyShadows} from '
 import {effectiveSystemLayers,activeSystemTabs,toggleAnatomySystem} from './system-layers.js';
 import {skeletalDivision,parseStudioVersion,compareStudioVersions} from './skeletal-views-2217.mjs';
 import {anatomyPath,buildAnatomyTree,getDivisionNode,divisionCoverage} from './anatomy-divisions-2218.mjs';
-import {renderAnatomySidebar,expandToStructure} from './anatomy-sidebar-2219.mjs?rev=2220'; // ANATOMIQ_SINGLE_EXPLORER_2220
+import {renderAnatomySidebar,expandToStructure} from './anatomy-sidebar-2219.mjs?rev=312'; // ANATOMIQ_SINGLE_EXPLORER_2220
+import {inspectBranch,newlyVisibleToHide} from './tree-visibility-312.mjs?rev=312'; // ANATOMIQ_SELECTIVE_TREE_312
 import {chapterAssets,assetsForProject,offlineLessonFiles,LEGACY_DIGESTIVE_MESH_NAMES} from './scene-assets.js';
 import {validateCardiovascularManifest} from './cardiovascular-model.js';
 import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.99'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.100'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -1531,17 +1532,81 @@ function chapterStructureVisible(s){
   // Ignores temporary division masking: report the chapter's actual visibility settings.
   return layerEnabled(s) && tissueVisible(s) && !hidden.has(s.mesh) && !s.mesh.userData?.deferredAsset;
 }
-function toggleExplorerStructure(s){
-  if(!teacherMode)return;
-  if(divisionScope)divisionClose();
-  if(!layerEnabled(s)||!tissueVisible(s)){
-    showToast('Enable this anatomy system in View before showing its structures.');return;
+  // ANATOMIQ_SELECTIVE_TREE_312 — teacher-only visibility at any hierarchy depth.
+function explorerCanReveal(s){
+    if(!s?.mesh || s.mesh.userData?.deferredAsset)return false;
+    const type=isBaseConnective(s)?'connective':s.system;
+    if(!['skeletal','muscular','digestive','cardiovascular','respiratory','nervous','urinary','lymphatic','connective','ocular'].includes(type))return false;
+    if(type==='digestive')return s.layer==='digestive-detail'?detailAvailable:digestiveAvailable;
+    if(type==='connective'&&!isBaseConnective(s))return connectiveAvailable;
+    if(type==='cardiovascular')return cardioAvailable;
+    if(type==='respiratory')return respiratoryAvailable;
+    if(type==='nervous')return nervousAvailable;
+    if(type==='urinary')return urinaryAvailable;
+    if(type==='lymphatic')return lymphaticAvailable;
+    return true;
   }
-  if(hidden.has(s.mesh))hidden.delete(s.mesh);
-  else if(s.mesh.visible)hidden.add(s.mesh);
-  else {isolated=false;hidden.delete(s.mesh);}
-  refreshVisibility();
-}
+function hideExplorerEntries(entries){
+    if(!teacherMode)return;
+    if(divisionScope)divisionClose();
+    for(const s of entries)if(explorerCanReveal(s))hidden.add(s.mesh);
+    isolated=false;
+    refreshVisibility();
+  }
+function revealExplorerEntries(entries){
+    if(!teacherMode)return;
+    const targets=[...new Set(entries)].filter(explorerCanReveal);
+    if(!targets.length){showToast('This group has no loaded structures available to show.');return;}
+    // The existing scene format stores system flags plus each mesh's visibility bit.
+    // Capture everything visible before extending the enabled systems.
+    if(divisionScope)divisionClose();
+    const before=structures.filter(chapterStructureVisible);
+    const digestKinds=new Set(targets.filter(s=>s.system==='digestive').map(s=>s.layer==='digestive-detail'?'detail':'legacy'));
+    if(digestKinds.size>1){showToast('This group spans two Digestive model variants; reveal its subgroups individually.');return;}
+    const prior=effectiveSystemLayers(mode,systemLayers);
+    Object.assign(systemLayers,prior);
+    mode='systems';
+    if(targets.some(s=>s.system==='connective'||isBaseConnective(s)))connectivePreset='all';
+    if(digestKinds.size){detailEnabled=digestKinds.has('detail');detailLayerExplicitlyChanged=true;}
+    if(targets.some(s=>s.tissue==='tooth'))elements.teeth.checked=true;
+    for(const s of targets){
+      const type=isBaseConnective(s)?'connective':s.system;
+      if(type==='muscular')systemLayers[s.layer==='deep muscles'?'deep':'superficial']=true;
+      else if(type==='ocular')systemLayers.nervous=true;
+      else if(Object.prototype.hasOwnProperty.call(systemLayers,type))systemLayers[type]=true;
+    }
+    // Critical: prevent switching to 'systems' or enabling a layer from exposing
+    // its other structures. Preserve everything that was already chapter-visible.
+    for(const s of newlyVisibleToHide(structures,before,targets,s=>layerEnabled(s)&&tissueVisible(s)))hidden.add(s.mesh);
+    for(const s of targets)hidden.delete(s.mesh);
+    isolated=false;
+    updateLayerHeading();updateSystemControls();refreshVisibility();
+    if(targets.length<entries.length)showToast('Unavailable meshes skipped; loaded structures were added.');
+  }
+function explorerGroupEntries(entries){
+    // Only one Digestive representation can be active at a time. A branch
+    // spanning both representations acts on the selected one, not two overlays.
+    const kinds=new Set(entries.filter(s=>s.system==='digestive').map(s=>s.layer==='digestive-detail'?'detail':'legacy'));
+    if(kinds.size<2)return entries;
+    const detailed=detailAvailable && (detailEnabled || !digestiveAvailable);
+    return entries.filter(s=>s.system!=='digestive'||(s.layer==='digestive-detail')===detailed);
+  }
+function toggleExplorerGroup(path){
+    if(!teacherMode)return;
+    const node=divisionNode(path);
+    if(!node?.entries.length)return;
+    const entries=explorerGroupEntries(node.entries);
+    const state=inspectBranch(entries,chapterStructureVisible,explorerCanReveal);
+    if(state.kind==='unavailable'){showToast('No loaded structures in this group.');return;}
+    if(state.kind==='all')hideExplorerEntries(entries);
+    else revealExplorerEntries(entries);
+  }
+function toggleExplorerStructure(s){
+    if(!teacherMode||!explorerCanReveal(s))return;
+    if(chapterStructureVisible(s))hideExplorerEntries([s]);
+    else revealExplorerEntries([s]);
+  }
+
 function renderList(){
   if(guidedAccessActive()){elements.boneList.replaceChildren();return;}
   const text=teacherMode || studentPermissions.ss ? elements.search.value.trim().toLowerCase() : '';
@@ -1616,10 +1681,10 @@ function renderList(){
     const row=document.createElement('div');row.className='anat-explorer-row';
     row.append(b);
     const eye=document.createElement('button');eye.type='button';eye.className='anat-explorer-eye';
-    const canShow=layerEnabled(s)&&tissueVisible(s)&&!s.mesh.userData?.deferredAsset;
+    const canShow=explorerCanReveal(s);
     const isShown=chapterStructureVisible(s);
     eye.textContent=isShown?'◉':'○';eye.disabled=!canShow;
-    eye.title=!canShow?'Enable this structure’s system in View first':isShown?'Hide structure in chapter':'Show structure in chapter';
+    eye.title=!canShow?'This structure is not loaded':isShown?'Hide structure in chapter':'Show only this structure in chapter';
     eye.setAttribute('aria-label',eye.title);eye.setAttribute('aria-pressed',String(isShown));
     eye.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();toggleExplorerStructure(s);});
     row.append(eye);
@@ -1635,9 +1700,12 @@ function renderList(){
   if((teacherMode || (studentPermissions.st && studentPermissions.sn)) && found.length){
     // ANATOMIQ_SINGLE_EXPLORER_2220: sidebar is the only full anatomy hierarchy.
     // View isolates temporarily; visibility button edits the chapter explicitly.
+    const fullTree=divisionTree();
     renderAnatomySidebar(frag,found,{
       createItem:createBoneButton,
       onView:path=>divisionOpen(path),
+      onVisibility:path=>toggleExplorerGroup(path),
+      visibilityState:path=>inspectBranch(explorerGroupEntries(getDivisionNode(fullTree,path)?.entries||[]),chapterStructureVisible,explorerCanReveal), // ANATOMIQ_SELECTIVE_TREE_312
       expanded:treeExpanded,
       selected,
       activePath:divisionScope?divisionBrowsePath:[],

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.99",
+  "version": "2.2.100",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Guided Identify multi-structure checklist and configurable incorrect-selection attempts."
+  "notes": "Teacher: selective cross-system structure visibility and group-level show/hide in the Anatomical Structures browser."
 }

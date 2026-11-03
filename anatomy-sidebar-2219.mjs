@@ -28,7 +28,7 @@ export function sidebarOpenDefault(node,selectedPath,scopePath,searching){
   return false;
 }
 export function renderAnatomySidebar(parent,entries,{
-  createItem,onView,expanded,selected=null,activePath=[],searching=false,document:doc=globalThis.document
+  createItem,onView,onVisibility=null,visibilityState=null,expanded,selected=null,activePath=[],searching=false,document:doc=globalThis.document
 }){
   const tree=buildAnatomyTree(entries);
   const selectedPath=selected?anatomyPath(selected):[];
@@ -58,6 +58,19 @@ export function renderAnatomySidebar(parent,entries,{
       }
       view.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();onView(node.path);});
       summary.append(view);
+       if(typeof onVisibility==='function'){
+         const state=visibilityState?.(node.path)||{total:0,shown:0,kind:'unavailable'};
+         const eye=doc.createElement('button');eye.type='button';eye.className='anat-nav-eye anat-explorer-eye';
+         eye.textContent=state.kind==='all'?'◉':state.kind==='some'?'◐':'○';
+         eye.disabled=state.kind==='unavailable';
+         const verb=state.kind==='all'?'Hide':'Show';
+         eye.title=`${verb} ${node.label} — ${state.shown} of ${state.total} structures visible`;
+         eye.setAttribute('aria-label',`${verb} all structures in ${node.path.join(' > ')}`);
+         eye.setAttribute('aria-pressed',state.kind==='all'?'true':state.kind==='some'?'mixed':'false');
+         eye.addEventListener('click',ev=>{ev.preventDefault();ev.stopPropagation();onVisibility(node.path);});
+         summary.append(eye);
+       }
+
     }
     detail.append(summary);
     const branch=doc.createElement('div');branch.className='anat-nav-children';

@@ -30,3 +30,10 @@
 #bone-list .anat-explorer-eye:disabled{opacity:.22;cursor:not-allowed}
 #bone-list .anat-explorer-eye:not(:disabled):hover{background:rgba(110,207,225,.16)}
 @media(max-width:620px){#bone-list .anat-explorer-eye{flex-basis:32px;height:32px}}
+
+/* ANATOMIQ_SELECTIVE_TREE_312 — hierarchy tri-state visibility, Teacher only */
+#bone-list .anat-nav-node>summary>.anat-nav-eye{flex:0 0 26px;height:27px;margin-left:2px;opacity:1}
+#bone-list .anat-nav-node>summary>.anat-nav-eye[aria-pressed='mixed']{color:#d6c38c;background:rgba(214,195,140,.10)}
+#bone-list .anat-nav-node>summary>.anat-nav-eye[aria-pressed='true']{color:#7fd5dc}
+#bone-list .anat-nav-node>summary>.anat-nav-eye:focus-visible{outline:2px solid #7fd5dc;outline-offset:1px}
+@media(max-width:620px){#bone-list .anat-nav-node>summary>.anat-nav-eye{flex-basis:32px;height:32px}}
