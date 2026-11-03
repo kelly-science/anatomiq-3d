@@ -1,5 +1,8 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322", // ANATOMIQ_REPORT_SAVE_DIAGNOSTIC_322
+  "./guided-lessons-269j.mjs?rev=311-multi-identify&highlight=313&hotspot=315&restart=317&report=320&successfullscreen=321&reportsave=322", // ANATOMIQ_REPORT_SAVE_DIAGNOSTIC_322
+
   "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321", // ANATOMIQ_FULLSCREEN_SUCCESS_321
   "./guided-lessons-269j.mjs?rev=311-multi-identify&highlight=313&hotspot=315&restart=317&report=320&successfullscreen=321", // ANATOMIQ_FULLSCREEN_SUCCESS_321
   "./guided-student-288.mjs?rev=313-extended-feedback&successfullscreen=321", // ANATOMIQ_FULLSCREEN_SUCCESS_321

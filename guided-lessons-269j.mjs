@@ -987,7 +987,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
 
         ${certificateDownloadURL()
           ? `<a id="anat-ga-certificate-direct" class="button primary full anat-ga-certificate-direct" style="display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center" href="${esc(certificateDownloadURL())}" download="AnatomIQ-Lesson-Report.png" target="_blank" rel="noopener">Open or download Lesson Report PNG</a>`
-          : `<button id="anat-ga-png" class="button primary full" type="button">Save Lesson Report</button>`}
+          : `<button id="anat-ga-png" class="button primary full" type="button">Save Lesson Report</button><p id="anat-ga-report-status" role="status" aria-live="polite" style="display:none;font-size:13px;line-height:1.45;margin:8px 0"></p>`}
         </div>`; // ANATOMIQ_LESSON_REPORT_320
      }else if(finalPending && api.getChapter()===api.getChapters().length-1){
        inner+=`<div class="anat308-final-card"><small>Final chapter</small><h3>Practical</h3>
@@ -1165,25 +1165,57 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     byId('anat-ga-resume')?.addEventListener('click',()=>api.goChapter(studentProgress.chapter));
     byId('anat-ga-name')?.addEventListener('input',e=>{studentName=e.target.value;});
     byId('anat-ga-png')?.addEventListener('click',async()=>{
-      const cloud=window.AnatomIQCloudProgress283?.state();
-      if(cloud?.enabled&&!cloud.identity)return api.notify('Confirm your school Google account before saving the lesson report.');
-      const savedName=certificateNames.get(storageKey);
-      const name=cloud?.identity?.email||savedName||studentName.trim().replace(/\s+/g,' ').slice(0,70);
-      if(!name){byId('anat-ga-name')?.focus();return api.notify('Enter a student name before saving the report.');}
-      const button=byId('anat-ga-png');
-      if(button){button.disabled=true;button.textContent='Preparing lesson report…';}
-      try{
-        const saved=await downloadCompletionPNG(name,api.getProjectTitle(),api.getChapters().length,done,total,firstTry,cloud?.identity,window.AnatomIQCloudProgress283?.statusText(),finalPracticalRecord());
-        if(saved){
-          if(!cloud?.identity?.email){
-            try{studentName=certificateNames.lock(storageKey,name);}
-            catch(error){api.notify('Report saved, but this browser could not remember the name. Check storage settings.');}
+          // ANATOMIQ_REPORT_SAVE_DIAGNOSTIC_322: never fail silently on managed ChromeOS.
+          const button=byId('anat-ga-png');
+          const status=byId('anat-ga-report-status');
+          if(!button)return;
+          const originalLabel=button.textContent;
+          const reportStatus=(message,isError=false)=>{
+            if(!status)return;
+            status.textContent=message;
+            status.style.display='block';
+            status.style.color=isError?'#e99a9a':'inherit';
+            status.dataset.state=isError?'error':'info';
+          };
+          button.disabled=true;
+          button.textContent='Preparing lesson report…';
+          reportStatus('Creating your lesson report image…');
+          try{
+            const cloud=window.AnatomIQCloudProgress283?.state?.();
+            if((cloud?.enabled||window.AnatomIQCloudProgress283?.enabled)&&!cloud?.identity?.email)
+              throw Error('Your verified school Google identity is not available to this lesson. Reload the lesson and check its account status.');
+            const savedName=certificateNames.get(storageKey);
+            const name=cloud?.identity?.email||savedName||studentName.trim().replace(/\s+/g,' ').slice(0,70);
+            if(!name){byId('anat-ga-name')?.focus();throw Error('Enter a student name before saving your lesson report.');}
+            const saved=await downloadCompletionPNG(
+              name,api.getProjectTitle(),api.getChapters().length,done,total,firstTry,
+              cloud?.identity,window.AnatomIQCloudProgress283?.statusText?.()||'',finalPracticalRecord()
+            );
+            const link=certificateDownloadURL();
+            if(!saved&&!link)throw Error('The PNG generator did not return a downloadable image. Check Chromebook download policy or browser errors.');
+            if(!cloud?.identity?.email){
+              try{studentName=certificateNames.lock(storageKey,name);}
+              catch(error){reportStatus('Image created, but this browser could not remember the student name.');}
+            }
+            // If the image exists but ChromeOS blocked its automatic download,
+            // render the already-supported, deliberate manual download action.
+            if(link){
+              renderStudent();
+              if(!saved){
+                const message=byId('anat-ga-report-status');
+                if(message){message.textContent='Automatic download was blocked. Select Open or download Lesson Report PNG.';message.style.display='block';}
+              }
+            }else{
+              reportStatus('The report was generated. Check Chrome Downloads for the PNG.');
+            }
+          }catch(error){
+            const description=String(error?.message||error||'Unknown error');
+            reportStatus('Lesson report could not be saved: '+description,true);
+            console.error('AnatomIQ Lesson Report save failed:',error);
+          }finally{
+            if(button.isConnected){button.disabled=false;button.textContent=originalLabel;}
           }
-          renderStudent();
-        }
-      }catch(error){api.notify('Could not save lesson report: '+error.message);}
-      finally{if(button?.isConnected){button.disabled=false;button.textContent='Save Lesson Report';}}
-    });
+        });
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
       if(restartingLesson)return;
       if(!window.confirm('Restart the entire lesson from Chapter 1? All activity answers, attempts and the completion certificate for this lesson will be cleared.'))return;
