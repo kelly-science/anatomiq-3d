@@ -1,5 +1,6 @@
 /* ANATOMIQ_HOTSPOT_MOTION_315 — student Hotspot feedback only.
- * Static geometry, existing green/red colors and camera-facing screen-space glyphs retained.
+ * Existing green/red colors and camera-facing glyphs retained.
+ * 316: markers use a constant CSS-pixel diameter at any camera distance.
  * No score, persistence, target selection, teacher marker or chapter visibility changes.
  */
 export const HOTSPOT_GLYPH_TIMINGS_315 = Object.freeze({
@@ -7,6 +8,34 @@ export const HOTSPOT_GLYPH_TIMINGS_315 = Object.freeze({
   greenDrawMs: 300, redDrawMs: 250, fadeOutMs: 250,
   outgoingMs: 150, popMs: 200
 });
+
+
+/** Screen-space sprite quad width in CSS pixels (the drawn circle is 76/96 of this). */
+export const HOTSPOT_GLYPH_SCREEN_PX_316 = 48;
+
+/**
+ * Convert CSS pixels to sprite world units using the actual projection matrix.
+ * Perspective uses camera-space depth (not Euclidean distance), avoiding
+ * apparent size changes for points away from the center of the screen.
+ * Orthographic cameras do not depend on depth. Device pixel ratio is omitted
+ * deliberately: viewportHeight is the canvas's *CSS* height.
+ */
+export function hotspotGlyphWorldSize(camera, point, viewportHeight, cssPixels = HOTSPOT_GLYPH_SCREEN_PX_316) {
+  const height = Number(viewportHeight);
+  const yProjection = Math.abs(Number(camera?.projectionMatrix?.elements?.[5]));
+  const pixels = Number(cssPixels);
+  if (!(height > 0) || !(yProjection > 0) || !(pixels > 0) ||
+      !Number.isFinite(height) || !Number.isFinite(yProjection) || !Number.isFinite(pixels)) return null;
+  let depth = 1;
+  if (camera.isPerspectiveCamera) {
+    if (typeof camera.worldToLocal !== 'function' || typeof point?.clone !== 'function') return null;
+    // worldToLocal updates the camera's world matrix after an OrbitControls move.
+    depth = -camera.worldToLocal(point.clone()).z;
+    if (!(depth > 0) || !Number.isFinite(depth)) return null;
+  } else if (!camera.isOrthographicCamera) return null;
+  const size = 2 * pixels * depth / (height * yProjection);
+  return Number.isFinite(size) && size > 0 ? size : null;
+}
 
 const clamp = value => Math.min(1, Math.max(0, value));
 const easeOutCubic = x => 1 - Math.pow(1 - clamp(x), 3);
@@ -60,11 +89,26 @@ export function drawHotspotGlyph(ctx, correct, progress = 1) {
  * A new click wins immediately; the previous glyph retires in 150 ms.
  * Requests an animation frame only while something is visibly changing.
  */
-export function createHotspotFeedbackController(THREE, scene, redraw = () => {}, doc = document, win = window) {
+export function createHotspotFeedbackController(THREE, scene, redraw = () => {}, doc = document, win = window, viewport = null) {
   const timing = HOTSPOT_GLYPH_TIMINGS_315;
   const reducedMotion = !!win.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
   const clock = () => win.performance?.now?.() ?? Date.now();
   let active = null, outgoing = null;
+  // The viewport is accessed lazily; camera and renderer are declared later in app.js.
+  function applyScreenScale(entry) {
+    if (!entry || entry.dead) return;
+    const camera = viewport?.getCamera?.();
+    const height = viewport?.getHeight?.();
+    const worldSize = hotspotGlyphWorldSize(camera, entry.sprite.position, height);
+    // A missing camera/viewport should not prevent feedback from displaying.
+    const baseSize = worldSize ?? .025;
+    const motionScale = entry.retiredAt === null ? entry.motionScale : entry.retiredScale;
+    entry.sprite.scale.set(baseSize * motionScale, baseSize * motionScale, 1);
+  }
+  function syncScreenSize() {
+    if (outgoing) applyScreenScale(outgoing);
+    if (active) applyScreenScale(active);
+  }
   const dispose = entry => {
     if (!entry || entry.dead) return;
     entry.dead = true;
@@ -96,8 +140,8 @@ export function createHotspotFeedbackController(THREE, scene, redraw = () => {},
       entry.lastDraw = sampled.draw;
     }
     entry.sprite.material.opacity = opacity;
-    const scale = .025 * (entry.retiredAt === null ? sampled.scale : entry.retiredScale);
-    entry.sprite.scale.set(scale, scale, 1);
+    entry.motionScale = sampled.scale;
+    applyScreenScale(entry);
     redraw();
     const duration = entry.correct ? timing.greenMs : timing.redMs;
     const symbolDone = timing.appearMs + (entry.correct ? timing.greenDrawMs : timing.redDrawMs);
@@ -118,7 +162,7 @@ export function createHotspotFeedbackController(THREE, scene, redraw = () => {},
     entry.frame = entry.timer = null;
     entry.retiredAt = clock();
     entry.retiredOpacity = entry.sprite.material.opacity;
-    entry.retiredScale = entry.sprite.scale.x / .025;
+    entry.retiredScale = entry.motionScale;
     if (entry.retiredOpacity <= 0 || reducedMotion) { dispose(entry); return; }
     outgoing = entry;
     entry.frame = win.requestAnimationFrame(() => update(entry));
@@ -137,7 +181,7 @@ export function createHotspotFeedbackController(THREE, scene, redraw = () => {},
     }));
     sprite.position.copy(point); sprite.renderOrder = 9999;
     const entry = {sprite, context, correct:!!correct, started:clock(), frame:null, timer:null,
-      retiredAt:null, retiredOpacity:0, retiredScale:1, lastDraw:-1, dead:false};
+      retiredAt:null, retiredOpacity:0, retiredScale:1, motionScale:1, lastDraw:-1, dead:false};
     if (outgoing) dispose(outgoing);
     if (active) retire(active);
     scene.add(sprite); active = entry;
@@ -152,5 +196,5 @@ export function createHotspotFeedbackController(THREE, scene, redraw = () => {},
     if (outgoing) dispose(outgoing);
     if (active) dispose(active);
   }
-  return {show, clearWrong, clear};
+  return {show, clearWrong, clear, syncScreenSize};
 }

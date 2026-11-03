@@ -1,6 +1,6 @@
 {
-  "version": "2.2.103",
+  "version": "2.2.104",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Guided Hotspot: animated surface check/X, 1.4/1.6-second feedback, 150ms previous-marker cancellation."
+  "notes": "Student Hotspot check/X keep constant 48 CSS-pixel sprite size across zoom, camera motion and resize."
 }
