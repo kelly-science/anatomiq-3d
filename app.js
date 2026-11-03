@@ -3,7 +3,7 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=308-final-practical';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=311-multi-identify';
 import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=295&fullscreen=305'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
@@ -38,7 +38,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=308-final-practical';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -56,7 +56,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.98'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.99'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';

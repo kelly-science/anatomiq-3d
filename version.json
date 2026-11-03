@@ -1,6 +1,6 @@
 {
-  "version": "2.2.98",
+  "version": "2.2.99",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Hide teacher-authored label connectors and dots during guided student activities."
+  "notes": "Guided Identify multi-structure checklist and configurable incorrect-selection attempts."
 }

@@ -8,6 +8,7 @@ import {inheritedDissectionIndices,dissectionEvidenceWithCarry} from './dissecti
 import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299'; // ANATOMIQ_CERTIFICATE_NAME_299
 import {deliverCertificatePNG,certificateDownloadURL,resetCertificateDownload} from './certificate-delivery-305.mjs?rev=305'; // ANATOMIQ_FULLSCREEN_CERTIFICATE_305
 import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,renderAttemptLedger} from './guided-attempts-303.mjs?rev=303'; // ANATOMIQ_GUIDED_ATTEMPTS_303
+import {DEFAULT_IDENTIFY_ATTEMPTS,validIdentifyTargets,identifyProgress,identifyAttemptState,recordIdentifySelection,renderIdentifyAttemptLedger} from './identify-multi-311.mjs?rev=311'; // ANATOMIQ_MULTI_IDENTIFY_311
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
@@ -104,6 +105,12 @@ export function validateGuided(input, count){
         (a.targetGroup===undefined||a.targetGroup===null||typeof a.targetGroup==='string'&&KNOWN_MUSCLE_GROUP_IDS.has(a.targetGroup)&&!a.targetLabel) &&
         (a.targetLabel===null||a.targetLabel===undefined||typeof a.targetLabel==='string'&&/^q-[0-9A-Za-z-]{4,62}$/.test(a.targetLabel))))
         throw Error('Choose a valid structure or teacher label for Identify.');
+      if(a.type==='identify' && a.targetStructures!==undefined){
+        if(!validIdentifyTargets(a.targetStructures)||a.attemptLimit!==undefined&&!validHotspotAttemptLimit(a.attemptLimit))
+          throw Error('Identify requires 1–64 unique structures and an attempt limit of Unlimited or 1–10.');
+        if(a.targetStructure!==a.targetStructures[0] || a.targetLabel!=null || a.targetGroup!=null)
+          throw Error('Identify multi-target first structure or legacy label/group state is invalid.');
+      }
       if(a.type==='dissect'&&a.attemptLimit!==undefined&&!validHotspotAttemptLimit(a.attemptLimit))
         throw Error('Dissection mistake limit must be Unlimited or 1–10.');
       if(a.type==='short' && (!Number.isInteger(a.maxPoints)||a.maxPoints<1||a.maxPoints>20))
@@ -306,6 +313,10 @@ export function createGuidedLessons(api){
       const [kind,value]=first.key.split(':');
       base.targetStructure=kind==='s'?Number(value):api.getLabel(value)?.s;
       base.targetLabel=kind==='l'?value:null;
+      const initial=visible.find(c=>c.key==='s:'+base.targetStructure)||visible.find(c=>/^s:\d+$/.test(c.key));
+      if(!initial){api.notify('Show a visible structure before adding Identify.');return;}
+      base.targetStructure=Number(initial.key.slice(2));base.targetLabel=null;
+      base.targetStructures=[base.targetStructure];base.attemptLimit=DEFAULT_IDENTIFY_ATTEMPTS;
     }
     if(type==='short'){base.title='Short answer';base.prompt='Respond to the question in your own words.';base.maxPoints=5;}
      if(type==='mc'){base.options=['Option A','Option B','Option C','Option D'];base.correct=0;}
@@ -400,6 +411,45 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
            directionLabel.append(directionChoice);wrapper.append(directionLabel); // ANATOMIQ_ROTATION_TEACHER_294
         }
       }else if(a.type==='identify'){
+        if(Array.isArray(a.targetStructures)){
+          // ANATOMIQ_MULTI_IDENTIFY_311 — Dissect-style teacher checklist; no hiding.
+          const title=document.createElement('strong');title.textContent='Structures students must identify';wrapper.append(title);
+          const note=document.createElement('small');note.textContent='Select the visible structures students must click in the 3D model. Correct choices remain visible.';wrapper.append(note);
+          const tries=document.createElement('label');tries.className='anat-ga-field';tries.textContent='Student Identify incorrect-attempt limit';
+          const choice=document.createElement('select');choice.className='text-input';
+          for(const [value,text] of [['0','Unlimited — no chapter restart'],...Array.from({length:10},(_,n)=>[String(n+1),`${n+1} attempt${n?'s':''}`])]){
+            const opt=document.createElement('option');opt.value=value;opt.textContent=text;choice.append(opt);
+          }
+          choice.value=String(a.attemptLimit??DEFAULT_IDENTIFY_ATTEMPTS);
+          choice.addEventListener('change',()=>update(i,'attemptLimit',Number(choice.value)));
+          tries.append(choice);wrapper.append(tries);
+          const available=api.getTargets().filter(c=>/^s:\d+$/.test(c.key));
+          const filter=document.createElement('input');filter.type='search';filter.className='text-input';filter.placeholder='Search chapter structures…';
+          filter.setAttribute('aria-label','Search Identify checklist structures');wrapper.append(filter);
+          const checks=document.createElement('div');checks.className='anat-investigate-teacher-checks';
+          const count=document.createElement('small');
+          const redraw=()=>{
+            const query=filter.value.trim().toLowerCase();checks.replaceChildren();
+            for(const item of available.filter(c=>c.label.toLowerCase().includes(query))){
+              const idx=Number(item.key.slice(2)),row=document.createElement('label');
+              const input=document.createElement('input');input.type='checkbox';input.checked=a.targetStructures.includes(idx);
+              input.addEventListener('change',()=>{
+                const next=new Set(a.targetStructures);
+                if(input.checked){if(next.size>=64){api.notify('Maximum 64 structures per Identify activity.');input.checked=false;return;}next.add(idx);}
+                else {if(next.size===1){api.notify('Choose at least one required structure.');input.checked=true;return;}next.delete(idx);}
+                a.targetStructures=[...next];a.targetStructure=a.targetStructures[0];a.targetLabel=null;a.targetGroup=null;
+                api.onTeacherChange();count.textContent=`${a.targetStructures.length} required structures`;
+              });row.append(input,document.createTextNode(item.label));checks.append(row);
+            }
+          };
+          filter.addEventListener('input',redraw);redraw();
+          count.textContent=`${a.targetStructures.length} required structures`;
+          wrapper.append(checks,count);
+          const missing=a.targetStructures.filter(idx=>!available.some(c=>c.key==='s:'+idx));
+          if(missing.length){const warning=document.createElement('small');warning.className='anat-ga-target-warning';warning.textContent=missing.length+' previously selected structures are no longer visible in this chapter.';wrapper.append(warning);}
+        }else{
+          // Legacy single-target Identify (including teacher labels and muscle groups)
+          // remains editable without changing the saved lesson's semantics.
         const label=document.createElement('label');label.className='anat-ga-field';label.textContent='Correct target (visible in this chapter)';
         const search=document.createElement('input');search.className='text-input anat-ga-target-search';search.type='search';
         search.placeholder='Search visible structures or labels…';search.autocomplete='off';
@@ -442,6 +492,14 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
           status.classList.remove('anat-ga-target-warning');
         });
         redraw();label.append(search,select,status);wrapper.append(label);
+         const convert=document.createElement('button');convert.type='button';convert.className='button small subtle';
+         convert.textContent='Use multi-structure checklist';
+         convert.addEventListener('click',()=>{
+           if(!Number.isInteger(a.targetStructure)){api.notify('Choose a visible anatomical structure first.');return;}
+           a.targetStructures=[a.targetStructure];a.targetGroup=null;a.targetLabel=null;
+           a.attemptLimit=DEFAULT_IDENTIFY_ATTEMPTS;api.onTeacherChange();renderTeacher();
+         });wrapper.append(convert);
+        }
       }else if(a.type==='short'){
         const scoring=document.createElement('label');scoring.className='anat-ga-field';scoring.textContent='Maximum points';
         const points=document.createElement('input');points.className='text-input';points.type='number';points.min='1';points.max='20';points.step='1';
@@ -855,6 +913,25 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     const a=currentActivity();
     if(INVESTIGATION_TYPES.includes(a?.type))return handleInvestigationPick(a,index,point,normal);
     if(a?.type!=='identify')return false;
+    // ANATOMIQ_MULTI_IDENTIFY_311 — correct clicks mark checklist items; no hide action.
+    if(Array.isArray(a.targetStructures)){
+      const prior=answers()[a.id]||{};
+      const outcome=recordIdentifySelection(a,prior,index,api.getStructureName?.(index));
+      if(outcome.blocked||outcome.duplicate)return true;
+      studentProgress.answers[a.id]=outcome.evidence;
+      api.flashGuidedStructure?.(index,outcome.accepted);
+      if(outcome.done){complete(a);return true;}
+      if(outcome.accepted){
+        const progress=identifyProgress(a,outcome.evidence);
+        feedback=`${progress.completed} of ${progress.required} structures identified.`;feedbackGood=true;
+      }else{
+        const state=identifyAttemptState(a,outcome.evidence);
+        feedback=state.locked?'':(a.hint?`Incorrect structure. Hint: ${a.hint}`:'Incorrect structure — try another selection.');
+        feedbackGood=false;
+      }
+      save();renderStudent();return true;
+    }
+
     // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1: teacher-created multi-anchor labels
     // accept clicks on any original member mesh (not just the first anchor).
     const chosenLabel=a.targetLabel?api.getLabel(a.targetLabel):null;
@@ -876,7 +953,8 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
   function canAdvance(target){if(!student()||!ready||!guided()||api.isPractical()||target<=api.getChapter())return true;
     const pendingLabel=currentActivity();
     if((pendingLabel?.type==='label'&&hotspotAttemptState(pendingLabel,answers()[pendingLabel.id]).locked)||
-        (pendingLabel?.type==='dissect'&&dissectMistakeState(pendingLabel,answers()[pendingLabel.id]).locked)){feedback='Restart this chapter before continuing.';renderStudent();return false;}
+        (pendingLabel?.type==='dissect'&&dissectMistakeState(pendingLabel,answers()[pendingLabel.id]).locked)||
+         (pendingLabel?.type==='identify'&&Array.isArray(pendingLabel.targetStructures)&&identifyAttemptState(pendingLabel,answers()[pendingLabel.id]).locked)){feedback='Restart this chapter before continuing.';renderStudent();return false;}
     const pending=Array.from({length:target-api.getChapter()},(_,i)=>api.getChapter()+i).find(ch=>(config.chapters[ch]||[]).some(a=>!completed(a)));
     if(pending!==undefined){feedback=`Complete chapter ${pending+1} activities before continuing.`;feedbackGood=false;renderStudent();return false;}
     return true;
@@ -916,13 +994,14 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       const index=steps().indexOf(step)+1;
       const lockedLabel=step.type==='label'&&hotspotAttemptState(step,answers()[step.id]).locked;
       const lockedDissect=step.type==='dissect'&&dissectMistakeState(step,answers()[step.id]).locked;
-      if(lockedLabel||lockedDissect){
-        const limit=lockedDissect?dissectMistakeState(step,answers()[step.id]).limit:hotspotAttemptState(step,answers()[step.id]).limit;
+      const lockedIdentify=step.type==='identify'&&Array.isArray(step.targetStructures)&&identifyAttemptState(step,answers()[step.id]).locked;
+      if(lockedLabel||lockedDissect||lockedIdentify){
+        const limit=lockedDissect?dissectMistakeState(step,answers()[step.id]).limit:lockedIdentify?identifyAttemptState(step,answers()[step.id]).limit:hotspotAttemptState(step,answers()[step.id]).limit;
         inner+=`<section class="anat-hotspot-lockout" role="alert" aria-live="assertive">
           <div class="anat-hotspot-lockout-glyph" aria-hidden="true">✕</div>
           <h3>${lockedDissect?'Mistake limit reached':'Attempt limit reached'}</h3>
-          ${renderAttemptLedger(step,answers()[step.id]||{})}
-          <p>${lockedDissect?'You used all '+limit+' dissection mistakes.':'You used all '+limit+' hotspot attempts.'} Restart <strong>Chapter ${api.getChapter()+1}</strong> to try again.</p>
+          ${lockedIdentify?renderIdentifyAttemptLedger(step,answers()[step.id]||{}):renderAttemptLedger(step,answers()[step.id]||{})}
+          <p>${lockedDissect?'You used all '+limit+' dissection mistakes.':lockedIdentify?'You used all '+limit+' Identify attempts.':'You used all '+limit+' hotspot attempts.'} Restart <strong>Chapter ${api.getChapter()+1}</strong> to try again.</p>
           <p>Earlier chapters remain completed.</p>
           <button class="button primary full" id="anat-ga-restart-chapter" type="button">Restart Chapter ${api.getChapter()+1}</button></section>`;
       }else{
@@ -983,7 +1062,16 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
            <div class="anat-short-answer-actions"><span id="anat-ga-short-count" aria-live="off">${String(prior.draft||'').length}/800</span>
            <button class="button primary" type="button" id="anat-ga-short-submit" ${String(prior.draft||'').trim()?'':'disabled'}>Submit answer</button></div></div>`;
        }
-       else if(step.type==='identify'){} // Student acts on teacher-generated prompt in the 3D viewer.
+       else if(step.type==='identify'){
+         if(Array.isArray(step.targetStructures)){
+           const evidence=answers()[step.id]||{},progress=identifyProgress(step,evidence);
+           const displayName=id=>api.getStructureName?.(id)||('Structure #'+id);
+           inner+=`<div class="anat-identify-count">${progress.completed} / ${progress.required} identified</div>
+             <div class="anat-dissect-list anat-identify-list" role="list" aria-label="Structures to identify">${step.targetStructures.map(id=>`<span role="listitem" class="${progress.remaining.includes(id)?'':'done'}">${progress.remaining.includes(id)?'○':'✓'} ${esc(displayName(id))}</span>`).join('')}</div>`;
+           inner+=renderIdentifyAttemptLedger(step,evidence);
+         }
+       } // Legacy Identify remains model-only.
+
       else if(step.type==='mc')inner+=`<div class="anat-ga-choices">${step.options.map((o,i)=>`<button class="button subtle full" data-anat-choice="${i}" type="button">${esc(o)}</button>`).join('')}</div>`;
       inner+='</div>';
       } // end unlocked activity content
