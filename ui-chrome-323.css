@@ -1,0 +1,62 @@
+/* ANATOMIQ_UI_CHROME_323 — labels remain behind both lower control bars. */
+.viewer-panel { --anat-label-bottom-clearance: 150px; }
+.viewer-panel > #label-overlay,
+.viewer-panel > #anat-practical-question-callout {
+  /* Masks both text cards and SVG leaders, including the transparent gaps
+     around toolbar buttons, rather than relying on z-index alone. */
+  clip-path: inset(0px 0px var(--anat-label-bottom-clearance) 0px);
+}
+.viewer-panel > .viewer-bottom,
+.viewer-panel > #chapter-nav { z-index: 25; }
+
+/* ANATOMIQ_UI_CHROME_323 — unobtrusive macOS/ChromeOS-friendly notifications. */
+#app-toast.app-toast {
+  box-sizing: border-box;
+  position: fixed !important;
+  left: auto !important;
+  right: max(18px, env(safe-area-inset-right)) !important;
+  bottom: max(18px, env(safe-area-inset-bottom)) !important;
+  top: auto !important;
+  width: min(390px, calc(100vw - 36px));
+  max-width: min(390px, calc(100vw - 36px));
+  min-height: 66px;
+  border-radius: 8px;
+  border: 1px solid rgba(122,188,200,.58);
+  border-left: 4px solid #70c6cf;
+  padding: 16px 19px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.45;
+  font-weight: 600;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: rgba(26,43,55,.98);
+  color: #edf8fa;
+  box-shadow: 0 14px 38px rgba(0,0,0,.42), 0 3px 10px rgba(0,0,0,.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  z-index: 2147483000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(calc(100% + 36px),0,0);
+  transition: transform 340ms cubic-bezier(.2,.8,.2,1), opacity 260ms ease, visibility 0s linear 340ms;
+}
+#app-toast.app-toast[hidden] { display: none !important; }
+#app-toast.app-toast.anat323-toast-in {
+  visibility: visible;
+  opacity: 1;
+  transform: translate3d(0,0,0);
+  transition: transform 340ms cubic-bezier(.2,.8,.2,1), opacity 260ms ease, visibility 0s;
+}
+#app-toast.app-toast.anat323-toast-out {
+  visibility: visible;
+  opacity: 0;
+  transform: translate3d(calc(100% + 36px),0,0);
+  transition: transform 300ms ease-in, opacity 270ms ease, visibility 0s linear 310ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-toast.app-toast { transition-duration: 0ms !important; }
+}

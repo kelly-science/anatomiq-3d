@@ -1,6 +1,6 @@
 {
-  "version": "2.2.108",
+  "version": "2.2.109",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Show Chromebook Lesson Report save progress and inline errors; manual PNG fallback when generated."
+  "notes": "Bottom controls occlude model labels; larger lower-right sliding toast notifications."
 }
