@@ -195,7 +195,7 @@ export function createGuidedLessons(api){
   let config=normalizeGuided(null,1),projectKey='',storageKey='',currentProject=null,studentProgress={answers:{},chapter:0},hadLocalProgress=false,
     ready=false,storageOK=true,orbitMeter=null,orbitActivityId=null,orbitLastShown=-1,feedback='',feedbackGood=false,studentName='',
     teacherMounted=false,studentMounted=false,session=0,investigationCandidate=null,teacherHotspotId=null,paintPreviewId=null,studentHotspotArmed=false,dissectArmed=false; // ANATOMIQ_INVESTIGATIONS_273
-  let completionPending=false,stopSuccess=null;
+  let completionPending=false,stopSuccess=null,restartingLesson=false; // ANATOMIQ_RESTART_AUDIT_317
   const teacherRoot=byId('anat-guided-teacher');const studentRoot=byId('anat-guided-student');
   const studentVisuals=createGuidedVisuals(document);
   const certificateNames=createCertificateNameStore();
@@ -296,7 +296,7 @@ export function createGuidedLessons(api){
     syncInheritedDissection();renderTeacher();renderStudent();
   }
   function onChapterChanged(){stopSuccess?.();stopSuccess=null;completionPending=false;studentVisuals.reset(studentRoot);api.clearGuidedVisuals?.();stopTeacherPaint(false);api.clearTeacherPaintRegions?.();api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearTeacherHotspot?.();feedback='';resetOrbitMeter();
-    if(student()&&ready&&guided()){studentProgress.chapter=api.getChapter();save();}
+    if(student()&&ready&&guided()){studentProgress.chapter=api.getChapter();if(!restartingLesson)save();}
     syncInheritedDissection();renderTeacher();renderStudent();}
   function insertActivity(type){
     if(!api.isTeacher())return;
@@ -695,7 +695,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     if(Number(data.chapter)>api.getChapter() && Number(data.chapter)<api.getChapters().length)
       void api.goChapter(Number(data.chapter));
   }
-  function save(){if(!ready||!student()||!guided())return;studentProgress.updatedAt=Date.now();hadLocalProgress=true;
+  function save(){if(!ready||!student()||!guided())return;studentProgress.updatedAt=Math.max(Date.now(),Number(studentProgress.updatedAt)||0)+1;hadLocalProgress=true; // ANATOMIQ_RESTART_AUDIT_317
     void writeProgress(studentProgress).then(ok=>{storageOK=ok;updateSavedIndicator();});
     window.AnatomIQCloudProgress283?.enqueue(cloudSnapshot());
   }
@@ -1135,21 +1135,27 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     });
     byId('anat-ga-restart-chapter')?.addEventListener('click',async()=>{
       const button=byId('anat-ga-restart-chapter');if(button){button.disabled=true;button.textContent='Restarting chapter…';}
-      const chapter=api.getChapter();
+      const chapter=api.getChapter(),before=structuredClone(studentProgress);
       try{
-        api.resetInvestigation?.();api.clearStudentHotspot?.();
+        if(completionPending)throw Error('Wait for the activity transition to finish.');
+        stopSuccess?.();stopSuccess=null;
+        api.resetInvestigation?.();api.clearStudentHotspot?.();api.clearGuidedVisuals?.();
         studentProgress.answers=restartChapterAnswers(answers(),steps(chapter));
-        studentProgress.chapter=chapter;studentProgress.updatedAt=Date.now();
-        // Persist cleared chapter answers before any scene restore can reload guided state.
+        studentProgress.chapter=chapter;
+        studentProgress.updatedAt=Math.max(Date.now(),Number(before.updatedAt)||0)+1;
         storageOK=await writeProgress(studentProgress);
+        if(!storageOK)throw Error('Local storage failed; chapter progress has not been reset reliably.');
         await api.resetChapterScene?.();
-        syncInheritedDissection();
+        syncInheritedDissection();resetOrbitMeter();
         feedback='Chapter restarted. Begin again with activity 1.';feedbackGood=true;
-        resetOrbitMeter();save();renderStudent();
+        save();renderStudent();
       }catch(error){
-        feedback='Could not restore the original chapter model. Try again: '+String(error?.message||error);feedbackGood=false;renderStudent();
+        studentProgress=before;
+        storageOK=await writeProgress(studentProgress);
+        feedback='Chapter reset could not finish: '+String(error?.message||error);
+        feedbackGood=false;renderStudent();
       }
-    });
+    }); // ANATOMIQ_RESTART_AUDIT_317
     byId('anat308-start-practical')?.addEventListener('click',()=>{
       if(canStartFinalPractical())api.startFinalPractical?.();
     });
@@ -1177,10 +1183,35 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       finally{if(button?.isConnected){button.disabled=false;button.textContent='Save Lesson Certificate';}}
     });
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
-      if(!window.confirm('Restart this lesson? This deletes locally saved activity answers for this lesson only.'))return;
-      if(certificateNames.get(storageKey)&&!certificateNames.clear(storageKey))return api.notify('Browser storage could not reset the certificate.');
-       resetCertificateDownload();studentName='';await removeProgress(storageKey);api.resetInvestigation?.();studentProgress={key:storageKey,answers:{},chapter:api.getChapter()};feedback='';resetOrbitMeter();save();renderStudent();
-    });
+      if(restartingLesson)return;
+      if(!window.confirm('Restart the entire lesson from Chapter 1? All activity answers, attempts and the completion certificate for this lesson will be cleared.'))return;
+      const before=structuredClone(studentProgress);
+      restartingLesson=true;
+      const button=byId('anat-ga-reset');if(button){button.disabled=true;button.textContent='Restarting lesson…';}
+      try{
+        stopSuccess?.();stopSuccess=null;completionPending=false;
+        studentVisuals.reset(studentRoot);api.clearGuidedVisuals?.();api.clearStudentHotspot?.();api.resetInvestigation?.();
+        if(api.getChapter()!==0){await api.goChapter(0);}
+        if(api.getChapter()!==0)throw Error('Unable to navigate to Chapter 1. Retry after chapter animation finishes.');
+        await api.resetChapterScene?.();
+        const remoteTime=Number(window.AnatomIQCloudProgress283?.getRemote(projectKey)?.updatedAt)||0;
+        const revision=Math.max(Date.now(),Number(before.updatedAt)||0,remoteTime)+1;
+        studentProgress={key:storageKey,answers:{},chapter:0,updatedAt:revision};
+        storageOK=await writeProgress(studentProgress);
+        if(!storageOK)throw Error('Local progress storage is unavailable.');
+        hadLocalProgress=true;
+        if(certificateNames.get(storageKey)&&!certificateNames.clear(storageKey))
+          throw Error('Unable to clear the saved certificate name.');
+        resetCertificateDownload();studentName='';feedback='Lesson restarted at Chapter 1.';feedbackGood=true;
+        resetOrbitMeter();syncInheritedDissection();
+        save();renderStudent();
+      }catch(error){
+        // Never replace a student's saved answers with an incomplete reset.
+        studentProgress=before;storageOK=await writeProgress(before);
+        feedback='Lesson restart did not finish: '+String(error?.message||error);
+        feedbackGood=false;renderStudent();
+      }finally{restartingLesson=false;}
+    }); // ANATOMIQ_RESTART_AUDIT_317
   }
   function failFromAlreadyIncremented(a){feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
   function focusPanel(){studentRoot?.scrollIntoView({block:'nearest',behavior:'smooth'});}

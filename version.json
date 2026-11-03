@@ -1,6 +1,6 @@
 {
-  "version": "2.2.104",
+  "version": "2.2.105",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Student Hotspot check/X keep constant 48 CSS-pixel sprite size across zoom, camera motion and resize."
+  "notes": "Restart Lesson now returns to Chapter 1 and restores the initial scene; chapter reset is isolated and guarded; dashboard data is unchanged."
 }
