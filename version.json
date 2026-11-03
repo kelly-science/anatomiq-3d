@@ -1,6 +1,6 @@
 {
-  "version": "2.2.109",
+  "version": "2.2.110",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Bottom controls occlude model labels; larger lower-right sliding toast notifications."
+  "notes": "Mac-style nested View flyouts; granular DOF and motion blur in Studio and Student View."
 }
