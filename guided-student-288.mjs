@@ -1,6 +1,6 @@
 /* AnatomIQ 2.2.80: student activity completion cue. No network/storage/model effects. */
 let activeCue = null;
-export function showActivitySuccess(onFinished, doc = document) {
+export function showActivitySuccess(onFinished, doc = document, minimumWaitMs = 0) { // ANATOMIQ_GUIDED_FEEDBACK_313
   if (activeCue) activeCue();
   const win = doc.defaultView || window;
   const reduce = !!win.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -15,11 +15,12 @@ export function showActivitySuccess(onFinished, doc = document) {
     </svg></div>`;
   doc.body.appendChild(overlay);
   doc.body.classList.add('anat-ga-success-active');
-  let done = false, timer;
+  let done = false, timer, overlayTimer;
   const finish = (advance) => {
     if(done) return;
     done = true;
     win.clearTimeout(timer);
+    win.clearTimeout(overlayTimer);
     overlay.remove();
     doc.body.classList.remove('anat-ga-success-active');
     if(activeCue === cancel) activeCue = null;
@@ -27,6 +28,18 @@ export function showActivitySuccess(onFinished, doc = document) {
   };
   const cancel = () => finish(false);
   activeCue = cancel;
-  timer = win.setTimeout(() => finish(true), reduce ? 230 : 1020);
+  const cueMs = reduce ? 230 : 1020;
+   // Identify's final selection may remain highlighted after the original checkmark ends.
+   // Other activities keep their original 1020ms (or reduced-motion 230ms) cadence.
+   const wait = Number.isFinite(minimumWaitMs) ? Math.max(0,Math.min(5000,minimumWaitMs)) : 0;
+   const advanceMs = Math.max(cueMs,wait);
+   if(advanceMs>cueMs){
+     overlayTimer=win.setTimeout(()=>{
+       if(done)return;
+       overlay.remove();
+       doc.body.classList.remove('anat-ga-success-active');
+     },cueMs);
+   }
+   timer = win.setTimeout(() => finish(true), advanceMs);
   return cancel;
 }

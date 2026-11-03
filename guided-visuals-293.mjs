@@ -92,16 +92,28 @@ export function createGuidedVisuals(doc=document) {
 
 // Returns flash and clear actions. Mesh geometry is shared, not cloned/disposed;
 // only the temporary material and child mesh are created and cleaned up.
-export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) {
+export const GUIDED_FEEDBACK_TIMINGS_313 = Object.freeze({greenMs:1400,redMs:1600,fadeInMs:150,fadeOutMs:250}); // ANATOMIQ_GUIDED_FEEDBACK_313
+export const GUIDED_FEEDBACK_PRIORITY_314 = Object.freeze({outgoingFadeMs:150}); // ANATOMIQ_GUIDED_PRIORITY_314
+export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) { // ANATOMIQ_GUIDED_PRIORITY_314
+  // At most one *outgoing* overlay plus the newest full-length overlay.
+  // Previously outgoing overlays are disposed on a subsequent click to avoid pileups.
   const flashes=new Set();
-  function clear() {for(const f of [...flashes])f.dispose();}
-  function flash(index, correct) {
+  const timing=GUIDED_FEEDBACK_TIMINGS_313;
+  const priority=GUIDED_FEEDBACK_PRIORITY_314;
+  const clock=()=>win.performance?.now?.()??Date.now();
+  function clear(){for(const f of [...flashes])f.dispose();}
+  function flash(index,correct){
     if(!Number.isInteger(index))return false;
     const source=getMesh(index);
     if(!source?.geometry||!source.visible||!source.add)return false;
-    for(const f of [...flashes])if(f.source===source)f.dispose();
+    const started=clock();
+    // Evaluate clicks before changing visuals. An invalid pick must not cancel a valid cue.
+    for(const f of [...flashes]){
+      if(f.retiring||f.source===source)f.dispose(); // No stacked red/green on the same bone.
+      else f.retire(started);
+    }
     const material=new THREE.MeshBasicMaterial({
-      color:correct?0x4edfa5:0xf25e64,transparent:true,opacity:.64,
+      color:correct?0x4edfa5:0xf25e64,transparent:true,opacity:0,
       depthWrite:false,depthTest:true,side:THREE.DoubleSide,
       polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,
       toneMapped:false
@@ -112,25 +124,71 @@ export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) {
     glow.renderOrder=(source.renderOrder||0)+1;
     glow.scale.setScalar(1.002);
     source.add(glow);
-    const duration=correct?690:730;
-    const started=win.performance?.now?.()??Date.now();
-    let frame=null,dead=false;
-    const state={source,dispose};flashes.add(state);
-    function dispose() {
+    const duration=correct?timing.greenMs:timing.redMs;
+    let frame=null,holdTimer=null,dead=false,retiring=false,retireStarted=0,retireOpacity=0;
+    const state={source,dispose,retire,get retiring(){return retiring;}};
+    flashes.add(state);
+    function stopScheduled(){
+      if(frame!==null)win.cancelAnimationFrame?.(frame);
+      if(holdTimer!==null)win.clearTimeout(holdTimer);
+      frame=null;holdTimer=null;
+    }
+    function dispose(){
       if(dead)return;
       dead=true;
-      if(frame!==null)win.cancelAnimationFrame?.(frame);
+      stopScheduled();
       source.remove(glow);
       material.dispose();
       flashes.delete(state);
       redraw();
     }
-    const tick=now=>{
-      if(dead)return;
-      const progress=Math.max(0,Math.min(1,(now-started)/duration));
-      material.opacity=.64*(1-progress)*(1-progress*.20);
+    function normalOpacity(at){
+      const elapsed=Math.max(0,at-started);
+      if(elapsed>=duration)return 0;
+      if(elapsed<timing.fadeInMs)return .64*Math.min(1,elapsed/timing.fadeInMs);
+      if(elapsed<duration-timing.fadeOutMs)return .64;
+      return .64*Math.max(0,(duration-elapsed)/timing.fadeOutMs);
+    }
+    function retire(at){
+      if(dead||retiring)return;
+      stopScheduled(); // Wake from the prior static hold, if any.
+      retiring=true;
+      retireStarted=at;
+      // Compute exact present intensity, even between animation frames.
+      retireOpacity=Math.min(.64,Math.max(0,normalOpacity(at)));
+      if(retireOpacity<=0){dispose();return;}
+      material.opacity=retireOpacity;
       redraw();
-      if(progress>=1){dispose();return;}
+      frame=win.requestAnimationFrame(tick);
+    }
+    const tick=at=>{
+      if(dead)return;
+      frame=null;
+      if(retiring){
+        const elapsed=Math.max(0,at-retireStarted);
+        if(elapsed>=priority.outgoingFadeMs){dispose();return;}
+        material.opacity=retireOpacity*(1-elapsed/priority.outgoingFadeMs);
+        redraw();
+        frame=win.requestAnimationFrame(tick);
+        return;
+      }
+      const elapsed=Math.max(0,at-started);
+      if(elapsed>=duration){dispose();return;}
+      if(elapsed<timing.fadeInMs){
+        material.opacity=.64*Math.min(1,elapsed/timing.fadeInMs);
+      }else if(elapsed<duration-timing.fadeOutMs){
+        material.opacity=.64;
+        redraw();
+        // No frame loop while held steady. A new click can interrupt this timer.
+        holdTimer=win.setTimeout(()=>{
+          holdTimer=null;
+          if(!dead&&!retiring)frame=win.requestAnimationFrame(tick);
+        },Math.max(0,duration-timing.fadeOutMs-elapsed));
+        return;
+      }else{
+        material.opacity=.64*Math.max(0,(duration-elapsed)/timing.fadeOutMs);
+      }
+      redraw();
       frame=win.requestAnimationFrame(tick);
     };
     redraw();

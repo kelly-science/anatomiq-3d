@@ -11,7 +11,7 @@ import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,
 import {DEFAULT_IDENTIFY_ATTEMPTS,validIdentifyTargets,identifyProgress,identifyAttemptState,recordIdentifySelection,renderIdentifyAttemptLedger} from './identify-multi-311.mjs?rev=311'; // ANATOMIQ_MULTI_IDENTIFY_311
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
-import {showActivitySuccess} from './guided-student-288.mjs?rev=288'; // ANATOMIQ_STUDENT_ACTIVITY_UX_288
+import {showActivitySuccess} from './guided-student-288.mjs?rev=313-extended-feedback'; // ANATOMIQ_GUIDED_FEEDBACK_313 // ANATOMIQ_STUDENT_ACTIVITY_UX_288
 import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=295&fullscreen=305'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
@@ -726,7 +726,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     }
     api.setInvestigationHiddenIndices?.(inheritedHidden());
   }
-  function complete(a,attempted=true){
+  function complete(a,attempted=true,holdGreen=false){ // ANATOMIQ_GUIDED_FEEDBACK_313
     if(completed(a))return;
     // Keep the successful 3D check visible for the rest of the chapter.
     if(INVESTIGATION_TYPES.includes(a.type)){api.resetInvestigation?.();if(a.type!=='label')api.clearStudentHotspot?.();investigationCandidate=null;studentHotspotArmed=false;dissectArmed=false;}
@@ -744,7 +744,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       api.clearStudentHotspot?.();api.clearGuidedVisuals?.();
       studentVisuals.cursor(false,api.getCanvasElement?.());
       renderStudent();studentVisuals.enter(studentRoot);
-    });
+    },document,holdGreen?1420:0);
   }
   function fail(a){const old=answers()[a.id]||{};studentProgress.answers[a.id]={...old,done:false,attempts:(old.attempts||0)+1};
     feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -920,7 +920,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       if(outcome.blocked||outcome.duplicate)return true;
       studentProgress.answers[a.id]=outcome.evidence;
       api.flashGuidedStructure?.(index,outcome.accepted);
-      if(outcome.done){complete(a);return true;}
+      if(outcome.done){complete(a,true,true);return true;} // ANATOMIQ_GUIDED_FEEDBACK_313
       if(outcome.accepted){
         const progress=identifyProgress(a,outcome.evidence);
         feedback=`${progress.completed} of ${progress.required} structures identified.`;feedbackGood=true;
@@ -946,7 +946,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
         const dx=(a2.x-p2.x)*rect.width/2,dy=(a2.y-p2.y)*rect.height/2;
         valid=a2.z>=-1&&a2.z<=1&&Math.hypot(dx,dy)<=44;}
     }
-    if(valid){api.flashGuidedStructure?.(index,true);studentProgress.answers[a.id]={...(answers()[a.id]||{}),attempts:((answers()[a.id]?.attempts)||0)+1};complete(a);}
+    if(valid){api.flashGuidedStructure?.(index,true);studentProgress.answers[a.id]={...(answers()[a.id]||{}),attempts:((answers()[a.id]?.attempts)||0)+1};complete(a,true,true);}
     else {api.flashGuidedStructure?.(index,false);fail(a);}
     return true;
   }

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.100",
+  "version": "2.2.102",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Teacher: selective cross-system structure visibility and group-level show/hide in the Anatomical Structures browser."
+  "notes": "Guided Lessons: newest click prioritizes feedback; older bone highlights fade in 150 ms, green/red durations unchanged."
 }
