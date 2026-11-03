@@ -1,6 +1,6 @@
 {
-  "version": "2.2.106",
+  "version": "2.2.107",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Student completion now uses a single Lesson Report action, updated PNG title/name, and no screenshot disclaimer."
+  "notes": "Guided activity completion circle/checkmark now renders inside the active fullscreen viewer, including fullscreen exit during the cue."
 }

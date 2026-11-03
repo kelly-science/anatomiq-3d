@@ -13,7 +13,18 @@ export function showActivitySuccess(onFinished, doc = document, minimumWaitMs = 
       <circle class="anat-ga-success-circle" cx="60" cy="60" r="49"/>
       <path class="anat-ga-success-check" d="M34 61l17 17 35-39"/>
     </svg></div>`;
-  doc.body.appendChild(overlay);
+  // ANATOMIQ_FULLSCREEN_SUCCESS_321: browser fullscreen exposes only its element and descendants.
+  let overlayMounted = false;
+  const mountOverlay = () => {
+    // 313 may remove the visible cue at 1020 ms but wait until 1420 ms.
+    if (overlayMounted && !overlay.parentNode) return;
+    const host = doc.fullscreenElement || doc.webkitFullscreenElement || doc.body;
+    if (overlay.parentNode !== host) host.appendChild(overlay);
+    overlayMounted = true;
+  };
+  mountOverlay();
+  doc.addEventListener('fullscreenchange', mountOverlay);
+  doc.addEventListener('webkitfullscreenchange', mountOverlay);
   doc.body.classList.add('anat-ga-success-active');
   let done = false, timer, overlayTimer;
   const finish = (advance) => {
@@ -21,6 +32,8 @@ export function showActivitySuccess(onFinished, doc = document, minimumWaitMs = 
     done = true;
     win.clearTimeout(timer);
     win.clearTimeout(overlayTimer);
+    doc.removeEventListener('fullscreenchange', mountOverlay);
+    doc.removeEventListener('webkitfullscreenchange', mountOverlay);
     overlay.remove();
     doc.body.classList.remove('anat-ga-success-active');
     if(activeCue === cancel) activeCue = null;

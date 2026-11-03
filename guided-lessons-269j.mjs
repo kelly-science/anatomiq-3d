@@ -11,7 +11,7 @@ import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,
 import {DEFAULT_IDENTIFY_ATTEMPTS,validIdentifyTargets,identifyProgress,identifyAttemptState,recordIdentifySelection,renderIdentifyAttemptLedger} from './identify-multi-311.mjs?rev=311'; // ANATOMIQ_MULTI_IDENTIFY_311
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
-import {showActivitySuccess} from './guided-student-288.mjs?rev=313-extended-feedback'; // ANATOMIQ_GUIDED_FEEDBACK_313 // ANATOMIQ_STUDENT_ACTIVITY_UX_288
+import {showActivitySuccess} from './guided-student-288.mjs?rev=313-extended-feedback&successfullscreen=321'; // ANATOMIQ_GUIDED_FEEDBACK_313 // ANATOMIQ_STUDENT_ACTIVITY_UX_288
 import {createGuidedVisuals} from './guided-visuals-293.mjs?rev=295&fullscreen=305'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {MUSCLE_GROUP_DEFS} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_NATIVE_270
 const KNOWN_MUSCLE_GROUP_IDS=new Set(MUSCLE_GROUP_DEFS.map(g=>g.id));
