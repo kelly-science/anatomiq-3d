@@ -736,7 +736,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     feedback='';feedbackGood=true;resetOrbitMeter();save();
     completionPending=true;const cueSession=session;
     studentVisuals.exit(studentRoot);studentVisuals.cursor(false,api.getCanvasElement?.());
-    stopSuccess=showActivitySuccess(()=>{
+    const startHotspotCompletionCue=()=>{stopSuccess=showActivitySuccess(()=>{
       completionPending=false;stopSuccess=null;
       if(cueSession!==session)return;
       // Clear nonpersistent hotspot feedback and transient color flashes only.
@@ -744,7 +744,11 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       api.clearStudentHotspot?.();api.clearGuidedVisuals?.();
       studentVisuals.cursor(false,api.getCanvasElement?.());
       renderStudent();studentVisuals.enter(studentRoot);
-    },document,holdGreen?1420:0);
+    },document,0);}; // ANATOMIQ_HOTSPOT_MOTION_315
+    if(a.type==='label'&&holdGreen){
+      const hotspotCueTimer=window.setTimeout(startHotspotCompletionCue,1420);
+      stopSuccess=()=>window.clearTimeout(hotspotCueTimer);
+    }else startHotspotCompletionCue();
   }
   function fail(a){const old=answers()[a.id]||{};studentProgress.answers[a.id]={...old,done:false,attempts:(old.attempts||0)+1};
     feedback=a.hint?`Not quite. Hint: ${a.hint}`:'Not quite — try again.';feedbackGood=false;save();renderStudent();}
@@ -849,7 +853,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
         save();renderStudent();return true;
       }
       studentHotspotArmed=false;
-      if(labelReady(a,answers()[a.id]))complete(a);
+      if(labelReady(a,answers()[a.id]))complete(a,true,true); // ANATOMIQ_HOTSPOT_MOTION_315
       else{feedback='Hotspot accepted. Complete the rotation requirement.';feedbackGood=true;save();renderStudent();}
       return true;
     }

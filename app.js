@@ -3,8 +3,9 @@
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
-import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=311-multi-identify&highlight=313';
+import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=311-multi-identify&highlight=313&hotspot=315';
 import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
+import {createHotspotFeedbackController} from './hotspot-feedback-315.mjs?rev=315'; // ANATOMIQ_HOTSPOT_MOTION_315
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
 import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-255.mjs?rev=261';
@@ -57,7 +58,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.102'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.103'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -530,7 +531,7 @@ const treeExpanded = new Map();
 const scene = new THREE.Scene();
 // ANATOMIQ_INVESTIGATIONS_273 — transient 3D hotspot markers. Never saved to scenes.
 const __anat273Markers={teacher:null,student:null};
-let __anat277WrongMarker=null,__anat277WrongTimer=null; // ANATOMIQ_HOTSPOT_FEEDBACK_277
+// Student Hotspot feedback timers are owned by the 315 controller. // ANATOMIQ_HOTSPOT_MOTION_315
 const __anat273UnitsPerMm=0.001006058824; // Existing 1.7103 model-unit body / 1700 mm
 function __anat273Clear(kind){
   const mesh=__anat273Markers[kind];if(!mesh)return;
@@ -544,50 +545,13 @@ function __anat273Marker(kind,point,radius,color){
       depthTest:false,depthWrite:false}));
   mesh.position.copy(point);mesh.renderOrder=9999;scene.add(mesh);__anat273Markers[kind]=mesh;
 }
-// Student feedback uses camera-facing 3D glyphs anchored at the actual surface click.
-// A green check persists until the chapter changes/restarts; a red X fades quickly.
-function __anat277DisposeSprite(sprite){
-  if(!sprite)return;
-  sprite.parent?.remove(sprite);sprite.material?.map?.dispose();sprite.material?.dispose();
-}
-function __anat277ClearWrong(){
-  if(__anat277WrongTimer!==null){clearTimeout(__anat277WrongTimer);__anat277WrongTimer=null;}
-  __anat277DisposeSprite(__anat277WrongMarker);__anat277WrongMarker=null;
-  invalidateVisualOnly(2);
-}
-function __anat277ClearFeedback(){
-  __anat277ClearWrong();
-  __anat277DisposeSprite(__anat273Markers.student);__anat273Markers.student=null;
-  invalidateVisualOnly(2);
-}
-function __anat277Glyph(correct){
-  const canvas=document.createElement('canvas');canvas.width=96;canvas.height=96;
-  const c=canvas.getContext('2d');if(!c)return null;
-  c.beginPath();c.arc(48,48,38,0,2*Math.PI);
-  c.fillStyle=correct?'#098945':'#cf2239';c.fill();
-  c.strokeStyle='#fff';c.lineWidth=6;c.stroke();
-  c.beginPath();c.strokeStyle='#fff';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
-  if(correct){c.moveTo(26,48);c.lineTo(43,64);c.lineTo(71,32);}
-  else {c.moveTo(32,32);c.lineTo(64,64);c.moveTo(64,32);c.lineTo(32,64);}
-  c.stroke();
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false,depthWrite:false}));
-  marker.scale.set(0.025,0.025,1);marker.renderOrder=9999;return marker;
-}
-function __anat277ShowFeedback(point,correct){
-  if(!point?.clone)return;
-  if(correct){__anat277ClearWrong();__anat277DisposeSprite(__anat273Markers.student);}
-  else __anat277ClearWrong();
-  const marker=__anat277Glyph(correct);if(!marker)return;
-  marker.position.copy(point);scene.add(marker);
-  if(correct)__anat273Markers.student=marker;
-  else {
-    __anat277WrongMarker=marker;
-    __anat277WrongTimer=setTimeout(()=>{__anat277WrongTimer=null;__anat277DisposeSprite(__anat277WrongMarker);__anat277WrongMarker=null;invalidateVisualOnly(2);},1100);
-  }
-  invalidateVisualOnly(2);
-}
-
+// ANATOMIQ_HOTSPOT_MOTION_315 — animated, cancellable student-only Hotspot glyphs.
+const __anat315Hotspot = createHotspotFeedbackController(
+  THREE, scene, () => invalidateVisualOnly(2), document, window
+);
+function __anat277ClearWrong(){ __anat315Hotspot.clearWrong(); }
+function __anat277ClearFeedback(){ __anat315Hotspot.clear(); }
+function __anat277ShowFeedback(point,correct){ return __anat315Hotspot.show(point,correct); }
 const camera = new THREE.PerspectiveCamera(38, 1, 0.001, 60);
 camera.position.set(0, 1.7, 0.85);
 // Keep quality specific to this device/profile; shared lessons remain visually identical
