@@ -1,6 +1,6 @@
 {
-  "version": "2.2.105",
+  "version": "2.2.106",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Restart Lesson now returns to Chapter 1 and restores the initial scene; chapter reset is isolated and guarded; dashboard data is unchanged."
+  "notes": "Student completion now uses a single Lesson Report action, updated PNG title/name, and no screenshot disclaimer."
 }

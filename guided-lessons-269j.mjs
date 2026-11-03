@@ -167,7 +167,7 @@ async function downloadCompletionPNG(name,title,chapters,done,total,firstTry,ide
   ctx.fillStyle=gradient;ctx.fillRect(0,0,1200,780);
   ctx.fillStyle='#76d9cc';ctx.fillRect(75,76,8,620);
   ctx.fillStyle='#f1f7fc';ctx.font='bold 39px system-ui, sans-serif';ctx.fillText('AnatomIQ Studio',110,145);
-  ctx.font='bold 60px system-ui, sans-serif';ctx.fillText('LESSON COMPLETE',110,252);
+  ctx.font='bold 60px system-ui, sans-serif';ctx.fillText('LESSON REPORT',110,252);
   function line(text,y,size=27,color='#c5d8e6'){
     ctx.fillStyle=color;ctx.font=`${size}px system-ui, sans-serif`;
     let value=String(text);while(ctx.measureText(value).width>950&&value.length>8)value=value.slice(0,-4)+'…';
@@ -189,7 +189,7 @@ async function downloadCompletionPNG(name,title,chapters,done,total,firstTry,ide
     line('Locally saved activity results — submit to Schoology',655,19,'#a2bac9');
   }
   if(practical?.done)line(`Final practical: ${practical.correct}/${practical.total} (${practical.percent}%)`,710,23,'#79decf');
-  return deliverCertificatePNG(canvas,'AnatomIQ-Lesson-Certificate.png');
+  return deliverCertificatePNG(canvas,'AnatomIQ-Lesson-Report.png');
 }
 export function createGuidedLessons(api){
   let config=normalizeGuided(null,1),projectKey='',storageKey='',currentProject=null,studentProgress={answers:{},chapter:0},hadLocalProgress=false,
@@ -977,16 +977,18 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     const header=completeAll?'':`<div class="anat-ga-head"><strong>Question ${done+1}</strong><span>${done}/${total}</span></div><div class="anat-ga-lesson-track" role="progressbar" aria-label="Lesson completed" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}"><span style="width:${total?Math.round(done/total*100):0}%"></span></div>`;
     let inner=header;
     if(completeAll){
-      inner+=`<div class="anat-ga-complete"><h3>Lesson Complete!</h3><p>You've completed ${total} guided activities across ${api.getChapters().length} chapters.</p>
+      inner+=`<div class="anat-ga-complete"><h3>Lesson Report</h3><p>You've completed ${total} guided activities across ${api.getChapters().length} chapters.</p>
         ${finalPracticalDone()?`<p class="anat308-practical-result">Final practical: ${finalPracticalRecord().correct}/${finalPracticalRecord().total} · ${finalPracticalRecord().percent}%</p>`:''}
         ${window.AnatomIQCloudProgress283?.enabled
           ? (()=>{const identity=window.AnatomIQCloudProgress283.state().identity;
               return identity?`<div class="aiq283-identity"><strong>School Google account</strong><span>${esc(identity.email)}</span><span>Period ${esc(identity.period)}</span><small id="aiq283-cert-status">${esc(window.AnatomIQCloudProgress283.statusText())}</small></div>`:
                 '<p class="aiq283-identity">Waiting for school account verification…</p>';})()
-          : (lockedCertificateName ? `<p class="anat-ga-field">Student: <strong>${esc(lockedCertificateName)}</strong></p>` : `<label class="anat-ga-field">Student name for certificate<input class="text-input" id="anat-ga-name" maxlength="70" autocomplete="name" placeholder="First and last name" value="${esc(studentName)}"></label>`)}
-        <button id="anat-ga-png" class="button primary full" type="button">Save Lesson Certificate</button>
-        ${certificateDownloadURL()?`<a id="anat-ga-certificate-direct" class="anat-ga-certificate-direct" href="${esc(certificateDownloadURL())}" download="AnatomIQ-Lesson-Certificate.png" target="_blank" rel="noopener">Open or download certificate PNG</a>`:''}
-        <small>Upload this image to Schoology if requested. A screenshot alone is not proof of authenticated submission.</small></div>`;
+          : (lockedCertificateName ? `<p class="anat-ga-field">Student: <strong>${esc(lockedCertificateName)}</strong></p>` : `<label class="anat-ga-field">Student name for report<input class="text-input" id="anat-ga-name" maxlength="70" autocomplete="name" placeholder="First and last name" value="${esc(studentName)}"></label>`)}
+
+        ${certificateDownloadURL()
+          ? `<a id="anat-ga-certificate-direct" class="button primary full anat-ga-certificate-direct" style="display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center" href="${esc(certificateDownloadURL())}" download="AnatomIQ-Lesson-Report.png" target="_blank" rel="noopener">Open or download Lesson Report PNG</a>`
+          : `<button id="anat-ga-png" class="button primary full" type="button">Save Lesson Report</button>`}
+        </div>`; // ANATOMIQ_LESSON_REPORT_320
      }else if(finalPending && api.getChapter()===api.getChapters().length-1){
        inner+=`<div class="anat308-final-card"><small>Final chapter</small><h3>Practical</h3>
          <p>Complete the practical to finish your guided lesson.</p>
@@ -1164,23 +1166,23 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
     byId('anat-ga-name')?.addEventListener('input',e=>{studentName=e.target.value;});
     byId('anat-ga-png')?.addEventListener('click',async()=>{
       const cloud=window.AnatomIQCloudProgress283?.state();
-      if(cloud?.enabled&&!cloud.identity)return api.notify('Confirm your school Google account before saving the lesson certificate.');
+      if(cloud?.enabled&&!cloud.identity)return api.notify('Confirm your school Google account before saving the lesson report.');
       const savedName=certificateNames.get(storageKey);
       const name=cloud?.identity?.email||savedName||studentName.trim().replace(/\s+/g,' ').slice(0,70);
-      if(!name){byId('anat-ga-name')?.focus();return api.notify('Enter a student name before saving the certificate.');}
+      if(!name){byId('anat-ga-name')?.focus();return api.notify('Enter a student name before saving the report.');}
       const button=byId('anat-ga-png');
-      if(button){button.disabled=true;button.textContent='Preparing certificate…';}
+      if(button){button.disabled=true;button.textContent='Preparing lesson report…';}
       try{
         const saved=await downloadCompletionPNG(name,api.getProjectTitle(),api.getChapters().length,done,total,firstTry,cloud?.identity,window.AnatomIQCloudProgress283?.statusText(),finalPracticalRecord());
         if(saved){
           if(!cloud?.identity?.email){
             try{studentName=certificateNames.lock(storageKey,name);}
-            catch(error){api.notify('Certificate saved, but this browser could not remember the name. Check storage settings.');}
+            catch(error){api.notify('Report saved, but this browser could not remember the name. Check storage settings.');}
           }
           renderStudent();
         }
-      }catch(error){api.notify('Could not save certificate: '+error.message);}
-      finally{if(button?.isConnected){button.disabled=false;button.textContent='Save Lesson Certificate';}}
+      }catch(error){api.notify('Could not save lesson report: '+error.message);}
+      finally{if(button?.isConnected){button.disabled=false;button.textContent='Save Lesson Report';}}
     });
     byId('anat-ga-reset')?.addEventListener('click',async()=>{
       if(restartingLesson)return;
