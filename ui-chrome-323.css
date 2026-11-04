@@ -1,10 +1,13 @@
-/* ANATOMIQ_UI_CHROME_323 — labels remain behind both lower control bars. */
-.viewer-panel { --anat-label-bottom-clearance: 150px; }
+/* ANATOMIQ_UI_CHROME_323 / ANATOMIQ_LABEL_LAYER_328
+ * Do not mask or clip model labels: only opaque toolbar controls cover them.
+ * The label overlay is one stacking layer below the two toolbar layers.
+ * This also keeps connector SVGs visible everywhere outside actual controls.
+ */
 .viewer-panel > #label-overlay,
 .viewer-panel > #anat-practical-question-callout {
-  /* Masks both text cards and SVG leaders, including the transparent gaps
-     around toolbar buttons, rather than relying on z-index alone. */
-  clip-path: inset(0px 0px var(--anat-label-bottom-clearance) 0px);
+  clip-path: none;
+  -webkit-clip-path: none;
+  z-index: 20;
 }
 .viewer-panel > .viewer-bottom,
 .viewer-panel > #chapter-nav { z-index: 25; }

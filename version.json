@@ -1,6 +1,6 @@
 {
-  "version": "2.2.113",
+  "version": "2.2.114",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Legacy 3D Rendering Quality UI removed from both views; Advanced Settings rename; retain 326 quality flyouts."
+  "notes": "Prevent accidental ChromeOS trackpad browser pinch zoom while retaining model wheel zoom; restore complete label visibility behind toolbar and chapter controls."
 }

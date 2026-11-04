@@ -11,37 +11,8 @@
   const toast = $('#app-toast');
   if (!panel || !toolbar || !toast) return;
 
-  // Reserve the actual occupied height of visible lower controls. The label
-  // overlay and its leader-line SVG share the same clipping region.
-  let pendingMeasure = false;
-  function measureLowerControls() {
-    pendingMeasure = false;
-    const bottom = panel.getBoundingClientRect().bottom;
-    let top = bottom;
-    for (const node of [toolbar, chapterBar]) {
-      if (!node || !node.getClientRects().length) continue;
-      const rect = node.getBoundingClientRect();
-      if (rect.height > 0 && rect.width > 0) top = Math.min(top, rect.top);
-    }
-    const pixels = Math.max(0, Math.min(panel.clientHeight, Math.ceil(bottom - top + (top < bottom ? 10 : 0))));
-    panel.style.setProperty('--anat-label-bottom-clearance', `${pixels}px`);
-  }
-  function scheduleMeasure() {
-    if (pendingMeasure) return;
-    pendingMeasure = true;
-    requestAnimationFrame(measureLowerControls);
-  }
-  scheduleMeasure();
-  window.addEventListener('resize', scheduleMeasure, { passive: true });
-  document.addEventListener('fullscreenchange', scheduleMeasure);
-  document.addEventListener('webkitfullscreenchange', scheduleMeasure);
-  if ('ResizeObserver' in window) {
-    const sizeObserver = new ResizeObserver(scheduleMeasure);
-    for (const node of [panel, toolbar, chapterBar]) if (node) sizeObserver.observe(node);
-  }
-  if (chapterBar) {
-    new MutationObserver(scheduleMeasure).observe(chapterBar, { attributes: true, attributeFilter: ['hidden', 'style', 'class'] });
-  }
+  // ANATOMIQ_LABEL_LAYER_328: no clipping/measurement. Preserve the label
+  // overlay's full area; the actual controls paint over labels by z-index.
 
   // The fullscreen API only displays descendants of its fullscreen element.
   // Move the existing single toast node there, and restore it on exit.
