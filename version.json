@@ -1,6 +1,6 @@
 {
-  "version": "2.2.114",
+  "version": "2.2.115",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Prevent accidental ChromeOS trackpad browser pinch zoom while retaining model wheel zoom; restore complete label visibility behind toolbar and chapter controls."
+  "notes": "Optional persistent green feedback for multi-target Guided Identify; all selected structures fade together after completion."
 }

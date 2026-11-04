@@ -9,6 +9,7 @@ import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299';
 import {deliverCertificatePNG,certificateDownloadURL,resetCertificateDownload} from './certificate-delivery-305.mjs?rev=305'; // ANATOMIQ_FULLSCREEN_CERTIFICATE_305
 import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,renderAttemptLedger} from './guided-attempts-303.mjs?rev=303'; // ANATOMIQ_GUIDED_ATTEMPTS_303
 import {DEFAULT_IDENTIFY_ATTEMPTS,validIdentifyTargets,identifyProgress,identifyAttemptState,recordIdentifySelection,renderIdentifyAttemptLedger} from './identify-multi-311.mjs?rev=311'; // ANATOMIQ_MULTI_IDENTIFY_311
+import {holdIdentifyHighlight329,releaseIdentifyHighlights329} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314&hold=329'; // ANATOMIQ_PERSISTENT_IDENTIFY_329
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=313-extended-feedback&successfullscreen=321'; // ANATOMIQ_GUIDED_FEEDBACK_313 // ANATOMIQ_STUDENT_ACTIVITY_UX_288
@@ -423,6 +424,13 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
           choice.value=String(a.attemptLimit??DEFAULT_IDENTIFY_ATTEMPTS);
           choice.addEventListener('change',()=>update(i,'attemptLimit',Number(choice.value)));
           tries.append(choice);wrapper.append(tries);
+          const persistentRow=document.createElement('label');
+          persistentRow.className='anat-ga-field anat-identify-persistent';
+          const persistentCheck=document.createElement('input');persistentCheck.type='checkbox';
+          persistentCheck.checked=a.persistentIdentifyHighlights===true;
+          persistentCheck.addEventListener('change',()=>{a.persistentIdentifyHighlights=persistentCheck.checked;api.onTeacherChange();});
+          persistentRow.append(persistentCheck,document.createTextNode(' Keep correct structures green until all are identified'));
+          wrapper.append(persistentRow); // ANATOMIQ_PERSISTENT_IDENTIFY_329
           const available=api.getTargets().filter(c=>/^s:\d+$/.test(c.key));
           const filter=document.createElement('input');filter.type='search';filter.className='text-input';filter.placeholder='Search chapter structures…';
           filter.setAttribute('aria-label','Search Identify checklist structures');wrapper.append(filter);
@@ -744,7 +752,7 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       api.clearStudentHotspot?.();api.clearGuidedVisuals?.();
       studentVisuals.cursor(false,api.getCanvasElement?.());
       renderStudent();studentVisuals.enter(studentRoot);
-    },document,0);}; // ANATOMIQ_HOTSPOT_MOTION_315
+    },document,holdGreen&&a.type==='identify'&&a.persistentIdentifyHighlights===true&&Array.isArray(a.targetStructures)&&a.targetStructures.length>1?1420:0);}; // ANATOMIQ_HOTSPOT_MOTION_315 // ANATOMIQ_PERSISTENT_IDENTIFY_329
     if(a.type==='label'&&holdGreen){
       const hotspotCueTimer=window.setTimeout(startHotspotCompletionCue,1420);
       stopSuccess=()=>window.clearTimeout(hotspotCueTimer);
@@ -923,7 +931,11 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       const outcome=recordIdentifySelection(a,prior,index,api.getStructureName?.(index));
       if(outcome.blocked||outcome.duplicate)return true;
       studentProgress.answers[a.id]=outcome.evidence;
-      api.flashGuidedStructure?.(index,outcome.accepted);
+      if(outcome.accepted&&a.persistentIdentifyHighlights===true&&a.targetStructures.length>1){
+        // Held correct bones remain green while wrong picks still flash red.
+        if(!holdIdentifyHighlight329(index))api.flashGuidedStructure?.(index,true);
+        if(outcome.done)releaseIdentifyHighlights329(1150);
+      }else api.flashGuidedStructure?.(index,outcome.accepted); // ANATOMIQ_PERSISTENT_IDENTIFY_329
       if(outcome.done){complete(a,true,true);return true;} // ANATOMIQ_GUIDED_FEEDBACK_313
       if(outcome.accepted){
         const progress=identifyProgress(a,outcome.evidence);
@@ -1071,6 +1083,10 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
        else if(step.type==='identify'){
          if(Array.isArray(step.targetStructures)){
            const evidence=answers()[step.id]||{},progress=identifyProgress(step,evidence);
+           // Recreate held green highlights from saved progress on resume/re-render.
+           if(step.persistentIdentifyHighlights===true&&step.targetStructures.length>1&&!progress.done){
+             for(const foundIndex of progress.found)holdIdentifyHighlight329(foundIndex);
+           } // ANATOMIQ_PERSISTENT_IDENTIFY_329
            const displayName=id=>api.getStructureName?.(id)||('Structure #'+id);
            inner+=`<div class="anat-identify-count">${progress.completed} / ${progress.required} identified</div>
              <div class="anat-dissect-list anat-identify-list" role="list" aria-label="Structures to identify">${step.targetStructures.map(id=>`<span role="listitem" class="${progress.remaining.includes(id)?'':'done'}">${progress.remaining.includes(id)?'○':'✓'} ${esc(displayName(id))}</span>`).join('')}</div>`;
