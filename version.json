@@ -1,6 +1,6 @@
 {
-  "version": "2.2.111",
+  "version": "2.2.112",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Teacher View flyouts: click/hover system special views; DOF and motion blur presets; accessibility."
+  "notes": "Settings flyouts for Motion Blur/Depth of Field; 3D Rendering Quality flyouts in both views; no Student experimental chapter animation menu."
 }
