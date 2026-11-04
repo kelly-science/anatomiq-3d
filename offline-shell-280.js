@@ -1,5 +1,8 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
+  "./menu-cleanup-327.css?rev=327", // ANATOMIQ_MENU_CLEANUP_327
+  "./menu-cleanup-327.js?rev=327", // ANATOMIQ_MENU_CLEANUP_327
+
   "./menu-settings-326.css?rev=326", // ANATOMIQ_SETTINGS_FLYOUTS_326
   "./menu-settings-326.js?rev=326", // ANATOMIQ_SETTINGS_FLYOUTS_326
 

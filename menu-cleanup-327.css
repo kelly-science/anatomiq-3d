@@ -1,0 +1,3 @@
+/* ANATOMIQ_MENU_CLEANUP_327: legacy quality UI is visually removed but the
+ * native <select> remains present for the 326 preset flyout event binding. */
+[data-anat327-hidden-quality="true"] { display: none !important; }

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.112",
+  "version": "2.2.113",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Settings flyouts for Motion Blur/Depth of Field; 3D Rendering Quality flyouts in both views; no Student experimental chapter animation menu."
+  "notes": "Legacy 3D Rendering Quality UI removed from both views; Advanced Settings rename; retain 326 quality flyouts."
 }
