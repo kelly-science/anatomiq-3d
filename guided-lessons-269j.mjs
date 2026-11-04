@@ -9,7 +9,7 @@ import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299';
 import {deliverCertificatePNG,certificateDownloadURL,resetCertificateDownload} from './certificate-delivery-305.mjs?rev=305'; // ANATOMIQ_FULLSCREEN_CERTIFICATE_305
 import {DEFAULT_DISSECTION_MISTAKES,dissectMistakeState,recordDissectionMistake,renderAttemptLedger} from './guided-attempts-303.mjs?rev=303'; // ANATOMIQ_GUIDED_ATTEMPTS_303
 import {DEFAULT_IDENTIFY_ATTEMPTS,validIdentifyTargets,identifyProgress,identifyAttemptState,recordIdentifySelection,renderIdentifyAttemptLedger} from './identify-multi-311.mjs?rev=311'; // ANATOMIQ_MULTI_IDENTIFY_311
-import {holdIdentifyHighlight329,releaseIdentifyHighlights329} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314&hold=329'; // ANATOMIQ_PERSISTENT_IDENTIFY_329
+import {holdIdentifyHighlight329,releaseIdentifyHighlights329} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314&hold=329&whole=330'; // ANATOMIQ_PERSISTENT_IDENTIFY_329
 export const GUIDED_MARKER = 'ANATOMIQ_GUIDED_ACTIVITIES_269J';
 import {rotationDirection,rotationDirectionLabel,directionMaxDegrees,createDirectedRotationMeter} from './rotation-progress-294.mjs?rev=294'; // ANATOMIQ_ROTATION_DIRECTIONS_294
 import {showActivitySuccess} from './guided-student-288.mjs?rev=313-extended-feedback&successfullscreen=321'; // ANATOMIQ_GUIDED_FEEDBACK_313 // ANATOMIQ_STUDENT_ACTIVITY_UX_288

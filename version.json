@@ -1,6 +1,6 @@
 {
-  "version": "2.2.115",
+  "version": "2.2.116",
   "channel": "experimental",
   "published": "2026-11-02",
-  "notes": "Optional persistent green feedback for multi-target Guided Identify; all selected structures fade together after completion."
+  "notes": "Whole-structure Guided feedback uses material tint instead of overlapping meshes; persistent multi-Identify preserved."
 }

@@ -104,163 +104,117 @@ export function releaseIdentifyHighlights329(delayMs = 1150) {
   activeIdentifyHold329?.release(delayMs);
 }
 
-export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) { // ANATOMIQ_GUIDED_PRIORITY_314
-  // At most one *outgoing* overlay plus the newest full-length overlay.
-  // Previously outgoing overlays are disposed on a subsequent click to avoid pileups.
+// ANATOMIQ_WHOLE_STRUCTURE_FEEDBACK_330
+// Full-surface Guided Identify feedback: tint the source material, never draw
+// a coincident second copy of its triangles. This avoids depth interference
+// on irregular skull bones while preserving normal occlusion by other bones.
+export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) {
   const flashes=new Set();
+  const heldIdentify329=new Map();
   const timing=GUIDED_FEEDBACK_TIMINGS_313;
   const priority=GUIDED_FEEDBACK_PRIORITY_314;
   const clock=()=>win.performance?.now?.()??Date.now();
-  function clear(){for(const f of [...flashes])f.dispose();clearHeld329();}
-  function flash(index,correct){
-    if(!Number.isInteger(index))return false;
-    const source=getMesh(index);
-    if(!source?.geometry||!source.visible||!source.add)return false;
-    const started=clock();
-    // Evaluate clicks before changing visuals. An invalid pick must not cancel a valid cue.
-    for(const f of [...flashes]){
-      if(f.retiring||f.source===source)f.dispose(); // No stacked red/green on the same bone.
-      else f.retire(started);
-    }
-    const material=new THREE.MeshBasicMaterial({
-      color:correct?0x4edfa5:0xf25e64,transparent:true,opacity:0,
-      depthWrite:false,depthTest:true,side:THREE.DoubleSide,
-      polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,
-      toneMapped:false
-    });
-    const glow=new THREE.Mesh(source.geometry,material);
-    glow.name='AnatomIQ transient activity feedback';
-    glow.raycast=()=>{};
-    glow.renderOrder=(source.renderOrder||0)+1;
-    glow.scale.setScalar(1.002);
-    source.add(glow);
-    const duration=correct?timing.greenMs:timing.redMs;
-    let frame=null,holdTimer=null,dead=false,retiring=false,retireStarted=0,retireOpacity=0;
-    const state={source,dispose,retire,get retiring(){return retiring;}};
-    flashes.add(state);
-    function stopScheduled(){
-      if(frame!==null)win.cancelAnimationFrame?.(frame);
-      if(holdTimer!==null)win.clearTimeout(holdTimer);
-      frame=null;holdTimer=null;
-    }
-    function dispose(){
-      if(dead)return;
-      dead=true;
-      stopScheduled();
-      source.remove(glow);
-      material.dispose();
-      flashes.delete(state);
-      redraw();
-    }
-    function normalOpacity(at){
-      const elapsed=Math.max(0,at-started);
-      if(elapsed>=duration)return 0;
-      if(elapsed<timing.fadeInMs)return .64*Math.min(1,elapsed/timing.fadeInMs);
-      if(elapsed<duration-timing.fadeOutMs)return .64;
-      return .64*Math.max(0,(duration-elapsed)/timing.fadeOutMs);
-    }
-    function retire(at){
-      if(dead||retiring)return;
-      stopScheduled(); // Wake from the prior static hold, if any.
-      retiring=true;
-      retireStarted=at;
-      // Compute exact present intensity, even between animation frames.
-      retireOpacity=Math.min(.64,Math.max(0,normalOpacity(at)));
-      if(retireOpacity<=0){dispose();return;}
-      material.opacity=retireOpacity;
-      redraw();
-      frame=win.requestAnimationFrame(tick);
-    }
-    const tick=at=>{
-      if(dead)return;
-      frame=null;
-      if(retiring){
-        const elapsed=Math.max(0,at-retireStarted);
-        if(elapsed>=priority.outgoingFadeMs){dispose();return;}
-        material.opacity=retireOpacity*(1-elapsed/priority.outgoingFadeMs);
-        redraw();
-        frame=win.requestAnimationFrame(tick);
-        return;
+  let heldReleaseTimer329=null;
+
+  // Temporary material assignment is per bone, never per original material.
+  // Multiple bones can share a source material; sharing the replacement would
+  // recolor unrelated anatomy. Do not dispose any source material or geometry.
+  function tintSource330(source, hex) {
+    if (!source?.geometry||!source.visible||!source.material) return null;
+    const original=source.material;
+    const originalList=Array.isArray(original)?original:[original];
+    if (!originalList.length||originalList.some(m=>!m)) return null;
+    const target=new THREE.Color(hex);
+    const copies=[];
+    const values=[];
+    try {
+      for (const base of originalList) {
+        const copy=base.clone?.()||new THREE.MeshBasicMaterial({color:hex});
+        const originalColor=base.color?.clone?.()||new THREE.Color(0xffffff);
+        const originalEmissive=base.emissive?.clone?.()||null;
+        // Remove per-vertex/texture multipliers that caused patchy feedback.
+        for(const key of ['map','alphaMap','emissiveMap','aoMap'])if(key in copy)copy[key]=null;
+        if('vertexColors' in copy)copy.vertexColors=false;
+        if('alphaTest' in copy)copy.alphaTest=0;
+        if('alphaHash' in copy)copy.alphaHash=false;
+        if('transmission' in copy)copy.transmission=0;
+        copy.transparent=false;
+        copy.opacity=1;
+        copy.depthTest=true;
+        copy.depthWrite=true;
+        copy.side=THREE.DoubleSide;
+        copy.polygonOffset=false;
+        if('toneMapped' in copy)copy.toneMapped=false;
+        copy.needsUpdate=true;
+        copies.push(copy);
+        values.push({copy,originalColor,originalEmissive,
+          originalEmissiveIntensity: Number(base.emissiveIntensity)||0});
       }
-      const elapsed=Math.max(0,at-started);
-      if(elapsed>=duration){dispose();return;}
-      if(elapsed<timing.fadeInMs){
-        material.opacity=.64*Math.min(1,elapsed/timing.fadeInMs);
-      }else if(elapsed<duration-timing.fadeOutMs){
-        material.opacity=.64;
-        redraw();
-        // No frame loop while held steady. A new click can interrupt this timer.
-        holdTimer=win.setTimeout(()=>{
-          holdTimer=null;
-          if(!dead&&!retiring)frame=win.requestAnimationFrame(tick);
-        },Math.max(0,duration-timing.fadeOutMs-elapsed));
-        return;
-      }else{
-        material.opacity=.64*Math.max(0,(duration-elapsed)/timing.fadeOutMs);
+    }catch(error){for(const m of copies)m.dispose?.();throw error;}
+    const assignment=Array.isArray(original)?copies:copies[0];
+    source.material=assignment;
+    let disposed=false;
+    const setIntensity=value=>{
+      if(disposed)return;
+      const v=Math.min(1,Math.max(0,Number.isFinite(value)?value:0));
+      for(const state of values){
+        const mat=state.copy;
+        if(mat.color?.copy&&mat.color?.lerp)mat.color.copy(state.originalColor).lerp(target,v);
+        if(mat.emissive?.copy&&mat.emissive?.lerp){
+          mat.emissive.copy(state.originalEmissive||new THREE.Color(0x000000)).lerp(target,v);
+          mat.emissiveIntensity=state.originalEmissiveIntensity*(1-v)+0.4*v;
+        }
       }
-      redraw();
-      frame=win.requestAnimationFrame(tick);
     };
-    redraw();
-    frame=win.requestAnimationFrame(tick);
-    return true;
+    // Initialize before the first draw, preventing a white flash.
+    setIntensity(0);
+    return {source,assignment,setIntensity,dispose(){
+      if(disposed)return;
+      disposed=true;
+      // If another controller replaced the material meanwhile, respect it.
+      if(source.material===assignment)source.material=original;
+      for(const m of copies)m.dispose?.();
+      redraw();
+    }};
   }
-  // ANATOMIQ_PERSISTENT_IDENTIFY_329 — concurrent, static green overlays for
-  // a single multi-Identify question. Unlike transient flash(), these remain
-  // visible while another target is selected. They never alter bone materials.
-  const heldIdentify329 = new Map();
-  let heldReleaseTimer329 = null;
-  function dropHeld329(index) {
+
+  function dropHeld329(index){
     const entry=heldIdentify329.get(index);
     if(!entry)return;
     heldIdentify329.delete(index);
     if(entry.frame!==null)win.cancelAnimationFrame?.(entry.frame);
-    entry.source.remove(entry.glow);
-    entry.material.dispose();
-    redraw();
+    entry.tint.dispose();
   }
-  function clearHeld329() {
+  function clearHeld329(){
     if(heldReleaseTimer329!==null){win.clearTimeout(heldReleaseTimer329);heldReleaseTimer329=null;}
     for(const index of [...heldIdentify329.keys()])dropHeld329(index);
   }
-  function hold329(index) {
+  function clear(){for(const f of [...flashes])f.dispose();clearHeld329();}
+
+  function hold329(index){
     if(!Number.isInteger(index)||index<0)return false;
     if(heldIdentify329.has(index))return true;
     const source=getMesh(index);
-    if(!source?.geometry||!source.visible||!source.add)return false;
-    // Replace any outgoing transient overlay on this same bone if present.
+    if(!source?.geometry||!source.visible||!source.material)return false;
     for(const f of [...flashes])if(f.source===source)f.dispose();
-    const material=new THREE.MeshBasicMaterial({
-      color:0x4edfa5,transparent:true,opacity:0,
-      depthWrite:false,depthTest:true,side:THREE.DoubleSide,
-      polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,
-      toneMapped:false
-    });
-    const glow=new THREE.Mesh(source.geometry,material);
-    glow.name='AnatomIQ persistent Identify correct structure';
-    glow.raycast=()=>{};
-    glow.renderOrder=(source.renderOrder||0)+1;
-    glow.scale.setScalar(1.002);
-    source.add(glow);
-    const entry={source,glow,material,frame:null};
+    const tint=tintSource330(source,0x4edfa5);
+    if(!tint)return false;
+    const entry={source,tint,frame:null};
     heldIdentify329.set(index,entry);
     const started=clock();
     const tick=at=>{
-      if(!heldIdentify329.has(index))return;
+      if(heldIdentify329.get(index)!==entry)return;
       entry.frame=null;
       const ratio=Math.max(0,Math.min(1,(at-started)/timing.fadeInMs));
-      material.opacity=.64*ratio;
+      tint.setIntensity(ratio);
       redraw();
       if(ratio<1)entry.frame=win.requestAnimationFrame(tick);
     };
-    redraw();
-    entry.frame=win.requestAnimationFrame(tick);
+    redraw();entry.frame=win.requestAnimationFrame(tick);
     return true;
   }
-  function releaseHeld329(delayMs=1150) {
+  function releaseHeld329(delayMs=1150){
     if(heldReleaseTimer329!==null)win.clearTimeout(heldReleaseTimer329);
-    // Finish the final green hold at the same time as the existing 1.4 s
-    // Identify feedback. This does not change the 1.02 s checkmark timing.
     const delay=Number.isFinite(delayMs)?Math.max(0,Math.min(3000,delayMs)):1150;
     heldReleaseTimer329=win.setTimeout(()=>{
       heldReleaseTimer329=null;
@@ -271,11 +225,10 @@ export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) {
       }
       const fade=at=>{
         const ratio=Math.max(0,Math.min(1,(at-started)/timing.fadeOutMs));
-        for(const entry of heldIdentify329.values())entry.material.opacity=.64*(1-ratio);
+        for(const entry of heldIdentify329.values())entry.tint.setIntensity(1-ratio);
         redraw();
         if(ratio>=1){for(const index of [...heldIdentify329.keys()])dropHeld329(index);}
-        else {
-          // A single shared requestAnimationFrame animates all selected bones.
+        else{
           const first=heldIdentify329.values().next().value;
           if(first)first.frame=win.requestAnimationFrame(fade);
         }
@@ -284,5 +237,75 @@ export function createGuidedFlasher(THREE, getMesh, redraw=()=>{}, win=window) {
     },delay);
   }
   activeIdentifyHold329={hold:hold329,release:releaseHeld329,clear:clearHeld329};
+
+  function flash(index,correct){
+    if(!Number.isInteger(index))return false;
+    const source=getMesh(index);
+    if(!source?.geometry||!source.visible||!source.material)return false;
+    const started=clock();
+    // Preserve 314 latest-click priority and its 150 ms outgoing fade.
+    for(const f of [...flashes]){
+      if(f.retiring||f.source===source)f.dispose();
+      else f.retire(started);
+    }
+    // A new cue for the same bone replaces a persistent hold safely.
+    for(const [id,entry] of heldIdentify329)if(entry.source===source)dropHeld329(id);
+    const tint=tintSource330(source,correct?0x4edfa5:0xf25e64);
+    if(!tint)return false;
+    const duration=correct?timing.greenMs:timing.redMs;
+    let frame=null,holdTimer=null,dead=false,retiring=false,retireStarted=0,retireIntensity=0;
+    const state={source,dispose,retire,get retiring(){return retiring;}};
+    flashes.add(state);
+    function stopScheduled(){
+      if(frame!==null)win.cancelAnimationFrame?.(frame);
+      if(holdTimer!==null)win.clearTimeout(holdTimer);
+      frame=null;holdTimer=null;
+    }
+    function dispose(){
+      if(dead)return;
+      dead=true;stopScheduled();tint.dispose();flashes.delete(state);
+    }
+    function normalIntensity(at){
+      const elapsed=Math.max(0,at-started);
+      if(elapsed>=duration)return 0;
+      if(elapsed<timing.fadeInMs)return Math.min(1,elapsed/timing.fadeInMs);
+      if(elapsed<duration-timing.fadeOutMs)return 1;
+      return Math.max(0,(duration-elapsed)/timing.fadeOutMs);
+    }
+    function retire(at){
+      if(dead||retiring)return;
+      stopScheduled();retiring=true;retireStarted=at;
+      retireIntensity=Math.min(1,Math.max(0,normalIntensity(at)));
+      if(retireIntensity<=0){dispose();return;}
+      tint.setIntensity(retireIntensity);redraw();
+      frame=win.requestAnimationFrame(tick);
+    }
+    const tick=at=>{
+      if(dead)return;
+      frame=null;
+      if(retiring){
+        const elapsed=Math.max(0,at-retireStarted);
+        if(elapsed>=priority.outgoingFadeMs){dispose();return;}
+        tint.setIntensity(retireIntensity*(1-elapsed/priority.outgoingFadeMs));
+        redraw();frame=win.requestAnimationFrame(tick);return;
+      }
+      const elapsed=Math.max(0,at-started);
+      if(elapsed>=duration){dispose();return;}
+      if(elapsed<timing.fadeInMs){
+        tint.setIntensity(Math.min(1,elapsed/timing.fadeInMs));
+      }else if(elapsed<duration-timing.fadeOutMs){
+        tint.setIntensity(1);redraw();
+        // Keep Chromebooks idle during the steady hold.
+        holdTimer=win.setTimeout(()=>{
+          holdTimer=null;
+          if(!dead&&!retiring)frame=win.requestAnimationFrame(tick);
+        },Math.max(0,duration-timing.fadeOutMs-elapsed));
+        return;
+      }else tint.setIntensity(Math.max(0,(duration-elapsed)/timing.fadeOutMs));
+      redraw();frame=win.requestAnimationFrame(tick);
+    };
+    redraw();frame=win.requestAnimationFrame(tick);
+    return true;
+  }
   return {flash,clear};
 }
