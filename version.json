@@ -1,6 +1,6 @@
 {
-  "version": "2.2.137",
+  "version": "2.2.138",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: missed Practical labels display their original annotation and group anchors in red; structure misses retain red mesh feedback and Practical camera/carousel navigation."
+  "notes": "Student File > About update check and version-accurate online scripts; explicit reload with progress safeguard."
 }

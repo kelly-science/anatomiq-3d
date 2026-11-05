@@ -8,7 +8,7 @@ importScripts('./offline-shell-280.js'); // ANATOMIQ_OFFLINE_RELIABILITY_280
 // AnatomIQ 2.1.0 HTML startup repair: refresh precached shell without clearing lessons.
 /* Anatomy Studio 1.1 — same-origin-first installable PWA.
    Student scenes remain URL-contained. Library scenes remain in IndexedDB. */
-const VERSION='anatomy-shell-2.2.100-selective-tree312-highlight313-priority314-hotspot315-screen316-restart317-report320-successfullscreen321-reportsave322-ui323-flyout325-settings326-cleanup327-pinch328-hold329-whole330-icon331-brand332-menu333-render334-grammar335-practical336-launch337-cleanup338-guided339-chapters340-layout341-restore342-activityscope343-guidedsettings344-teachertabs345-teachercontrols346-practicalreport347-review348-pool349-reportnav350-labelreview351'; // ANATOMIQ_SHORT_AFTER_DISTRICT_292 // ANATOMIQ_DISTRICT_PORTAL_291 // ANATOMIQ_PUBLISH_DISSECTION_289 // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_STUDENT_LABEL_LIST_252 // ANATOMIQ_SELECTION_STUDENT_251 // ANATOMIQ_LESSON_RENAME_250 // ANATOMIQ_LESSON_EXPERIENCE_249 // ANATOMIQ_TYPOGRAPHY_248 // ANATOMIQ_TAB_SIZING_247 // ANATOMIQ_TAB_MENU_POLISH_246 // ANATOMIQ_TRIQUETRUM_244
+const VERSION='anatomy-shell-2.2.138-student-updates352'; // ANATOMIQ_SHORT_AFTER_DISTRICT_292 // ANATOMIQ_DISTRICT_PORTAL_291 // ANATOMIQ_PUBLISH_DISSECTION_289 // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_STUDENT_LABEL_LIST_252 // ANATOMIQ_SELECTION_STUDENT_251 // ANATOMIQ_LESSON_RENAME_250 // ANATOMIQ_LESSON_EXPERIENCE_249 // ANATOMIQ_TYPOGRAPHY_248 // ANATOMIQ_TAB_SIZING_247 // ANATOMIQ_TAB_MENU_POLISH_246 // ANATOMIQ_TRIQUETRUM_244
 const POLISH_MODELS='anatomiq-models-persistent-v1';
 const SHELL=self.ANATOMIQ_OFFLINE_SHELL_280;
 const LOCAL_RENDERER=[
@@ -65,6 +65,17 @@ self.addEventListener('fetch',event=>{
           (!modelAsset||!/text\/html/i.test(response.headers.get('content-type')||'')))
           event.waitUntil((async()=>{await cache.put(request,response.clone());if(modelAsset)await (await caches.open(POLISH_MODELS)).put(request,response.clone());})().catch(()=>{}));
         return response;
+      }catch(error){if(cached)return cached;throw error;}
+    }
+    // ANATOMIQ_STUDENT_UPDATES_352 — a changed ?rev is a NEW JavaScript/CSS file.
+    // Never satisfy an unseen versioned script from an older cache entry while
+    // online. Keep query-insensitive copies ONLY as an offline fallback.
+    if(staticFile && !(await cache.match(request))){
+      try{
+        const fresh=await fetch(new Request(request,{cache:'no-cache'}));
+        if(fresh.ok&&(fresh.type==='basic'||fresh.type==='cors'))
+          event.waitUntil(cache.put(request,fresh.clone()).catch(()=>{}));
+        return fresh;
       }catch(error){if(cached)return cached;throw error;}
     }
     if(cached)return cached;
