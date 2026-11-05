@@ -18,7 +18,7 @@ import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=26
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js?rev=307';
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -59,7 +59,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.122'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.123'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';

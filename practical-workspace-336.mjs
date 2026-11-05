@@ -240,20 +240,69 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
   root.addEventListener('keydown',e=>{
     if(e.key==='Escape'){e.preventDefault();e.stopPropagation();if(dialogOpen){$('anat336-confirm').hidden=true;dialogOpen=false;}else requestClose();}
   });
+  // ANATOMIQ_PRACTICAL_LAUNCH_337 — explicit error feedback. A failed launch
+  // must not look like a dead menu command on a managed Chromebook.
+  function reportLaunchError(error){
+    console.error('[AnatomIQ Practical setup] Could not open',error);
+    let notice=document.getElementById('anat336-launch-error');
+    if(!notice){
+      notice=document.createElement('div');notice.id='anat336-launch-error';
+      notice.setAttribute('role','alert');notice.setAttribute('aria-live','assertive');
+      document.body.append(notice);
+    }
+    notice.textContent='Practical setup could not open: '+(error?.message||String(error));
+    Object.assign(notice.style,{
+      position:'fixed',right:'18px',bottom:'24px',maxWidth:'min(520px,calc(100vw - 36px))',
+      padding:'16px 20px',zIndex:'2147483647',borderRadius:'9px',
+      background:'#a92b32',color:'#fff',font:'600 14px/1.4 sans-serif',
+      boxShadow:'0 10px 30px #0007',pointerEvents:'none'
+    });
+    clearTimeout(reportLaunchError.timer);
+    reportLaunchError.timer=setTimeout(()=>notice.remove(),9000);
+  }
   const open=()=>{
-    if(!chapters().length||root.hidden===false)return;
-    returnFocus=document.activeElement;selected=0;tab='questions';query='';
-    const current=getConfig();initial=JSON.stringify(current);
-    draft=clone(current);poolCache=getPool();
-    // Editor-only recommendation. Existing lessons are not migrated until Save.
-    if(!Array.isArray(draft.chapterRules))draft.chapterRules=chapters().map(()=>({source:'auto',keys:[]}));
-    else draft.chapterRules=normalizeChapterRules(draft.chapterRules,chapters().length);
-    root.hidden=false;document.body.classList.add('anat336-open');
-    const fs=document.fullscreenElement||document.webkitFullscreenElement;
-    if(fs&&!fs.contains(root))fs.append(root);else if(!document.body.contains(root))document.body.append(root);
-    render();$('anat336-back').focus();
+    if(root.hidden===false)return;
+    try{
+      const available=chapters();
+      if(!Array.isArray(available)||!available.length)
+        throw new Error('No lesson chapters are ready. Finish loading the lesson and try again.');
+      returnFocus=document.activeElement;selected=0;tab='questions';query='';
+      const current=getConfig();
+      if(!current||typeof current!=='object')throw new Error('Practical configuration is unavailable.');
+      initial=JSON.stringify(current);
+      draft=clone(current);
+      poolCache=getPool();
+      if(!Array.isArray(poolCache))throw new Error('Practical question pool is unavailable.');
+      // Editor-only recommendation. Existing lessons are not migrated until Save.
+      if(!Array.isArray(draft.chapterRules))draft.chapterRules=available.map(()=>({source:'auto',keys:[]}));
+      else draft.chapterRules=normalizeChapterRules(draft.chapterRules,available.length);
+      root.hidden=false;document.body.classList.add('anat336-open');
+      const fs=document.fullscreenElement||document.webkitFullscreenElement;
+      if(fs&&!fs.contains(root))fs.append(root);else if(!document.body.contains(root))document.body.append(root);
+      render();$('anat336-back').focus();
+      document.getElementById('anat336-launch-error')?.remove();
+    }catch(error){
+      root.hidden=true;document.body.classList.remove('anat336-open');
+      draft=null;reportLaunchError(error);
+    }
   };
-  trigger.addEventListener('click',e=>{e.preventDefault();open();});
+  // Capture on the stable menu bar, not only the individual button: previous
+  // menu integrations may reconstruct their descendants while open. Allow the
+  // existing menu handler to close first, then show the full-page workspace.
+  const menuBar=document.getElementById('studio-menubar');
+  if(menuBar){
+    menuBar.addEventListener('click',event=>{
+      if(!event.target.closest?.('#anat336-practical-setup'))return;
+      event.preventDefault();
+      queueMicrotask(open);
+    },true);
+    menuBar.addEventListener('pointerup',event=>{
+      if(event.pointerType!=='touch'||!event.target.closest?.('#anat336-practical-setup'))return;
+      queueMicrotask(open);
+    },true);
+  }else{
+    trigger.addEventListener('click',event=>{event.preventDefault();queueMicrotask(open);});
+  }
   window.addEventListener('beforeunload',e=>{if(!root.hidden&&draft&&dirty()){e.preventDefault();e.returnValue='';}});
   return {open,close,isOpen:()=>!root.hidden};
 }

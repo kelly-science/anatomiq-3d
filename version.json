@@ -1,6 +1,6 @@
 {
-  "version": "2.2.122",
+  "version": "2.2.123",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "Teacher full-page Practical setup under Edit; chapter-specific question pools independent of anatomy visibility; legacy lesson compatibility."
+  "notes": "Practical setup menu launch reliability and visible errors; chapter-specific question pools preserved."
 }
