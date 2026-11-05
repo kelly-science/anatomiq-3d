@@ -1,6 +1,6 @@
 {
-  "version": "2.2.132",
+  "version": "2.2.133",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: hide redundant Student Controls in Teacher Studio; preserve live Edit > Lesson Settings and restored teacher tabs."
+  "notes": "Local: polished Practical Report Card with missed structures, choices, score and offline PNG saving; grading and Guided completion unchanged."
 }
