@@ -1,6 +1,6 @@
 {
-  "version": "2.2.123",
+  "version": "2.2.124",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "Practical setup menu launch reliability and visible errors; chapter-specific question pools preserved."
+  "notes": "Legacy Practical sidebar settings retired; invisible compatibility bindings kept for the existing engine. Practical Workspace is the only visible editor."
 }

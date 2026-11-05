@@ -463,25 +463,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
            <small id="group-label-status" class="studio-hint" aria-live="polite"></small>
           <div id="label-list" class="label-editor-list"></div>
           </section>
-        <section id="practical-teacher-editor" class="annotation-editor teacher-only" aria-label="Practical examination setup">
- <details><summary>Practical Examination</summary><div class="practical-config">
- <label class="switch-row">Enable final-chapter practical <input id="practical-enabled" type="checkbox"></label>
- <div id="practical-editor-options" hidden>
- <label class="field-label" for="practical-marker-style">Practical target display</label>
-<select id="practical-marker-style" class="text-input" aria-label="Practical target display">
- <option value="question-label">Question label with connector (recommended)</option>
- <option value="yellow-dot">Yellow target dot (original)</option>
-</select>
-<p class="studio-hint">Teacher-placed labels use the selected question label or yellow dot. Whole-bone questions highlight the bone instead. Anatomical answers remain hidden until results.</p>
-<label class="field-label" for="practical-question-count">Questions per attempt (1–60)</label>
- <input class="text-input" id="practical-question-count" type="number" min="1" max="60" value="15">
- <p class="studio-hint" id="practical-eligible-count"></p><p class="studio-hint" id="practical-warning"></p>
- <input class="text-input" id="practical-search" type="search" placeholder="Find eligible structures or labels" aria-label="Filter practical questions">
- <select id="practical-chapter-filter" class="text-input" aria-label="Filter by chapter"></select>
- <div class="practical-bulk"><button type="button" id="practical-select-all" class="button small">Select shown</button><button type="button" id="practical-select-none" class="button small subtle">Deselect shown</button></div>
- <div id="practical-candidate-list" class="practical-candidate-list"></div>
- <small id="practical-candidate-footer" class="studio-hint"></small>
- </div></div></details></section>
+        <!-- Legacy Practical sidebar editor retired in 2.2.124. -->
 <!-- ANATOMIQ_GUIDED_CONTROLS_UI_269J_LOCAL: visual hierarchy only; original bindings preserved. -->
 <section id="anat-guided-teacher" class="annotation-editor teacher-only" aria-label="Guided chapter activities">
   <details class="anat-ga-panel">
@@ -846,7 +828,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           .catch(e=>console.warn('[AnatomIQ] Offline worker unavailable:',e));
       }
     }
-    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script defer src="./view-effects-304.js?rev=304&defaults=306"></script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.75&a11y=304"></script>
@@ -857,5 +839,27 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
 <script defer src="./responsive-chapters-panels.js?rev=233&v=2.2.75&guidedpanel=298"></script>
 <script defer src="./chapter-bar-width-234.js?rev=234&v=2.2.75"></script>
   <script defer src="./lesson-experience-249.js?rev=249&v=2.2.75"></script>
+
+  <!-- ANATOMIQ_PRACTICAL_LEGACY_CLEANUP_338: noninteractive DOM adapters for the older app.js editor.
+       The visible Practical settings are exclusively in the 336 workspace.
+       Do not delete these nodes until the old app.js bindings are retired. -->
+  <div id="anat338-practical-bindings" hidden aria-hidden="true" style="display:none!important">
+    <input id="practical-enabled" type="checkbox" tabindex="-1">
+    <div id="practical-editor-options" hidden>
+      <select id="practical-marker-style" tabindex="-1">
+        <option value="question-label">Question label with connector</option>
+        <option value="yellow-dot">Yellow target dot</option>
+      </select>
+      <input id="practical-question-count" type="number" min="1" max="60" value="15" tabindex="-1">
+      <p id="practical-eligible-count"></p>
+      <p id="practical-warning"></p>
+      <input id="practical-search" type="search" tabindex="-1">
+      <select id="practical-chapter-filter" tabindex="-1"></select>
+      <button id="practical-select-all" type="button" tabindex="-1"></button>
+      <button id="practical-select-none" type="button" tabindex="-1"></button>
+      <div id="practical-candidate-list"></div>
+      <small id="practical-candidate-footer"></small>
+    </div>
+  </div>
 </body>
 </html>
