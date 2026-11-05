@@ -1,6 +1,6 @@
 {
-  "version": "2.2.138",
+  "version": "2.2.139",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Student File > About update check and version-accurate online scripts; explicit reload with progress safeguard."
+  "notes": "UI text cleanup; teacher About update check; named Practical PNG; local browser Model Manager."
 }

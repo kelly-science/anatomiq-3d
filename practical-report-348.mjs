@@ -2,6 +2,7 @@
  * Presentation-only upgrade for the existing graded Practical result.
  * No score calculation, persistence, question order or student progress changes.
  */
+import {createCertificateNameStore} from './lesson-certificate-299.mjs?rev=299'; // ANATOMIQ_REPORT_NAME_353
 export const REPORT_MARKER = 'ANATOMIQ_PRACTICAL_REVIEW_348';
 
 const asText = (value, fallback = '') => {
@@ -90,7 +91,7 @@ function splitLines(ctx, raw, maxWidth) {
 }
 
 /** Exports a standalone PNG without screenshots, cloud services, or external fonts. */
-export function practicalReportPNG(report, filename = 'AnatomIQ-Practical-Report-Card.png') {
+export function practicalReportPNG(report, filename = 'AnatomIQ-Practical-Report-Card.png', studentName = '') {
   const rows = report.missed;
   const width = 960;
   const preview = document.createElement('canvas').getContext('2d');
@@ -148,8 +149,10 @@ export function practicalReportPNG(report, filename = 'AnatomIQ-Practical-Report
     }
     y += h;
   });
+  const printedName = asText(studentName).slice(0,70);
+  if(printedName){ctx.font='600 19px system-ui, sans-serif';ctx.fillStyle='#e4f0f4';ctx.fillText('Student: '+printedName,65,height-96,810);}
   ctx.font = '500 15px system-ui, sans-serif';ctx.fillStyle = '#8daab9';
-  ctx.fillText('Generated from this completed Practical. No student information was uploaded.', 65, height - 63);
+  ctx.fillText('Generated locally from this Practical. No student information was uploaded.', 65, height - 63);
   const link = document.createElement('a');
   link.href = canvas.toDataURL('image/png');
   link.download = filename;
@@ -158,6 +161,53 @@ export function practicalReportPNG(report, filename = 'AnatomIQ-Practical-Report
   link.remove();
 }
 
+// Uses the same local, per-lesson locked-name store as non-tracked Guided Lesson reports.
+const practicalReportNames353 = createCertificateNameStore();
+function practicalNameKey353(report){
+  // Published lesson links uniquely identify the lesson; local Teacher Studio
+  // previews use the report title instead. Neither case contains an email.
+  const source = /^(?:#lesson=|#scene=)/.test(location.hash) ? location.hash : 'local:'+report.title;
+  let hash=2166136261;
+  for(let i=0;i<source.length;i++){hash^=source.charCodeAt(i);hash=Math.imul(hash,16777619);}
+  return 'practical-report-'+(hash>>>0).toString(36);
+}
+function practicalReportNameDialog353(report){
+  document.getElementById('anat353-practical-name')?.remove();
+  const key=practicalNameKey353(report);
+  const saved=practicalReportNames353.get(key);
+  const overlay=node('div','anat353-report-name-overlay');overlay.id='anat353-practical-name';
+  const form=node('form','anat353-report-name-dialog');
+  form.setAttribute('role','dialog');form.setAttribute('aria-modal','true');
+  form.setAttribute('aria-label','Save Practical Report');
+  const title=node('h2','','Save Report');
+  const subtitle=node('p','',saved?'This student name is saved for this lesson. Restart the Practical to enter a different name.':'Enter the student name to print on the Practical report. It will be remembered on this device for this lesson.');
+  const label=node('label','','Student name');label.htmlFor='anat353-practical-student';
+  const input=node('input','anat353-name-input');input.id='anat353-practical-student';
+  input.type='text';input.required=true;input.maxLength=70;input.autocomplete='name';
+  input.value=saved||'';input.readOnly=!!saved;
+  const message=node('p','anat353-name-status');message.setAttribute('role','status');
+  const actions=node('div','anat353-name-actions');
+  const cancel=node('button','button subtle','Cancel');cancel.type='button';
+  const save=node('button','button primary','Save Report');save.type='submit';
+  cancel.addEventListener('click',()=>overlay.remove());
+  actions.append(cancel,save);form.append(title,subtitle,label,input,message,actions);overlay.append(form);
+  overlay.addEventListener('click',event=>{if(event.target===overlay)overlay.remove();});
+  const escape=event=>{if(event.key==='Escape'){event.preventDefault();overlay.remove();}};
+  overlay.addEventListener('keydown',escape);
+  form.addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=(saved||input.value).trim().replace(/\s+/g,' ').slice(0,70);
+    if(!name){message.textContent='Enter a student name to continue.';input.focus();return;}
+    try{
+      // Keep existing PNG grading/export implementation; add name only in the image.
+      const safeName=name.replace(/[^a-zA-Z0-9 _-]/g,'').trim().replace(/\s+/g,'-').slice(0,48)||'Student';
+      practicalReportPNG(report,'AnatomIQ-Practical-Report-'+safeName+'.png',name);
+      if(!saved)practicalReportNames353.lock(key,name);
+      overlay.remove();
+    }catch(error){message.textContent='Report could not be saved: '+String(error?.message||error);}
+  });
+  document.body.append(overlay);input.focus();
+}
 export function renderPracticalReportCard348({result, questions = [], title = '', finalSaved = false,
   onReview = null, onStopReview = null} = {}) {
   const host = document.getElementById('practical-results');
@@ -248,13 +298,14 @@ export function renderPracticalReportCard348({result, questions = [], title = ''
     missedHost.append(table);
   }
   if (finalSaved) missedHost.append(node('p', 'anat347-final-note', 'Final Practical saved. Select View Lesson Certificate to finish the Guided lesson.'));
-  const save = node('button', 'button subtle full anat347-save', 'Save PNG');
+  const save = node('button', 'button subtle full anat347-save', 'Save Report');
   save.id = 'anat347-report-save'; save.type = 'button';
   save.addEventListener('click', () => {
-    try { practicalReportPNG(report); }
+    try { practicalReportNameDialog353(report); }
     catch (error) { console.warn('Could not save the Practical Report Card', error); save.textContent = 'Unable to save image on this browser'; }
   });
   const retake = document.getElementById('practical-retake');
+  if(retake)retake.addEventListener('click',()=>practicalReportNames353.clear(practicalNameKey353(report)),{once:true});
   host.insertBefore(save, retake || null);
   return true;
 }

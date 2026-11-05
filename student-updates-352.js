@@ -88,7 +88,7 @@
     const section=document.createElement('section');
     section.id='anat-about-update-section';
     section.hidden=true;
-    section.setAttribute('aria-label','AnatomIQ student updates');
+    section.setAttribute('aria-label','AnatomIQ app updates'); // ANATOMIQ_TEACHER_UPDATE_353
     section.style.cssText='margin:16px 0 10px;padding:14px 0 0;border-top:1px solid var(--line,rgba(128,148,160,.35));';
     const heading=document.createElement('strong');heading.textContent='App updates';
     const status=document.createElement('p');status.id='anat-about-update-status';
@@ -102,10 +102,11 @@
     const applyButton=document.createElement('button');applyButton.type='button';
     applyButton.id='anat-about-update-apply';applyButton.className='anat-about-dismiss';
     applyButton.textContent='Update and reload';applyButton.hidden=true;
-    applyButton.style.marginLeft='8px';applyButton.addEventListener('click',apply);
-    section.append(heading,status,checkButton,applyButton);
+    applyButton.style.marginLeft='0';applyButton.addEventListener('click',apply);
+    const actions=document.createElement('div');actions.id='anat-about-update-actions';actions.append(checkButton,applyButton);
+    section.append(heading,status,actions);
     dismiss.before(section);
-    const sync=()=>{section.hidden=!studentMode();};
+    const sync=()=>{section.hidden=false;}; // Teacher Studio + Student View
     new MutationObserver(sync).observe(modal,{attributes:true,attributeFilter:['hidden']});
     window.addEventListener('hashchange',sync);
     new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:['class']});

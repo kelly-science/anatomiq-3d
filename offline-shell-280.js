@@ -1,11 +1,15 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352", // ANATOMIQ_STUDENT_UPDATES_352 canonical app entry
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./student-updates-352.js?rev=352&ui=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./practical-report-348.mjs?rev=348&report=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./ui-polish-353.js?rev=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./model-manager-353.js?rev=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./model-manager-353.css?rev=353", // ANATOMIQ_MODEL_MANAGER_353
+
   "./interface-2221.js?rev=workspace241&v=2.2.75&a11y=304&updates=352", // ANATOMIQ_STUDENT_UPDATES_352 canonical student UI entry
-  "./student-updates-352.js?rev=352", // ANATOMIQ_STUDENT_UPDATES_352
   "./practical-quiz.js?rev=307&pool=349", // ANATOMIQ_PRACTICAL_MODEL_POOL_349
   "./practical-report-348.css?rev=348&labelreview=351",
-  "./practical-report-348.mjs?rev=348",
   "./practical-report-347.css?rev=347",
   "./practical-report-347.mjs?rev=347",
   "./guided-workspace-339.css?rev=339",
