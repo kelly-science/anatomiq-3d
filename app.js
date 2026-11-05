@@ -61,7 +61,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.135'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.136'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5667,40 +5667,110 @@ function practicalLeave(restoreChapter=false){
 
 // ANATOMIQ_PRACTICAL_REVIEW_348 — an in-memory review only; scores never change.
 let practicalReviewGeneration348=0;
+let practicalReviewLastQuestion350=null; // ANATOMIQ_PRACTICAL_REPORT_NAV_350
 function practicalReviewClear348(){
   practicalReviewGeneration348++;
   __anat293Flasher.clear();
+  // Back to full report should not forget which model is currently showing.
+  // Starting a fresh Practical or leaving the player must forget it.
+  if(!practicalState?.completed)practicalReviewLastQuestion350=null;
 }
 async function practicalReviewMiss348(q){
   if(!practicalActive||!practicalState?.completed||practicalBusy||
      !Number.isInteger(q?.s)||!Number.isInteger(q?.chapter)||
      !chapters[q.chapter])return false;
   const generation=++practicalReviewGeneration348;
+  const valid=()=>generation===practicalReviewGeneration348&&
+    practicalActive&&practicalState?.completed;
   practicalBusy=true;
-  try {
+  let carousel=null,previousControls=null;
+  try{
     __anat293Flasher.clear();
     practicalClearHighlight();
-    // Follow the SAME chapter asset and view path as live Practical questions.
     await ensureChapterAssets(chapters[q.chapter]);
-    if(generation!==practicalReviewGeneration348||!practicalActive)return false;
+    if(!valid())return false;
+    const previous=practicalReviewLastQuestion350||practicalState.lastShownQuestion||null;
+    // Same classification as live Practical navigation, including model layers
+    // and the underlying anatomical system rather than the chapter title.
+    const sameModel=Boolean(previous&&practicalKeepCurrentView(previous,q));
+    const plan=practicalCameraPlan(previous,q);
+    const keepView=sameModel;
+    const reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+    // Only cross-model reviews slide; two parts of the same model rotate.
+    const slide=Boolean(previous&&!sameModel&&plan.carousel);
+    if(slide&&!reducedMotion&&!document.hidden&&!__anat256LiveCarousel){
+      try{
+        polishCancelCamera();
+        shadows.update(camera,controls.target,true);
+        carousel=createLiveChapterCarousel({
+          THREE,scene,camera,renderer,stage:elements.stage,direction:1,
+          skipLabelFade:true,
+          onSettled:()=>{
+            shadows.update(camera,controls.target,true);
+            __anat268DOF.onChapterSettled();
+            __anat268DOF.render(scene,camera);
+          }
+        });
+        if(carousel){
+          __anat256LiveCarousel=carousel;
+          __anat254IrisBusy=true;
+          previousControls=controls.enabled;
+          controls.enabled=false;
+          document.body.classList.add('practical-carousel-transition');
+        }
+      }catch(error){
+        console.warn('Practical report carousel unavailable; using camera focus',error);
+        carousel=null;
+      }
+    }
+    // applyScene() resets the chapter camera. Preserve the actual live orbit
+    // for targets on the current model, exactly like Practical questions do.
+    const fromEye=keepView?camera.position.clone():null;
+    const fromTarget=keepView?controls.target.clone():null;
     await applyScene(chapters[q.chapter]);
-    if(generation!==practicalReviewGeneration348||!practicalActive)return false;
+    if(!valid())return false;
+    if(keepView&&fromEye&&fromTarget){
+      polishCancelCamera();
+      camera.position.copy(fromEye);controls.target.copy(fromTarget);
+      camera.updateProjectionMatrix();controls.update();
+    }
     if(!structures[q.s]?.mesh?.visible||structures[q.s].mesh.userData?.deferredAsset){
       showToast('This structure is not available in the current chapter.');
       return false;
     }
-    practicalPositionCamera(q,{keepView:false,instant:Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)});
-    // EXACT Guided Lesson incorrect-answer red feedback (including fade timing).
+    practicalPositionCamera(q,{keepView,instant:Boolean(carousel)||reducedMotion});
+    if(carousel){
+      shadows.update(camera,controls.target,true);
+      await carousel.play(scene,camera);
+      if(!valid())return false;
+    }else if(!reducedMotion&&!document.hidden){
+      // The Practical camera transition isn't promise-returning. Wait for its
+      // known 720/1000/340 ms duration before applying red feedback.
+      const duration=q.type==='label'?(keepView?720:1000):(keepView?720:340);
+      await new Promise(resolve=>setTimeout(resolve,duration));
+      if(!valid())return false;
+    }
+    practicalReviewLastQuestion350=q;
+    // EXACT existing Guided Lesson incorrect highlight and fade.
     return __anat293Flasher.flash(q.s,false);
   }catch(error){
     console.warn('Practical report 3D review failed',error);
     showToast('Unable to focus this structure.');
     return false;
   }finally{
+    // Always return the live renderer, UI and orbit controls to their
+    // previous state, even if asset loading or the carousel fails.
+    if(carousel){
+      try{carousel.remove();}catch(error){console.warn('Practical carousel cleanup',error);}
+      if(__anat256LiveCarousel===carousel)__anat256LiveCarousel=null;
+      if(previousControls!==null)controls.enabled=previousControls;
+      __anat254IrisBusy=false;
+      document.body.classList.remove('practical-carousel-transition');
+      invalidateVisualOnly(2);
+    }
     practicalBusy=false;
   }
 }
-
 function practicalFinish(){
   if(!practicalState)return;
   practicalClearHighlight();
