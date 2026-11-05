@@ -1,6 +1,6 @@
 {
-  "version": "2.2.125",
+  "version": "2.2.126",
   "channel": "experimental",
-  "published": "2026-11-04",
-  "notes": "Local trial: docked Guided Activity Setup reusing existing 3D viewport and Guided engine."
+  "published": "2026-11-05",
+  "notes": "Local experiment: guided chapter manager integrated; anatomy tree isolated; functional lesson-settings dialog."
 }
