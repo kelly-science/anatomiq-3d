@@ -1,0 +1,11 @@
+/* ANATOMIQ_MENU_SENTENCE_CASE_335 — visible menus use sentence case. */
+#studio-menubar .menu-item,
+#anat-student-menubar .menu-item,
+#studio-menubar .view-system-button,
+#anat-student-menubar .view-system-button,
+#studio-menubar [data-anat326-trigger],
+#anat-student-menubar [data-anat326-trigger],
+#anat324-flyout [role^="menuitem"],
+#anat326-flyout [role^="menuitem"] {
+  text-transform: none !important;
+}
