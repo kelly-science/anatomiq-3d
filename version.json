@@ -1,6 +1,6 @@
 {
-  "version": "2.2.118",
+  "version": "2.2.119",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "AnatomIQ scissors-and-scalpel logo in Studio/Student header and animated 3D loading screen."
+  "notes": "Stationary loading logo with breathing glow; fading touch-persistent teacher/student menus; Restore hidden structures label."
 }
