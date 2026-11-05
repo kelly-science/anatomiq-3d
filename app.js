@@ -19,7 +19,7 @@ import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=26
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js?rev=307';
-import {renderPracticalReportCard347} from './practical-report-347.mjs?rev=347'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
+import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
 import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -61,7 +61,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.133'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.134'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5654,20 +5654,58 @@ async function startPractical(chapterChoice=undefined){
   practicalActive=true;guided.renderStudent();practicalState={questions:qs,index:0,answers:[],selected:null};
   setSelection(null);
   document.body.classList.add('practical-active');
-  $('practical-panel').hidden=false;$('practical-panel').classList.remove('anat347-report-mode');
+  $('practical-panel').hidden=false;$('practical-panel').classList.remove('anat347-report-mode');$('practical-panel').classList.remove('anat348-review-mode');practicalReviewClear348();
   $('practical-question-content').hidden=false;$('practical-results').hidden=true;
   renderChapterUI();await practicalShowQuestion();
 }
 function practicalLeave(restoreChapter=false){
   practicalClearHighlight();practicalActive=false;practicalState=null;practicalBusy=false;
-  guided.renderStudent();document.body.classList.remove('practical-active');$('practical-panel').hidden=true;$('practical-panel').classList.remove('anat347-report-mode');
+  guided.renderStudent();document.body.classList.remove('practical-active');$('practical-panel').hidden=true;$('practical-panel').classList.remove('anat347-report-mode');$('practical-panel').classList.remove('anat348-review-mode');practicalReviewClear348();
   if(restoreChapter&&chapters[activeChapter])void applyScene(chapters[activeChapter]).then(renderChapterUI).catch(console.warn);
   else renderChapterUI();
 }
+
+// ANATOMIQ_PRACTICAL_REVIEW_348 — an in-memory review only; scores never change.
+let practicalReviewGeneration348=0;
+function practicalReviewClear348(){
+  practicalReviewGeneration348++;
+  __anat293Flasher.clear();
+}
+async function practicalReviewMiss348(q){
+  if(!practicalActive||!practicalState?.completed||practicalBusy||
+     !Number.isInteger(q?.s)||!Number.isInteger(q?.chapter)||
+     !chapters[q.chapter])return false;
+  const generation=++practicalReviewGeneration348;
+  practicalBusy=true;
+  try {
+    __anat293Flasher.clear();
+    practicalClearHighlight();
+    // Follow the SAME chapter asset and view path as live Practical questions.
+    await ensureChapterAssets(chapters[q.chapter]);
+    if(generation!==practicalReviewGeneration348||!practicalActive)return false;
+    await applyScene(chapters[q.chapter]);
+    if(generation!==practicalReviewGeneration348||!practicalActive)return false;
+    if(!structures[q.s]?.mesh?.visible||structures[q.s].mesh.userData?.deferredAsset){
+      showToast('This structure is not available in the current chapter.');
+      return false;
+    }
+    practicalPositionCamera(q,{keepView:false,instant:Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)});
+    // EXACT Guided Lesson incorrect-answer red feedback (including fade timing).
+    return __anat293Flasher.flash(q.s,false);
+  }catch(error){
+    console.warn('Practical report 3D review failed',error);
+    showToast('Unable to focus this structure.');
+    return false;
+  }finally{
+    practicalBusy=false;
+  }
+}
+
 function practicalFinish(){
   if(!practicalState)return;
   practicalClearHighlight();
   const result=gradePractical(practicalState.questions,practicalState.answers);
+  practicalState.completed=true; // ANATOMIQ_PRACTICAL_REVIEW_348
   // ANATOMIQ_GUIDED_FINAL_PRACTICAL_308 — persist a submitted result before allowing the lesson certificate.
   const guidedFinal=guided.isFinalPracticalEnabled()&&guided.canStartFinalPractical();
   const finalSaved=guidedFinal&&guided.finishFinalPractical(result);
@@ -5685,7 +5723,9 @@ function practicalFinish(){
   $('practical-progress').textContent='PRACTICAL COMPLETE';
   $('practical-message').textContent=finalSaved?'Final practical complete. Your score has been saved. Select View Lesson Certificate to finish.':'Your results are shown only in this browser. A retake will generate a new shuffle.';
   if(finalSaved)$('practical-exit').textContent='View Lesson Certificate';
-  renderPracticalReportCard347({result,title:$('project-title')?.value||'Anatomy Practical',finalSaved}); // ANATOMIQ_PRACTICAL_REPORT_CARD_347
+  renderPracticalReportCard348({result,questions:practicalState.questions,
+    title:$('project-title')?.value||'Anatomy Practical',finalSaved,
+    onReview:practicalReviewMiss348,onStopReview:practicalReviewClear348}); // ANATOMIQ_PRACTICAL_REPORT_CARD_347
 }
 $('practical-next')?.addEventListener('click',()=>{
   if(!practicalActive||practicalBusy||!practicalState?.selected)return;
@@ -5696,11 +5736,11 @@ $('practical-next')?.addEventListener('click',()=>{
 });
 $('practical-retake')?.addEventListener('click',async()=>{
   if(!practicalActive||practicalBusy)return;
-  practicalClearHighlight();practicalActive=false;practicalState=null;
+  practicalReviewClear348();practicalClearHighlight();practicalActive=false;practicalState=null;
   await startPractical(studentPracticalChapterScope);
 });
 $('practical-exit')?.addEventListener('click',()=>{
-  if(!practicalActive)return;
+  if(!practicalActive||practicalBusy)return;
   practicalLeave(true);
 });
 

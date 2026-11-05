@@ -1,0 +1,70 @@
+/* ANATOMIQ_PRACTICAL_REVIEW_348 — results-only layout; no question UI changes */
+#practical-panel.anat347-report-mode {
+  left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);
+  width:min(740px,calc(100% - 26px));max-height:calc(100% - 26px);
+  padding:clamp(15px,3vw,28px);border:1px solid #4a7886;
+  border-radius:19px;box-shadow:0 22px 80px #050b11d9;
+  background:#192632f7;overflow-y:auto;overscroll-behavior:contain;
+}
+#practical-panel.anat347-report-mode .practical-panel-head {padding-bottom:10px;border-bottom:1px solid #354d5d}
+#practical-panel.anat347-report-mode #practical-message,
+#practical-panel.anat347-report-mode #practical-result-score,
+#practical-panel.anat347-report-mode #practical-result-detail {display:none!important}
+#practical-panel.anat347-report-mode #practical-results {display:block}
+#practical-panel.anat347-report-mode #practical-results[hidden] {display:none!important}
+.anat347-report-heading{padding:16px 0 8px}
+.anat347-eyebrow{font-size:10px;letter-spacing:.18em;color:#7db8c3;font-weight:800}
+.anat347-report-heading h2{font-size:clamp(23px,4vw,31px);font-weight:760;letter-spacing:-.035em;line-height:1.15;margin:9px 0}
+.anat347-title{font-size:12px;color:#9cb5c4;line-height:1.5;margin:4px 0 0;overflow-wrap:anywhere}
+.anat347-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:21px 0 11px}
+.anat347-stat{border:1px solid #3b5a68;border-radius:12px;padding:13px 10px 12px;background:#223746;display:grid;gap:5px;min-width:0}
+.anat347-stat strong{font-size:clamp(19px,3.2vw,30px);line-height:1.1;color:#f0f6fa;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.anat347-stat span{font-size:11px;color:#9fbdca;font-weight:650}
+.anat347-review-title{font-size:15px;font-weight:750;color:#f1f7fa;margin:18px 0 10px}
+.anat347-review-list{display:grid;gap:9px}
+.anat347-review-row{display:grid;grid-template-columns:24px minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;padding:13px 12px;border:1px solid #3b5262;background:#20303f;border-radius:11px}
+.anat347-review-number{display:grid;place-items:center;width:23px;height:23px;font-size:11px;font-weight:750;border-radius:50%;background:#304b5a;color:#add8de}
+.anat347-review-answer{display:grid;gap:4px;min-width:0}
+.anat347-review-answer small{font-size:10px;color:#93afbd;letter-spacing:.035em}
+.anat347-review-answer strong{font-size:13px;color:#ecf5f9;line-height:1.35;overflow-wrap:anywhere}
+.anat347-wrong strong{color:#f3b2b2}
+.anat347-chapter{opacity:.85;margin-top:4px}
+.anat347-perfect,.anat347-final-note{font-size:12px;line-height:1.6;color:#a1dfcb;border:1px solid #3a716a;border-radius:10px;background:#1c3b3c;padding:12px}
+.anat347-final-note{color:#afcdd7;border-color:#3b5361;background:#223442}
+#practical-panel.anat347-report-mode .anat347-save{margin-top:15px;border-color:#4c7f8e;color:#bce7ed;min-height:40px}
+#practical-panel.anat347-report-mode #practical-retake{margin-top:9px;min-height:40px}
+@media (max-width: 520px){.anat347-review-row{grid-template-columns:20px 1fr;gap:7px}.anat347-wrong{grid-column:2}.anat347-metrics{gap:6px}.anat347-stat{padding:10px 8px}}
+@media (prefers-reduced-motion:reduce){#practical-panel.anat347-report-mode{scroll-behavior:auto}}
+
+/* 2.2.134 – review lives beside the original canvas, never creates a new renderer. */
+#practical-panel.anat347-report-mode.anat348-review-mode {
+  left:auto;right:12px;top:12px;bottom:12px;transform:none;
+  width:min(395px,calc(100% - 24px));max-height:calc(100% - 24px);
+  padding:16px;box-shadow:0 14px 48px #02060bcb;
+}
+#practical-panel.anat348-review-mode .anat347-metrics {gap:6px;margin:12px 0}
+#practical-panel.anat348-review-mode .anat347-stat {padding:9px 7px}
+#practical-panel.anat348-review-mode .anat347-stat strong {font-size:21px}
+#practical-panel.anat348-review-mode .anat347-report-heading {padding-top:4px}
+#practical-panel.anat348-review-mode .anat347-report-heading h2 {font-size:23px}
+#practical-panel.anat348-review-mode .anat347-review-row {grid-template-columns:20px 1fr;gap:6px}
+#practical-panel.anat348-review-mode .anat347-wrong {grid-column:2}
+.anat348-review-target {width:100%;color:inherit;text-align:left;font:inherit;cursor:pointer;appearance:none;}
+.anat348-review-target:hover,.anat348-review-target:focus-visible {border-color:#75c6d5;background:#284454;}
+.anat348-review-target:focus-visible {outline:2px solid #90dce8;outline-offset:2px}
+.anat348-review-target.anat348-review-selected {border-color:#f47a7e;background:#4b3039}
+.anat348-review-target:disabled{opacity:.85;cursor:progress}
+.anat348-review-cta {grid-column:2 / -1;display:block;color:#a1dbe6;font-size:11px;font-weight:700;letter-spacing:.03em}
+.anat348-review-back {width:100%;min-height:36px;margin:5px 0 10px;border-color:#4e8390!important;color:#c2eaf0!important}
+.anat348-review-back[hidden]{display:none!important}
+@media (max-width: 980px) {
+  #practical-panel.anat347-report-mode.anat348-review-mode {
+    left:10px;right:10px;top:auto;bottom:10px;transform:none;
+    width:auto;max-height:40vh;padding:10px 14px;
+  }
+  #practical-panel.anat348-review-mode .anat347-report-heading {padding:0}
+  #practical-panel.anat348-review-mode .anat347-report-heading h2 {font-size:18px;margin:3px 0}
+  #practical-panel.anat348-review-mode .anat347-metrics {margin:7px 0}
+  #practical-panel.anat348-review-mode .anat347-review-title {margin:9px 0}
+}
+@media (prefers-reduced-motion: reduce){.anat348-review-target {scroll-behavior:auto}}

@@ -1,6 +1,6 @@
 {
-  "version": "2.2.133",
+  "version": "2.2.134",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: polished Practical Report Card with missed structures, choices, score and offline PNG saving; grading and Guided completion unchanged."
+  "notes": "Local: missed Practical questions open 3D review with Guided incorrect red highlight; no grading or lesson data changes."
 }
