@@ -58,7 +58,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.119'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.120'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -563,12 +563,26 @@ let boneAppearance='natural';
 try{boneAppearance=normalizeBoneAppearance(localStorage.getItem(BONE_APPEARANCE_STORAGE_KEY));}catch{}
 let boneSurfaceController=null;
 const SHADOW_MODE_KEY='anatomiq-dynamic-shadows-v1';
-let shadowMode='auto';
-try{shadowMode=normalizeShadowMode(localStorage.getItem(SHADOW_MODE_KEY));}catch{}
+// ANATOMIQ_RENDER_DEFAULTS_HOTFIX_334 — one-time per-origin/profile reset.
+// Run BEFORE reading the modes or creating WebGLRenderer. Leave later changes alone.
+const RENDER_HOTFIX_334_KEY='anatomiq-render-hotfix-334-applied';
+try{
+  const store=window.localStorage;
+  if(store.getItem(RENDER_HOTFIX_334_KEY)!=='1'){
+    store.setItem(RENDER_MODE_KEY,'sharp');
+    store.setItem(SHADOW_MODE_KEY,'on');
+    // Only mark complete after confirming both preferences actually persisted.
+    if(store.getItem(RENDER_MODE_KEY)==='sharp' && store.getItem(SHADOW_MODE_KEY)==='on'){
+      store.setItem(RENDER_HOTFIX_334_KEY,'1');
+    }
+  }
+}catch(err){console.warn('AnatomIQ rendering preference migration: browser storage unavailable',err);}
+let shadowMode='on';
+try{const value=localStorage.getItem(SHADOW_MODE_KEY);if(value!==null)shadowMode=normalizeShadowMode(value);}catch{}
 let surfaceMode='studio';
 try{surfaceMode=normalizeSurfaceMode(localStorage.getItem(SURFACE_MODE_KEY));}catch{}
-let savedRenderMode='auto';
-try{savedRenderMode=normalizeMode(localStorage.getItem(RENDER_MODE_KEY));}catch{}
+let savedRenderMode='sharp';
+try{const value=localStorage.getItem(RENDER_MODE_KEY);if(value!==null)savedRenderMode=normalizeMode(value);}catch{}
 let renderProfile=resolveRenderProfile(savedRenderMode,navigator);
 const renderer = new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
 renderer.setClearColor(0x000000,0);

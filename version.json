@@ -1,6 +1,6 @@
 {
-  "version": "2.2.119",
+  "version": "2.2.120",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "Stationary loading logo with breathing glow; fading touch-persistent teacher/student menus; Restore hidden structures label."
+  "notes": "Rendering hotfix: one-time override of all existing browser profiles to Sharp quality and Dynamic Shadows On; same defaults for new devices."
 }
