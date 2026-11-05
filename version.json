@@ -1,6 +1,6 @@
 {
-  "version": "2.2.116",
+  "version": "2.2.117",
   "channel": "experimental",
-  "published": "2026-11-02",
-  "notes": "Whole-structure Guided feedback uses material tint instead of overlapping meshes; persistent multi-Identify preserved."
+  "published": "2026-11-04",
+  "notes": "New AnatomIQ Studio scissors-and-scalpel icon for PWA, ChromeOS, iOS and browser tabs."
 }
