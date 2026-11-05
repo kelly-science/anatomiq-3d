@@ -155,6 +155,18 @@ export function validateProject(project) {
       !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
     // 2.2.49: optional Practical chapter selection (legacy projects omit it).
     if(p.chapters!==undefined&&p.chapters!==null&&(!Array.isArray(p.chapters)||p.chapters.length>MAX_CHAPTERS||p.chapters.some(i=>!Number.isInteger(i)||i<0||i>=project.chapters?.length)||new Set(p.chapters).size!==p.chapters.length))throw new Error('Invalid practical chapter selection.');
+    // ANATOMIQ_PRACTICAL_WORKSPACE_336 — chapter-scoped question pools, no scene visibility changes.
+    if(p.chapterRules!==undefined&&p.chapterRules!==null){
+      if(!Array.isArray(p.chapterRules)||p.chapterRules.length>MAX_CHAPTERS||p.chapterRules.length>project.chapters?.length)
+        throw new Error('Invalid practical chapter rules.');
+      for(const r of p.chapterRules){
+        if(r===null)continue; // Untouched chapters retain older shared exclusions.
+        if(!r||typeof r!=='object'||!['auto','labels','structures','all','custom'].includes(r.source)||
+           !Array.isArray(r.keys)||r.keys.length>2000||
+           r.keys.some(k=>typeof k!=='string'||!(/^(s:\d{1,5}|l:[0-9A-Za-z-]{6,64})$/.test(k)))||
+           new Set(r.keys).size!==r.keys.length)throw new Error('Invalid chapter practical question source.');
+      }
+    }
   }
   if (!boundedText(project.t, 90)) throw new Error('A project title is required (90 characters maximum).');
   if (!Array.isArray(project.chapters) || !project.chapters.length || project.chapters.length > MAX_CHAPTERS) throw new Error(`A project must contain 1–${MAX_CHAPTERS} chapters.`);

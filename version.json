@@ -1,6 +1,6 @@
 {
-  "version": "2.2.121",
+  "version": "2.2.122",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "Sentence-case teacher/student menu labels, including dynamically rebuilt nested flyouts; preserves branded names, acronyms and shortcuts."
+  "notes": "Teacher full-page Practical setup under Edit; chapter-specific question pools independent of anatomy visibility; legacy lesson compatibility."
 }

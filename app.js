@@ -18,6 +18,7 @@ import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=26
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js?rev=307';
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -39,7 +40,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -58,7 +59,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.121'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.122'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -3240,7 +3241,7 @@ function snapshotProject(){
   if (!chapters.length) chapters = [current];
   chapters[activeChapter] = current;
   if(teacherMode)publishPermissions={...currentPublishPermissions()};
-  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:{...normalPractical(practicalConfig),markerStyle:practicalTargetDisplay(practicalConfig)},guided:guided.serialize()});
+  return validateProject({v:2,t:$('project-title').value.trim()||current.t,start:activeChapter,chapters:chapters.map(c=>structuredClone(c)),sp:{...publishPermissions},practical:{...normalPractical(practicalConfig),markerStyle:practicalTargetDisplay(practicalConfig),chapterRules:practicalConfig.chapterRules},guided:guided.serialize()});
 }
 function verifyProjectModel(project){
   // ANATOMIQ_TRIQUETRUM_REFINEMENT_245: Every historical chapter must be an
@@ -3442,6 +3443,7 @@ function createChapter(duplicate){
     if(!duplicate)fresh.labels=[];
     chapters.splice(activeChapter+1,0,fresh);
     guided.addChapter(activeChapter,duplicate);
+    practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'insert',activeChapter,0,duplicate);
     if(Array.isArray(practicalConfig.chapters)){const at=activeChapter;practicalConfig.chapters=practicalConfig.chapters.map(i=>i>at?i+1:i);if(duplicate&&practicalConfig.chapters.includes(at))practicalConfig.chapters.push(at+1);}
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     activeChapter++;
@@ -3453,6 +3455,7 @@ function moveChapter(index,step){
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   [chapters[index],chapters[index+step]]=[chapters[index+step],chapters[index]];
   guided.moveChapter(index,step);
+  practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'move',index,step);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.map(i=>i===index?index+step:i===index+step?index:i);
   if(activeChapter===index)activeChapter=index+step;
   else if(activeChapter===index+step)activeChapter=index;
@@ -3463,6 +3466,7 @@ async function deleteChapter(index){
   try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}
   chapters.splice(index,1);
   guided.deleteChapter(index);
+  practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'delete',index);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.filter(i=>i!==index).map(i=>i>index?i-1:i);
   if(activeChapter>index)activeChapter--;
   else if(activeChapter===index)activeChapter=Math.min(index,chapters.length-1);
@@ -5060,6 +5064,7 @@ function normalizePracticalTargetDisplay(source){
   // Preexisting saved practicals retain their original yellow-dot presentation.
   normalized.markerStyle=source && source.on && source.markerStyle===undefined
     ?'yellow-dot':practicalTargetDisplay(source);
+  normalized.chapterRules=normalizeChapterRules(source?.chapterRules,chapters.length||12);
   return normalized;
 }
 function practicalEnsureQuestionCallout(){
@@ -5342,6 +5347,20 @@ $('practical-search')?.addEventListener('input',e=>{practicalSearch=e.target.val
 $('practical-chapter-filter')?.addEventListener('change',e=>{practicalFilter=e.target.value;renderPracticalEditor();});
 $('practical-select-all')?.addEventListener('click',()=>practicalBulk(true));
 $('practical-select-none')?.addEventListener('click',()=>practicalBulk(false));
+// ANATOMIQ_PRACTICAL_WORKSPACE_336 — Teacher-only full-page Practical editor.
+const practicalWorkspace336=teacherMode?createPracticalWorkspace({
+  trigger:$('anat336-practical-setup'),
+  getChapters:()=>chapters,
+  getPool:()=>practicalPool(),
+  getLessonTitle:()=>$('project-title').value,
+  getConfig:()=>({...practicalConfig,chapterRules:practicalConfig.chapterRules}),
+  saveConfig:next=>{
+    practicalConfig=normalizePracticalTargetDisplay(next);
+    if(!practicalConfig.on)delete guided.config.finalPractical;
+    renderPracticalEditor();guided.renderTeacher();renderChapterUI();
+    saveDraft(false);queueDraft();
+  }
+}):null;
 
 
 // ANATOMIQ_PRACTICAL_GROUP_ANCHORS_307 — extra temporary yellow target dots.
@@ -5601,7 +5620,10 @@ async function startPractical(chapterChoice=undefined){
     if(studentPracticalSetupOpening)return; // Ignore rapid double taps while the chooser is open.
     studentPracticalSetupOpening=true;
     try{
-      const choice=await chooseStudentPracticalChapter({chapters,candidates:practicalPool(),config:practicalConfig});
+      const chapterPool=Array.isArray(practicalConfig.chapterRules)
+         ?filterPracticalPool(practicalPool(),practicalConfig,chapters):practicalPool();
+       const chapterConfig=Array.isArray(practicalConfig.chapterRules)?{...practicalConfig,off:[]}:practicalConfig;
+       const choice=await chooseStudentPracticalChapter({chapters,candidates:chapterPool,config:chapterConfig});
       if(choice===null)return;
       return await startPractical(choice);
     }finally{studentPracticalSetupOpening=false;}
@@ -5610,7 +5632,11 @@ async function startPractical(chapterChoice=undefined){
   if(!scopedConfig){showToast('This chapter is not enabled for the practical.');return;}
   if(divisionScope){divisionNavReset(false);refreshVisibility(true);}
   if(practicalActive){renderChapterUI();return;}
-  const qs=practicalAttempt(practicalPool(),structures,scopedConfig);
+  const chapterRulesEnabled=Array.isArray(practicalConfig.chapterRules);
+   const eligiblePool=chapterRulesEnabled
+     ?filterPracticalPool(practicalPool(),practicalConfig,chapters,scopedConfig):practicalPool();
+   const attemptSettings=chapterRulesEnabled?{...scopedConfig,off:[]}:scopedConfig;
+   const qs=practicalAttempt(eligiblePool,structures,attemptSettings);
   studentPracticalChapterScope=chapterChoice;
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
   $('practical-exit').textContent='Exit';
