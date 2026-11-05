@@ -1,6 +1,6 @@
 {
-  "version": "2.2.130",
+  "version": "2.2.131",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: Edit-only Lesson Settings, Guided Activity Settings in left navigator, redundant target shortcut removed."
+  "notes": "Local: restore original Teacher Studio project tabs after Practical sidebar retirement; hide project tabs in Guided and Practical workspaces."
 }

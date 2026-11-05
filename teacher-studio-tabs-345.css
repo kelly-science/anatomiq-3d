@@ -1,0 +1,10 @@
+/* ANATOMIQ_TEACHER_TABS_SCOPE_345
+ * Keep the original workspace-tabs-241.css and tab-menu-polish-246.css
+ * completely in charge of how the Teacher Studio lesson tabs look and work.
+ * Only remove the tabs visually when an independent workspace is open.
+ */
+body.anat125-active #studio-menubar #anat-project-tabs,
+body.anat336-open #studio-menubar #anat-project-tabs,
+body.student-mode #studio-menubar #anat-project-tabs {
+  display: none !important;
+}

@@ -187,7 +187,7 @@
   function begin(){
     if(started||student()||!bridge()?.ready())return;
     started=true;
-    try{lessonSettings();statusPlacement();chrome();document.addEventListener('keydown',shortcut,true);}catch(e){console.error('AnatomIQ 2.2.41 UI:',e);}
+    try{chrome();statusPlacement();document.addEventListener('keydown',shortcut,true);}catch(e){console.error('AnatomIQ 2.2.41 UI:',e);} // ANATOMIQ_TEACHER_TABS_BOOT_345
     let saved=null;
     try{saved=JSON.parse(localStorage.getItem(STORAGE)||'null');}catch{}
     if(saved?.v===1&&Array.isArray(saved.workspaces)&&saved.workspaces.length&&saved.workspaces.length<=LIMIT){
