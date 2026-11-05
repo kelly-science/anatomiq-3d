@@ -1,6 +1,6 @@
 {
-  "version": "2.2.117",
+  "version": "2.2.118",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "New AnatomIQ Studio scissors-and-scalpel icon for PWA, ChromeOS, iOS and browser tabs."
+  "notes": "AnatomIQ scissors-and-scalpel logo in Studio/Student header and animated 3D loading screen."
 }

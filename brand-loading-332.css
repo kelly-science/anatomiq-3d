@@ -1,0 +1,36 @@
+/* AnatomIQ 332 — same brand logo in header and model loader, Studio + Student. */
+.topbar .brand > img.anat-brand-icon-332 {
+  display:block;
+  box-sizing:border-box;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  padding:0;
+  border:0;
+  border-radius:10px;
+  object-fit:cover;
+  background:#17161b;
+  box-shadow:0 3px 15px rgba(0,0,0,.22);
+}
+.loading-overlay img.anat-loading-icon-332 {
+  display:block;
+  box-sizing:border-box;
+  width:88px;
+  height:88px;
+  flex:0 0 88px;
+  padding:0;
+  border:1px solid rgba(126,217,222,.18);
+  border-radius:20px;
+  object-fit:cover;
+  background:#17161b;
+  transform-origin:center;
+  animation:anat332-logo-breathe 2.2s ease-in-out infinite;
+  box-shadow:0 0 0 rgba(80,211,213,0);
+}
+@keyframes anat332-logo-breathe {
+  0%,100% { transform:scale(1); filter:brightness(1); box-shadow:0 0 0 rgba(80,211,213,0); }
+  50% { transform:scale(1.055); filter:brightness(1.08); box-shadow:0 0 26px rgba(80,211,213,.22); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .loading-overlay img.anat-loading-icon-332 { animation:none; }
+}
