@@ -3,6 +3,7 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./guided-workspace-339.css?rev=339",
   "./guided-settings-344.css?rev=344",
   "./teacher-studio-tabs-345.css?rev=345",
+  "./teacher-lesson-controls-346.css?rev=346",
   "./lesson-settings-342.css?rev=342",
   "./guided-workspace-344.js?rev=344",
   "./guided-editor-visuals-343.mjs?rev=343",
@@ -15,7 +16,7 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./menu-polish-333.css?rev=333", // ANATOMIQ_MENU_TOUCH_FADE_333
   "./menu-polish-333.js?rev=333", // ANATOMIQ_MENU_TOUCH_FADE_333
   "./brand-loading-332.css?v=332", // ANATOMIQ_BRAND_LOADER_332
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345", // ANATOMIQ_BRAND_LOADER_332
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346", // ANATOMIQ_BRAND_LOADER_332
 
   "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331", // ANATOMIQ_ICON_ASSETS_331
   "./manifest.webmanifest?v=331", // ANATOMIQ_ICON_ASSETS_331

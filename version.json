@@ -1,6 +1,6 @@
 {
-  "version": "2.2.131",
+  "version": "2.2.132",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: restore original Teacher Studio project tabs after Practical sidebar retirement; hide project tabs in Guided and Practical workspaces."
+  "notes": "Local: hide redundant Student Controls in Teacher Studio; preserve live Edit > Lesson Settings and restored teacher tabs."
 }

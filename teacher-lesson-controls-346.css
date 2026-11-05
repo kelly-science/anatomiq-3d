@@ -1,0 +1,12 @@
+/* ANATOMIQ_TEACHER_CONTROLS_346 — local-only Teacher Studio cleanup.
+ * The real, listener-bound Student Controls belong in Edit > Lesson Settings.
+ * Never delete or clone those controls: lesson-settings-344.js temporarily moves
+ * the original element into .anat128-modal-content and restores it on close.
+ * The Structure Details pane remains unchanged.
+ */
+body #polish-student-controls {
+  display: none !important;
+}
+body .anat128-modal-content > #polish-student-controls {
+  display: block !important;
+}
