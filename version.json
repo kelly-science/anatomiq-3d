@@ -1,6 +1,6 @@
 {
-  "version": "2.2.134",
+  "version": "2.2.135",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: missed Practical questions open 3D review with Guided incorrect red highlight; no grading or lesson data changes."
+  "notes": "Local-only: Practical options come from the question chapter and anatomy system; report buttons are text-only."
 }

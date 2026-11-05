@@ -248,7 +248,7 @@ export function renderPracticalReportCard348({result, questions = [], title = ''
     missedHost.append(table);
   }
   if (finalSaved) missedHost.append(node('p', 'anat347-final-note', 'Final Practical saved. Select View Lesson Certificate to finish the Guided lesson.'));
-  const save = node('button', 'button subtle full anat347-save', '↓ Save Report Card (PNG)');
+  const save = node('button', 'button subtle full anat347-save', 'Save PNG');
   save.id = 'anat347-report-save'; save.type = 'button';
   save.addEventListener('click', () => {
     try { practicalReportPNG(report); }

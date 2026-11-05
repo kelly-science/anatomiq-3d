@@ -115,12 +115,12 @@ export function practicalAttempt(candidates,structures,config,randomIndex=random
     return variants.length?{group,variants}:null;
   }).filter(Boolean);
   const selected=shuffled(eligible,randomIndex).slice(0,Math.min(cfg.count,eligible.length));
-  const catalog=eligible.flatMap(({variants})=>variants.map(v=>({name:practicalAnswerName(v.name),system:v.system,tissue:v.tissue})))
+  const catalog=eligible.flatMap(({variants})=>variants.map(v=>({name:practicalAnswerName(v.name),chapter:v.chapter,system:v.system,tissue:v.tissue})))
      .filter(s=>normalizedName(s.name)); // No distractors from excluded chapters or invisible structures.
   return selected.map(({group,variants})=>{
     const representative=shuffled(variants,randomIndex)[0];
     const answer=normalizedName(group.name);
-    const pool=catalog.filter(s=>normalizedName(practicalAnswerName(s.name))!==answer);
+    const pool=catalog.filter(s=>s.chapter===representative.chapter && s.system===representative.system && normalizedName(practicalAnswerName(s.name))!==answer); // ANATOMIQ_PRACTICAL_MODEL_POOL_349
     const ranked=shuffled(pool,randomIndex).sort((a,b)=>{
       const rank=s=>Number(s.system===representative.system)*4+Number(s.tissue===representative.tissue)*3;
       return rank(b)-rank(a);
