@@ -1,6 +1,6 @@
 {
-  "version": "2.2.126",
+  "version": "2.2.130",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local experiment: guided chapter manager integrated; anatomy tree isolated; functional lesson-settings dialog."
+  "notes": "Local: Edit-only Lesson Settings, Guided Activity Settings in left navigator, redundant target shortcut removed."
 }

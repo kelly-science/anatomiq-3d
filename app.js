@@ -4,7 +4,8 @@
 import {reorderLabels} from './label-reorder-242.js?rev=242';
 import {resolveMuscleGroups} from './muscle-groups-270.mjs?rev=270-native-muscles-local'; // ANATOMIQ_MUSCLE_GROUPS_270_STAGE1
 import {createGuidedLessons} from './guided-lessons-269j.mjs?rev=311-multi-identify&highlight=313&hotspot=315&restart=317&report=320&successfullscreen=321&reportsave=322&hold=329&whole=330';
-import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314&hold=329&whole=330'; // ANATOMIQ_STUDENT_VISUAL_CUES_293
+import {createGuidedFlasher} from './guided-visuals-293.mjs?rev=295&fullscreen=305&highlight=313&priority=314&hold=329&whole=330';
+import {createGuidedEditorVisuals343} from './guided-editor-visuals-343.mjs?rev=343'; // ANATOMIQ_ACTIVITY_VISUAL_SCOPE_343 // ANATOMIQ_STUDENT_VISUAL_CUES_293
 import {createHotspotFeedbackController} from './hotspot-feedback-315.mjs?rev=315&size=316'; // ANATOMIQ_HOTSPOT_MOTION_315
 import {createPaintOverlayLayer} from './painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local'; // ANATOMIQ_PAINTED_HOTSPOT_274 // ANATOMIQ_GUIDED_ACTIVITIES_269J
 import {chapterIrisEnabled,chapterCarouselEnabled,createIrisTransition,installChapterTransitionMenus} from './chapter-iris-254.mjs?rev=259';
@@ -59,7 +60,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.126'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.130'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -455,6 +456,15 @@ const guided=createGuidedLessons({
   resetChapterScene:async()=>{if(await studentHistoryCommand('reset')!==true)throw Error('Scene reset was blocked or failed.');return true;},
   getStructureName:index=>structures[index]?.name||null,
   onTeacherChange:()=>queueDraft(),goChapter:(index)=>switchChapter(index) /* ANATOMIQ_RESTART_AUDIT_317: await chapter transition */,notify:showToast
+});
+// ANATOMIQ_ACTIVITY_VISUAL_SCOPE_343 — ephemeral editor visual state only.
+window.AnatomIQGuidedEditorVisuals343 = createGuidedEditorVisuals343(THREE, {
+  getMesh: index => structures[index]?.mesh,
+  getGuided: () => guided,
+  getChapter: () => activeChapter,
+  showPaint: samples => {__anat274GetLayer().show(samples);invalidateVisualOnly(2);},
+  clearPaint: () => {__anat274PaintLayer?.clear();invalidateVisualOnly(2);},
+  invalidate: () => invalidateVisualOnly(2)
 });
 // ANATOMIQ_GUIDED_ACCESS_297 — one read-only gate for Student View UI and actions.
 function guidedAccessActive(){

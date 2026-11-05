@@ -674,9 +674,14 @@ if(heading)heading.textContent=`Chapter ${api.getChapter()+1} activities`;
       field('Feedback shown after completion','feedback',true);
       list.append(wrapper);
     }
-    const preview=steps().find(a=>a.id===teacherHotspotId&&a.type==='label')||
-      steps().find(a=>a.id===paintPreviewId&&a.type==='label');
-    api.showTeacherPaintRegions?.(preview?.paintRegions||[]);
+    // ANATOMIQ_ACTIVITY_VISUAL_SCOPE_343 — only the activity being edited may
+    // display a teacher Hotspot paint preview. Studio and other activities never do.
+    const previewScope=window.AnatomIQGuidedEditorVisuals343;
+    const preview=previewScope ? previewScope.currentPaint() :
+      (steps().find(a=>a.id===teacherHotspotId&&a.type==='label')||
+       steps().find(a=>a.id===paintPreviewId&&a.type==='label'));
+    if(previewScope&&!preview)api.clearTeacherPaintRegions?.();
+    else api.showTeacherPaintRegions?.(preview?.paintRegions||[]);
     const count=teacherRoot.querySelector('#anat-ga-count');if(count)count.textContent=`${steps().length} of ${MAX_STEPS} activities`;
   }
   function cloudSnapshot(){

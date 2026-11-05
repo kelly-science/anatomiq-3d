@@ -1,0 +1,27 @@
+/* ANATOMIQ_GUIDED_SETTINGS_344 — original 2.2.125 grid remains intact. */
+/* The original Guided engine controls stay mounted and receive all change events. */
+body.anat125-active #anat125-inspector .anat-ga-mode-block,
+body.anat125-active #anat125-inspector #anat-ga-final-practical-wrap {
+  display:none!important;
+}
+#anat125-nav {display:flex;flex-direction:column;}
+#anat125-nav .anat125-step-list {flex:none;}
+#anat125-nav .anat130-settings {
+  margin-top:auto;
+  padding-top:22px;
+  border-top:1px solid #354b56;
+  display:grid;
+  gap:14px;
+}
+#anat125-nav .anat130-settings strong {display:block;margin-bottom:1px;}
+#anat125-nav .anat130-setting-row {
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:12px;line-height:1.4;color:#dceef4;cursor:pointer;
+}
+#anat125-nav .anat130-setting-input {
+  appearance:auto!important;accent-color:#75c5cd;
+  width:16px;height:16px;flex:none;margin:0;cursor:pointer;
+}
+#anat125-nav .anat130-setting-row:has(input:disabled) {opacity:.55;cursor:not-allowed;}
+#anat125-nav .anat130-setting-input:disabled {cursor:not-allowed;}
+#menu-file [data-anat344-duplicate="file"] {display:none!important;}

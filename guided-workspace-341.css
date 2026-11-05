@@ -1,0 +1,100 @@
+/* ANATOMIQ_GUIDED_WORKSPACE_341 — 2.2.127 local authoring trial. */
+/* Main Studio left = anatomy structures only; Guided left = chapter/activity editor. */
+body:not(.anat127-active) #anat-guided-teacher{display:none!important}
+#left-sidebar > .chapters-manager{display:none!important}
+/* In Teacher Studio the explorer's visible area is dedicated to the tree.
+   Anatomy presets still exist in the DOM and View-menu APIs remain unchanged. */
+#left-sidebar > .studio-card,
+#left-sidebar > .systems-panel,
+#left-sidebar > .cardio-study-panel {display:none!important}
+body.anat127-active .app-shell {min-height:0}
+body.anat127-active .workspace {
+  display:grid!important;flex:1!important;min-height:0!important;
+  grid-template-columns:minmax(235px,275px) minmax(0,1fr) minmax(330px,400px)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+}
+body.anat127-active .workspace > #left-sidebar {display:none!important}
+body.anat127-active .workspace > #anat127-nav {grid-column:1;grid-row:1}
+body.anat127-active .workspace > #info-sidebar{display:none!important}
+body.anat127-active .workspace > .viewer-panel{grid-column:2;grid-row:1;min-width:0;min-height:0}
+body.anat127-active .workspace > #anat127-inspector{grid-column:3;grid-row:1}
+#anat127-workspace-header {min-height:59px;flex:none;display:flex;align-items:center;justify-content:space-between;
+  gap:15px;padding:9px 18px;background:#14242e;color:#eaf6f8;border-bottom:1px solid #31505b}
+#anat127-workspace-header button,#anat127-inspector button,#anat127-nav button {font:inherit}
+.anat127-header-copy{display:grid;gap:2px;flex:1;text-align:center;min-width:0}
+.anat127-header-copy strong{font-size:15px;letter-spacing:-.015em}
+.anat127-header-copy small{font-size:11px;color:#aac1ca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anat127-back,.anat127-lesson-button{background:#203843;border:1px solid #466571;color:#e5f9fa;
+  padding:8px 13px;border-radius:9px;font-size:12px!important;font-weight:650!important;cursor:pointer}
+.anat127-experiment{font-size:10px;letter-spacing:.09em;color:#a6ccd0;font-weight:700;white-space:nowrap}
+#anat127-nav,#anat127-inspector{background:#162630;color:#e7f2f6;min-height:0;min-width:0;
+  overflow:auto;padding:16px 19px;scrollbar-width:thin;scrollbar-color:#47616a transparent;
+  box-sizing:border-box}
+#anat127-nav{border-right:1px solid #304550;padding:17px 13px}
+#anat127-inspector{border-left:1px solid #304550}
+.anat127-chapters{padding:0 0 15px;border-bottom:1px solid #354b56}
+.anat127-nav-heading{font-size:11px!important;letter-spacing:.1em;font-weight:800;color:#b8dce2;margin:0 0 12px}
+.anat127-chapter-host .chapters-manager{display:block!important;visibility:visible!important;
+  border:0!important;padding:0!important;margin:0!important;background:transparent!important}
+.anat127-chapter-host .chapters-manager > .studio-hint{font-size:11px;line-height:1.4}
+.anat127-chapter-host #teacher-chapter-list{max-height:245px;overflow:auto;min-height:0}
+.anat127-activity-nav{padding-top:17px}
+.anat127-activity-nav-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:11px}
+.anat127-activity-nav-title strong{font-size:11px;letter-spacing:.1em;color:#b8dce2}.anat127-activity-nav-title small{font-size:11px;color:#9db8c3}
+.anat127-step-list{display:grid;gap:6px}
+.anat127-step{border:1px solid transparent;border-radius:8px;background:#213742;color:#d7e7ed;
+  text-align:left;padding:8px 10px;cursor:pointer;font-size:12px!important;line-height:1.35}
+.anat127-step:hover{background:#2a4651}
+.anat127-step.is-selected{background:#30555f;border-color:#6cabb2;color:white;font-weight:700}
+.anat127-add{display:grid;gap:8px;margin-top:15px}
+.anat127-type-picker{width:100%;min-width:0;color:#e6f3f6;border:1px solid #52717d;background:#1c343f;
+  border-radius:8px;padding:8px 6px;font-size:12px}
+.anat127-primary,.anat127-use{background:#438f98;border:1px solid #64b6bd;border-radius:8px;color:#f4ffff;
+  font-weight:700!important;padding:8px 11px;cursor:pointer;font-size:12px!important}
+.anat127-primary:hover,.anat127-use:hover{background:#57aeb7}.anat127-use:disabled{opacity:.5;cursor:default}
+.anat127-editor-title{display:grid;gap:5px;margin-bottom:12px}
+.anat127-editor-title strong{font-size:17px}.anat127-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:#8eb5c0}
+.anat127-model-picker{border:1px solid #42636d;background:#1e3640;padding:10px 12px;
+  border-radius:9px;display:grid;gap:8px;margin-bottom:12px}
+.anat127-model-name{color:#c4dce3;font-size:12px;line-height:1.45;margin:0}
+.anat127-empty{font-size:12px;color:#98b3bd}.anat127-status{font-size:11px;color:#9bc6c9;line-height:1.45;margin:13px 0}
+.anat127-status.is-error{color:#ffb4a7}
+#anat127-guided-host #anat-guided-teacher{display:block!important;min-width:0;width:100%;margin:0;padding:0;background:none!important}
+#anat127-guided-host #anat-guided-teacher details.anat-ga-panel{display:block;border:0!important;background:none!important;padding:0!important}
+#anat127-guided-host .anat-ga-panel-summary,
+#anat127-guided-host .anat-ga-create-header,
+#anat127-guided-host .anat-ga-create-actions,
+#anat127-guided-host .anat-ga-instructions,
+#anat127-guided-host .anat-ga-empty{display:none!important}
+#anat127-guided-host .anat-ga-content{display:grid!important;gap:10px;padding:0!important;min-width:0}
+#anat127-guided-host .anat-ga-editor-item[hidden]{display:none!important}
+#anat127-guided-host .anat-ga-editor-item{margin:8px 0!important;min-width:0;box-sizing:border-box}
+#anat127-guided-host .anat-ga-field,
+#anat127-guided-host .text-input{max-width:100%;min-width:0}
+#anat127-guided-host .anat-investigate-teacher-checks{max-height:280px;overflow-y:auto}
+/* Functional Lesson Settings from 2.2.126 retained unchanged in behavior. */
+.anat127-lesson-backdrop{position:fixed;inset:0;background:#08151bba;z-index:2147483000;
+  display:grid;place-items:center;padding:22px;box-sizing:border-box}
+.anat127-lesson-dialog{width:min(610px,96vw);max-height:90vh;min-height:0;overflow:hidden;
+  background:#1b303b;color:#f1f8fa;border:1px solid #58727d;border-radius:14px;
+  box-shadow:0 18px 60px #0009;display:flex;flex-direction:column}
+.anat127-modal-head,.anat127-modal-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 18px;background:#152832;border-bottom:1px solid #47616a;flex:none}
+.anat127-modal-footer{border-bottom:0;border-top:1px solid #47616a;justify-content:flex-end}
+.anat127-modal-head strong{font-size:17px}.anat127-modal-close{background:transparent;color:inherit;
+  border:1px solid #49636c;border-radius:8px;padding:5px 10px;cursor:pointer}
+.anat127-modal-content{overflow:auto;min-height:0;padding:15px 19px;display:grid;gap:17px}
+.anat127-modal-content > .studio-card,.anat127-modal-content > #polish-student-controls{
+  display:block!important;visibility:visible!important;position:static!important;opacity:1!important;
+  margin:0!important;max-height:none!important;min-height:0!important;max-width:none!important;min-width:0;
+  padding:12px!important;border:1px solid #44626e!important;border-radius:9px;
+  color:inherit!important;background:#203a46!important}
+.anat127-modal-content .text-input{width:100%;min-width:0;box-sizing:border-box}
+.anat127-launch-error{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483100;
+  max-width:min(640px,90vw);background:#482b30;color:white;padding:14px 20px;border-radius:10px;
+  border:1px solid #c87274;box-shadow:0 8px 25px #0007;font-size:13px}
+@media(max-width:1120px){body.anat127-active .workspace{grid-template-columns:210px minmax(0,1fr) 325px!important}
+  #anat127-inspector{padding:12px}#anat127-nav{padding:12px 10px}}
+@media(max-width:790px){body.anat127-active .workspace{grid-template-columns:190px minmax(230px,1fr) 300px!important;overflow-x:auto}
+  #anat127-workspace-header{padding:8px 10px}.anat127-experiment{display:none}}
+@media(prefers-reduced-motion:reduce){.anat127-step,.anat127-back{transition:none!important}}
