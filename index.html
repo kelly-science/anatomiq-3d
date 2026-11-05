@@ -84,6 +84,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
   <link rel="stylesheet" href="./menu-grammar-335.css?rev=335" />
   <script defer src="./menu-grammar-335.js?rev=335"></script> <!-- ANATOMIQ_MENU_SENTENCE_CASE_335 -->
   <link rel="stylesheet" href="./practical-workspace-336.css?rev=336" /> <!-- ANATOMIQ_PRACTICAL_WORKSPACE_336 -->
+  <link rel="stylesheet" href="./guided-workspace-339.css?rev=339" />
 </head>
 <body>
   <div class="app-shell">
@@ -142,7 +143,8 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <button class="menu-item" role="menuitem" type="button" data-menu-click="restore-all">Restore hidden structures</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="clear-selection">Clear selection</button>
           <div class="menu-separator" role="separator"></div>
-          <button id="anat336-practical-setup" class="menu-item" role="menuitem" type="button">Practical setup…</button>
+                    <button id="anat125-guided-setup" class="menu-item" role="menuitem" type="button">Guided activity setup…</button> <!-- ANATOMIQ_GUIDED_WORKSPACE_339 -->
+<button id="anat336-practical-setup" class="menu-item" role="menuitem" type="button">Practical setup…</button>
         </div>
       </div>
       <div class="menu-group" data-menu="view">
@@ -828,7 +830,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           .catch(e=>console.warn('[AnatomIQ] Offline worker unavailable:',e));
       }
     }
-    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script defer src="./view-effects-304.js?rev=304&defaults=306"></script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.75&a11y=304"></script>
@@ -861,5 +863,6 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
       <small id="practical-candidate-footer"></small>
     </div>
   </div>
+  <script defer src="./guided-workspace-339.js?rev=339"></script>
 </body>
 </html>

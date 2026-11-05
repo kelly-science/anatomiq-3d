@@ -1,0 +1,66 @@
+/* ANATOMIQ_GUIDED_WORKSPACE_339 — shared live canvas, docked Guided editor. */
+body:not(.anat125-active) #anat-guided-teacher {display:none!important}
+body.anat125-active .app-shell {min-height:0}
+body.anat125-active .workspace {
+  display:grid!important;flex:1!important;min-height:0!important;
+  grid-template-columns:minmax(224px,258px) minmax(0,1fr) minmax(324px,385px)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+}
+body.anat125-active .workspace > #left-sidebar,
+body.anat125-active .workspace > #info-sidebar {display:none!important}
+body.anat125-active .workspace > .viewer-panel {grid-column:2;grid-row:1;min-width:0;min-height:0}
+#anat125-workspace-header {min-height:59px;flex:none;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:9px 20px;background:#14242e;color:#eaf6f8;border-bottom:1px solid #31505b}
+#anat125-workspace-header button,.anat125-nav button,.anat125-inspector button {font:inherit}
+.anat125-header-copy{display:grid;gap:0;flex:1;text-align:center;min-width:0}
+.anat125-header-copy strong{font-size:15px;letter-spacing:-.015em}
+.anat125-header-copy small{font-size:11px;color:#aac1ca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.anat125-back{background:#203843;border:1px solid #466571;color:#e5f9fa;padding:8px 13px;border-radius:9px;font-size:12px!important;font-weight:650!important;cursor:pointer}
+.anat125-experiment{font-size:10px;letter-spacing:.09em;color:#a6ccd0;font-weight:700;white-space:nowrap}
+#anat125-nav,#anat125-inspector{background:#162630;color:#e7f2f6;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#47616a transparent}
+#anat125-nav{grid-column:1;grid-row:1;border-right:1px solid #304550;padding:20px 15px}
+#anat125-inspector{grid-column:3;grid-row:1;border-left:1px solid #304550;padding:20px 19px}
+.anat125-eyebrow{font-size:10px;font-weight:800;letter-spacing:.13em;color:#8eb5c0}
+.anat125-chapter-controls{padding:0 0 17px;border-bottom:1px solid #354b56}
+.anat125-chapter-buttons{display:flex;gap:8px;margin-top:10px}
+.anat125-chapter-button{flex:1;border:1px solid #48616c;color:#dceef4;background:#203843;border-radius:8px;padding:8px 5px;font-size:12px!important;cursor:pointer}
+.anat125-activity-heading{display:grid;gap:3px;padding:21px 4px 11px}
+.anat125-activity-heading strong{font-size:11px;letter-spacing:.1em;color:#c1dce4}
+.anat125-activity-heading small{font-size:11px;color:#88a8b4}
+.anat125-step-list{display:grid;gap:6px}
+.anat125-step{border:1px solid transparent;border-radius:9px;background:#1b2e38;color:#d7e7ed;text-align:left;padding:11px 12px;cursor:pointer;font-size:12px!important;line-height:1.35}
+.anat125-step:hover{background:#27434e}
+.anat125-step.is-selected{background:#30555f;border-color:#6cabb2;color:white;font-weight:700}
+.anat125-add{display:grid;gap:7px;margin:16px 0}
+.anat125-select{color:#e6f3f6;border:1px solid #52717d;background:#1c343f;border-radius:8px;padding:9px 8px;min-width:0;width:100%;font-size:12px}
+.anat125-add-button,.anat125-use{background:#438f98;border:1px solid #64b6bd;border-radius:8px;color:#f4ffff;font-weight:700!important;padding:9px 11px;cursor:pointer;font-size:12px!important}
+.anat125-add-button:hover,.anat125-use:hover{background:#57aeb7}
+.anat125-use:disabled{opacity:.5;cursor:default}
+.anat125-help{font-size:11px;line-height:1.6;color:#93aeba;margin-top:19px}
+.anat125-inspector-head{display:grid;gap:6px;margin-bottom:13px}
+.anat125-inspector-head strong{font-size:18px;letter-spacing:-.02em}
+.anat125-model-picker{border:1px solid #42636d;background:#1e3640;padding:11px 12px;border-radius:11px;display:grid;gap:10px;margin:0 0 18px}
+.anat125-model-text{color:#c4dce3;font-size:12px;margin:0;line-height:1.45}
+.anat125-empty{font-size:12px;color:#98b3bd;line-height:1.6}
+.anat125-status{font-size:11px;color:#9bc6c9;line-height:1.5;margin:15px 0 5px}
+.anat125-status.is-error{color:#ffb4a7}
+#anat125-inspector #anat-guided-teacher{display:block!important;min-width:0;width:100%;margin:0;padding:0;background:none!important}
+#anat125-inspector #anat-guided-teacher details.anat-ga-panel{display:block;border:0!important;background:none!important;padding:0!important}
+#anat125-inspector #anat-guided-teacher .anat-ga-panel-summary{display:none!important}
+#anat125-inspector #anat-guided-teacher .anat-ga-content{display:grid!important;gap:10px;padding:0!important;min-width:0}
+#anat125-inspector #anat-guided-teacher .anat-ga-create-header,
+#anat125-inspector #anat-guided-teacher .anat-ga-create-actions,
+#anat125-inspector #anat-guided-teacher .anat-ga-instructions,
+#anat125-inspector #anat-guided-teacher .anat-ga-empty {display:none!important}
+#anat125-inspector #anat-guided-teacher .anat-ga-editor-item[hidden] {display:none!important}
+#anat125-inspector #anat-guided-teacher .anat-ga-editor-item{margin:8px 0!important;min-width:0;box-sizing:border-box}
+#anat125-inspector #anat-guided-teacher .anat-ga-field,
+#anat125-inspector #anat-guided-teacher .text-input{max-width:100%;min-width:0}
+#anat125-inspector #anat-guided-teacher .anat-investigate-teacher-checks{max-height:280px;overflow-y:auto}
+.anat125-launch-error{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:2147483100;
+  max-width:min(640px,90vw);background:#482b30;color:white;padding:14px 20px;border-radius:10px;border:1px solid #c87274;box-shadow:0 8px 25px #0007;font-size:13px}
+@media(max-width:1120px){body.anat125-active .workspace{grid-template-columns:210px minmax(0,1fr) 328px!important}
+  #anat125-inspector{padding:14px 12px}#anat125-nav{padding:13px 10px}}
+@media(max-width:790px){body.anat125-active .workspace{grid-template-columns:170px minmax(210px,1fr) 280px!important;overflow-x:auto}
+  #anat125-workspace-header{padding:8px 12px}.anat125-experiment{display:none}}
+@media(prefers-reduced-motion:reduce){.anat125-step,.anat125-back{transition:none!important}}

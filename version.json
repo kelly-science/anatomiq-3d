@@ -1,6 +1,6 @@
 {
-  "version": "2.2.124",
+  "version": "2.2.125",
   "channel": "experimental",
   "published": "2026-11-04",
-  "notes": "Legacy Practical sidebar settings retired; invisible compatibility bindings kept for the existing engine. Practical Workspace is the only visible editor."
+  "notes": "Local trial: docked Guided Activity Setup reusing existing 3D viewport and Guided engine."
 }
