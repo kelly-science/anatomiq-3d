@@ -61,7 +61,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.136'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.137'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5112,14 +5112,18 @@ function practicalHideQuestionCallout(){
   practicalQuestionCallout.occluded=false;
   practicalQuestionCallout.root.style.display='none';
   practicalQuestionCallout.root.setAttribute('aria-hidden','true');
+  practicalQuestionCallout.root.classList.remove('anat351-review-label'); // ANATOMIQ_PRACTICAL_LABEL_REVIEW_351
+  practicalQuestionCallout.reviewMode=false;
 }
-function practicalSetQuestionCallout(question,number,plannedEye=null){
+function practicalSetQuestionCallout(question,number,plannedEye=null,{review=false}={}){
   practicalHideQuestionCallout();
   // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5: only teacher-placed labels use callouts.
-  if(question.type!=='label'||practicalTargetDisplay(practicalConfig)!=='question-label')return;
+  if(question.type!=='label'||(!review&&practicalTargetDisplay(practicalConfig)!=='question-label'))return;
   const mesh=structures[question.s]?.mesh;
   if(!mesh || !mesh.visible)return;
   const state=practicalEnsureQuestionCallout();
+  state.reviewMode=Boolean(review&&practicalState?.completed);
+  state.root.classList.toggle('anat351-review-label',state.reviewMode);
   mesh.updateWorldMatrix(true,false);
   let anchor;
   if(question.type==='label' && Array.isArray(question.anchor) && question.anchor.length===3){
@@ -5155,7 +5159,8 @@ function practicalSetQuestionCallout(question,number,plannedEye=null){
     state.groupAnchors.push(point);state.groupLines.push(leader);state.groupDots.push(marker);
     state.groupOccluded.push(false);
   }
-  state.caption.textContent=`Question ${number}`; // Never place the anatomical answer in student-facing DOM.
+  // Answer text is safe ONLY after grading. Active questions keep Question N.
+  state.caption.textContent=state.reviewMode?String(question.name||''): `Question ${number}`; // ANATOMIQ_PRACTICAL_LABEL_REVIEW_351
   state.lastX=NaN;state.lastY=NaN;
   state.occlusionAt=0;state.occluded=false;
   // Same eligible occluders as chapter labels. Rebuild only once per question,
@@ -5213,7 +5218,9 @@ function practicalUpdateGroupQuestionCallout(state){
 }
 function practicalUpdateQuestionCallout(){
   const state=practicalQuestionCallout;
-  if(!state?.anchor || !practicalActive || practicalState?.questions?.[practicalState.index]?.type!=='label' || practicalTargetDisplay(practicalConfig)!=='question-label')return;
+  if(!state?.anchor || !practicalActive ||
+     !(state.reviewMode&&practicalState?.completed)&&
+     (practicalState?.questions?.[practicalState.index]?.type!=='label'||practicalTargetDisplay(practicalConfig)!=='question-label'))return;
   if(state.groupAnchors?.length>1){practicalUpdateGroupQuestionCallout(state);return;}
   const pt=state.anchor.clone().project(camera);
   if(pt.z < -1 || pt.z > 1 || Math.abs(pt.x)>1.1 || Math.abs(pt.y)>1.1){
@@ -5671,6 +5678,7 @@ let practicalReviewLastQuestion350=null; // ANATOMIQ_PRACTICAL_REPORT_NAV_350
 function practicalReviewClear348(){
   practicalReviewGeneration348++;
   __anat293Flasher.clear();
+  practicalHideQuestionCallout(); // clear red review annotation on Back/Exit/Retake
   // Back to full report should not forget which model is currently showing.
   // Starting a fresh Practical or leaving the player must forget it.
   if(!practicalState?.completed)practicalReviewLastQuestion350=null;
@@ -5751,7 +5759,16 @@ async function practicalReviewMiss348(q){
       if(!valid())return false;
     }
     practicalReviewLastQuestion350=q;
-    // EXACT existing Guided Lesson incorrect highlight and fade.
+    if(q.type==='label'){
+      // The missed item is a teacher-placed label, NOT the whole bone.
+      // Reuse the original occlusion-aware label and group anchor connectors.
+      // Only a completed report may reveal the actual label text.
+      practicalSetQuestionCallout(q,0,null,{review:true}); // ANATOMIQ_PRACTICAL_LABEL_REVIEW_351
+      if(!practicalQuestionCallout?.anchor)return false;
+      practicalFadeQuestionArrival();
+      return true;
+    }
+    // Anatomical structure questions retain the Guided incorrect red mesh flash.
     return __anat293Flasher.flash(q.s,false);
   }catch(error){
     console.warn('Practical report 3D review failed',error);

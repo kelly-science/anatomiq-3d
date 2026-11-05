@@ -68,3 +68,24 @@
   #practical-panel.anat348-review-mode .anat347-review-title {margin:9px 0}
 }
 @media (prefers-reduced-motion: reduce){.anat348-review-target {scroll-behavior:auto}}
+
+/* ANATOMIQ_PRACTICAL_LABEL_REVIEW_351 — after grading only, annotation not bone */
+#anat-practical-question-callout.anat351-review-label .anat-practical-question-card {
+  background:rgba(99,25,35,.97) !important;
+  border:1px solid #ff6876 !important;
+  color:#fff3f4 !important;
+  box-shadow:0 7px 24px rgba(35,3,12,.45),0 0 0 1px rgba(255,103,116,.22) !important;
+}
+#anat-practical-question-callout.anat351-review-label .callout-text {
+  color:#fff3f4 !important;
+}
+#anat-practical-question-callout.anat351-review-label .leader-line {
+  stroke:#ff6876 !important;
+  stroke-width:2.2px !important;
+  opacity:1 !important;
+}
+#anat-practical-question-callout.anat351-review-label .leader-dot {
+  fill:#ff6876 !important;
+  stroke:#ffe3e6 !important;
+  opacity:1 !important;
+}

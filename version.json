@@ -1,6 +1,6 @@
 {
-  "version": "2.2.136",
+  "version": "2.2.137",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "Local: report-card 3D review follows Practical camera rotation on the same model and live carousel between different models; red incorrect feedback after arrival."
+  "notes": "Local: missed Practical labels display their original annotation and group anchors in red; structure misses retain red mesh feedback and Practical camera/carousel navigation."
 }
