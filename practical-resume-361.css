@@ -1,0 +1,3 @@
+/* AnatomIQ 2.2.146 — hide manual chapter controls only DURING a Practical. */
+body.practical-active #chapter-nav {display:none !important}
+body.practical-active.practical-graded-running #practical-exit {display:none !important}

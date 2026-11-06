@@ -1,6 +1,6 @@
 {
-  "version": "2.2.145",
+  "version": "2.2.146",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Local: graded Practical cloud portal handshake, school submission receipt/retry, Publish dashboard setup; existing local and Guided tracking preserved."
+  "notes": "Local: Practical chapter navigation locked; graded Exit hidden until completion; local and school-authenticated draft checkpoints for resume."
 }
