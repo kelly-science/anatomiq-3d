@@ -1,6 +1,6 @@
 {
-  "version": "2.2.141",
+  "version": "2.2.142",
   "channel": "experimental",
-  "published": "2026-11-05",
-  "notes": "Lesson Settings grid: independent toolbar, menu bar, header, screenshot and theme; complete grayscale student label panels."
+  "published": "2026-11-06",
+  "notes": "Duplicate lesson saves an independent Copy of title and opens the copy in a new Teacher Studio lesson tab."
 }

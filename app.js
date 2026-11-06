@@ -61,7 +61,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.141'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.142'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -3607,19 +3607,43 @@ document.addEventListener('anatomiq:edit-github-lesson',event=>{void editPublish
 
 async function saveToLibrary(asNew=false){
   if(!teacherMode || !sceneRoot || libraryBusy)return;
+  // ANATOMIQ_DUPLICATE_TAB_356: A copy must be able to open in its OWN workspace tab.
+  // Check capacity before writing a new library record; keep the original untouched.
+  if(asNew && !window.__AnatomIQWorkspaceTabs?.canDuplicate?.()){
+    showToast('Cannot duplicate lesson: Teacher Studio must be ready and have fewer than 10 tabs.');
+    return;
+  }
   libraryBusy=true;
   const buttons=[$('save-library'),$('save-library-as')];buttons.forEach(b=>b.disabled=true);
+  let duplicatedRecord=null;
   try{
     const project=snapshotProject();
-    const record=await saveLesson(project,asNew?null:libraryLessonId);
-    libraryLessonId=record.id;lastLibrarySnapshot=JSON.stringify(record.project);
-    saveDraft(false);
-    noteLibraryState(`✓ Saved: ${record.title} · ${formatLibraryDate(record.updatedAt)}`);
-    showToast(asNew?'Saved as a new library lesson.':'Lesson saved in your local library.');
-    if(!$('library-dialog').hidden) await refreshLibrary();
-    if(openMenuName==='library') await refreshMenuLibrary();
+    if(asNew){
+      const originalTitle=String(project.t||'Untitled lesson').trim()||'Untitled lesson';
+      project.t=('Copy of '+originalTitle).slice(0,90);
+      duplicatedRecord=await saveLesson(project,null);
+      // Do not change libraryLessonId, title, snapshot, or draft of the ORIGINAL tab.
+    }else{
+      const record=await saveLesson(project,libraryLessonId);
+      libraryLessonId=record.id;lastLibrarySnapshot=JSON.stringify(record.project);
+      saveDraft(false);
+      noteLibraryState(`✓ Saved: ${record.title} · ${formatLibraryDate(record.updatedAt)}`);
+      showToast('Lesson saved in your local library.');
+    }
+    if(!$('library-dialog').hidden)await refreshLibrary();
+    if(openMenuName==='library')await refreshMenuLibrary();
   }catch(error){noteLibraryState('Save failed: '+error.message);showToast('Could not save to library: '+error.message);}
   finally{libraryBusy=false;buttons.forEach(b=>b.disabled=false);}
+  if(duplicatedRecord){
+    try{
+      await window.__AnatomIQWorkspaceTabs.openDuplicate(duplicatedRecord);
+      if(!$('library-dialog').hidden)closeLibrary();
+      showToast(`Duplicated as ${duplicatedRecord.title} in a new lesson tab.`);
+    }catch(error){
+      // The copy was saved even if tab activation failed. Avoid claiming it was lost.
+      showToast('Copy saved to Library, but its tab could not open: '+error.message);
+    }
+  }
 }
 async function openLibraryLesson(id){
   if(libraryBusy || !sceneRoot)return showToast('Finish loading the 3D model before opening a lesson.');

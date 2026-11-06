@@ -103,6 +103,39 @@
       try{await bridge().activate(clone(current().state));}catch{}}
     finally{switching=false;}
   }
+  // ANATOMIQ_DUPLICATE_TAB_356: open a NEW Teacher Studio tab for a saved copy.
+  // This uses the original workspace bridge and never overwrites the source tab.
+  const canDuplicate=()=>!switching&&!!bridge()?.ready()&&workspaces.length<LIMIT;
+  async function openDuplicate(record){
+    if(!canDuplicate())throw new Error(`Cannot open a duplicate; maximum ${LIMIT} lesson tabs or workspace not ready.`);
+    if(!record?.id||!record?.project||typeof record.project.t!=='string')
+      throw new Error('Invalid duplicated lesson record.');
+    capture();
+    if(!persist())throw new Error('Unable to preserve the original lesson tab.');
+    const previous=active;
+    const state={
+      project:clone(record.project),
+      libraryLessonId:record.id,
+      lastLibrarySnapshot:JSON.stringify(record.project),
+      githubEditingRef:null,
+      libraryStatus:`✓ Editing: ${record.title}`
+    };
+    const next={id:id(),name:record.title||state.project.t,state,updated:Date.now()};
+    switching=true;
+    workspaces.push(next);active=next.id;
+    try{
+      await bridge().activate(clone(state));
+      if(!persist())throw new Error('Unable to store the new lesson tab.');
+      render();
+      return true;
+    }catch(error){
+      workspaces.pop();active=previous;
+      try{await bridge().activate(clone(current().state));}catch(restoreError){console.error('Could not restore original lesson after duplication',restoreError);}
+      persist();render();
+      throw error;
+    }finally{switching=false;}
+  }
+
   async function closeTab(target){
     if(switching||!bridge()?.ready())return;
     const index=workspaces.findIndex(w=>w.id===target);if(index<0)return;
@@ -197,7 +230,7 @@
     else{
       switching=true;void bridge().activate(clone(current().state)).then(()=>{render();}).catch(e=>{console.error('Workspace restore failed:',e);toast('Could not restore project tabs. Your existing single working draft remains available.');workspaces=[{id:id(),name:bridge().title,state:bridge().capture(),updated:Date.now()}];active=workspaces[0].id;persist();render();}).finally(()=>switching=false);
     }
-    window.__AnatomIQWorkspaceTabs={syncActive,newTab,switchTab,closeTab,renameLesson,get count(){return workspaces.length;}};
+    window.__AnatomIQWorkspaceTabs={syncActive,newTab,switchTab,closeTab,renameLesson,canDuplicate,openDuplicate,get count(){return workspaces.length;}};
     window.addEventListener('beforeunload',()=>{if(!switching){capture();persist();}});
     $('project-title')?.addEventListener('input',()=>{if(current()){current().name=$('project-title').value.trim()||'Untitled lesson';render();}});
   }
