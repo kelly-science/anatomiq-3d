@@ -1,6 +1,6 @@
 {
-  "version": "2.2.147",
+  "version": "2.2.148",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "School Practical publication starts in Studio, uses existing GitHub connection, automatically registers via teacher Apps Script page; dashboard is results-only."
+  "notes": "Practical-only auto launch and chapter lock, single teacher-scoped question pool, strict resumed question eligibility."
 }

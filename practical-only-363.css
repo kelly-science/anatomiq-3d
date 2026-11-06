@@ -1,0 +1,15 @@
+/* AnatomIQ 2.2.148 — school Practical-only student presentation. */
+body.anat-practical-only-363 #chapter-nav,
+body.anat-practical-only-363 #anat-guided-student,
+body.anat-practical-only-363 #practical-exit,
+body.anat-practical-only-363 #anat-student-label-list-button,
+body.anat-practical-only-363 #polish-student-labels,
+body.anat-practical-only-363 #details-toggle,
+body.anat-practical-only-363 #menu-toggle,
+body.anat-practical-only-363 .mode-tabs,
+body.anat-practical-only-363 #restore-all,
+body.anat-practical-only-363 #polish-label-toggle,
+body.anat-practical-only-363 .sidebar.explorer-sidebar,
+body.anat-practical-only-363 #info-sidebar {display:none !important}
+/* Reset and view presets are allowed to rotate/zoom the active exam target only. */
+body.anat-practical-only-363 #practical-panel {z-index:31}

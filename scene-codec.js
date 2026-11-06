@@ -160,6 +160,7 @@ export function validateProject(project) {
       !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
     // ANATOMIQ_GRADED_PRACTICAL_358 — preserve only validated local graded settings.
     if(p.graded!==undefined&&typeof p.graded!=='boolean')throw new Error('Invalid graded Practical setting.');
+    if(p.practicalOnly!==undefined&&typeof p.practicalOnly!=='boolean')throw new Error('Invalid Practical Only setting.'); // ANATOMIQ_PRACTICAL_ONLY_363
     if(p.studentChoice!==undefined&&typeof p.studentChoice!=='boolean')throw new Error('Invalid student chapter-choice setting.');
     if(p.allowRetakes!==undefined&&typeof p.allowRetakes!=='boolean')throw new Error('Invalid Practical retake setting.');
     if(p.tracking!==undefined&&!['local','google'].includes(p.tracking))throw new Error('Unsupported Practical tracking provider.'); // ANATOMIQ_PRACTICAL_CLOUD_360

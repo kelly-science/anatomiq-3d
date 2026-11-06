@@ -238,9 +238,19 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
       const retakeRow=element('label','anat336-toggle');retakeRow.append(retake,element('span','','Allow additional local attempts'));area.append(retakeRow);
       area.append(element('p','anat336-help','Local results are retained in each student browser; they are not an authenticated school gradebook.'));
     }
+    const only=document.createElement('input');only.type='checkbox';only.checked=draft.practicalOnly===true;
+    only.addEventListener('change',()=>{
+      draft.practicalOnly=only.checked;
+      if(only.checked){draft.on=true;draft.studentChoice=false;}
+      render();
+    });
+    const onlyRow=element('label','anat336-toggle');
+    onlyRow.append(only,element('span','','Practical Only · Start immediately; hide all other chapters'));
+    area.append(onlyRow);
+    area.append(element('p','anat336-help','Students open directly into the combined Practical. Chapter navigation, normal exploration, and Exit are disabled. Google-tracked tests wait for the school account to be verified.'));
     pane.append(area);
   }
-  // ANATOMIQ_PRACTICAL_CLOUD_360 — a registered school link is the only Google tracking route.
+  // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_PRACTICAL_ONLY_363 — a registered school link is the only Google tracking route.
   // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362 — Studio owns Practical publication.
   // The Apps Script dashboard is for results and managing already-published tests.
   function renderPublish(){

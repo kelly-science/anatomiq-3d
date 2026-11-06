@@ -18,12 +18,13 @@ import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATO
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
-import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360';
+import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
+import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
 import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -46,7 +47,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336&presentation=355&cloud=360';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336&presentation=355&cloud=360&practicalonly=363';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -65,7 +66,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.147'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.148'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -376,6 +377,7 @@ const OLD_DRAFT_KEY = 'anatomy-studio-project-v1';
 let chapters = [];
 let structureNoteOverrides=new Map(); // ANATOMIQ_LESSON_EXPERIENCE_249
 let practicalConfig=normalizePracticalTargetDisplay(null),practicalActive=false,practicalState=null,practicalHighlight=null,practicalTargetMarker=null,practicalBusy=false;
+function practicalOnly363(){return isPracticalOnly363(practicalConfig,teacherMode);} // ANATOMIQ_PRACTICAL_ONLY_363
 let activeChapter = 0;
 // Local guided-chapter pilot with measured Explore rotation. Separate from the practical engine and 3D rendering.
 // Teacher-only painted surface overlays; registered on original meshes after loading.
@@ -2553,6 +2555,7 @@ async function loadAnatomy(){
       ]);
     }
     elements.loader.hidden=true;
+    if(practicalOnly363())maybeLaunchPracticalOnly363(); // ANATOMIQ_PRACTICAL_ONLY_363
     // A recovery notice is shown ONLY after a detailed model load failure.
     // The teacher can restore the approved model by fixing the assets and reloading.
     if(window.__AnatomIQStudentModelWarning){
@@ -3181,6 +3184,7 @@ function studentHistoryQueue(){
   studentHistoryTimer=setTimeout(studentHistoryPush,65);
 }
 async function studentHistoryCommand(action){
+  if(practicalOnly363())return false; // ANATOMIQ_PRACTICAL_ONLY_363
   if(guidedAccessActive() && action!=='reset')return;
   if(teacherMode||studentHistoryApplying||!sceneRoot||studentAssetBusy||studentHistoryIndex<0)return false;
   if(studentHistoryChapter!==activeChapter){studentHistoryBegin();if(action!=='reset')return false;}
@@ -3303,7 +3307,7 @@ function renderChapterUI(){
   syncGuidedAccess();
   const count=chapters.length;
   if(!count)return;
-  const nav=$('chapter-nav');nav.hidden=practicalActive||(count<2&&!(practicalConfig.on&&!teacherMode&&(!guidedAccessActive()||guided.isFinalPracticalEnabled()))); // ANATOMIQ_PRACTICAL_RESUME_361
+  const nav=$('chapter-nav');nav.hidden=practicalActive||practicalOnly363()||(count<2&&!(practicalConfig.on&&!teacherMode&&(!guidedAccessActive()||guided.isFinalPracticalEnabled()))); // ANATOMIQ_PRACTICAL_RESUME_361
   $('chapter-count').textContent=`${count} chapter${count===1?'':'s'}${practicalConfig.on&&(!guidedAccessActive()||guided.isFinalPracticalEnabled())?' + practical':''}`;
   $('chapter-progress').textContent=practicalActive?'PRACTICAL · FINAL CHAPTER':`CHAPTER ${activeChapter+1} OF ${count+(practicalConfig.on&&!teacherMode&&(!guidedAccessActive()||guided.isFinalPracticalEnabled())?1:0)}`;
   $('previous-chapter').disabled=activeChapter===0&&!practicalActive;
@@ -3376,7 +3380,7 @@ function polishRevealChapter(layer){
  installChapterTransitionMenus();
 
 async function switchChapter(index){
-  if(practicalActive&&!teacherMode)return; // ANATOMIQ_PRACTICAL_RESUME_361 prevent keyboard/menu bypass
+  if(!teacherMode&&(practicalActive||practicalOnly363()))return; // ANATOMIQ_PRACTICAL_RESUME_361 prevent keyboard/menu bypass
   if(!teacherMode&&!guided.canAdvance(index)){guided.focusPanel();return;}
   if(__anat254IrisBusy || !sceneRoot || studentAssetBusy || index<0 || index>=chapters.length || index===activeChapter)return;
   if(teacherMode){try{chapters[activeChapter]=snapshotScene();}catch(error){showToast(error.message);return;}}
@@ -4232,6 +4236,7 @@ async function loadProject(data){
   chapters=(project.v===1?[project]:project.chapters).map(ch=>upgradeLegacyScene(ch,structures.length,sceneFingerprint));
   activeChapter=!teacherMode?0:(project.v===1?0:project.start);
   practicalConfig=normalizePracticalTargetDisplay(project.v===2?project.practical:null);
+  if(!teacherMode)document.body.classList.toggle('anat-practical-only-363',practicalOnly363()); // ANATOMIQ_PRACTICAL_ONLY_363
   publishPermissions=project.v===2 && project.sp ? {...project.sp} : {...STUDY_PERMISSIONS};
   if(!teacherMode){
     // Old lessons have no 'ot' field: retain the legacy exploration-dependent toolbar.
@@ -5732,9 +5737,31 @@ practicalCloud360.onConfirmed(()=>{
   if(exit&&exit.textContent==='View Lesson Certificate')exit.disabled=false;
 });
 practicalCloud360.start(); // ANATOMIQ_PRACTICAL_CLOUD_360
+let practicalOnlyStartPending363=false;
+function maybeLaunchPracticalOnly363(){
+  if(!practicalOnly363()||!sceneRoot||!elements.loader.hidden||practicalActive||practicalOnlyStartPending363)return;
+  if(practicalConfig.tracking==='google'&&!practicalCloud360.session()?.email)return;
+  practicalOnlyStartPending363=true;
+  queueMicrotask(async()=>{
+    try{await startPractical('all');}
+    catch(error){console.error('Practical-only startup failed:',error);showToast('Practical could not start: '+error.message);}
+    finally{practicalOnlyStartPending363=false;}
+  });
+}
+window.addEventListener('message',event=>{
+  if(!practicalOnly363()||practicalConfig.tracking!=='google'||event.source!==window.parent||
+    !/^https:\/\/(?:script\.google\.com|script\.googleusercontent\.com)$/.test(event.origin)||
+    event.data?.type!=='ANATOMIQ_PRACTICAL_READY_V1')return;
+  // The verified school bridge processes READY before this listener.
+  queueMicrotask(()=>{
+    const session=practicalCloud360.session();
+    if(session?.email&&session.key===event.data.key)maybeLaunchPracticalOnly363();
+  });
+}); // ANATOMIQ_PRACTICAL_ONLY_363
 let studentPracticalSetupOpening=false;
 async function startPractical(chapterChoice=undefined){
-  if(guidedAccessActive()&&!guided.canStartFinalPractical())return;
+  if(practicalOnly363())chapterChoice='all'; // ANATOMIQ_PRACTICAL_ONLY_363
+  if(!practicalOnly363()&&guidedAccessActive()&&!guided.canStartFinalPractical())return;
   if(guidedAccessActive()&&chapterChoice===undefined)chapterChoice='all';
   // ANATOMIQ_GRADED_PRACTICAL_358 — graded chapters override student defaults.
   const assessmentConfig358=practicalConfig.graded
@@ -5749,8 +5776,7 @@ async function startPractical(chapterChoice=undefined){
     if(studentPracticalSetupOpening)return; // Ignore rapid double taps while the chooser is open.
     studentPracticalSetupOpening=true;
     try{
-      const chapterPool=Array.isArray(practicalConfig.chapterRules)
-         ?filterPracticalPool(practicalPool(),assessmentConfig358,chapters):practicalPool();
+      const chapterPool=scopedPracticalCandidates363(practicalPool(),assessmentConfig358,chapters,{},filterPracticalPool); // ANATOMIQ_PRACTICAL_ONLY_363
        const chapterConfig=Array.isArray(practicalConfig.chapterRules)?{...assessmentConfig358,off:[]}:assessmentConfig358;
        const choice=await chooseStudentPracticalChapter({chapters,candidates:chapterPool,config:chapterConfig});
       if(choice===null)return;
@@ -5776,14 +5802,14 @@ async function startPractical(chapterChoice=undefined){
   if(divisionScope){divisionNavReset(false);refreshVisibility(true);}
   if(practicalActive){renderChapterUI();return;}
   const chapterRulesEnabled=Array.isArray(practicalConfig.chapterRules);
-   const eligiblePool=chapterRulesEnabled
-     ?filterPracticalPool(practicalPool(),practicalConfig,chapters,scopedConfig):practicalPool();
+  const eligiblePool=scopedPracticalCandidates363(practicalPool(),assessmentConfig358,chapters,scopedConfig,filterPracticalPool); // ANATOMIQ_PRACTICAL_ONLY_363
    const attemptSettings=chapterRulesEnabled?{...scopedConfig,off:[]}:scopedConfig;
    let qs=practicalAttempt(eligiblePool,structures,attemptSettings);
    const existing361=practicalResume361.get();
    let restored361=null;
    if(existing361){
-     restored361=restoreQuestions(existing361,practicalPool(),practicalAnswerName);
+     restored361=draftMatchesEligible363(existing361,eligiblePool)
+       ?restoreQuestions(existing361,eligiblePool,practicalAnswerName):null; // ANATOMIQ_PRACTICAL_ONLY_363
      if(!restored361){
        showToast('This saved Practical no longer matches the published anatomy. Ask your teacher to restore the original version; your answers have not been erased.');
        return;
@@ -5810,7 +5836,7 @@ async function startPractical(chapterChoice=undefined){
 }
 function practicalLeave(restoreChapter=false){
    // Retain checkpoints for interrupted graded assessments; never delete on error.
-   $('practical-exit').hidden=false;document.body.classList.remove('practical-graded-running'); // ANATOMIQ_PRACTICAL_RESUME_361
+   $('practical-exit').hidden=practicalOnly363();document.body.classList.remove('practical-graded-running'); // ANATOMIQ_PRACTICAL_ONLY_363 // ANATOMIQ_PRACTICAL_RESUME_361
   practicalClearHighlight();practicalActive=false;practicalState=null;practicalBusy=false;
   guided.renderStudent();document.body.classList.remove('practical-active');$('practical-panel').hidden=true;$('practical-panel').classList.remove('anat347-report-mode');$('practical-panel').classList.remove('anat348-review-mode');practicalReviewClear348();
   if(restoreChapter&&chapters[activeChapter])void applyScene(chapters[activeChapter]).then(renderChapterUI).catch(console.warn);
@@ -6003,6 +6029,7 @@ $('practical-retake')?.addEventListener('click',async()=>{
   await startPractical(studentPracticalChapterScope); // ANATOMIQ_PRACTICAL_RESUME_361
 });
 $('practical-exit')?.addEventListener('click',()=>{
+  if(practicalOnly363())return; // ANATOMIQ_PRACTICAL_ONLY_363
   if(!practicalActive||practicalBusy)return;
   if(practicalConfig.graded&&!practicalState?.completed)return; // ANATOMIQ_PRACTICAL_RESUME_361
   practicalLeave(true);
