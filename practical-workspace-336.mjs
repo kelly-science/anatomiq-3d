@@ -1,3 +1,4 @@
+import {schoolScriptURL,validatePracticalPublication,validateSchoolPublicationAck} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 /* ANATOMIQ_PRACTICAL_WORKSPACE_336
  * Teacher full-page editor + chapter-specific Practical eligibility.
  * This module does not change the saved 3D visibility bitmaps.
@@ -62,7 +63,17 @@ function button(label,cls='',onClick){const el=element('button',cls,label);el.ty
 function labelControl(title,control){const outer=element('label','anat336-field');outer.append(element('span','anat336-field-label',title),control);return outer;}
 const matching=(group,query)=>`${group.name||''} ${group.system||''} ${group.tissue||''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase());
 
-export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,saveConfig,getLessonTitle}){
+export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,saveConfig,getLessonTitle,publishPractical}){
+  let publishState362=null;
+  window.addEventListener('message',event=>{
+    const state=publishState362;
+    if(!state?.requestId||!state?.scriptUrl||state.url)return;
+    const result=validateSchoolPublicationAck(event,state.requestId,state.scriptUrl);
+    if(!result)return;
+    state.url=result.url;state.busy=false;
+    state.message=result.existing?'Existing school Practical registration confirmed.':'School Practical registered. Copy the student link below.';
+    if(tab==='publish'&&draft)render();
+  }); // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
   if(!trigger||typeof getChapters!=='function'||typeof saveConfig!=='function')throw new Error('Practical workspace requires teacher menu and lesson callbacks.');
   let draft=null,initial='',selected=0,tab='questions',query='',returnFocus=null,dialogOpen=false,poolCache=[];
   const root=element('section','anat336-workspace');root.id='anat336-workspace';root.hidden=true;
@@ -230,46 +241,67 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     pane.append(area);
   }
   // ANATOMIQ_PRACTICAL_CLOUD_360 — a registered school link is the only Google tracking route.
+  // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362 — Studio owns Practical publication.
+  // The Apps Script dashboard is for results and managing already-published tests.
   function renderPublish(){
     const pane=$('anat336-editor');pane.replaceChildren();
-    pane.append(textRow('Publish & tracking','Save these settings, publish the lesson, then register its URL using your school Practical dashboard.'));
+    pane.append(textRow('Publish Practical','Configure assessment tracking here. School publishing automatically registers the test after its lesson is published to GitHub.'));
     const area=element('div','anat336-panel');
-    area.append(element('h3','','Graded results destination'));
+    area.append(element('h3','','Results destination'));
     const chooser=element('select');chooser.setAttribute('aria-label','Practical tracking destination');
     for(const [value,name] of [['local','Local device'],['google','Google Apps Script · school account']]){
       const opt=element('option','',name);opt.value=value;chooser.append(opt);
     }
-    chooser.value=draft.tracking==='google'?'google':'local';
-    chooser.disabled=draft.graded!==true;
-    chooser.addEventListener('change',()=>{draft.tracking=chooser.value;render();});
+    chooser.value=draft.tracking==='google'?'google':'local';chooser.disabled=draft.graded!==true;
+    chooser.addEventListener('change',()=>{draft.tracking=chooser.value;publishState362=null;render();});
     area.append(labelControl('Results tracking',chooser));
-    if(draft.graded!==true){area.append(element('p','anat336-help','Enable Graded Practical under Assessment to configure school tracking.'));}
-    else if(chooser.value==='local'){
-      area.append(element('p','anat336-help','Local results are saved on the student device and are not automatically sent to the teacher.'));
+    if(draft.graded!==true){
+      area.append(element('p','anat336-help','First enable Graded Practical on the Assessment tab.'));
+    }else if(chooser.value==='local'){
+      area.append(element('p','anat336-help','Local results stay on the student device. Save your changes, then use the normal lesson publishing workflow if you want a student link.'));
     }else{
-      area.append(element('p','anat336-help','School tracking requires an existing district Apps Script deployment and its authenticated Practical Portal. Ordinary GitHub lesson links do not submit cloud grades.'));
+      const intro=element('p','anat336-help','AnatomIQ will save the Practical, publish the lesson with your existing GitHub connection, and open the authenticated school registration page. You do not need to publish again in the Results dashboard.');area.append(intro);
       const entry=element('input');entry.type='url';entry.placeholder='https://script.google.com/macros/s/.../exec';
-      entry.setAttribute('aria-label','School Apps Script web app URL');
+      entry.setAttribute('aria-label','School Apps Script Web app URL');
       try{entry.value=localStorage.getItem('anatomiq-practical-teacher-script-360')||'';}catch{}
-      const remember=()=>{try{localStorage.setItem('anatomiq-practical-teacher-script-360',entry.value.trim());}catch{}};
-      entry.addEventListener('change',remember);area.append(labelControl('Teacher Apps Script URL (this browser only)',entry));
-      const open=element('button','anat336-button','Open Practical Dashboard');open.type='button';
-      open.addEventListener('click',()=>{
-        remember();let u;try{u=new URL(entry.value.trim());}catch{alert('Enter your school Apps Script /exec URL first.');return;}
-        if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!u.pathname.startsWith('/macros/s/')||!u.pathname.endsWith('/exec')){
-          alert('Use a valid script.google.com/macros/s/.../exec deployment URL.');return;
-        }
-        u.search='?view=practicals';u.hash='';window.open(u.toString(),'_blank','noopener');
-      });area.append(open);
-      const steps=element('ol','anat336-help');
-      for(const item of ['Save this Practical and publish its student lesson URL.',
-        'Open the school dashboard and register that published lesson, selected chapters, and retake policy.',
-        'Share the generated school Practical link, NOT the ordinary GitHub student link.',
-        'Test one signed-in student submission and verify it in the teacher dashboard.']){
-        const li=element('li','',item);steps.append(li);
+      area.append(labelControl('School Apps Script Web app URL',entry));
+      const publish=element('button','anat336-button primary','Publish Graded Practical');publish.type='button';
+      publish.disabled=publishState362?.busy===true;
+      const state=element('p','anat336-help');state.setAttribute('role','status');
+      state.textContent=publishState362?.message||'A GitHub publishing connection is required. Set it up once through File → Publish if you have not connected yet.';
+      publish.addEventListener('click',async()=>{
+        if(publishState362?.busy)return;
+        let script;
+        try{script=schoolScriptURL(entry.value);validatePracticalPublication(draft);}
+        catch(error){state.textContent=error.message;return;}
+        try{localStorage.setItem('anatomiq-practical-teacher-script-360',script);}catch{}
+        if(!save())return;
+        // Created per click, then stored before the browser opens the portal.
+        const requestId='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,19);
+        publishState362={requestId,scriptUrl:script,busy:true,message:'Publishing lesson to GitHub…',url:null};
+        publish.disabled=true;state.textContent=publishState362.message;
+        try{
+          const result=await publishPractical({config:clone(draft),title:getLessonTitle?.()||'AnatomIQ Practical',scriptUrl:script,requestId});
+          if(!result){publishState362.message='Publication cancelled. No school assessment registered.';}
+          else{publishState362.registrationUrl=result.registrationUrl;
+            if(!publishState362.url)publishState362.message='GitHub lesson published. The school registration window is confirming your teacher account. Copy the student link there after confirmation.';}
+        }catch(error){publishState362.message='Publication not completed: '+(error?.message||String(error));}
+        finally{publishState362.busy=false;render();}
+      });
+      area.append(publish,state);
+      if(publishState362?.registrationUrl&&!publishState362.url){
+        const retry=element('a','anat336-button','Open school registration window');retry.href=publishState362.registrationUrl;
+        retry.target='_blank';retry.rel='noopener';area.append(retry);
       }
-      area.append(steps);
-      area.append(element('p','anat336-help','The school portal verifies the student email and period. Scores are still calculated by the student browser; this is not tamper-proof grading.'));
+      if(publishState362?.url){
+        area.append(element('h3','','School student link — ready to share'));
+        const resultInput=element('input');resultInput.readOnly=true;resultInput.value=publishState362.url;
+        resultInput.setAttribute('aria-label','School Practical student link');area.append(resultInput);
+        const copy=element('button','anat336-button','Copy student link');copy.type='button';
+        copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(resultInput.value);state.textContent='Student link copied.';}
+          catch{resultInput.select();state.textContent='Select and copy the student link.';}});area.append(copy);
+      }
+      area.append(element('p','anat336-help','Use the school link—not the ordinary GitHub link—for graded submissions. The school verifies each student account; answer scoring is still performed by the browser.'));
     }
     pane.append(area);
   }

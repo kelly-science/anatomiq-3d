@@ -20,10 +20,11 @@ import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // A
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
+import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -64,7 +65,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.146'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.147'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4291,6 +4292,66 @@ function cloudCurrentLessonSlug(){
   const target=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
   try{return githubEditingRef?.slug||target?.slug||normalizeSlug($('project-title').value||'lesson');}catch{return 'anatomy-lesson';}
 }
+// ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362 — publish from Practical Setup with existing GitHub credentials.
+// The school Apps Script registration page is the only trusted teacher write path.
+async function publishGradedPractical362({config,title,scriptUrl,requestId}){
+  const policy=validatePracticalPublication(config);
+  const school=schoolScriptURL(scriptUrl);
+  if(!teacherMode||!sceneRoot)throw new Error('Open the teacher Studio to publish a Practical.');
+  if(!cloudVerified||!cloudToken)throw new Error('Connect or unlock GitHub under File → Publish Lesson, then return to Practical Setup → Publish.');
+  if(cloudBusy)throw new Error('Another GitHub publishing operation is in progress.');
+  const prefs=cloudSavedPreferences();
+  const r=lessonRef($('cloud-owner')?.value||cloudVerified.owner||prefs.owner,
+    $('cloud-repo')?.value||cloudVerified.repo||prefs.repo,
+    $('cloud-branch')?.value||cloudVerified.branch||prefs.branch||'main',
+    $('cloud-slug')?.value||cloudCurrentLessonSlug());
+  if(r.owner.toLowerCase()!==cloudVerified.owner.toLowerCase()||r.repo.toLowerCase()!==cloudVerified.repo.toLowerCase()||r.branch!==cloudVerified.branch)
+    throw new Error('The selected publishing repository differs from the connected GitHub account.');
+  if(r.owner.toLowerCase()!=='kelly-science'||!['anatomiq-3d','anatomiq-lessons'].includes(r.repo.toLowerCase()))
+    throw new Error('School tracking supports the kelly-science/anatomiq-3d and anatomiq-lessons repositories.');
+  publishPermissions={...currentPublishPermissions()};
+  const project=snapshotProject();
+  if(project?.practical?.graded!==true||project.practical.tracking!=='google')
+    throw new Error('Save your Graded Practical with Google tracking before publishing.');
+  const selected=assessmentChapters(project.practical,chapters.length);
+  if(selected.join(',')!==policy.chapters.join(',')||Boolean(project.practical.allowRetakes)!==policy.allowRetakes)
+    throw new Error('The saved assessment differs from the publish settings. Save and retry.');
+  // Create the browser tab during this direct click, BEFORE awaiting GitHub.
+  // Browsers typically block tabs opened only after an asynchronous upload.
+  const popup=window.open('about:blank','_blank');
+  if(!popup)throw new Error('Allow the school registration pop-up for AnatomIQ, then retry. Nothing was published.');
+  try{
+    popup.document.title='AnatomIQ · Publishing Practical';
+    popup.document.body.textContent='Publishing your AnatomIQ Practical to GitHub. School registration will begin after GitHub confirms it.';
+  }catch{}
+  cloudBusy=true;
+  try{
+    const known=libraryLessonId?cloudSavedTargets()[libraryLessonId]:null;
+    const safeUpdate=known&&known.owner.toLowerCase()===r.owner.toLowerCase()&&known.repo.toLowerCase()===r.repo.toLowerCase()&&known.branch===r.branch&&known.slug===r.slug;
+    const result=await publishToGitHub({ref:r,token:cloudToken,project,
+      confirmOverwrite:()=>safeUpdate||confirm(`This will replace the published lesson at ${r.owner}/${r.repo}/lessons/${r.slug}.json. Continue?`)});
+    if(result.cancelled){try{popup.close();}catch{}return null;}
+    githubEditingRef=r;
+    try{
+      const saved=await saveLesson(project,libraryLessonId);
+      libraryLessonId=saved.id;lastLibrarySnapshot=JSON.stringify(saved.project);saveDraft(false);
+      const targets=cloudSavedTargets();targets[saved.id]=r;
+      localStorage.setItem(CLOUD_TARGETS_KEY,JSON.stringify(targets));
+      noteLibraryState(`✓ Published graded Practical: ${project.t}`);
+    }catch(error){console.warn('Published Practical; could not update local library',error);}
+    const lessonUrl=studentLink('https://kelly-science.github.io/anatomiq-3d/',r);
+    const publication={lessonUrl,title:String(title||project.t||'Practical').trim().slice(0,120),
+      chapters:policy.chapters,allowRetakes:policy.allowRetakes,requestId,origin:window.location.origin};
+    const registrationUrl=practicalRegistrationURL(school,publication);
+    try{popup.location.replace(registrationUrl);}
+    catch(error){throw new Error('GitHub published the lesson, but the school registration tab could not open. Complete registration using the link in Practical Setup. '+error.message);}
+    return {registrationUrl,lessonUrl,commit:result.commit};
+  }catch(error){
+    try{popup.document.body.textContent='School publication needs attention: '+(error.message||String(error));}catch{}
+    throw error;
+  }finally{cloudBusy=false;}
+}
+
 function cloudOpenPublishing(){
   window.AnatomIQCloudProgress283?.preparePublish(!guided.config.free && guided.config.chapters.some(ch=>ch.length>0));
   const preferences=cloudSavedPreferences();
@@ -5403,6 +5464,7 @@ const practicalWorkspace336=teacherMode?createPracticalWorkspace({
   getChapters:()=>chapters,
   getPool:()=>practicalPool(),
   getLessonTitle:()=>$('project-title').value,
+  publishPractical:options=>publishGradedPractical362(options), // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
   getConfig:()=>({...practicalConfig,chapterRules:practicalConfig.chapterRules}),
   saveConfig:next=>{
     practicalConfig=normalizePracticalTargetDisplay(next);
