@@ -8,7 +8,7 @@ export function normalPractical(value){
     off:Array.isArray(value.off)?[...new Set(value.off.filter(v=>typeof v==='string'&&/^(s:\d{1,5}|l:[0-9A-Za-z-]{6,64})$/.test(v)))].slice(0,3000):[],
      chapters:Array.isArray(value.chapters)?[...new Set(value.chapters.filter(i=>Number.isInteger(i)&&i>=0&&i<12))]:null,
       graded:value.graded===true,assessmentChapters:Array.isArray(value.assessmentChapters)?[...new Set(value.assessmentChapters.filter(i=>Number.isInteger(i)&&i>=0&&i<12))]:null,
-      studentChoice:value.studentChoice===true,allowRetakes:value.allowRetakes===true,tracking:"local"}; // ANATOMIQ_GRADED_PRACTICAL_358
+      studentChoice:value.studentChoice===true,allowRetakes:value.allowRetakes===true,tracking:value.tracking==='google'?'google':'local'}; // ANATOMIQ_GRADED_PRACTICAL_358 // ANATOMIQ_PRACTICAL_CLOUD_360
 }
 export function newPracticalLabelId(){
   return 'q-'+(globalThis.crypto?.randomUUID?.()||`${Date.now().toString(36)}-${Math.random().toString(36).slice(2,14)}`);

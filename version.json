@@ -1,6 +1,6 @@
 {
-  "version": "2.2.144",
+  "version": "2.2.145",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Local: graded Practical Assessment tab, selected chapters and local attempt records. Google tracking pending authenticated Apps Script backend."
+  "notes": "Local: graded Practical cloud portal handshake, school submission receipt/retry, Publish dashboard setup; existing local and Guided tracking preserved."
 }

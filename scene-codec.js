@@ -162,7 +162,7 @@ export function validateProject(project) {
     if(p.graded!==undefined&&typeof p.graded!=='boolean')throw new Error('Invalid graded Practical setting.');
     if(p.studentChoice!==undefined&&typeof p.studentChoice!=='boolean')throw new Error('Invalid student chapter-choice setting.');
     if(p.allowRetakes!==undefined&&typeof p.allowRetakes!=='boolean')throw new Error('Invalid Practical retake setting.');
-    if(p.tracking!==undefined&&p.tracking!=='local')throw new Error('Unsupported Practical tracking provider; the school backend must be configured separately.');
+    if(p.tracking!==undefined&&!['local','google'].includes(p.tracking))throw new Error('Unsupported Practical tracking provider.'); // ANATOMIQ_PRACTICAL_CLOUD_360
     if(p.assessmentChapters!==undefined&&p.assessmentChapters!==null){
       if(!Array.isArray(p.assessmentChapters)||!p.assessmentChapters.length||p.assessmentChapters.length>MAX_CHAPTERS||
          p.assessmentChapters.some(i=>!Number.isInteger(i)||i<0||i>=project.chapters?.length)||

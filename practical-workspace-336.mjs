@@ -229,14 +229,48 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     }
     pane.append(area);
   }
+  // ANATOMIQ_PRACTICAL_CLOUD_360 — a registered school link is the only Google tracking route.
   function renderPublish(){
     const pane=$('anat336-editor');pane.replaceChildren();
-    pane.append(textRow('Practical publishing & tracking','Save this setup, then publish the lesson using the existing Teacher Studio publishing workflow.'));
+    pane.append(textRow('Publish & tracking','Save these settings, publish the lesson, then register its URL using your school Practical dashboard.'));
     const area=element('div','anat336-panel');
-    area.append(element('h3','','Results destination'));
-    const local=element('label','anat336-radio'),check=element('input');check.type='radio';check.checked=true;check.disabled=true;
-    local.append(check,element('span','','Local browser results (available for graded Practicals)'));area.append(local);
-    area.append(element('p','anat336-help','Google Apps Script school sign-in is not enabled in this build. A verified server-side submission and identity check must be deployed first. The existing Guided Lesson tracking endpoint is not used for Practical grades.'));
+    area.append(element('h3','','Graded results destination'));
+    const chooser=element('select');chooser.setAttribute('aria-label','Practical tracking destination');
+    for(const [value,name] of [['local','Local device'],['google','Google Apps Script · school account']]){
+      const opt=element('option','',name);opt.value=value;chooser.append(opt);
+    }
+    chooser.value=draft.tracking==='google'?'google':'local';
+    chooser.disabled=draft.graded!==true;
+    chooser.addEventListener('change',()=>{draft.tracking=chooser.value;render();});
+    area.append(labelControl('Results tracking',chooser));
+    if(draft.graded!==true){area.append(element('p','anat336-help','Enable Graded Practical under Assessment to configure school tracking.'));}
+    else if(chooser.value==='local'){
+      area.append(element('p','anat336-help','Local results are saved on the student device and are not automatically sent to the teacher.'));
+    }else{
+      area.append(element('p','anat336-help','School tracking requires an existing district Apps Script deployment and its authenticated Practical Portal. Ordinary GitHub lesson links do not submit cloud grades.'));
+      const entry=element('input');entry.type='url';entry.placeholder='https://script.google.com/macros/s/.../exec';
+      entry.setAttribute('aria-label','School Apps Script web app URL');
+      try{entry.value=localStorage.getItem('anatomiq-practical-teacher-script-360')||'';}catch{}
+      const remember=()=>{try{localStorage.setItem('anatomiq-practical-teacher-script-360',entry.value.trim());}catch{}};
+      entry.addEventListener('change',remember);area.append(labelControl('Teacher Apps Script URL (this browser only)',entry));
+      const open=element('button','anat336-button','Open Practical Dashboard');open.type='button';
+      open.addEventListener('click',()=>{
+        remember();let u;try{u=new URL(entry.value.trim());}catch{alert('Enter your school Apps Script /exec URL first.');return;}
+        if(u.protocol!=='https:'||u.hostname!=='script.google.com'||!u.pathname.startsWith('/macros/s/')||!u.pathname.endsWith('/exec')){
+          alert('Use a valid script.google.com/macros/s/.../exec deployment URL.');return;
+        }
+        u.search='?view=practicals';u.hash='';window.open(u.toString(),'_blank','noopener');
+      });area.append(open);
+      const steps=element('ol','anat336-help');
+      for(const item of ['Save this Practical and publish its student lesson URL.',
+        'Open the school dashboard and register that published lesson, selected chapters, and retake policy.',
+        'Share the generated school Practical link, NOT the ordinary GitHub student link.',
+        'Test one signed-in student submission and verify it in the teacher dashboard.']){
+        const li=element('li','',item);steps.append(li);
+      }
+      area.append(steps);
+      area.append(element('p','anat336-help','The school portal verifies the student email and period. Scores are still calculated by the student browser; this is not tamper-proof grading.'));
+    }
     pane.append(area);
   }
   function renderPreview(){
