@@ -1,13 +1,16 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357", // ANATOMIQ_CHAPTER_IMPORT_357
+  "./scene-codec.js?rev=311-multi-identify&practical=336&presentation=355&assessment=358", // ANATOMIQ_GRADED_PRACTICAL_358
+  "./practical-assessment-358.mjs?rev=358", // ANATOMIQ_GRADED_PRACTICAL_358
+  "./practical-quiz.js?rev=307&pool=349", // ANATOMIQ_GRADED_PRACTICAL_358
+  "./practical-workspace-336.mjs?rev=336&launch=337&assessment=358", // ANATOMIQ_GRADED_PRACTICAL_358
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357&assessment=358", // ANATOMIQ_GRADED_PRACTICAL_358
   "./chapter-import-core-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
   "./chapter-import-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
   "./chapter-import-357.css?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
 
   "./workspace-tabs-241.js?rev=250&v=2.2.75&tabs=345&duplicate=356", // ANATOMIQ_DUPLICATE_TAB_356
 
-  "./scene-codec.js?rev=311-multi-identify&practical=336&presentation=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
   "./lesson-presentation-354.js?rev=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
   "./lesson-presentation-354.css?rev=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
 
@@ -19,7 +22,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./model-manager-353.css?rev=353", // ANATOMIQ_MODEL_MANAGER_353
 
   "./interface-2221.js?rev=workspace241&v=2.2.75&a11y=304&updates=352", // ANATOMIQ_STUDENT_UPDATES_352 canonical student UI entry
-  "./practical-quiz.js?rev=307&pool=349", // ANATOMIQ_PRACTICAL_MODEL_POOL_349
   "./practical-report-348.css?rev=348&labelreview=351",
   "./practical-report-347.css?rev=347",
   "./practical-report-347.mjs?rev=347",
@@ -31,7 +33,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./guided-workspace-344.js?rev=344",
   "./guided-editor-visuals-343.mjs?rev=343",
   "./lesson-settings-344.js?rev=344",
-  "./practical-workspace-336.mjs?rev=336&launch=337", // ANATOMIQ_PRACTICAL_WORKSPACE_336
   "./practical-workspace-336.css?rev=336", // ANATOMIQ_PRACTICAL_WORKSPACE_336
   "./menu-grammar-335.js?rev=335", // ANATOMIQ_MENU_SENTENCE_CASE_335
   "./menu-grammar-335.css?rev=335", // ANATOMIQ_MENU_SENTENCE_CASE_335
@@ -92,7 +93,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./guided-access-297.css?rev=297&guidedpanel=298&guidedlabels=310",
   "./guided-final-practical-308.css?rev=308",
   "./guided-lessons-269j.mjs?rev=308-final-practical",
-  "./practical-quiz.js?rev=307",
   "./motion-blur-279.mjs?rev=motionblur279b&defaults=306",
   "./cinematic-dof-268.mjs?rev=motionblur279b&defaults=306",
   "./view-effects-304.js?rev=304&defaults=306",
@@ -245,7 +245,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./nervous-model.js",
   "./offline-shell-280.js",
   "./painted-hotspot-274.mjs?rev=271-hotspot-dissect-carry-278-local",
-  "./practical-quiz.js",
   "./realistic-eye-model.js?rev=2215",
   "./recent-lessons-281.js?rev=281",
   "./render-performance.js",
@@ -255,7 +254,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./responsive-chapters-panels.js?rev=233",
   "./responsive-chapters-panels.js?rev=233&v=2.2.74",
   "./scene-assets.js",
-  "./scene-codec.js",
   "./scene-history.js",
   "./selection-2217.css",
   "./selection-2217.css?rev=2217&v=2.2.74",

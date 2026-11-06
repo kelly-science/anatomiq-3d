@@ -20,7 +20,8 @@ import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // A
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical} from './practical-quiz.js?rev=307&pool=349';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358'; // ANATOMIQ_GRADED_PRACTICAL_358
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -61,7 +62,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.143'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.144'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5655,10 +5656,16 @@ async function practicalShowQuestion(){
   }
 }
 let studentPracticalChapterScope='all';
+let gradedPracticalStudent358=''; // ANATOMIQ_GRADED_PRACTICAL_358
 let studentPracticalSetupOpening=false;
 async function startPractical(chapterChoice=undefined){
   if(guidedAccessActive()&&!guided.canStartFinalPractical())return;
   if(guidedAccessActive()&&chapterChoice===undefined)chapterChoice='all';
+  // ANATOMIQ_GRADED_PRACTICAL_358 — graded chapters override student defaults.
+  const assessmentConfig358=practicalConfig.graded
+    ?{...practicalConfig,chapters:assessmentChapters(practicalConfig,chapters.length)}:practicalConfig;
+  if(practicalConfig.graded&&chapterChoice===undefined&&practicalConfig.studentChoice!==true)chapterChoice='all';
+
   if(teacherMode||!practicalConfig.on||practicalBusy)return;
   if(practicalActive){renderChapterUI();return;}
   // The chooser precedes question generation; the teacher's allowed chapters are the upper limit.
@@ -5667,14 +5674,24 @@ async function startPractical(chapterChoice=undefined){
     studentPracticalSetupOpening=true;
     try{
       const chapterPool=Array.isArray(practicalConfig.chapterRules)
-         ?filterPracticalPool(practicalPool(),practicalConfig,chapters):practicalPool();
-       const chapterConfig=Array.isArray(practicalConfig.chapterRules)?{...practicalConfig,off:[]}:practicalConfig;
+         ?filterPracticalPool(practicalPool(),assessmentConfig358,chapters):practicalPool();
+       const chapterConfig=Array.isArray(practicalConfig.chapterRules)?{...assessmentConfig358,off:[]}:assessmentConfig358;
        const choice=await chooseStudentPracticalChapter({chapters,candidates:chapterPool,config:chapterConfig});
       if(choice===null)return;
       return await startPractical(choice);
     }finally{studentPracticalSetupOpening=false;}
   }
-  const scopedConfig=practicalScopedConfig(practicalConfig,chapters,chapterChoice);
+  if(practicalConfig.graded){
+    if(!assessmentChapters(practicalConfig,chapters.length).length){showToast('The teacher has not selected any graded Practical chapters.');return;}
+    try{
+      if(!gradedPracticalStudent358)gradedPracticalStudent358=requestGradedStudentName();
+      if(!gradedPracticalStudent358)return;
+      if(!practicalConfig.allowRetakes&&hasLocalGradedAttempt(gradedPracticalStudent358)){
+        showToast('This graded Practical already has a completed local attempt for this student.');return;
+      }
+    }catch(error){showToast('Could not prepare local grade tracking: '+error.message);return;}
+  }
+  const scopedConfig=practicalScopedConfig(assessmentConfig358,chapters,chapterChoice);
   if(!scopedConfig){showToast('This chapter is not enabled for the practical.');return;}
   if(divisionScope){divisionNavReset(false);refreshVisibility(true);}
   if(practicalActive){renderChapterUI();return;}
@@ -5686,7 +5703,7 @@ async function startPractical(chapterChoice=undefined){
   studentPracticalChapterScope=chapterChoice;
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
   $('practical-exit').textContent='Exit';
-  practicalActive=true;guided.renderStudent();practicalState={questions:qs,index:0,answers:[],selected:null};
+  practicalActive=true;guided.renderStudent();practicalState={questions:qs,index:0,answers:[],selected:null,attemptId358:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,14)};
   setSelection(null);
   document.body.classList.add('practical-active');
   $('practical-panel').hidden=false;$('practical-panel').classList.remove('anat347-report-mode');$('practical-panel').classList.remove('anat348-review-mode');practicalReviewClear348();
@@ -5820,6 +5837,16 @@ function practicalFinish(){
   if(!practicalState)return;
   practicalClearHighlight();
   const result=gradePractical(practicalState.questions,practicalState.answers);
+  // ANATOMIQ_GRADED_PRACTICAL_358 — never call Guided cloud progress for a Practical grade.
+  let localGradeSaved358=false;
+  if(practicalConfig.graded){
+    try{
+      recordLocalGradedAttempt({result,answers:practicalState.answers,questions:practicalState.questions,
+        name:gradedPracticalStudent358,chapters:assessmentChapters(practicalConfig,chapters.length),
+        attemptId:practicalState.attemptId358,lessonKey:assessmentLessonKey()});
+      localGradeSaved358=true;
+    }catch(error){console.error('Practical local grade could not be stored',error);showToast('Local grade not saved: '+error.message);}
+  }
   practicalState.completed=true; // ANATOMIQ_PRACTICAL_REVIEW_348
   // ANATOMIQ_GUIDED_FINAL_PRACTICAL_308 — persist a submitted result before allowing the lesson certificate.
   const guidedFinal=guided.isFinalPracticalEnabled()&&guided.canStartFinalPractical();
@@ -5836,7 +5863,7 @@ function practicalFinish(){
     item.append(heading,text);missed.append(item);
   });
   $('practical-progress').textContent='PRACTICAL COMPLETE';
-  $('practical-message').textContent=finalSaved?'Final practical complete. Your score has been saved. Select View Lesson Certificate to finish.':'Your results are shown only in this browser. A retake will generate a new shuffle.';
+  $('practical-message').textContent=finalSaved?'Final practical complete. Your score has been saved. Select View Lesson Certificate to finish.':(practicalConfig.graded?(localGradeSaved358?'Graded result saved locally on this device. Your teacher cannot access it remotely.':'Local graded result could not be saved; notify your teacher.'):'Your results are shown only in this browser. A retake will generate a new shuffle.');
   if(finalSaved)$('practical-exit').textContent='View Lesson Certificate';
   renderPracticalReportCard348({result,questions:practicalState.questions,
     title:$('project-title')?.value||'Anatomy Practical',finalSaved,

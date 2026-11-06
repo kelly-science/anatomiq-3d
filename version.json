@@ -1,6 +1,6 @@
 {
-  "version": "2.2.143",
+  "version": "2.2.144",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Local-only: import selected compatible chapters from Scene Library or other Teacher Studio tabs, optionally with Guided activities."
+  "notes": "Local: graded Practical Assessment tab, selected chapters and local attempt records. Google tracking pending authenticated Apps Script backend."
 }

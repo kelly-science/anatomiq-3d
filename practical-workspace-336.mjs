@@ -81,7 +81,7 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
       <main class="anat336-main">
         <div class="anat336-intro"><h1 id="anat336-heading">Chapter settings</h1><p id="anat336-subheading"></p></div>
         <nav class="anat336-tabs" aria-label="Practical settings sections">
-          <button type="button" data-tab="questions">Questions</button><button type="button" data-tab="presentation">Presentation</button><button type="button" data-tab="preview">Preview</button>
+          <button type="button" data-tab="questions">Questions</button><button type="button" data-tab="presentation">Presentation</button><button type="button" data-tab="assessment">Assessment</button><button type="button" data-tab="preview">Preview</button><button type="button" data-tab="publish">Publish</button>
         </nav>
         <div id="anat336-editor" class="anat336-editor"></div>
       </main>
@@ -195,6 +195,50 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     settings.append(element('p','anat336-help','Whole-structure questions highlight the target bone. The selected marker style is used for teacher-authored labels.'));
     pane.append(settings);
   }
+  // ANATOMIQ_GRADED_PRACTICAL_358 — teacher-owned graded assessment settings.
+  function renderAssessment(){
+    const pane=$('anat336-editor');pane.replaceChildren();
+    pane.append(textRow('Graded assessment','Graded mode uses the teacher-selected chapters. Existing ungraded Practicals keep student chapter selection.'));
+    const area=element('div','anat336-panel');
+    const graded=element('input');graded.type='checkbox';graded.checked=draft.graded===true;
+    graded.addEventListener('change',()=>{
+      draft.graded=graded.checked;
+      if(draft.graded){draft.on=true;const available=chapters().map((_,i)=>i).filter(i=>!Array.isArray(draft.chapters)||draft.chapters.includes(i));
+        if(!Array.isArray(draft.assessmentChapters)||!draft.assessmentChapters.length)draft.assessmentChapters=available;}
+      render();
+    });
+    const gradedRow=element('label','anat336-toggle');gradedRow.append(graded,element('span','','Graded Practical'));area.append(gradedRow);
+    if(draft.graded){
+      area.append(element('h3','','Chapters included in this assessment'));
+      const permitted=chapters().map((_,i)=>i).filter(i=>!Array.isArray(draft.chapters)||draft.chapters.includes(i));
+      const selectedSet=new Set(Array.isArray(draft.assessmentChapters)?draft.assessmentChapters:permitted);
+      for(const i of permitted){
+        const checkbox=element('input');checkbox.type='checkbox';checkbox.checked=selectedSet.has(i);
+        checkbox.addEventListener('change',()=>{const next=new Set(selectedSet);if(checkbox.checked)next.add(i);else next.delete(i);
+          if(!next.size){checkbox.checked=true;return;}draft.assessmentChapters=[...next].sort((a,b)=>a-b);render();});
+        const row=element('label','anat336-toggle');row.append(checkbox,element('span','',`${i+1}. ${chapters()[i].t||'Untitled chapter'}`));area.append(row);
+      }
+      if(!permitted.length)area.append(element('p','anat336-help','Enable at least one chapter under Questions before grading.'));
+      const choice=element('input');choice.type='checkbox';choice.checked=draft.studentChoice===true;
+      choice.addEventListener('change',()=>{draft.studentChoice=choice.checked;render();});
+      const choiceRow=element('label','anat336-toggle');choiceRow.append(choice,element('span','','Allow students to choose among these chapters (off = one combined test)'));area.append(choiceRow);
+      const retake=element('input');retake.type='checkbox';retake.checked=draft.allowRetakes===true;
+      retake.addEventListener('change',()=>{draft.allowRetakes=retake.checked;render();});
+      const retakeRow=element('label','anat336-toggle');retakeRow.append(retake,element('span','','Allow additional local attempts'));area.append(retakeRow);
+      area.append(element('p','anat336-help','Local results are retained in each student browser; they are not an authenticated school gradebook.'));
+    }
+    pane.append(area);
+  }
+  function renderPublish(){
+    const pane=$('anat336-editor');pane.replaceChildren();
+    pane.append(textRow('Practical publishing & tracking','Save this setup, then publish the lesson using the existing Teacher Studio publishing workflow.'));
+    const area=element('div','anat336-panel');
+    area.append(element('h3','','Results destination'));
+    const local=element('label','anat336-radio'),check=element('input');check.type='radio';check.checked=true;check.disabled=true;
+    local.append(check,element('span','','Local browser results (available for graded Practicals)'));area.append(local);
+    area.append(element('p','anat336-help','Google Apps Script school sign-in is not enabled in this build. A verified server-side submission and identity check must be deployed first. The existing Guided Lesson tracking endpoint is not used for Practical grades.'));
+    pane.append(area);
+  }
   function renderPreview(){
     const pane=$('anat336-editor');pane.replaceChildren();pane.append(textRow('Question-pool preview','This is the exact eligible question pool before randomized selection; it does not launch student mode.'));
     const groups=getSummary(selected);const grid=element('div','anat336-preview-grid');
@@ -213,11 +257,11 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     $('anat336-subheading').textContent='Choose testable structures independently of the anatomical scene.';
     root.querySelectorAll('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-selected',String(b.dataset.tab===tab));});
     renderSidebar();renderSummary();
-    if(tab==='presentation')renderPresentation();else if(tab==='preview')renderPreview();else renderQuestions();
+    if(tab==='presentation')renderPresentation();else if(tab==='assessment')renderAssessment();else if(tab==='publish')renderPublish();else if(tab==='preview')renderPreview();else renderQuestions();
     markState();
   }
   function save(){
-    try{saveConfig(clone(draft));initial=JSON.stringify(draft);markState();return true;}
+    try{if(draft.graded){const allowed=chapters().map((_,i)=>i).filter(i=>!Array.isArray(draft.chapters)||draft.chapters.includes(i));const selected=Array.isArray(draft.assessmentChapters)?draft.assessmentChapters:allowed;const valid=[...new Set(selected.filter(i=>allowed.includes(i)))];if(!valid.length)throw new Error('Select at least one enabled chapter for this graded Practical.');draft.assessmentChapters=valid;}saveConfig(clone(draft));initial=JSON.stringify(draft);markState();return true;}
     catch(error){$('anat336-save-state').textContent=`Could not save: ${error.message}`;return false;}
   }
   function close(){dialogOpen=false;$('anat336-confirm').hidden=true;root.hidden=true;document.body.classList.remove('anat336-open');draft=null;returnFocus?.focus?.();}

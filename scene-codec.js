@@ -158,6 +158,18 @@ export function validateProject(project) {
   if(project.practical!==undefined){const p=project.practical;
     if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!Number.isInteger(p.count)||p.count<1||p.count>60||
       !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
+    // ANATOMIQ_GRADED_PRACTICAL_358 — preserve only validated local graded settings.
+    if(p.graded!==undefined&&typeof p.graded!=='boolean')throw new Error('Invalid graded Practical setting.');
+    if(p.studentChoice!==undefined&&typeof p.studentChoice!=='boolean')throw new Error('Invalid student chapter-choice setting.');
+    if(p.allowRetakes!==undefined&&typeof p.allowRetakes!=='boolean')throw new Error('Invalid Practical retake setting.');
+    if(p.tracking!==undefined&&p.tracking!=='local')throw new Error('Unsupported Practical tracking provider; the school backend must be configured separately.');
+    if(p.assessmentChapters!==undefined&&p.assessmentChapters!==null){
+      if(!Array.isArray(p.assessmentChapters)||!p.assessmentChapters.length||p.assessmentChapters.length>MAX_CHAPTERS||
+         p.assessmentChapters.some(i=>!Number.isInteger(i)||i<0||i>=project.chapters?.length)||
+         new Set(p.assessmentChapters).size!==p.assessmentChapters.length||
+         (Array.isArray(p.chapters)&&p.assessmentChapters.some(i=>!p.chapters.includes(i))))
+        throw new Error('Invalid Graded Practical assessment chapters.');
+    }
     // 2.2.49: optional Practical chapter selection (legacy projects omit it).
     if(p.chapters!==undefined&&p.chapters!==null&&(!Array.isArray(p.chapters)||p.chapters.length>MAX_CHAPTERS||p.chapters.some(i=>!Number.isInteger(i)||i<0||i>=project.chapters?.length)||new Set(p.chapters).size!==p.chapters.length))throw new Error('Invalid practical chapter selection.');
     // ANATOMIQ_PRACTICAL_WORKSPACE_336 — chapter-scoped question pools, no scene visibility changes.
