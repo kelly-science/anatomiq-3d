@@ -138,7 +138,12 @@ export function validatePermissions(p){
   if(!p || typeof p!=='object' || Array.isArray(p) ||
     (!['ss','st','sn','sl','ex'].every(key=>typeof p[key]==='boolean') ||
       (p.ot!==undefined && typeof p.ot!=='boolean') ||
-      (p.ll!==undefined && typeof p.ll!=='boolean'))) // optional for older lessons
+      (p.ll!==undefined && typeof p.ll!=='boolean') ||
+       (p.ht!==undefined && typeof p.ht!=='boolean') ||
+       (p.hm!==undefined && typeof p.hm!=='boolean') ||
+       (p.hh!==undefined && typeof p.hh!=='boolean') ||
+       (p.sc!==undefined && typeof p.sc!=='boolean') ||
+       (p.bg!==undefined && !['classic','white'].includes(p.bg)))) // ANATOMIQ_LESSON_PRESENTATION_354; optional for older lessons
     throw new Error('Invalid student publishing permissions.');
   return p;
 }

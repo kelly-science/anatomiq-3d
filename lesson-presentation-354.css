@@ -1,0 +1,130 @@
+/* ANATOMIQ_LESSON_PRESENTATION_GRID_355 */
+/* The five options are regular cells inside the existing permissions grid. */
+.publish-permissions > .anat355-setting-card {
+  min-width:0;box-sizing:border-box;
+}
+.publish-permissions > .anat355-setting-card input[type=checkbox]{
+  flex:none;accent-color:#5db5c3;
+}
+.publish-permissions > .anat355-theme-card {
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:9px;
+}
+.publish-permissions > .anat355-theme-card > span{min-width:125px;flex:1;}
+.publish-permissions > .anat355-theme-card select{
+  flex:1 1 160px;max-width:245px;min-width:130px;
+  padding:7px 9px;border-radius:7px;
+}
+/* The three chrome components are independent lesson settings. */
+body.student-mode.anat355-hide-toolbar .viewer-panel .viewer-bottom,
+body.student-mode.anat355-hide-toolbar .viewer-panel #anat-unified-toolbar,
+body.student-mode.anat355-hide-toolbar .viewer-panel .anat-unified-toolbar{display:none!important;}
+body.student-mode.anat355-hide-menubar .anat-student-menubar{display:none!important;}
+body.student-mode.anat355-hide-header .topbar{display:none!important;}
+body.student-mode.anat354-no-screenshot #anat249-student-screenshot{display:none!important;}
+/* White lesson palette. The renderer has a transparent background, so the viewer's
+ * opaque CSS background supplies the color without recreating the Three.js scene. */
+body.student-mode.anat354-white,
+body.student-mode.anat354-white .app-shell,
+body.student-mode.anat354-white .workspace,
+body.student-mode.anat354-white .viewer-panel,
+body.student-mode.anat354-white .canvas-container,
+body.student-mode.anat354-white #canvas-container{background:#fff!important;color:#30343a!important;}
+body.student-mode.anat354-white .viewer-panel:fullscreen,
+body.student-mode.anat354-white .viewer-panel:-webkit-full-screen{background:#fff!important;}
+body.student-mode.anat354-white .topbar,
+body.student-mode.anat354-white .anat-student-menubar,
+body.student-mode.anat354-white .sidebar,
+body.student-mode.anat354-white .info-sidebar,
+body.student-mode.anat354-white .viewer-bottom .anat-unified-toolbar,
+body.student-mode.anat354-white #anat-unified-toolbar{background:#f4f5f6!important;color:#34383e!important;border-color:#c9ced2!important;box-shadow:0 2px 12px #00000013!important;}
+body.student-mode.anat354-white .anat-student-menubar .menu-trigger,
+body.student-mode.anat354-white .anat-student-menubar .menu-item,
+body.student-mode.anat354-white .anat-student-menubar .menu-dropdown,
+body.student-mode.anat354-white .anat-student-menubar .anat-menu-setting,
+body.student-mode.anat354-white .anat-student-menubar select{color:#34383e!important;}
+body.student-mode.anat354-white .anat-student-menubar .menu-dropdown,
+body.student-mode.anat354-white .anat-student-menubar select{background:#fff!important;border-color:#c6ccd1!important;box-shadow:0 8px 24px #0000001f!important;}
+body.student-mode.anat354-white .anat-student-menubar .menu-item:hover,
+body.student-mode.anat354-white .anat-student-menubar .menu-item:focus-visible,
+body.student-mode.anat354-white .anat-student-menubar .menu-trigger:hover,
+body.student-mode.anat354-white .anat-student-menubar .menu-group.is-open>.menu-trigger{background:#e2e5e8!important;color:#171b1f!important;}
+body.student-mode.anat354-white .anat-student-menubar .menu-separator{background:#ccd1d5!important;}
+body.student-mode.anat354-white .anat-unified-toolbar button,
+body.student-mode.anat354-white .anat-unified-toolbar .preset,
+body.student-mode.anat354-white .anat-unified-toolbar .anat-tool{color:#434a50!important;}
+body.student-mode.anat354-white .anat-unified-toolbar .preset.active,
+body.student-mode.anat354-white .anat-unified-toolbar button[aria-pressed="true"]{color:#20262b!important;background:#d9dfe3!important;}
+body.student-mode.anat354-white .search-wrap,
+body.student-mode.anat354-white .text-input,
+body.student-mode.anat354-white .bone-item.active{background:#fff!important;color:#333940!important;border-color:#c7cdd2!important;}
+body.student-mode.anat354-white .search-wrap input,
+body.student-mode.anat354-white .bone-item,
+body.student-mode.anat354-white .bone-tree-group summary,
+body.student-mode.anat354-white .bone-tree-subgroup summary{color:#4c535a!important;}
+body.student-mode.anat354-white .viewer-breadcrumb,
+body.student-mode.anat354-white .viewer-breadcrumb strong,
+body.student-mode.anat354-white .viewer-tip,
+body.student-mode.anat354-white .viewer-context,
+body.student-mode.anat354-white .chapter-tab,
+body.student-mode.anat354-white .chapter-nav-content{color:#525961!important;}
+body.student-mode.anat354-white .chapter-nav,
+body.student-mode.anat354-white .chapter-arrow,
+body.student-mode.anat354-white .chapter-tab.active{background:#e7eaec!important;color:#353b41!important;border-color:#c5cbd0!important;}
+body.student-mode.anat354-white .chapter-tab:hover{background:#dadfe2!important;}
+body.student-mode.anat354-white .anatomy-label,
+body.student-mode.anat354-white .anatomy-label .callout-text,
+body.student-mode.anat354-white .anatomy-label .callout-number{background:#f3f4f5!important;color:#41474d!important;border-color:#8c949b!important;box-shadow:0 2px 10px #00000015!important;}
+body.student-mode.anat354-white .leader-line{stroke:#8b939a!important;}
+body.student-mode.anat354-white .leader-dot{fill:#8b939a!important;stroke:#f5f6f7!important;}
+body.student-mode.anat354-white .viewer-panel .floating-button,
+body.student-mode.anat354-white .anat-floating-info,
+body.student-mode.anat354-white .anat-about-panel{background:#f6f7f8!important;color:#343b42!important;border-color:#cbd1d6!important;}
+body.student-mode.anat354-white .anat-floating-info .structure-description,
+body.student-mode.anat354-white .info-sidebar .muted{color:#626a71!important;}
+/* Guided correctness feedback, transient red/green hints and practical red review
+ * labels are intentionally not recolored: their colors convey assessment results. */
+
+/* Independent label-list flyout: explicitly theme its button, panel and rows.
+ * This component has more-specific dark styles than the shared .sidebar rules. */
+body.student-mode.anat354-white .viewer-panel #anat-student-label-list-button,
+body.student-mode.anat354-white .viewer-panel #polish-student-labels {
+  background:#f4f5f6!important;color:#343b42!important;
+  border-color:#c5ccd2!important;box-shadow:0 8px 23px #00000018!important;
+}
+body.student-mode.anat354-white .viewer-panel #anat-student-label-list-button:hover {
+  background:#e3e6e8!important;
+}
+body.student-mode.anat354-white .viewer-panel #polish-student-label-list,
+body.student-mode.anat354-white .viewer-panel #polish-student-label-list>.polish-student-label-item,
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .polish-student-label-item {
+  background:#fff!important;color:#3d454c!important;
+  border-color:#d0d5d9!important;
+}
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .anat-label-list-header,
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .anat-label-list-header button,
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .eyebrow,
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .polish-student-label-item :is(span,small,strong,button) {
+  color:#485158!important;
+}
+body.student-mode.anat354-white .viewer-panel #polish-student-labels .anat-label-list-header button:hover {
+  background:#e3e7e9!important;
+}
+/* Anatomical Structures tree if permitted in Student View. */
+body.student-mode.anat354-white #left-sidebar,
+body.student-mode.anat354-white #left-sidebar .sidebar,
+body.student-mode.anat354-white #bone-list,
+body.student-mode.anat354-white #bone-list .anat-explorer-toolbar,
+body.student-mode.anat354-white #bone-list .anat-nav-node,
+body.student-mode.anat354-white #bone-list .anat-nav-children {
+  background:#f8f9fa!important;color:#434b53!important;border-color:#d0d5d9!important;
+  --panel-bg:#f8f9fa;
+}
+body.student-mode.anat354-white #bone-list :is(.anat-explorer-filter,.anat-nav-view,.anat-explorer-eye,.bone-item,.anat-explorer-restore),
+body.student-mode.anat354-white #left-sidebar :is(input,select,button) {
+  color:#424950!important;border-color:#c6cdd2!important;
+}
+body.student-mode.anat354-white #bone-list .anat-nav-node>summary:hover,
+body.student-mode.anat354-white #bone-list .anat-explorer-row:hover {
+  background:#e9ecef!important;
+}

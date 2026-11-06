@@ -42,7 +42,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336&presentation=355';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -61,7 +61,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.139'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
+const APP_VERSION = '2.2.141'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -331,6 +331,7 @@ let studentPermissions = {...STUDY_PERMISSIONS};
 function studentAllowed(key){ return teacherMode || studentPermissions[key]; }
 function applyStudentPermissions(){
   if(teacherMode)return;
+  window.AnatomIQLessonPresentation354.apply(studentPermissions);
   const b=document.body;
   b.classList.toggle('student-search',studentPermissions.ss);
   b.classList.toggle('student-tree',studentPermissions.st);
@@ -2927,6 +2928,7 @@ function finishGroupLabel(){
   cancelPlacing();renderAnnotations();renderLabelEditor();queueDraft();
   showToast(`Group ${gn} created with ${1+additional.length} structures. Rename it in Custom Labels.`);
 }
+window.addEventListener('anatomiq:lesson-presentation-change',()=>{if(teacherMode)queueDraft();}); // ANATOMIQ_LESSON_PRESENTATION_354
 function queueDraft(){
   if(!teacherMode || restoringScene || !sceneRoot)return;
   clearTimeout(draftTimeout);
@@ -4205,6 +4207,7 @@ async function loadProject(data){
   if(!teacherMode){
     // Old lessons have no 'ot' field: retain the legacy exploration-dependent toolbar.
     studentPermissions={...publishPermissions,ot:publishPermissions.ot??publishPermissions.ex,ll:publishPermissions.ll??Boolean(publishPermissions.sl&&(publishPermissions.st||publishPermissions.ss))};
+    window.AnatomIQLessonPresentation354.apply(studentPermissions); // before first visible chapter
     // Apply layout permissions before restoring the scene; avoid a sidebar-layout flash.
     const body=document.body;
     body.classList.toggle('student-search',studentPermissions.ss);
@@ -4486,12 +4489,13 @@ function studentPublishPermission(permissions,key){
 }
 function showPublishPermissions(permissions){
   validatePermissions(permissions);
+  window.AnatomIQLessonPresentation354.write(permissions);
   for(const [key,id] of Object.entries(PUBLISH_KEYS))$(id).checked=studentPublishPermission(permissions,key);
   const exact=(preset)=>Object.keys(PUBLISH_KEYS).every(k=>studentPublishPermission(permissions,k)===preset[k]);
   $('publish-preset').value=exact(STUDY_PERMISSIONS)?'study':exact(EXAM_PERMISSIONS)?'exam':'custom';
 }
 function currentPublishPermissions(){
-  return validatePermissions(Object.fromEntries(Object.entries(PUBLISH_KEYS).map(([key,id])=>[key,$(id).checked])));
+  return validatePermissions({...Object.fromEntries(Object.entries(PUBLISH_KEYS).map(([key,id])=>[key,$(id).checked])),...window.AnatomIQLessonPresentation354.read()}); // ANATOMIQ_LESSON_PRESENTATION_354
 }
 $('publish-preset').addEventListener('change',()=>{
   const choice=$('publish-preset').value;

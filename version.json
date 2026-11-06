@@ -1,6 +1,6 @@
 {
-  "version": "2.2.139",
+  "version": "2.2.141",
   "channel": "experimental",
   "published": "2026-11-05",
-  "notes": "UI text cleanup; teacher About update check; named Practical PNG; local browser Model Manager."
+  "notes": "Lesson Settings grid: independent toolbar, menu bar, header, screenshot and theme; complete grayscale student label panels."
 }

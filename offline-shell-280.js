@@ -1,6 +1,11 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353", // ANATOMIQ_MODEL_MANAGER_353
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
+  "./scene-codec.js?rev=311-multi-identify&practical=336&presentation=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
+  "./lesson-presentation-354.js?rev=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
+  "./lesson-presentation-354.css?rev=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
+
+
   "./student-updates-352.js?rev=352&ui=353", // ANATOMIQ_MODEL_MANAGER_353
   "./practical-report-348.mjs?rev=348&report=353", // ANATOMIQ_MODEL_MANAGER_353
   "./ui-polish-353.js?rev=353", // ANATOMIQ_MODEL_MANAGER_353
@@ -22,7 +27,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./lesson-settings-344.js?rev=344",
   "./practical-workspace-336.mjs?rev=336&launch=337", // ANATOMIQ_PRACTICAL_WORKSPACE_336
   "./practical-workspace-336.css?rev=336", // ANATOMIQ_PRACTICAL_WORKSPACE_336
-  "./scene-codec.js?rev=311-multi-identify&practical=336", // ANATOMIQ_PRACTICAL_WORKSPACE_336
   "./menu-grammar-335.js?rev=335", // ANATOMIQ_MENU_SENTENCE_CASE_335
   "./menu-grammar-335.css?rev=335", // ANATOMIQ_MENU_SENTENCE_CASE_335
   "./menu-polish-333.css?rev=333", // ANATOMIQ_MENU_TOUCH_FADE_333
@@ -78,12 +82,10 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   // ANATOMIQ_SELECTIVE_TREE_312 — PWA caches for new browser controls.
 
   "./guided-lessons-269j.mjs?rev=311-multi-identify",
-  "./scene-codec.js?rev=311-multi-identify",
   "./identify-multi-311.mjs?rev=311",
   "./guided-access-297.css?rev=297&guidedpanel=298&guidedlabels=310",
   "./guided-final-practical-308.css?rev=308",
   "./guided-lessons-269j.mjs?rev=308-final-practical",
-  "./scene-codec.js?rev=308-final-practical",
   "./practical-quiz.js?rev=307",
   "./motion-blur-279.mjs?rev=motionblur279b&defaults=306",
   "./cinematic-dof-268.mjs?rev=motionblur279b&defaults=306",
@@ -248,13 +250,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./responsive-chapters-panels.js?rev=233&v=2.2.74",
   "./scene-assets.js",
   "./scene-codec.js",
-  "./scene-codec.js?rev=260",
-  "./scene-codec.js?rev=269j-guided-lessons",
-  "./scene-codec.js?rev=270-guided-controls",
-  "./scene-codec.js?rev=270-native-muscles-local",
-  "./scene-codec.js?rev=271-hotspot-dissect-carry-278-local",
-  "./scene-codec.js?rev=271-investigations-label-dissect-local",
-  "./scene-codec.js?rev=271-investigations-local",
   "./scene-history.js",
   "./selection-2217.css",
   "./selection-2217.css?rev=2217&v=2.2.74",
