@@ -22,7 +22,7 @@ import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
 import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
-import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360';
+import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
 import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
 import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364'; // ANATOMIQ_PRACTICAL_LAUNCH_364
@@ -67,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.149'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.150'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5737,12 +5737,20 @@ practicalCloud360.onConfirmed(()=>{
   const message=$('practical-message');if(message)message.textContent=exit?.textContent==='View Lesson Certificate'?'School submission confirmed. Select View Lesson Certificate to finish.':'Practical result confirmed by your school account.';
   if(exit&&exit.textContent==='View Lesson Certificate')exit.disabled=false;
 });
+// The authenticated READY callback is the sole trigger for Google auto-start.
+// It also handles sandboxed Apps Script origins and READY arriving after 3D load.
+practicalCloud360.onReady(()=>{
+  if(!teacherMode&&practicalOnly363()&&practicalConfig.tracking==='google'){
+    clearPracticalProblem364();
+    queueMicrotask(()=>maybeLaunchPracticalOnly363());
+  }
+}); // ANATOMIQ_SCHOOL_HANDSHAKE_365
 practicalCloud360.start(); // ANATOMIQ_PRACTICAL_CLOUD_360
 let practicalOnlyStartPending363=false;
 function maybeLaunchPracticalOnly363(){
   if(!practicalOnly363()||!sceneRoot||!elements.loader.hidden||practicalActive||practicalOnlyStartPending363)return;
   if(practicalConfig.tracking==='google'&&!practicalCloud360.session()?.email){
-    showPracticalProblem364('Waiting for verified school sign-in. Open the school Practical link, not the ordinary student lesson link.',{retry:()=>{practicalCloud360.start();maybeLaunchPracticalOnly363();}});
+    showPracticalProblem364(practicalCloud360.waitingMessage(),{retry:()=>{practicalCloud360.start();maybeLaunchPracticalOnly363();}});
     return;
   } // ANATOMIQ_PRACTICAL_LAUNCH_364
   practicalOnlyStartPending363=true;
@@ -5757,16 +5765,7 @@ function maybeLaunchPracticalOnly363(){
     finally{practicalOnlyStartPending363=false;}
   });
 }
-window.addEventListener('message',event=>{
-  if(!practicalOnly363()||practicalConfig.tracking!=='google'||event.source!==window.parent||
-    !/^https:\/\/(?:script\.google\.com|script\.googleusercontent\.com)$/.test(event.origin)||
-    event.data?.type!=='ANATOMIQ_PRACTICAL_READY_V1')return;
-  // The verified school bridge processes READY before this listener.
-  queueMicrotask(()=>{
-    const session=practicalCloud360.session();
-    if(session?.email&&session.key===event.data.key)maybeLaunchPracticalOnly363();
-  });
-}); // ANATOMIQ_PRACTICAL_ONLY_363
+// The old direct postMessage listener was replaced with the validated school bridge READY callback. // ANATOMIQ_SCHOOL_HANDSHAKE_365
 let studentPracticalSetupOpening=false;
 async function startPractical(chapterChoice=undefined){
   if(practicalOnly363())chapterChoice='all'; // ANATOMIQ_PRACTICAL_ONLY_363

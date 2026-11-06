@@ -1,6 +1,6 @@
 {
-  "version": "2.2.149",
+  "version": "2.2.150",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Repair Practical Only auto-start feedback and reliable same-chapter same-system multiple-choice distractors."
+  "notes": "Repair Google Apps Script iframe handshake and automatically launch Practical Only after verified school session."
 }

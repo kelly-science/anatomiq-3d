@@ -1,4 +1,4 @@
-/* AnatomIQ 2.2.145 — Practical cloud bridge, v360.
+/* AnatomIQ 2.2.150 — Practical cloud bridge handshake repair, v365.
  * The Apps Script portal verifies the Google account; this module never accepts
  * an email from the student as authentication and never sends scores to arbitrary embeds.
  * Scores remain client-reported. See PracticalCloud.gs for security limitations.
@@ -15,9 +15,14 @@ const equal=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
 export function trustedPortalOrigin(source){
   try{
     const u=new URL(String(source||''));
-    return u.protocol==='https:'&&(
-      u.hostname==='script.google.com'||u.hostname==='script.googleusercontent.com'
-    )?u.origin:null;
+    // Apps Script HTML Service uses sandboxed Googleusercontent origins. Some
+    // deployments use dynamically prefixed subdomains rather than the bare host.
+    // Match exact Google-owned suffixes, never arbitrary googleusercontent.com.
+    const h=u.hostname.toLowerCase();
+    const allowed=h==='script.google.com'||h==='script.googleusercontent.com'||
+      /^[a-z0-9-]+\.script\.googleusercontent\.com$/.test(h)||
+      /^[a-z0-9-]+-script\.googleusercontent\.com$/.test(h);
+    return u.protocol==='https:'&&allowed?u.origin:null;
   }catch{return null;}
 }
 export function cleanChapters(value){
@@ -42,8 +47,12 @@ export function createCloudPayload({questions,answers,result,attemptId,studentNa
   return {attemptId:id,studentName:name,correct:computed,total:entries.length,answers:entries};
 }
 export function createPracticalCloudBridge({win=window,doc=document,storage=localStorage,lessonKey=()=>'',now=()=>Date.now(),setTimeoutFn=setTimeout,clearTimeoutFn=clearTimeout}={}){
-  let origin=trustedPortalOrigin(doc?.referrer),ready=null,submitting=false,timeout=null,listening=false;
-  let banner=null,area=null,statusText=null,retryButton=null,resolvePending=null,onConfirmation=null;
+  // Referrer may be blank, or may name the outer script.google.com wrapper
+  // while the actual parent frame lives on a googleusercontent.com sandbox.
+  // Only an inbound READY from a trusted Google Apps Script origin can bind
+  // the true parent origin. Outbound HELLO contains no student data.
+  let origin=null,ready=null,submitting=false,timeout=null,listening=false;
+  let banner=null,area=null,statusText=null,retryButton=null,resolvePending=null,onConfirmation=null,onReadyCallback=null;
   const key=()=>{if(!ready?.email)return null;let h=2166136261;for(const ch of ready.email){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}return PENDING_PREFIX+safeString(lessonKey(),100)+':'+(h>>>0).toString(36);};
   const emit=(message)=>{if(!origin||win.parent===win||typeof win.parent?.postMessage!=='function')return false;win.parent.postMessage(message,origin);return true;};
   function getPending(){
@@ -79,17 +88,24 @@ export function createPracticalCloudBridge({win=window,doc=document,storage=loca
     const pending=getPending();banner.hidden=!ready||!pending||pending.assessmentKey!==ready.key;banner.style.display=banner.hidden?'none':'flex';
   }
   function listener(event){
-    if(!origin||event.origin!==origin||event.source!==win.parent||!event.data||typeof event.data!=='object')return;
+    if(event.source!==win.parent||!event.data||typeof event.data!=='object')return;
+    // Never use an unverified origin from a received message. Once bound,
+    // subsequent messages must come from the *same* origin and parent window.
+    const incoming=trustedPortalOrigin(event.origin);
+    if(!incoming||(origin&&incoming!==origin))return;
     const message=event.data;
     if(message.type===READY){
       const chapters=cleanChapters(message.chapters),keyValue=String(message.key||'');
       const email=String(message.email||'').trim().toLowerCase();
       if(!/^[a-f0-9]{32}$/.test(keyValue)||!chapters||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||typeof message.canStart!=='boolean'||typeof message.allowRetakes!=='boolean')return;
+      if(ready&&(ready.key!==keyValue||ready.email!==email||!equal(ready.chapters,chapters)))return;
+      origin=incoming;
       ready={key:keyValue,email,chapters,canStart:message.canStart,allowRetakes:message.allowRetakes};
       pendingBanner();
+      try{onReadyCallback?.(ready);}catch(error){console.warn('Practical school ready callback failed',error);}
       return;
     }
-    if(message.type!==ACK)return;
+    if(message.type!==ACK||!ready||incoming!==origin)return;
     const pending=getPending();
     if(!pending||!ready||pending.assessmentKey!==ready.key||pending.payload.attemptId!==message.attemptId)return;
     if(timeout!==null){clearTimeoutFn(timeout);timeout=null;}
@@ -103,9 +119,18 @@ export function createPracticalCloudBridge({win=window,doc=document,storage=loca
     if(resolvePending){resolvePending(message.result?.ok===true);resolvePending=null;}
   }
   function start(){
-    if(!origin||win.parent===win)return false;
+    if(win.parent===win||typeof win.parent?.postMessage!=='function')return false;
     if(!listening){win.addEventListener('message',listener);listening=true;}
-    emit({type:HELLO});return true;
+    // HELLO contains only a fixed protocol string. A wildcard target allows
+    // the authenticated Apps Script sandbox to answer despite a blank or
+    // wrapper-domain document.referrer. All sensitive messages remain pinned
+    // to the origin learned from a validated READY.
+    win.parent.postMessage({type:HELLO},'*');
+    return true;
+  }
+  function waitingMessage(){
+    if(win.parent===win)return 'This is a Google-tracked Practical. Open the school-authenticated Practical link instead of the ordinary lesson link.';
+    return 'Waiting for your school portal to confirm sign-in. If this does not clear, reload the full school Practical link and check the account shown at its top.';
   }
   function confirmName(promptFn=win.prompt?.bind(win)){
     if(!ready?.email||typeof promptFn!=='function')return null;
@@ -116,8 +141,8 @@ export function createPracticalCloudBridge({win=window,doc=document,storage=loca
     if(!name)return null;try{storage.setItem(nameKey,name);}catch{}return name;
   }
   function check(chapters){
-    if(!origin||win.parent===win)return {ok:false,message:'Open the school-authenticated Practical link, not the ordinary student lesson link.'};
-    if(!ready){start();return {ok:false,message:'Checking school sign-in. Try starting again after the school portal confirms your session.'};}
+    if(win.parent===win)return {ok:false,message:waitingMessage()};
+    if(!ready){start();return {ok:false,message:waitingMessage()};}
     const chosen=cleanChapters(chapters);
     if(!chosen||!equal(chosen,ready.chapters))return {ok:false,message:'The school Practical chapter selection differs from this lesson. Ask your teacher to republish the assessment.'};
     if(getPending())return {ok:false,message:'An earlier Practical submission is pending. Retry that submission before beginning another attempt.'};
@@ -149,5 +174,7 @@ export function createPracticalCloudBridge({win=window,doc=document,storage=loca
     if(resolvePending){resolvePending(false);resolvePending=null;}
     submitting=false;
   }
-  return {start,check,attempt,retry,close,getPending,showPending:pendingBanner,status,confirmName,session:()=>ready,onConfirmed:(callback)=>{onConfirmation=callback;}};
+  return {start,check,attempt,retry,close,getPending,showPending:pendingBanner,status,confirmName,waitingMessage,session:()=>ready,
+    onReady:(callback)=>{onReadyCallback=callback;if(ready&&typeof callback==='function')callback(ready);},
+    onConfirmed:(callback)=>{onConfirmation=callback;}};
 }
