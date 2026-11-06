@@ -18,13 +18,14 @@ import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATO
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
-import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363';
+import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363&choices=364';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
 import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
 import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
+import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364'; // ANATOMIQ_PRACTICAL_LAUNCH_364
 import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -66,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.148'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.149'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5730,7 +5731,7 @@ let gradedPracticalStudent358=''; // ANATOMIQ_GRADED_PRACTICAL_358
 const practicalCloud360=createPracticalCloudBridge({lessonKey:assessmentLessonKey});
 const practicalResume361=createPracticalResume({lessonKey:assessmentLessonKey,portal:()=>practicalCloud360.session(),localStudent:()=>practicalConfig.graded?gradedPracticalStudent358:'ungraded'}); // ANATOMIQ_PRACTICAL_RESUME_361
 practicalCloud360.onConfirmed(()=>{
-  practicalResume361.clear();$('practical-exit').hidden=false; // ANATOMIQ_PRACTICAL_RESUME_361
+  practicalResume361.clear();$('practical-exit').hidden=practicalOnly363(); // ANATOMIQ_PRACTICAL_LAUNCH_364 // ANATOMIQ_PRACTICAL_RESUME_361
   if(!practicalState?.completed)return;
   const exit=$('practical-exit');
   const message=$('practical-message');if(message)message.textContent=exit?.textContent==='View Lesson Certificate'?'School submission confirmed. Select View Lesson Certificate to finish.':'Practical result confirmed by your school account.';
@@ -5740,11 +5741,19 @@ practicalCloud360.start(); // ANATOMIQ_PRACTICAL_CLOUD_360
 let practicalOnlyStartPending363=false;
 function maybeLaunchPracticalOnly363(){
   if(!practicalOnly363()||!sceneRoot||!elements.loader.hidden||practicalActive||practicalOnlyStartPending363)return;
-  if(practicalConfig.tracking==='google'&&!practicalCloud360.session()?.email)return;
+  if(practicalConfig.tracking==='google'&&!practicalCloud360.session()?.email){
+    showPracticalProblem364('Waiting for verified school sign-in. Open the school Practical link, not the ordinary student lesson link.',{retry:()=>{practicalCloud360.start();maybeLaunchPracticalOnly363();}});
+    return;
+  } // ANATOMIQ_PRACTICAL_LAUNCH_364
   practicalOnlyStartPending363=true;
   queueMicrotask(async()=>{
-    try{await startPractical('all');}
-    catch(error){console.error('Practical-only startup failed:',error);showToast('Practical could not start: '+error.message);}
+    try{
+      await startPractical('all');
+      if(!practicalActive&&!document.getElementById('anat364-name-dialog')&&!document.getElementById('anat364-start-status'))
+        showPracticalProblem364('The Practical could not start. Check the published assessment chapters and questions.',{retry:()=>maybeLaunchPracticalOnly363()}); // ANATOMIQ_PRACTICAL_LAUNCH_364
+    }
+    catch(error){console.error('Practical-only startup failed:',error);showToast('Practical could not start: '+error.message);showPracticalProblem364(String(error?.message||error),{retry:()=>maybeLaunchPracticalOnly363()});}
+    // ANATOMIQ_PRACTICAL_LAUNCH_364 Errors also stay visible instead of disappearing after the toast timeout.
     finally{practicalOnlyStartPending363=false;}
   });
 }
@@ -5785,12 +5794,18 @@ async function startPractical(chapterChoice=undefined){
   }
   if(practicalConfig.graded&&practicalConfig.tracking==='google'){
     const validation=practicalCloud360.check(assessmentChapters(practicalConfig,chapters.length));
-    if(!validation.ok){showToast(validation.message);practicalCloud360.showPending();return;}
+    if(!validation.ok){showToast(validation.message);practicalCloud360.showPending();if(practicalOnly363())showPracticalProblem364(validation.message,{retry:()=>{practicalCloud360.start();maybeLaunchPracticalOnly363();}});return;} // ANATOMIQ_PRACTICAL_LAUNCH_364
   }
   if(practicalConfig.graded){
     if(!assessmentChapters(practicalConfig,chapters.length).length){showToast('The teacher has not selected any graded Practical chapters.');return;}
     try{
-      if(!gradedPracticalStudent358)gradedPracticalStudent358=practicalConfig.tracking==='google'?practicalCloud360.confirmName():requestGradedStudentName();
+      if(!gradedPracticalStudent358){
+        if(practicalOnly363()){
+          const school=practicalConfig.tracking==='google',session=school?practicalCloud360.session():null;
+          const typed=await requestPracticalName364({email:session?.email||'',lessonKey:assessmentLessonKey(),school});
+          gradedPracticalStudent358=school?practicalCloud360.confirmName(()=>typed):typed;
+        }else gradedPracticalStudent358=practicalConfig.tracking==='google'?practicalCloud360.confirmName():requestGradedStudentName();
+      } // ANATOMIQ_PRACTICAL_LAUNCH_364
       if(!gradedPracticalStudent358)return;
       if(practicalConfig.tracking!=='google'&&!practicalConfig.allowRetakes&&hasLocalGradedAttempt(gradedPracticalStudent358)){
         showToast('This graded Practical already has a completed local attempt for this student.');return;
@@ -5804,7 +5819,9 @@ async function startPractical(chapterChoice=undefined){
   const chapterRulesEnabled=Array.isArray(practicalConfig.chapterRules);
   const eligiblePool=scopedPracticalCandidates363(practicalPool(),assessmentConfig358,chapters,scopedConfig,filterPracticalPool); // ANATOMIQ_PRACTICAL_ONLY_363
    const attemptSettings=chapterRulesEnabled?{...scopedConfig,off:[]}:scopedConfig;
-   let qs=practicalAttempt(eligiblePool,structures,attemptSettings);
+   const distractors364=scopedDistractorPool364(practicalPool(),scopedConfig,chapters,filterPracticalPool); // ANATOMIQ_PRACTICAL_LAUNCH_364
+   let qs=practicalAttempt(eligiblePool,structures,attemptSettings,undefined,distractors364);
+   if(!qs.length&&practicalOnly363())showPracticalProblem364('No eligible multiple-choice questions could be generated from the published assessment.',{detail:'Selected targets: '+eligiblePool.length+'; possible same-chapter distractor groups: '+distractors364.length+'. Teacher: check selected question targets and ensure two or more different anatomical names in the same chapter and system.'}); // ANATOMIQ_PRACTICAL_LAUNCH_364
    const existing361=practicalResume361.get();
    let restored361=null;
    if(existing361){
@@ -5820,6 +5837,7 @@ async function startPractical(chapterChoice=undefined){
   if(!qs.length){showToast('This practical has no eligible, identifiable structures. Ask the teacher to configure its questions.');return;}
   $('practical-exit').textContent='Exit';$('practical-exit').disabled=false; // ANATOMIQ_PRACTICAL_CLOUD_360
   $('practical-exit').hidden=practicalConfig.graded===true; // ANATOMIQ_PRACTICAL_RESUME_361
+   clearPracticalProblem364(); // ANATOMIQ_PRACTICAL_LAUNCH_364
    practicalActive=true;guided.renderStudent();practicalState=existing361
      ?{questions:qs,index:existing361.index,answers:[...existing361.answers],selected:null,attemptId358:existing361.attemptId}
      :{questions:qs,index:0,answers:[],selected:null,attemptId358:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,14)};

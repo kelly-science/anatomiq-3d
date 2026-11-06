@@ -110,14 +110,16 @@ export function shuffled(items,randomIndex=randomInteger){
 }
 const variantsFor=q=>Array.isArray(q.variants)&&q.variants.length?q.variants:[q];
 const keysFor=q=>Array.isArray(q.memberKeys)&&q.memberKeys.length?q.memberKeys:[q.key];
-export function practicalAttempt(candidates,structures,config,randomIndex=randomInteger){
+export function practicalAttempt(candidates,structures,config,randomIndex=randomInteger,distractorCandidates=candidates){
   const cfg=normalPractical(config),off=new Set(cfg.off);
   const eligible=candidates.map(group=>{
     const variants=variantsFor(group).filter(v=>!off.has(v.key)&&(!Array.isArray(cfg.chapters)||cfg.chapters.includes(v.chapter)));
     return variants.length?{group,variants}:null;
   }).filter(Boolean);
   const selected=shuffled(eligible,randomIndex).slice(0,Math.min(cfg.count,eligible.length));
-  const catalog=eligible.flatMap(({variants})=>variants.map(v=>({name:practicalAnswerName(v.name),chapter:v.chapter,system:v.system,tissue:v.tissue})))
+  const catalog=(Array.isArray(distractorCandidates)?distractorCandidates:candidates).flatMap(group=>variantsFor(group)
+    .filter(v=>!Array.isArray(cfg.chapters)||cfg.chapters.includes(v.chapter))
+    .map(v=>({name:practicalAnswerName(v.name),chapter:v.chapter,system:v.system,tissue:v.tissue})))
      .filter(s=>normalizedName(s.name)); // No distractors from excluded chapters or invisible structures.
   return selected.map(({group,variants})=>{
     const representative=shuffled(variants,randomIndex)[0];

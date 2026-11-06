@@ -1,6 +1,6 @@
 {
-  "version": "2.2.148",
+  "version": "2.2.149",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Practical-only auto launch and chapter lock, single teacher-scoped question pool, strict resumed question eligibility."
+  "notes": "Repair Practical Only auto-start feedback and reliable same-chapter same-system multiple-choice distractors."
 }
