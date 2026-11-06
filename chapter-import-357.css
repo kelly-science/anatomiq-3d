@@ -1,0 +1,15 @@
+/* Scoped chapter importer. Does not restyle Teacher Studio or student view. */
+#anat357-import-dialog[hidden]{display:none!important}
+.anat357-backdrop{position:fixed;inset:0;z-index:100020;background:rgba(7,17,28,.7);display:grid;place-items:center;padding:20px}
+.anat357-panel{box-sizing:border-box;width:min(540px,100%);max-height:90vh;overflow:auto;padding:22px;border:1px solid #4c6777;border-radius:16px;background:#192b38;color:#e7f3fa;box-shadow:0 20px 65px rgba(0,0,0,.46);display:flex;flex-direction:column;gap:14px}
+.anat357-panel h2{font-size:21px;margin:0}
+.anat357-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.anat357-panel label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+.anat357-panel select{background:#10222e;color:#edf8fc;padding:11px;border:1px solid #5a7685;border-radius:8px;width:100%}
+.anat357-chapters{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto}
+.anat357-choice{display:flex!important;flex-direction:row!important;align-items:center;gap:9px!important;border:1px solid #456170;border-radius:8px;padding:10px}
+.anat357-choice input{accent-color:#8bd6c9}
+.anat357-panel .anat357-check{display:flex;flex-direction:row;align-items:center}
+.anat357-help{color:#b6cbd5;font-size:13px;margin:0}
+.anat357-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.anat357-actions .button:disabled{opacity:.48;cursor:not-allowed}

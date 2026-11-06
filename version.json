@@ -1,6 +1,6 @@
 {
-  "version": "2.2.142",
+  "version": "2.2.143",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Duplicate lesson saves an independent Copy of title and opens the copy in a new Teacher Studio lesson tab."
+  "notes": "Local-only: import selected compatible chapters from Scene Library or other Teacher Studio tabs, optionally with Guided activities."
 }

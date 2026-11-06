@@ -1,6 +1,10 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356", // ANATOMIQ_DUPLICATE_TAB_356
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357", // ANATOMIQ_CHAPTER_IMPORT_357
+  "./chapter-import-core-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
+  "./chapter-import-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
+  "./chapter-import-357.css?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
+
   "./workspace-tabs-241.js?rev=250&v=2.2.75&tabs=345&duplicate=356", // ANATOMIQ_DUPLICATE_TAB_356
 
   "./scene-codec.js?rev=311-multi-identify&practical=336&presentation=355", // ANATOMIQ_LESSON_PRESENTATION_GRID_355
@@ -302,5 +306,6 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
   "./view-menu-polish.js?rev=fadepanel239r2&v=2.2.74",
   "./workspace-tabs-241.css?rev=241",
   "./workspace-tabs-241.css?rev=241&v=2.2.74",
+
 
 ]);
