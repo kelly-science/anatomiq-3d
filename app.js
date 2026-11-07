@@ -67,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.152'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.153'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4452,21 +4452,35 @@ $('aiq367-register')?.addEventListener('click',event=>{
     event.preventDefault();cloudSetStatus('Publish the Practical before opening school registration.',true);
   }
 });
-$('anat367-teacher-results')?.addEventListener('click',()=>{
-  $('publish-open')?.click();
-  $('aiq367-results-hub')?.click();
-});
-$('aiq367-results-hub')?.addEventListener('click',()=>{
+// ANATOMIQ_UNIFIED_DASHBOARD_368 — a single teacher dashboard entry.
+function aq153OpenTeacherResults(){
   let script='';
-  try{script=schoolScriptURL($('aiq283-script-url')?.value||localStorage.getItem('anatomiq-practical-teacher-script-360')||'');}
-  catch(error){cloudSetStatus(error.message,true);return;}
-  const guided=new URL(script);guided.searchParams.set('view','teacher');
-  const practical=new URL(script);practical.searchParams.set('view','practicals');
-  const area=$('aiq367-results-links');
-  $('aiq367-results-guided').href=guided.toString();
-  $('aiq367-results-practical').href=practical.toString();
-  if(area)area.hidden=!area.hidden;
-});
+  try{
+    script=schoolScriptURL($('aiq283-script-url')?.value ||
+      localStorage.getItem('anatomiq-practical-teacher-script-360') ||
+      window.AnatomIQCloudProgress283?.storedConfig()?.url || '');
+  }catch(error){
+    alert('Configure your existing school Google Apps Script /exec URL in File → Publish Lesson before opening Teacher Results.');
+    return;
+  }
+  const results=new URL(script);results.searchParams.set('view','unified');
+  const legacyGuided=new URL(script);legacyGuided.searchParams.set('view','teacher');
+  const legacyPractical=new URL(script);legacyPractical.searchParams.set('view','practicals');
+  const primary=$('aiq367-results-guided');
+  const secondary=$('aiq367-results-practical');
+  if(primary){primary.href=results.toString();primary.textContent='Unified Teacher Dashboard ↗';}
+  if(secondary){secondary.href=legacyPractical.toString();secondary.textContent='Legacy Practical results ↗';}
+  const pane=$('aiq367-results-links');
+  if(pane)pane.hidden=false;
+  // Called from a genuine teacher click, before any await, so popup blockers
+  // cannot silently break a chain of asynchronous operations.
+  const tab=window.open(results.toString(),'_blank');
+  if(tab)tab.opener=null;
+  // The fallback direct link remains visible in the publisher when blocked.
+  if(!tab){$('publish-open')?.click();if(pane)pane.hidden=false;}
+}
+$('anat367-teacher-results')?.addEventListener('click',aq153OpenTeacherResults);
+$('aiq367-results-hub')?.addEventListener('click',aq153OpenTeacherResults);
 
 $('cloud-publish').addEventListener('click',async()=>{
   if(cloudBusy)return;
