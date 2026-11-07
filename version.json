@@ -1,6 +1,6 @@
 {
-  "version": "2.2.150",
+  "version": "2.2.151",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Repair Google Apps Script iframe handshake and automatically launch Practical Only after verified school session."
+  "notes": "School Practical sign-in retained; question choices restricted to teacher-selected chapter targets."
 }

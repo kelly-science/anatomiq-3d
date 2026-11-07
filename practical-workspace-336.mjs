@@ -316,7 +316,7 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     pane.append(area);
   }
   function renderPreview(){
-    const pane=$('anat336-editor');pane.replaceChildren();pane.append(textRow('Question-pool preview','This is the exact eligible question pool before randomized selection; it does not launch student mode.'));
+    const pane=$('anat336-editor');pane.replaceChildren();pane.append(textRow('Question-pool preview','This is the exact eligible question and distractor pool for this chapter before randomized selection; it does not launch student mode.'));
     const groups=getSummary(selected);const grid=element('div','anat336-preview-grid');
     if(!groups.length)grid.append(element('p','anat336-empty','No eligible targets. Choose another question source or enable the chapter.'));
     groups.forEach((g,i)=>{

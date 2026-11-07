@@ -1,13 +1,11 @@
-/* AnatomIQ 2.2.149 · Practical Only startup diagnostics and honest distractor scope.
-   Selected targets remain teacher-authoritative. Nonselected structures may be
-   multiple-choice wrong answers only within the SAME chapter and system.
-*/
+/* AnatomIQ 2.2.151 · Practical startup and distractor scope.
+   Only teacher-selected, chapter-eligible targets may appear in answer choices. */
 export function scopedDistractorPool364(fullPool,scopedConfig,chapters,filterPracticalPool){
   if(!Array.isArray(fullPool)||!Array.isArray(chapters)||typeof filterPracticalPool!=='function')
     throw new Error('Practical distractor catalog is not ready.');
   const selected=Array.isArray(scopedConfig?.chapters)?scopedConfig.chapters:[];
   if(!selected.length)return [];
-  const context={chapters:selected,chapterRules:null,off:[]};
+  const context={...(scopedConfig||{}),chapters:selected}; // ANATOMIQ_STRICT_DISTRACTORS_366 preserve chapterRules and exclusions
   return filterPracticalPool(fullPool,context,chapters,{chapters:selected});
 }
 export function practicalReadiness364({practicalOnly,sceneReady,schoolRequired,schoolVerified,active}={}){

@@ -25,7 +25,7 @@ import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocal
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
 import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
-import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364'; // ANATOMIQ_PRACTICAL_LAUNCH_364
+import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364&distractors=366'; // ANATOMIQ_PRACTICAL_LAUNCH_364
 import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
@@ -67,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.150'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.151'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5818,9 +5818,9 @@ async function startPractical(chapterChoice=undefined){
   const chapterRulesEnabled=Array.isArray(practicalConfig.chapterRules);
   const eligiblePool=scopedPracticalCandidates363(practicalPool(),assessmentConfig358,chapters,scopedConfig,filterPracticalPool); // ANATOMIQ_PRACTICAL_ONLY_363
    const attemptSettings=chapterRulesEnabled?{...scopedConfig,off:[]}:scopedConfig;
-   const distractors364=scopedDistractorPool364(practicalPool(),scopedConfig,chapters,filterPracticalPool); // ANATOMIQ_PRACTICAL_LAUNCH_364
+   const distractors364=scopedDistractorPool364(eligiblePool,scopedConfig,chapters,filterPracticalPool); // ANATOMIQ_PRACTICAL_LAUNCH_364
    let qs=practicalAttempt(eligiblePool,structures,attemptSettings,undefined,distractors364);
-   if(!qs.length&&practicalOnly363())showPracticalProblem364('No eligible multiple-choice questions could be generated from the published assessment.',{detail:'Selected targets: '+eligiblePool.length+'; possible same-chapter distractor groups: '+distractors364.length+'. Teacher: check selected question targets and ensure two or more different anatomical names in the same chapter and system.'}); // ANATOMIQ_PRACTICAL_LAUNCH_364
+   if(!qs.length&&practicalOnly363())showPracticalProblem364('No eligible multiple-choice questions could be generated from the published assessment.',{detail:'Selected targets: '+eligiblePool.length+'; eligible selected distractor groups: '+distractors364.length+'. Teacher: check selected question targets and ensure two or more different anatomical names in the same chapter and system.'}); // ANATOMIQ_PRACTICAL_LAUNCH_364
    const existing361=practicalResume361.get();
    let restored361=null;
    if(existing361){
