@@ -162,7 +162,9 @@
     h.append(make('strong','','Guided Activity Setup'));
     chapterName=make('small','','');h.append(chapterName);
     const flag=make('span','anat125-experiment','LOCAL EXPERIMENT');
-    header.append(back,h,flag);
+    const publish=make('button','anat125-chapter-button','Publish Lesson…');publish.type='button';
+    publish.addEventListener('click',()=>{close();$('publish-open')?.click();});
+    header.append(back,h,flag,publish); // ANATOMIQ_UNIFIED_LESSONS_367
 
     left=make('aside','anat125-nav');left.id='anat125-nav';
     left.setAttribute('aria-label','Guided activity navigator');
@@ -204,6 +206,9 @@
     freeToggle = free.checkbox;
     finalToggle = practical.checkbox;
     settings.append(free.label,practical.label);
+    const setup=make('button','anat125-add-button','Configure Practical…');setup.type='button';
+    setup.addEventListener('click',()=>{close();$('anat336-practical-setup')?.click();});
+    settings.append(setup); // ANATOMIQ_UNIFIED_LESSONS_367
     left.append(chapter,activityTop,listButtons,add,note,settings);
 
     inspector=make('aside','anat125-inspector');inspector.id='anat125-inspector';

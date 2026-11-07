@@ -1,6 +1,6 @@
 {
-  "version": "2.2.151",
+  "version": "2.2.152",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "School Practical sign-in retained; question choices restricted to teacher-selected chapter targets."
+  "notes": "Unified Guided/Practical authoring and publishing entry points; existing school security preserved."
 }

@@ -139,7 +139,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <button id="export-project" class="menu-item" role="menuitem" type="button">Export lesson JSON…</button>
           <input id="import-file" type="file" accept=".json,application/json" hidden />
           <div class="menu-separator" role="separator"></div>
-          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Publish / Share lesson…</button>
+          <button id="publish-open" class="menu-item highlighted" role="menuitem" type="button">↗ Publish Lesson…</button><button id="anat367-teacher-results" class="menu-item" role="menuitem" type="button">Teacher Results…</button>
         </div>
       </div>
       <div class="menu-group" data-menu="edit">
@@ -153,7 +153,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           <button class="menu-item" role="menuitem" type="button" data-menu-click="restore-all">Restore hidden structures</button>
           <button class="menu-item" role="menuitem" type="button" data-menu-click="clear-selection">Clear selection</button>
           <div class="menu-separator" role="separator"></div>
-                    <button id="anat125-guided-setup" class="menu-item" role="menuitem" type="button">Guided activity setup…</button> <!-- ANATOMIQ_GUIDED_WORKSPACE_339 -->
+                    <button id="anat125-guided-setup" class="menu-item" role="menuitem" type="button">Lesson setup…</button> <!-- ANATOMIQ_GUIDED_WORKSPACE_339 -->
 <button id="anat336-practical-setup" class="menu-item" role="menuitem" type="button">Practical setup…</button>
         </div>
       </div>
@@ -532,7 +532,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
   </div>
   <div class="dialog-backdrop" id="share-dialog" hidden>
     <section role="dialog" aria-modal="true" aria-labelledby="dialog-heading" class="share-dialog">
-      <div class="dialog-header"><div><span class="eyebrow">PUBLISH SCENE</span><h2 id="dialog-heading">Student link</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="Close">✕</button></div>
+      <div class="dialog-header"><div><span class="eyebrow">ANATOMIQ ASSIGNMENTS</span><h2 id="dialog-heading">Publish Lesson</h2></div><button id="close-dialog" type="button" class="icon-button" aria-label="Close">✕</button></div>
       <p>Student permissions can be adjusted under <strong>Teacher Studio → Student Controls</strong>. Generate a link to publish this lesson.</p>
       <div class="publish-options" aria-labelledby="publish-options-title">
         <label class="field-label" id="publish-options-title" for="publish-preset">Student viewer preset</label>
@@ -599,14 +599,30 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
         </div>
         <!-- ANATOMIQ_CLOUD_PROGRESS_283 — optional school-account tracking. -->
         <div class="aiq283-publish">
-          <label><input type="checkbox" id="aiq283-track" /> <strong>Track guided activities with school Google account</strong></label>
+          <label><input type="checkbox" id="aiq283-track" /> <strong>Track Guided Lesson progress using a school Google account</strong></label>
           <label for="aiq283-script-url">Google Apps Script deployment URL</label>
           <input id="aiq283-script-url" class="text-input" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" />
           <small id="aiq283-publish-hint">School progress tracking is available for guided chapter activities.</small>
-          <a id="aiq283-dashboard" href="#" target="_blank" rel="noopener noreferrer" class="button small subtle">Open teacher progress dashboard ↗</a>
+          <button id="aiq367-results-hub" type="button" class="button small subtle">Teacher Results…</button>
+          <div id="aiq367-results-links" hidden class="aiq283-publish">
+            <a id="aiq367-results-guided" target="_blank" rel="noopener noreferrer" class="button small subtle">Guided Lesson results ↗</a>
+            <a id="aiq367-results-practical" target="_blank" rel="noopener noreferrer" class="button small subtle">Practical results ↗</a>
+            <p class="studio-hint">These two result views use the existing school dashboard records. Unified reports will require a Google Apps Script update.</p>
+          </div>
+          <a id="aiq283-dashboard" href="#" target="_blank" rel="noopener noreferrer" class="button small subtle" hidden>Open teacher progress dashboard ↗</a>
         </div>
         <button id="cloud-publish" type="button" class="button primary full">Publish / Update Live Lesson</button>
         <p id="cloud-publish-status" class="studio-hint" role="status" aria-live="polite">Connect to a public GitHub repository to publish.</p>
+        <!-- ANATOMIQ_UNIFIED_LESSONS_367: graded school Practical registration acknowledgement -->
+        <section id="aiq367-practical-results" class="aiq283-publish" hidden>
+          <p id="aiq367-practical-status" role="status" aria-live="polite"></p>
+          <a id="aiq367-register" class="button small subtle" href="#" target="_blank" rel="noopener noreferrer" hidden>Complete school registration ↗</a>
+          <div id="aiq367-practical-ready" hidden>
+            <label class="field-label" for="aiq367-practical-link">Verified school Practical student link</label>
+            <textarea id="aiq367-practical-link" class="share-url" rows="3" readonly></textarea>
+            <button id="aiq367-copy-practical" type="button" class="button small primary">Copy school Practical link</button>
+          </div>
+        </section>
         <div id="cloud-publish-results" hidden>
           <label class="field-label" for="cloud-student-url">Standard Student Link — GitHub (no school sign-in)</label>
           <textarea id="cloud-student-url" class="share-url" rows="2" readonly></textarea>
@@ -840,7 +856,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
           .catch(e=>console.warn('[AnatomIQ] Offline worker unavailable:',e));
       }
     }
-    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357&assessment=358&cloud=360&resume=361&publish=362&practicalonly=363&practicalstart=364&school=365&distractors=366'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
+    await import('./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357&assessment=358&cloud=360&resume=361&publish=362&practicalonly=363&practicalstart=364&school=365&distractors=366&unified=367'); // ANATOMIQ_PRACTICAL_TARGET_TYPE_LOCAL5 // ANATOMIQ_PRACTICAL_CAMERA_CONTINUITY_269I_LOCAL3 // ANATOMIQ_TRIQUETRUM_244
   </script>
   <script defer src="./view-effects-304.js?rev=304&defaults=306"></script>
   <script type="module" src="./view-menu-polish.js?rev=fadepanel239r2&v=2.2.75&a11y=304"></script>
@@ -874,7 +890,7 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
       <small id="practical-candidate-footer"></small>
     </div>
   </div>
-  <script defer src="./guided-workspace-344.js?rev=344"></script>
+  <script defer src="./guided-workspace-344.js?rev=344&unified=367"></script>
   <script defer src="./lesson-settings-344.js?rev=344"></script>
   <script defer src="./ui-polish-353.js?rev=353"></script>
   <script defer src="./model-manager-353.js?rev=353"></script>

@@ -82,7 +82,7 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
     <header class="anat336-header">
       <button type="button" id="anat336-back" class="anat336-back" aria-label="Back to Studio">← <span>Back to Studio</span></button>
       <div class="anat336-header-title"><strong>Practical setup</strong><small id="anat336-lesson"></small></div>
-      <div class="anat336-header-actions"><span id="anat336-save-state" aria-live="polite"></span><button type="button" class="anat336-button primary" id="anat336-save">Save changes</button></div>
+      <div class="anat336-header-actions"><span id="anat336-save-state" aria-live="polite"></span><button type="button" class="anat336-button primary" id="anat336-save">Save changes</button><button type="button" class="anat336-button" id="anat336-guided-activities">Guided Activities…</button><button type="button" class="anat336-button" id="anat336-publish-lesson">Publish Lesson…</button></div>
     </header>
     <div class="anat336-content">
       <aside class="anat336-sidebar" aria-label="Practical chapters">
@@ -92,7 +92,7 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
       <main class="anat336-main">
         <div class="anat336-intro"><h1 id="anat336-heading">Chapter settings</h1><p id="anat336-subheading"></p></div>
         <nav class="anat336-tabs" aria-label="Practical settings sections">
-          <button type="button" data-tab="questions">Questions</button><button type="button" data-tab="presentation">Presentation</button><button type="button" data-tab="assessment">Assessment</button><button type="button" data-tab="preview">Preview</button><button type="button" data-tab="publish">Publish</button>
+          <button type="button" data-tab="questions">Questions</button><button type="button" data-tab="presentation">Presentation</button><button type="button" data-tab="assessment">Assessment</button><button type="button" data-tab="preview">Preview</button>
         </nav>
         <div id="anat336-editor" class="anat336-editor"></div>
       </main>
@@ -236,6 +236,13 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
       const retake=element('input');retake.type='checkbox';retake.checked=draft.allowRetakes===true;
       retake.addEventListener('change',()=>{draft.allowRetakes=retake.checked;render();});
       const retakeRow=element('label','anat336-toggle');retakeRow.append(retake,element('span','','Allow additional local attempts'));area.append(retakeRow);
+     const tracking=element('select','anat336-input');
+     for(const [value,title] of [['local','Local device results'],['google','Google school sign-in and results']]){
+       const option=element('option','',title);option.value=value;tracking.append(option);
+     }
+     tracking.value=draft.tracking==='google'?'google':'local';
+     tracking.addEventListener('change',()=>{draft.tracking=tracking.value;render();});
+     area.append(labelControl('Results tracking',tracking)); // ANATOMIQ_UNIFIED_LESSONS_367
       area.append(element('p','anat336-help','Local results are retained in each student browser; they are not an authenticated school gradebook.'));
     }
     const only=document.createElement('input');only.type='checkbox';only.checked=draft.practicalOnly===true;
@@ -344,6 +351,14 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
   function requestClose(){if(!dirty()){close();return;}dialogOpen=true;$('anat336-confirm').hidden=false;root.querySelector('[data-confirm="cancel"]').focus();}
   root.querySelector('#anat336-back').addEventListener('click',requestClose);
   root.querySelector('#anat336-save').addEventListener('click',save);
+  root.querySelector('#anat336-guided-activities').addEventListener('click',()=>{
+    if(dirty()&&!save())return;
+    close();document.getElementById('anat125-guided-setup')?.click();
+  });
+  root.querySelector('#anat336-publish-lesson').addEventListener('click',()=>{
+    if(dirty()&&!save())return;
+    close();document.getElementById('publish-open')?.click();
+  }); // ANATOMIQ_UNIFIED_LESSONS_367
   root.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{tab=b.dataset.tab;render();}));
   root.querySelectorAll('[data-confirm]').forEach(b=>b.addEventListener('click',()=>{
     if(b.dataset.confirm==='cancel'){$('anat336-confirm').hidden=true;dialogOpen=false;return;}

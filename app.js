@@ -20,13 +20,13 @@ import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // A
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
 import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363&choices=364';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363&unified=367'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
 import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
 import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364&distractors=366'; // ANATOMIQ_PRACTICAL_LAUNCH_364
-import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
+import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL,validateSchoolPublicationAck} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
 import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
@@ -67,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.151'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.152'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -4304,7 +4304,7 @@ async function publishGradedPractical362({config,title,scriptUrl,requestId}){
   const policy=validatePracticalPublication(config);
   const school=schoolScriptURL(scriptUrl);
   if(!teacherMode||!sceneRoot)throw new Error('Open the teacher Studio to publish a Practical.');
-  if(!cloudVerified||!cloudToken)throw new Error('Connect or unlock GitHub under File → Publish Lesson, then return to Practical Setup → Publish.');
+  if(!cloudVerified||!cloudToken)throw new Error('Connect or unlock GitHub under File → Publish Lesson.');
   if(cloudBusy)throw new Error('Another GitHub publishing operation is in progress.');
   const prefs=cloudSavedPreferences();
   const r=lessonRef($('cloud-owner')?.value||cloudVerified.owner||prefs.owner,
@@ -4367,6 +4367,7 @@ function cloudOpenPublishing(){
   $('cloud-slug').value=cloudCurrentLessonSlug();
   $('cloud-token').value='';
   $('cloud-publish-results').hidden=true;
+  $('aiq367-practical-results').hidden=!$('aiq367-practical-link').value; // ANATOMIQ_UNIFIED_LESSONS_367
   const mismatch=githubEditingRef && cloudVerified &&
       (githubEditingRef.owner.toLowerCase()!==cloudVerified.owner.toLowerCase() ||
        githubEditingRef.repo.toLowerCase()!==cloudVerified.repo.toLowerCase() ||
@@ -4422,10 +4423,106 @@ $('cloud-export-json').addEventListener('click',()=>{
     cloudSetStatus('Local lesson JSON downloaded. Commit it to lessons/ using GitHub Desktop if preferred.');
   }catch(error){cloudSetStatus(error.message,true);}
 });
+
+// ANATOMIQ_UNIFIED_LESSONS_367 — one publisher entry point; school link is
+// shown ONLY after the authenticated Apps Script teacher confirms registration.
+let unifiedAckCleanup367=null;
+function unifiedShowPracticalStatus367(text,bad=false){
+  const status=$('aiq367-practical-status');
+  const block=$('aiq367-practical-results');
+  if(block)block.hidden=false;
+  if(status){status.textContent=text;status.classList.toggle('error',bad);}
+  cloudSetStatus(text,bad);
+}
+function unifiedRenderPracticalLink367(url){
+  const input=$('aiq367-practical-link');
+  if(!input)return;
+  input.value=url;
+  $('aiq367-practical-ready').hidden=false;
+  unifiedShowPracticalStatus367('School Practical registered. Copy ONLY the verified school student link below.');
+}
+$('aiq367-copy-practical')?.addEventListener('click',async()=>{
+  const input=$('aiq367-practical-link');
+  if(!input?.value)return;
+  try{await navigator.clipboard.writeText(input.value);cloudSetStatus('School Practical link copied.');}
+  catch{input.focus();input.select();cloudSetStatus('Select and copy the verified school Practical link.');}
+});
+$('aiq367-register')?.addEventListener('click',event=>{
+  if(!event.currentTarget.href||event.currentTarget.getAttribute('href')==='#'){
+    event.preventDefault();cloudSetStatus('Publish the Practical before opening school registration.',true);
+  }
+});
+$('anat367-teacher-results')?.addEventListener('click',()=>{
+  $('publish-open')?.click();
+  $('aiq367-results-hub')?.click();
+});
+$('aiq367-results-hub')?.addEventListener('click',()=>{
+  let script='';
+  try{script=schoolScriptURL($('aiq283-script-url')?.value||localStorage.getItem('anatomiq-practical-teacher-script-360')||'');}
+  catch(error){cloudSetStatus(error.message,true);return;}
+  const guided=new URL(script);guided.searchParams.set('view','teacher');
+  const practical=new URL(script);practical.searchParams.set('view','practicals');
+  const area=$('aiq367-results-links');
+  $('aiq367-results-guided').href=guided.toString();
+  $('aiq367-results-practical').href=practical.toString();
+  if(area)area.hidden=!area.hidden;
+});
+
 $('cloud-publish').addEventListener('click',async()=>{
   if(cloudBusy)return;
   if(!teacherMode||!sceneRoot)return;
   if(!cloudVerified||!cloudToken){cloudSetStatus('Connect or unlock your GitHub publishing credential first.',true);return;}
+
+  // ANATOMIQ_UNIFIED_LESSONS_367. Must execute while in the original user click
+  // so publishGradedPractical362 can open the registration tab before any await.
+  let unifiedProject367;
+  try{publishPermissions={...currentPublishPermissions()};unifiedProject367=snapshotProject();}
+  catch(error){cloudSetStatus(error.message,true);return;}
+  if(unifiedProject367?.practical?.graded===true && unifiedProject367.practical.tracking==='google'){
+    const p=unifiedProject367;
+    const hasGuided=Boolean(p.guided?.free===false &&
+      Array.isArray(p.guided?.chapters) && p.guided.chapters.some(a=>Array.isArray(a)&&a.length));
+    if(hasGuided && p.practical.practicalOnly!==true){
+      cloudSetStatus('This assignment combines graded Practical questions and Guided activities. School-tracked mixed grading needs a unified Google backend; no partial grade was published. Use Practical Only or publish Guided activities separately for now.',true);
+      return;
+    }
+    let script;
+    try{
+      validatePracticalPublication(p.practical);
+      script=schoolScriptURL($('aiq283-script-url')?.value.trim() ||
+        localStorage.getItem('anatomiq-practical-teacher-script-360') ||
+        window.AnatomIQCloudProgress283?.storedConfig()?.url || '');
+      localStorage.setItem('anatomiq-practical-teacher-script-360',script);
+    }catch(error){cloudSetStatus(error.message,true);return;}
+    if(unifiedAckCleanup367)unifiedAckCleanup367();
+    const requestId='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,19);
+    const area=$('aiq367-practical-results');
+    area.hidden=false;$('aiq367-practical-ready').hidden=true;
+    $('aiq367-practical-link').value='';
+    $('aiq367-register').href='#';
+    let completed=false;
+    const onAck=event=>{
+      const confirmation=validateSchoolPublicationAck(event,requestId,script);
+      if(!confirmation)return;
+      completed=true;
+      unifiedRenderPracticalLink367(confirmation.url);
+      window.removeEventListener('message',onAck);
+      unifiedAckCleanup367=null;
+    };
+    window.addEventListener('message',onAck);
+    unifiedAckCleanup367=()=>{window.removeEventListener('message',onAck);unifiedAckCleanup367=null;};
+    // This function owns cloudBusy and opens the teacher registration tab.
+    // Do not call cloudSetBusy before invoking it.
+    try{
+      unifiedShowPracticalStatus367('Publishing Practical to GitHub and opening school registration…');
+      const result=await publishGradedPractical362({config:p.practical,title:p.t,scriptUrl:script,requestId});
+      if(!result){unifiedAckCleanup367?.();unifiedShowPracticalStatus367('Practical publishing cancelled.');return;}
+      $('aiq367-register').href=result.registrationUrl;
+      $('aiq367-register').hidden=false;
+      if(!completed)unifiedShowPracticalStatus367('GitHub lesson published. Finish the Google teacher registration in the opened tab, then the verified student link will appear here.');
+    }catch(error){unifiedAckCleanup367?.();unifiedShowPracticalStatus367('Practical publication needs attention: '+(error?.message||String(error)),true);}
+    return;
+  }
   cloudSetBusy(true);cloudSetStatus('Checking the existing lesson on GitHub…');
   try{
     // ANATOMIQ_PUBLISH_LINKS_285 — never silently publish a normal link when school tracking was selected.
@@ -4608,7 +4705,21 @@ function publishScene(){
   $('share-feedback').textContent='Choose student controls and click Generate student links.';
   $('share-dialog').hidden=false;
   cloudOpenPublishing();
-  $('publish-preset').focus();
+  $('cloud-publishing').open=true;
+  const gradeMode=Boolean(snapshotProject()?.practical?.graded===true && snapshotProject()?.practical?.tracking==='google');
+  $('generate-student-link').hidden=gradeMode;
+  $('cloud-publish').textContent=gradeMode?'Publish & Register School Practical':'Publish / Update Live Lesson';
+  $('aiq283-track').disabled=gradeMode;
+  $('aiq283-publish-hint').textContent=gradeMode?
+    'Graded Practicals use a verified Google school link; ordinary student links are disabled.':
+    'School progress tracking is available for Guided chapter activities.';
+  if(gradeMode){
+    if(!$('aiq283-script-url').value.trim()){
+      try{$('aiq283-script-url').value=localStorage.getItem('anatomiq-practical-teacher-script-360')||'';}catch{}
+    }
+    cloudSetStatus('Publish this Graded Practical, then confirm registration with your school Google account.');
+  }
+  $('cloud-publish').focus(); // ANATOMIQ_UNIFIED_LESSONS_367
 }
 async function generateStudentLink(){
   if(!teacherMode || !sceneRoot)return;
