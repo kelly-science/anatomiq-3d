@@ -3,32 +3,57 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <title>AnatomIQ · Interactive 3D model</title>
 <style>
-:root{font:14px system-ui,-apple-system,sans-serif;color-scheme:dark;background:#12202a;color:#eaf5f5}
-*{box-sizing:border-box}html,body{height:100%;margin:0}body{display:grid;place-items:center;overflow:hidden}
-#activate{appearance:none;display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:100%;min-height:120px;padding:0;background:radial-gradient(ellipse at center,#273d45,#101d27 74%);color:inherit;border:0;cursor:pointer;text-align:center;overflow:hidden}
-#activate:focus-visible{outline:4px solid #92e2d7;outline-offset:-5px}
+/* ANATOMIQ_SCHOOLOGY_PREVIEW_THEME_374 — only a static image and click control; no 3D imports. */
+:root{
+  font:14px system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+  --page:#12202a;--fore:#eaf5f5;--muted:#d0e5e7;
+  --glow:radial-gradient(ellipse at center,#273d45,#101d27 74%);
+  --veil:linear-gradient(0deg,rgba(8,21,29,.87),rgba(8,21,29,0) 55%);
+  --cursor-bg:rgba(107,212,196,.94);--cursor-fg:#08292d;
+  --cursor-shadow:0 4px 20px rgba(0,0,0,.37);
+  background:var(--page);color:var(--fore);
+}
+:root[data-model-theme="light"]{
+  color-scheme:light;
+  --page:#f4f7f9;--fore:#193641;--muted:#4a6871;
+  --glow:radial-gradient(ellipse at center,#ffffff,#e4eaee 76%);
+  --veil:linear-gradient(0deg,rgba(250,252,253,.96),rgba(250,252,253,0) 60%);
+  --cursor-bg:rgba(255,255,255,.95);--cursor-fg:#117b75;
+  --cursor-shadow:0 4px 16px rgba(22,54,65,.18);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:grid;place-items:center;overflow:hidden}
+#activate{appearance:none;display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:100%;min-height:120px;padding:0;background:var(--glow);color:var(--fore);border:0;cursor:pointer;text-align:center;overflow:hidden}
+#activate:focus-visible{outline:4px solid #47a99c;outline-offset:-5px}
 #preview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:none}
 #activate.has-preview #preview{display:block}
-#activate.has-preview:after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,rgba(8,21,29,.8),transparent 52%);pointer-events:none}
-#content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:90%;padding:16px;text-shadow:0 2px 10px #0015}
+#activate.has-preview::after{content:'';position:absolute;inset:0;background:var(--veil);pointer-events:none}
+#content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:90%;padding:16px}
 #activate.has-preview #content{position:absolute;bottom:0;left:0;right:0;max-width:none;gap:6px}
-#icon{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;background:rgba(107,212,196,.9);color:#08292d;box-shadow:0 4px 20px #0006}
-#label{font-size:clamp(15px,2vw,20px);font-weight:750}#sub{font-size:12px;color:#d0e5e7}
-#fallback{font-size:clamp(36px,7vw,62px);opacity:.7}
-#activate.has-preview #fallback{display:none}
+#icon{display:grid;place-items:center;width:66px;height:66px;border-radius:50%;background:var(--cursor-bg);color:var(--cursor-fg);box-shadow:var(--cursor-shadow)}
+#icon svg{width:36px;height:36px}
+#activate.has-preview #icon{width:50px;height:50px}
+#activate.has-preview #icon svg{width:29px;height:29px}
+#label{font-size:clamp(15px,2vw,20px);font-weight:750}
+#sub{font-size:12px;color:var(--muted)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<button id="activate" type="button" aria-label="Load interactive AnatomIQ 3D model" disabled>
+<button id="activate" type="button" aria-label="Click to load interactive AnatomIQ 3D model" disabled>
 <img id="preview" alt="Static preview of the published AnatomIQ 3D model" decoding="async">
 <div id="content">
-<span id="fallback" aria-hidden="true">⬡</span>
 <span id="icon" aria-hidden="true">
-<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.4 3 8l9 5.3L21 8l-6-3.6"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/><path d="m8 2 1 2m7 0 1-2"/></svg>
+<!-- Single mouse-pointer-click glyph replaces both the hexagon and box icons. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 3v11l3.4-3.3 3.1 7.2 2.5-1.1-3.1-7.1H16L5 3Z"/>
+  <path d="M15.5 2.5v3M19.5 4.5l-2.2 2.2M21 9h-3M11.5 2.5l1.1 2.7"/>
+</svg>
 </span>
 <span id="label">AnatomIQ · 3D anatomy</span>
 <span id="sub">Click to load interactive model</span>
@@ -38,33 +63,74 @@
 (function(){
 'use strict';
 const b=document.getElementById('activate'),img=document.getElementById('preview');
-const text=document.getElementById('sub');
+const status=document.getElementById('sub');
 const hash=window.location.hash;
-// A published lesson is the only acceptable target. Never navigate to an arbitrary URL.
+// Allow only a published lesson or an existing bounded compressed scene link.
 const m=/^#lesson=([a-z0-9-]+)\/([a-z0-9_.-]+)\/([a-z0-9-]+)@([a-z0-9._%\/-]+)$/i.exec(hash);
-const scene=/^#scene=([a-zA-Z0-9_-]{10,24000})$/.test(hash);
-if((!m&&!scene)||(m&&hash.includes('..'))){text.textContent='Invalid lesson link';return;}
-let raw='';
+const scene=/^#scene=([a-zA-Z0-9_-]{10,24000})$/.exec(hash);
+if((!m&&!scene)||(m&&hash.includes('..'))){status.textContent='Invalid lesson link';return;}
+function setTheme(bg){
+  if(bg!=='white'&&bg!=='classic')return;
+  document.documentElement.dataset.modelTheme=bg==='white'?'light':'dark';
+}
+function readTheme(project){
+  // sp.bg is AnatomIQ's validated, published lesson background setting.
+  if(project&&typeof project==='object')setTheme(project.sp?.bg);
+}
+let previewURL='';let lessonURL='';
 if(m){
   let branch;
-  try{branch=decodeURIComponent(m[4]);}catch{text.textContent='Invalid lesson branch';return;}
+  try{branch=decodeURIComponent(m[4]);}catch{status.textContent='Invalid lesson branch';return;}
   if(!branch||branch.length>160||!/^[a-z0-9._/-]+$/i.test(branch)||branch.split('/').some(s=>!s||s==='.'||s==='..')){
-    text.textContent='Invalid lesson branch';return;
+    status.textContent='Invalid lesson branch';return;
   }
-  const ref={owner:m[1],repo:m[2],slug:m[3],branch};
-  raw=`https://raw.githubusercontent.com/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.repo)}/${ref.branch.split('/').map(encodeURIComponent).join('/')}/lessons/previews/${encodeURIComponent(ref.slug)}.jpg`;
+  const base=`https://raw.githubusercontent.com/${encodeURIComponent(m[1])}/${encodeURIComponent(m[2])}/${branch.split('/').map(encodeURIComponent).join('/')}/lessons/`;
+  previewURL=base+'previews/'+encodeURIComponent(m[3])+'.jpg';
+  lessonURL=base+encodeURIComponent(m[3])+'.json';
 }
-const u=new URL('./index.html',window.location.href);
-u.hash=hash;
-u.searchParams.set('embed','1');
-u.searchParams.set('schoologyActive','1');
-// The actual student view is not requested until the user activates this button.
+// Only the click initiates loading the AnatomIQ 3D viewer and model assets.
+const target=new URL('./index.html',window.location.href);
+target.hash=hash;target.searchParams.set('embed','1');target.searchParams.set('schoologyActive','1');
 b.disabled=false;
-b.addEventListener('click',()=>{b.disabled=true;text.textContent='Loading interactive model…';window.location.assign(u.href);},{once:true});
-if(raw){
+b.addEventListener('click',()=>{b.disabled=true;status.textContent='Loading interactive model…';window.location.assign(target.href);},{once:true});
+if(previewURL){
   img.addEventListener('load',()=>b.classList.add('has-preview'),{once:true});
-  img.addEventListener('error',()=>{img.removeAttribute('src');},{once:true});
-  img.src=raw;
+  img.addEventListener('error',()=>img.removeAttribute('src'),{once:true});
+  img.src=previewURL;
+  // Read only the small, public lesson JSON, never its GLBs or renderer, to match the saved theme.
+  fetch(lessonURL,{cache:'no-cache'}).then(r=>{
+    if(!r.ok)throw Error('Lesson theme unavailable');
+    const size=Number(r.headers.get('content-length'));
+    if(size>180000)throw Error('Lesson exceeds preview metadata limit');
+    return r.text();
+  }).then(s=>{if(s.length<=180000)readTheme(JSON.parse(s));}).catch(()=>{});
+}else if(scene){
+  // Short share links already contain the saved sp.bg value. Decode in-browser,
+  // without fetching files, importing modules, or initializing a 3D scene.
+  const encoded=scene[1];
+  if(encoded[0]==='j'||encoded[0]==='g'){
+    try{
+      const chunk=encoded.slice(1).replace(/-/g,'+').replace(/_/g,'/');
+      const binary=atob(chunk.padEnd(Math.ceil(chunk.length/4)*4,'='));
+      const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+      if(encoded[0]==='j'){
+        if(bytes.length<=160000)readTheme(JSON.parse(new TextDecoder().decode(bytes)));
+      }else if(typeof DecompressionStream==='function'){
+        const reader=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
+        (async()=>{
+          const parts=[];let total=0;
+          try{
+            while(true){const {done,value}=await reader.read();if(done)break;
+              total+=value.length;if(total>160000){await reader.cancel();return;}parts.push(value);
+            }
+            const joined=new Uint8Array(total);let n=0;
+            for(const part of parts){joined.set(part,n);n+=part.length;}
+            readTheme(JSON.parse(new TextDecoder().decode(joined)));
+          }catch{}finally{reader.releaseLock();}
+        })();
+      }
+    }catch{}
+  }
 }
 })();
 </script>

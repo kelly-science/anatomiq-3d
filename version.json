@@ -1,6 +1,6 @@
 {
-  "version": "2.2.156",
+  "version": "2.2.157",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Schoology embedded lessons display static previews and load 3D on click; iframe student unload prompt disabled."
+  "notes": "Schoology static preview uses a single click cursor icon and matches saved white/classic lesson background, with no 3D loading before activation."
 }
