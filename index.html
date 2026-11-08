@@ -4,6 +4,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+<!-- ANATOMIQ_SCHOOLOGY_EMBED_373: preflight before any 3D script/imports.
+     Existing ?embed=1 lesson links open the static, click-to-load page. -->
+<script id="anatomiq-schoology-preflight-373">
+(function(){
+  const p=new URL(window.location.href);
+  if(p.searchParams.get('embed')!=='1'||p.searchParams.get('schoologyActive')==='1'||!(p.hash.startsWith('#lesson=')||p.hash.startsWith('#scene=')))return;
+  const target=new URL('./schoology-embed.html',p);
+  target.search='';target.hash=p.hash;
+  window.location.replace(target.href);
+})();
+</script>
+
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#101720" />
   <meta name="description" content="Explore skeletal, muscular, digestive, cardiovascular, respiratory, nervous, and urinary systems in interactive 3D, designed for Chromebook anatomy classes." />

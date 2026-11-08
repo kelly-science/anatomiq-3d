@@ -1,6 +1,6 @@
 {
-  "version": "2.2.155",
+  "version": "2.2.156",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Keep camera navigation controls visible while removing AnatomIQ app framing during student Practical-only assessment."
+  "notes": "Schoology embedded lessons display static previews and load 3D on click; iframe student unload prompt disabled."
 }

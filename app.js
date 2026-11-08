@@ -29,7 +29,8 @@ import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,
 import {schoolScriptURL,validatePracticalPublication,practicalRegistrationURL,validateSchoolPublicationAck} from './practical-publish-362.mjs?rev=362'; // ANATOMIQ_PRACTICAL_STUDIO_PUBLISH_362
 import {chooseStudentPracticalChapter,practicalScopedConfig} from './student-practical-chapters-269.mjs?rev=269'; // ANATOMIQ_STUDENT_PRACTICAL_SCOPE_269
 import {smartLabelFacing,smartOrbitDirections} from './smart-label-focus.js';
-import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub} from './lesson-publishing.js';
+import {studentLink,parsePublicReference,fetchPublicLesson,rawLessonURL,resolveLessonMedia,normalizeSlug,lessonRef,verifyPublishingRepository,publishToGitHub,publishSchoologyPreview373} from './lesson-publishing.js';
+import {captureSchoologyPreview373} from './schoology-preview-373.mjs?rev=373'; // ANATOMIQ_SCHOOLOGY_EMBED_373
 import {hasRememberedConnection,savedConnectionIdentity,isTabUnlocked,lockRememberedConnection,forgetRememberedConnection,rememberConnection,unlockRememberedConnection} from './github-token-vault.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -67,7 +68,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.155'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.156'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -3060,6 +3061,9 @@ for(const eventName of ['pointerdown','keydown'])document.addEventListener(event
 window.addEventListener('beforeunload',event=>{
   // Chromium controls the actual wording/display and requires prior user activation.
   if(!sceneRoot||!anat249Activated)return;
+  
+  // ANATOMIQ_SCHOOLOGY_EMBED_373: iframe student navigation must not trigger beforeunload.
+  if(!teacherMode && window.self!==window.top)return;
   if(teacherMode&&!hasUnsavedLibraryChanges()&&!document.querySelector('.anat-project-dot:not(:empty)'))return;
   event.preventDefault();event.returnValue='';
 });
@@ -4574,6 +4578,16 @@ $('cloud-publish').addEventListener('click',async()=>{
     const result=await publishToGitHub({ref:r,token:cloudToken,project,
       confirmOverwrite:()=>safeUpdate||confirm(`This will replace the currently published lesson at ${r.owner}/${r.repo}/lessons/${r.slug}.json. Existing student links will immediately point to your NEW lesson contents. Continue?`)});
     if(result.cancelled){cloudSetStatus('Publication cancelled. Nothing was changed.');return;}
+    // ANATOMIQ_SCHOOLOGY_EMBED_373: optional preview. A failed image upload never unpublishes a lesson.
+    let schoologyPreviewWarning373='';
+    try{
+      const image373=captureSchoologyPreview373({renderer,scene,camera,stage:elements.stage});
+      await publishSchoologyPreview373({ref:r,token:cloudToken,dataUrl:image373});
+    }catch(e){
+      schoologyPreviewWarning373='Schoology image unavailable; the click-to-load placeholder will be shown. '+String(e?.message||e);
+      console.warn(schoologyPreviewWarning373);
+    }
+
     githubEditingRef=r;
     // Save local lesson identity so a later update can safely reuse its URL even if renamed.
     try{
@@ -4593,6 +4607,7 @@ $('cloud-publish').addEventListener('click',async()=>{
     if(selectedTracking)cloudSetStatus('✓ Published to GitHub and generated a SCHOOL-TRACKED student link. Share ONLY the Apps Script link in the Tracked Student Link section.');
 
     if(!selectedTracking)cloudSetStatus(`✓ ${result.updated?'Updated':'Published'} on GitHub. Standard student link ready (no school login). Commit ${result.commit.slice(0,8)}.`);
+    if(schoologyPreviewWarning373)cloudSetStatus(($('cloud-publish-status')?.textContent||'Lesson published.')+' '+schoologyPreviewWarning373);
   }catch(error){cloudSetStatus(error.message,true);}
   finally{cloudSetBusy(false);}
 });

@@ -51,7 +51,7 @@ export function parsePublicReference(hash){
 export function studentLink(base,ref,{embed=false}={}){
   const url=new URL(base);
   url.hash='lesson='+encodePublicReference(ref);url.search='';
-  if(embed)url.searchParams.set('embed','1');
+  if(embed)url.pathname=new URL('./schoology-embed.html',url).pathname; // ANATOMIQ_SCHOOLOGY_EMBED_373
   return url.href;
 }
 export function rawLessonURL(ref){
@@ -142,4 +142,27 @@ export async function fetchPublicLesson(ref,{fetchFn=fetch,cacheStorage=globalTh
     const project=validateProject(await old.json());
     return {project,offline:true};
   }
+}
+
+
+// ANATOMIQ_SCHOOLOGY_EMBED_373: same GitHub connection; optional JPEG alongside lesson.
+// The parent lesson was already confirmed/published before calling this helper.
+export async function publishSchoologyPreview373({ref,token,dataUrl,fetchFn=fetch}){
+  const r=lessonRef(ref.owner,ref.repo,ref.branch,ref.slug);
+  const path=`lessons/previews/${r.slug}.jpg`;
+  if(typeof dataUrl!=='string'||!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(dataUrl)||dataUrl.length>550000)
+    throw new Error('Invalid or oversized JPEG Schoology preview.');
+  const endpoint=`${API}/repos/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}/contents/${path}`;
+  const headers=apiHeaders(token);
+  const current=await fetchFn(`${endpoint}?ref=${encodeURIComponent(r.branch)}`,{headers,cache:'no-store'});
+  const body={message:`AnatomIQ: Update Schoology preview ${r.slug}`,content:dataUrl.slice('data:image/jpeg;base64,'.length),branch:r.branch};
+  if(current.status!==404){
+    const info=await apiJSON(current,'Cannot inspect existing Schoology image');
+    if(info.type!=='file'||typeof info.sha!=='string')throw new Error('Existing preview path is not a normal GitHub file.');
+    body.sha=info.sha;
+  }
+  const response=await fetchFn(endpoint,{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const result=await apiJSON(response,'Schoology preview upload failed');
+  if(!result.commit?.sha)throw new Error('GitHub did not confirm the preview upload.');
+  return {ok:true,commit:result.commit.sha};
 }
