@@ -1,6 +1,6 @@
 {
-  "version": "2.2.158",
+  "version": "2.2.159",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Schoology light preview uses pure white, a light-gray cursor badge, corrected click glyph, and centered AnatomIQ title."
+  "notes": "Full-viewport minimal breathing loader; progress/status only, with early light/dark lesson theme and no teacher chrome flash."
 }

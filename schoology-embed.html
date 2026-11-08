@@ -92,7 +92,7 @@ if(m){
 const target=new URL('./index.html',window.location.href);
 target.hash=hash;target.searchParams.set('embed','1');target.searchParams.set('schoologyActive','1');
 b.disabled=false;
-b.addEventListener('click',()=>{b.disabled=true;status.textContent='Loading interactive model…';window.location.assign(target.href);},{once:true});
+b.addEventListener('click',()=>{b.disabled=true;status.textContent='Loading interactive model…';const previewTheme=document.documentElement.dataset.modelTheme;if(previewTheme==='light'||previewTheme==='dark')target.searchParams.set('aiqTheme',previewTheme);window.location.assign(target.href);},{once:true}); // ANATOMIQ_LOADING_EXPERIENCE_376
 if(previewURL){
   img.addEventListener('load',()=>b.classList.add('has-preview'),{once:true});
   img.addEventListener('error',()=>img.removeAttribute('src'),{once:true});

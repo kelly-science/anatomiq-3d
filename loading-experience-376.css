@@ -1,0 +1,87 @@
+/* ANATOMIQ_LOADING_EXPERIENCE_376 — a clean, viewport-level loading surface.
+   Keep the existing brand breathing animation and real progress reporting. */
+html.aiq376-boot{background:#101720!important;}
+html.aiq376-boot[data-aiq-load-theme="light"]{background:#fff!important;}
+html.aiq376-boot body{visibility:hidden!important;}
+/* Fail open if the main app finishes but the optional loader helper fails to run. */
+html.aiq376-boot:has(#loader[hidden]) body{visibility:visible!important;}
+html.aiq376-boot #loader{visibility:visible!important;}
+
+#loader.loading-overlay{
+  position:fixed!important;
+  inset:0!important;
+  width:100%!important;
+  height:100vh!important;
+  height:100dvh!important;
+  max-height:none!important;
+  max-width:none!important;
+  z-index:2147483000!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  padding:24px!important;
+  margin:0!important;
+  gap:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:#101720!important;
+  color:#eaf4f6!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  opacity:1!important;
+  transform:none!important;
+  isolation:isolate;
+}
+/* Important: overriding display:flex must never defeat the app's ready-state hidden flag. */
+#loader.loading-overlay[hidden]{display:none!important;}
+#loader #loading-title,#loader #loading-description{display:none!important;}
+#loader .anat-loading-icon-332{
+  display:block!important;
+  flex:none;
+  margin:0 0 27px!important;
+  /* Preserve the existing icon breathing animation from brand-loading-332.css. */
+}
+#loader .progress-track{
+  display:block!important;
+  flex:none;
+  margin:0 auto 13px!important;
+  width:min(270px,76vw)!important;
+  height:5px!important;
+  background:#304550!important;
+  border:0!important;
+  border-radius:100px!important;
+  overflow:hidden!important;
+  box-shadow:none!important;
+}
+#loader #progress-bar{height:100%!important;background:#75cfc4!important;}
+#loader #loading-progress{
+  display:block!important;
+  max-width:min(430px,90vw);
+  min-height:18px;
+  margin:0!important;
+  color:#b8c9d0!important;
+  background:transparent!important;
+  text-align:center!important;
+  font:500 12px/1.5 system-ui,-apple-system,sans-serif!important;
+  letter-spacing:0!important;
+  overflow-wrap:anywhere;
+}
+#loader #retry:not([hidden]){display:inline-flex!important;margin:20px 0 0!important;}
+
+html[data-aiq-load-theme="light"] #loader.loading-overlay{
+  background:#fff!important;
+  color:#193743!important;
+}
+html[data-aiq-load-theme="light"] #loader .progress-track{background:#e8edef!important;}
+html[data-aiq-load-theme="light"] #loader #progress-bar{background:#198c81!important;}
+html[data-aiq-load-theme="light"] #loader #loading-progress{color:#536d77!important;}
+html[data-aiq-load-theme="light"] #loader #retry:not([hidden]){
+  background:#e7f2ef!important;color:#194840!important;border-color:#b9d6d0!important;
+}
+@media (prefers-reduced-motion:reduce){
+  #loader .anat-loading-icon-332{animation:none!important;}
+  #loader #progress-bar{transition:none!important;}
+}
