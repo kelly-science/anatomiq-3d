@@ -30,7 +30,7 @@ export function cleanChapters(value){
   const sorted=[...new Set(value)].sort((a,b)=>a-b);
   return sorted.length===value.length?sorted:null;
 }
-export function createCloudPayload({questions,answers,result,attemptId,studentName,normalizeAnswer=(s)=>String(s??'').trim().toLocaleLowerCase('en-US')}){
+export function createCloudPayload({questions,answers,result,attemptId,studentName,markerStyle='marker',normalizeAnswer=(s)=>String(s??'').trim().toLocaleLowerCase('en-US')}){
   if(!Array.isArray(questions)||!Array.isArray(answers)||!result||questions.length<1||questions.length>100||questions.length!==answers.length)
     throw new Error('Practical questions and answers are incomplete.');
   const id=safeString(attemptId,101),name=safeString(studentName,71);
@@ -40,10 +40,28 @@ export function createCloudPayload({questions,answers,result,attemptId,studentNa
     if(!Number.isInteger(chapter)||chapter<0||chapter>=12)throw new Error('Invalid Practical question chapter.');
     const answer=safeString(answers[i],140),correct=safeString(q?.name,140);
     if(!correct)throw new Error('A Practical question is missing its correct answer.');
-    return {chapter,kind:q.type==='label'?'label':'structure',target:correct,chosen:answer,isCorrect:normalizeAnswer(answer)===normalizeAnswer(correct)};
+    // ANATOMIQ_PRACTICAL_QUESTION_EVIDENCE_370: snapshot the exact randomized
+    // choices and the prompt actually shown. These remain browser-reported.
+    const choices=q?.choices;
+    if(!Array.isArray(choices)||choices.length<2||choices.length>8 ||
+       choices.some(x=>typeof x!=='string'||!x.trim()||x.length>140))
+      throw new Error('Practical question choices could not be recorded.');
+    const selectedIndex=choices.findIndex(x=>x===answer);
+    if(selectedIndex<0||!choices.includes(correct))throw new Error('Practical question evidence does not match its displayed choices.');
+    const questionId=String(q?.key||'');
+    if(!/^[A-Za-z0-9:_-]{2,100}$/.test(questionId))throw new Error('Practical question has no stable identity.');
+    const prompt=q.type!=='label'?'Identify the highlighted anatomical structure.':
+      markerStyle==='question-label'?`Identify the structure indicated by Question ${i+1}.`:
+      'Identify the structure indicated by the yellow marker.';
+    return {chapter,kind:q.type==='label'?'label':'structure',target:correct,chosen:answer,
+      isCorrect:normalizeAnswer(answer)===normalizeAnswer(correct),evidenceVersion:2,
+      questionId,prompt,choices:[...choices],selectedIndex};
   });
   const computed=entries.filter(q=>q.isCorrect).length;
   if(result.correct!==computed||result.total!==entries.length)throw new Error('Practical score and answer details disagree.');
+  // Keep the original PracticalResults cell limit; never silently discard evidence.
+  if(JSON.stringify(entries).length>40000)
+    throw new Error('Practical question history exceeds the school record size limit. Reduce the number of questions or shorten long answer labels before assigning.');
   return {attemptId:id,studentName:name,correct:computed,total:entries.length,answers:entries};
 }
 export function createPracticalCloudBridge({win=window,doc=document,storage=localStorage,lessonKey=()=>'',now=()=>Date.now(),setTimeoutFn=setTimeout,clearTimeoutFn=clearTimeout}={}){

@@ -22,7 +22,7 @@ import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
 import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363&unified=367'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
-import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365';
+import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365&evidence=370';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
 import {isPracticalOnly363,scopedPracticalCandidates363,draftMatchesEligible363} from './practical-policy-363.mjs?rev=363'; // ANATOMIQ_PRACTICAL_ONLY_363
 import {scopedDistractorPool364,requestPracticalName364,showPracticalProblem364,clearPracticalProblem364} from './practical-start-364.mjs?rev=364&distractors=366'; // ANATOMIQ_PRACTICAL_LAUNCH_364
@@ -67,7 +67,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.153'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.154'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -6145,6 +6145,7 @@ function practicalFinish(){
     try{
       const payload=createCloudPayload({questions:practicalState.questions,answers:practicalState.answers,
         result,attemptId:practicalState.attemptId358,studentName:gradedPracticalStudent358,
+        markerStyle:practicalTargetDisplay(practicalConfig), /* ANATOMIQ_PRACTICAL_QUESTION_EVIDENCE_370 */
         normalizeAnswer:(value)=>practicalAnswerName(value).trim().toLocaleLowerCase('en-US')});
       void practicalCloud360.attempt(payload);
     }catch(error){console.error('Practical school submission preparation failed',error);

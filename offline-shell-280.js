@@ -1,6 +1,6 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
-  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357&assessment=358&cloud=360&resume=361&publish=362&practicalonly=363&practicalstart=364&school=365&distractors=366&unified=367&dashboard=368", // ANATOMIQ_PRACTICAL_LAUNCH_364
+  "./app.js?rev=motionblur279b&offline=281&progress=285&student=288&fix=289&portal=291&short=292&visual=293&rotation=294&scalpel=295&autotools=296&guidedaccess=297&guidedpanel=298&certificate=299&mistakes=303&a11y=304&delivery=305&defaults=306&practicalgroup=307&finalpractical=308&guidedlabels=310&identify=311&tree=312&highlight=313&priority=314&hotspot=315&size=316&restart=317&report=320&successfullscreen=321&reportsave=322&flyout=325&settings=326&cleanup=327&pinch=328&hold=329&whole=330&icon=331&brand=332&menu=333&renderhotfix=334&grammar=335&practical=336&launch=337&cleanup=338&guided=339&chapters=340&layout=341&restore=342&activityscope=343&guidedsettings=344&tabs=345&controls=346&practicalreport=347&review=348&pool=349&reviewnav=350&labelreview=351&updates=352&ui=353&presentation=355&duplicate=356&chapterimport=357&assessment=358&cloud=360&resume=361&publish=362&practicalonly=363&practicalstart=364&school=365&distractors=366&unified=367&dashboard=368&evidence=370", // ANATOMIQ_PRACTICAL_LAUNCH_364
   "./practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363&choices=364", // ANATOMIQ_PRACTICAL_LAUNCH_364
   "./practical-start-364.mjs?rev=364&distractors=366", // ANATOMIQ_PRACTICAL_LAUNCH_364
 
@@ -13,7 +13,7 @@ self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
 
   "./practical-resume-361.css?rev=361", // ANATOMIQ_PRACTICAL_RESUME_361
   "./practical-resume-361.mjs?rev=361", // ANATOMIQ_PRACTICAL_RESUME_361
-  "./practical-cloud-360.mjs?rev=360&handshake=365", // ANATOMIQ_PRACTICAL_CLOUD_360
+  "./practical-cloud-360.mjs?rev=360&handshake=365&evidence=370", // ANATOMIQ_PRACTICAL_CLOUD_360
   "./practical-assessment-358.mjs?rev=358", // ANATOMIQ_GRADED_PRACTICAL_358
   "./chapter-import-core-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
   "./chapter-import-357.mjs?rev=357", // ANATOMIQ_CHAPTER_IMPORT_357
