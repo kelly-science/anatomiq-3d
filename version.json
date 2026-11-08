@@ -1,6 +1,6 @@
 {
-  "version": "2.2.154",
+  "version": "2.2.155",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Record exact Practical prompts and randomized answer choices in new Google school submissions (companion Apps Script required)."
+  "notes": "Keep camera navigation controls visible while removing AnatomIQ app framing during student Practical-only assessment."
 }

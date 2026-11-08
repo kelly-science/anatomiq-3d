@@ -95,6 +95,39 @@ body.practical-carousel-transition #anat-practical-question-callout {visibility:
   <script defer src="./lesson-presentation-354.js?rev=355"></script>
   <link rel="stylesheet" href="./practical-resume-361.css?rev=361">
   <link rel="stylesheet" href="./practical-only-363.css?rev=363"> <!-- ANATOMIQ_PRACTICAL_ONLY_363 --> <!-- ANATOMIQ_PRACTICAL_RESUME_361 -->
+
+<!-- ANATOMIQ_PRACTICAL_CHROME_372: school Practical-only framing.
+     Leave viewer-bottom (camera navigation), chapter-nav, practical-panel,
+     saved lesson theme/background and Google Apps Script wrapper unchanged. -->
+<style id="anat-practical-chrome-372">
+/* Applies only after a published student Practical-only project is validated. */
+body.anat-practical-only-363 .app-shell > .topbar,
+body.anat-practical-only-363 .app-shell > #studio-menubar {
+  display:none !important;
+}
+body.anat-practical-only-363 .workspace {
+  grid-template-columns:minmax(0,1fr) !important;
+}
+body.anat-practical-only-363 #left-sidebar,
+body.anat-practical-only-363 #info-sidebar {
+  display:none !important;
+}
+body.anat-practical-only-363 .viewer-panel {
+  grid-column:1 !important;
+  min-width:0;
+}
+/* Breadcrumbs are app framing, not camera/navigation controls. */
+body.anat-practical-only-363 .viewer-context {
+  display:none !important;
+}
+/* Keep the camera navigation toolbar (view presets, zoom) available.
+   Never change the teacher's 3D background, theme or palette. */
+body.anat-practical-only-363 .viewer-bottom:not([hidden]) {
+  display:flex !important;
+  visibility:visible !important;
+}
+/* Do not force chapter-nav visible: Practical policies can lock chapters. */
+</style>
 </head>
 <body>
   <div class="app-shell">
