@@ -1,3 +1,4 @@
+// ANATOMIQ_PRACTICAL_100_379 — question limits match the existing 100-item draft/submit caps.
 // ANATOMIQ_GITHUB_PREVIEW_TEACHER_EDIT_235_20261026
 // ANATOMIQ_CONNECTIVE_228: append-only source atlas and legacy-safe cartilage classification.
 // ANATOMIQ_LABEL_ORDER_242 — label list order only; label occlusion BVH left unchanged.
@@ -18,9 +19,9 @@ import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATO
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
 import {createTriquetrumEntries} from './triquetrum-extension.mjs?rev=245'; // ANATOMIQ_TRIQUETRUM_244
 import {createOcclusionIndex} from './label-occlusion-bvh.js?rev=238'; // ANATOMIQ_LABEL_OCCLUSION_BVH_238
-import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363&choices=364';
+import {normalPractical,newPracticalLabelId,practicalCandidates,practicalAttempt,gradePractical,practicalAnswerName} from './practical-quiz.js?rev=307&pool=349&cloud=360&practicalonly=363&choices=364&questions=379';
 import {renderPracticalReportCard348} from './practical-report-348.mjs?rev=348&report=353'; // ANATOMIQ_PRACTICAL_REPORT_CARD_347
-import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363&unified=367'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
+import {createPracticalWorkspace,normalizeChapterRules,filterPracticalPool,remapChapterRules} from './practical-workspace-336.mjs?rev=336&launch=337&assessment=358&cloud=360&publish=362&practicalonly=363&unified=367&questions=379'; // ANATOMIQ_PRACTICAL_WORKSPACE_336
 import {assessmentChapters,assessmentLessonKey,requestGradedStudentName,hasLocalGradedAttempt,recordLocalGradedAttempt} from './practical-assessment-358.mjs?rev=358';
 import {createPracticalCloudBridge,createCloudPayload} from './practical-cloud-360.mjs?rev=360&handshake=365&evidence=370';
 import {createPracticalResume,restoreQuestions} from './practical-resume-361.mjs?rev=361'; // ANATOMIQ_PRACTICAL_RESUME_361 // ANATOMIQ_PRACTICAL_CLOUD_360 // ANATOMIQ_GRADED_PRACTICAL_358
@@ -49,7 +50,7 @@ import {CARDIO_PRESETS,cardioVisibleInPreset,cardioPresetCounts,cardioCanApply,c
 import {classCoreVisible,classCoreCoverage,classCoreCoverageJSON} from './cardio-class-core.js';
 import {auditCardiovascular,loadCardioReview,saveCardioReview,cardioAuditExport} from './cardio-vascular-audit.js';
 import {detailStructureEntries, shouldPreferDetailedWhenChoosingDigestive, correctedDetailTransform} from './digestive-detail.js';
-import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336&presentation=355&cloud=360&practicalonly=363';
+import { encodeScene, decodeScene, validateScene, validateProject, validatePermissions, STUDY_PERMISSIONS, EXAM_PERMISSIONS, MAX_CHAPTERS, makeVisibilityBits, readVisibilityBits, hashForStructures } from './scene-codec.js?rev=311-multi-identify&practical=336&presentation=355&cloud=360&practicalonly=363&questions=379';
 import {listLessons, getLesson, saveLesson, deleteLesson, prepareBackup, parseBackup, restoreBackup} from './library-store.js';
 import {SceneHistory} from './scene-history.js';
 import {catalogAnatomy, sceneModelCompatible, upgradeLegacyScene} from './structure-layout.js';
@@ -68,7 +69,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.161'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.162'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -5591,7 +5592,7 @@ function renderPracticalEditor(){
   $('practical-eligible-count').textContent=`${eligible.length} of ${pool.length} eligible targets`;
   $('practical-question-count').value=String(practicalConfig.count);
   $('practical-marker-style').value=practicalTargetDisplay(practicalConfig);
-  $('practical-question-count').max=String(Math.max(1,Math.min(60,eligible.length)));
+  $('practical-question-count').max=String(Math.max(1,Math.min(100,eligible.length)));
   $('practical-question-count').disabled=!eligible.length;
   $('practical-warning').textContent=!eligible.length?'Select at least one visible structure or label before publishing a practical.':practicalConfig.count>eligible.length?`Only ${eligible.length} eligible questions; the practical will use all of them.`:'Questions are randomized on every attempt. Labels must identify their anchored structure.';
   $('practical-search').value=practicalSearch;
@@ -5638,7 +5639,7 @@ $('practical-marker-style')?.addEventListener('change',e=>{
   queueDraft();
 });
 $('practical-question-count')?.addEventListener('change',e=>{
-  practicalConfig.count=Math.min(60,Math.max(1,Math.floor(Number(e.target.value)||15)));
+  practicalConfig.count=Math.min(100,Math.max(1,Math.floor(Number(e.target.value)||15)));
   renderPracticalEditor();queueDraft();
 });
 $('practical-search')?.addEventListener('input',e=>{practicalSearch=e.target.value;renderPracticalEditor();$('practical-search').focus();$('practical-search').setSelectionRange(practicalSearch.length,practicalSearch.length);});

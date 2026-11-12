@@ -133,7 +133,7 @@ export function createPracticalWorkspace({trigger,getChapters,getPool,getConfig,
       draft.chapters=allowed.size===chapters().length?null:[...allowed].sort((a,b)=>a-b);render();
     });
     const includedRow=element('label','anat336-toggle');includedRow.append(included,element('span','','Include this chapter in the practical'));settings.append(includedRow);
-    const count=element('input','anat336-input');count.type='number';count.min='1';count.max='60';count.value=draft.count;count.addEventListener('change',()=>{draft.count=Math.max(1,Math.min(60,Math.floor(Number(count.value)||15)));render();});
+    const count=element('input','anat336-input');count.type='number';count.min='1';count.max='100';count.value=draft.count;count.addEventListener('change',()=>{draft.count=Math.max(1,Math.min(100,Math.floor(Number(count.value)||15)));render();});
     settings.append(labelControl('Questions per attempt (across selected chapters)',count));
     pane.append(settings);
     pane.append(textRow('Question source','Choose what can be asked in this chapter. Visible anatomy is unchanged.'));

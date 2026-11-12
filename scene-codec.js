@@ -156,7 +156,7 @@ export function validateProject(project) {
   if (project.sp !== undefined) validatePermissions(project.sp);
   validateGuided(project.guided,project.chapters?.length);
   if(project.practical!==undefined){const p=project.practical;
-    if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!Number.isInteger(p.count)||p.count<1||p.count>60||
+    if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!Number.isInteger(p.count)||p.count<1||p.count>100||
       !Array.isArray(p.off)||p.off.length>3000||p.off.some(k=>typeof k!=='string'||k.length>90))throw new Error('Invalid practical configuration.');
     // ANATOMIQ_GRADED_PRACTICAL_358 — preserve only validated local graded settings.
     if(p.graded!==undefined&&typeof p.graded!=='boolean')throw new Error('Invalid graded Practical setting.');

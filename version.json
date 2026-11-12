@@ -1,6 +1,6 @@
 {
-  "version": "2.2.161",
+  "version": "2.2.162",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Keep graded Practical assessment chapter indices aligned when chapters are inserted, moved, or deleted."
+  "notes": "Enable up to 100 eligible Practical questions per attempt; cloud evidence storage remains limited to 40,000 characters."
 }
