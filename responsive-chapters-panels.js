@@ -32,6 +32,10 @@
     workspace.classList.add('anat-panels-enabled');
     body.classList.add('anat-responsive-panels');
     const permitted=side=>{
+      // ANATOMIQ_PRACTICAL_DETAILS_HANDLE_377: no details drawer during any Practical.
+      // This runs before question 1 for Practical-only school assignments.
+      if(side==='right' && (body.classList.contains('practical-active') ||
+          body.classList.contains('anat-practical-only-363')))return false;
       // ANATOMIQ_GUIDED_PANEL298: Guided Access suppresses both responsive panel controls.
       if(body.classList.contains('student-mode') && body.classList.contains('anat-guided-access'))return false;
       if(!body.classList.contains('student-mode'))return true;

@@ -89,3 +89,17 @@ body.student-mode:not(.student-names).anat-responsive-panels #anat-toggle-detail
 @media(prefers-reduced-motion:reduce){body.anat-responsive-panels .workspace .anat-panel-handle,
 body.anat-responsive-panels .workspace #left-sidebar,
 body.anat-responsive-panels .workspace #info-sidebar{transition:none!important;}}
+
+/* ANATOMIQ_PRACTICAL_DETAILS_HANDLE_377
+   Prevent the Structure Details chevron from reopening a hidden sidebar in
+   either a school Practical-only lesson or an ordinary running Practical.
+   Leave #chapter-nav, .viewer-bottom and Practical question controls untouched. */
+body.practical-active .workspace #anat-toggle-details,
+body.anat-practical-only-363 .workspace #anat-toggle-details,
+body.practical-active #details-toggle,
+body.anat-practical-only-363 #details-toggle,
+body.anat-responsive-panels .workspace #anat-toggle-details[hidden] {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}

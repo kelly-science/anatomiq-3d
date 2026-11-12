@@ -1,6 +1,6 @@
 {
-  "version": "2.2.159",
+  "version": "2.2.160",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Full-viewport minimal breathing loader; progress/status only, with early light/dark lesson theme and no teacher chrome flash."
+  "notes": "Hide and disable Structure Details slide-out chevron throughout Practical sessions; retain camera and chapter navigation."
 }
