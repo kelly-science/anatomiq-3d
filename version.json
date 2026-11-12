@@ -1,6 +1,6 @@
 {
-  "version": "2.2.160",
+  "version": "2.2.161",
   "channel": "experimental",
   "published": "2026-11-06",
-  "notes": "Hide and disable Structure Details slide-out chevron throughout Practical sessions; retain camera and chapter navigation."
+  "notes": "Keep graded Practical assessment chapter indices aligned when chapters are inserted, moved, or deleted."
 }

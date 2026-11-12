@@ -68,7 +68,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.160'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.161'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -3460,7 +3460,44 @@ async function switchChapter(index){
   }
   if(teacherMode)queueDraft();else setStatus('Student view');
 }
+// ANATOMIQ_PRACTICAL_CHAPTER_REINDEX_378
+// Chapter indices are positional, not permanent IDs. Retain their association
+// with the same anatomical chapter when the teacher inserts, moves or deletes.
+function anat378ReindexAssessmentChapters(op,index,step=0){
+  const previous=practicalConfig.assessmentChapters;
+  if(!Array.isArray(previous))return;
+  const count=chapters.length;
+  const changed=previous.map(n=>{
+    if(!Number.isInteger(n))return null;
+    if(op==='insert')return n>index?n+1:n;
+    if(op==='delete')return n===index?null:n>index?n-1:n;
+    if(op==='move')return n===index?index+step:n===index+step?index:n;
+    return n;
+  }).filter(n=>n!==null&&n>=0&&n<count);
+  const permitted=Array.isArray(practicalConfig.chapters)
+    ?practicalConfig.chapters.filter(n=>Number.isInteger(n)&&n>=0&&n<count)
+    :chapters.map((_,i)=>i);
+  let valid=[...new Set(changed.filter(n=>permitted.includes(n)))].sort((a,b)=>a-b);
+  if(!valid.length){
+    if(practicalConfig.graded!==true){practicalConfig.assessmentChapters=null;return;}
+    // A graded assessment must never persist an invalid/empty chapter list.
+    // If its last selected chapter was deleted, select ONE surviving chapter,
+    // explicitly tell the teacher, and leave all other grading settings intact.
+    if(!permitted.length){
+      const nearest=Math.min(index,count-1);
+      practicalConfig.chapters=[nearest];permitted.push(nearest);
+    }
+    const nearest=permitted.reduce((best,n)=>
+      Math.abs(n-index)<Math.abs(best-index)?n:best,permitted[0]);
+    valid=[nearest];
+    showToast('The last assessed chapter was removed. Chapter '+(nearest+1)+
+      ' is now selected. Review Practical Setup → Assessment before publishing.');
+  }
+  practicalConfig.assessmentChapters=valid;
+}
+
 function createChapter(duplicate){
+  // ANATOMIQ_PRACTICAL_CHAPTER_REINDEX_378 hooks preserve selected graded chapters.
   if(!teacherMode || !sceneRoot)return;
   if(chapters.length>=MAX_CHAPTERS){showToast(`Maximum ${MAX_CHAPTERS} chapters per lesson.`);return;}
   try{
@@ -3473,6 +3510,7 @@ function createChapter(duplicate){
     guided.addChapter(activeChapter,duplicate);
     practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'insert',activeChapter,0,duplicate);
     if(Array.isArray(practicalConfig.chapters)){const at=activeChapter;practicalConfig.chapters=practicalConfig.chapters.map(i=>i>at?i+1:i);if(duplicate&&practicalConfig.chapters.includes(at))practicalConfig.chapters.push(at+1);}
+    anat378ReindexAssessmentChapters('insert',activeChapter);
     clearTimeout(draftTimeout);cancelPlacing();cancelPainting();
     activeChapter++;
     applyScene(fresh).then(()=>{renderChapterUI();queueDraft();$('scene-title').focus();$('scene-title').select();showToast('Chapter added. Rename it and customize its view.');});
@@ -3485,6 +3523,7 @@ function moveChapter(index,step){
   guided.moveChapter(index,step);
   practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'move',index,step);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.map(i=>i===index?index+step:i===index+step?index:i);
+   anat378ReindexAssessmentChapters('move',index,step);
   if(activeChapter===index)activeChapter=index+step;
   else if(activeChapter===index+step)activeChapter=index;
   renderChapterUI();queueDraft();
@@ -3496,6 +3535,7 @@ async function deleteChapter(index){
   guided.deleteChapter(index);
   practicalConfig.chapterRules=remapChapterRules(practicalConfig.chapterRules,'delete',index);
   if(Array.isArray(practicalConfig.chapters))practicalConfig.chapters=practicalConfig.chapters.filter(i=>i!==index).map(i=>i>index?i-1:i);
+   anat378ReindexAssessmentChapters('delete',index);
   if(activeChapter>index)activeChapter--;
   else if(activeChapter===index)activeChapter=Math.min(index,chapters.length-1);
   await applyScene(chapters[activeChapter]);renderChapterUI();queueDraft();
