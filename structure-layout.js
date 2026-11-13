@@ -6,7 +6,8 @@ export const ORIGINAL_CARDIO_IDS=['FJ1682M','FJ2428','FJ2438','FJ2439','FJ2966',
 export function catalogAnatomy(entries){
   const bones=entries.filter(s=>s.system==='skeletal'&&s.layer!=='triquetrum-extension').sort(sort);
   const skeletalExtension=entries.filter(s=>s.system==='skeletal'&&s.layer==='triquetrum-extension').sort((a,b)=>a.side.localeCompare(b.side)); // ANATOMIQ_TRIQUETRUM_244
-  const muscles=entries.filter(s=>s.system==='muscular').sort(sort);
+  const muscles=entries.filter(s=>s.system==='muscular'&&!s.extension383).sort(sort);
+  const muscleExtension=entries.filter(s=>s.extension383===true).sort((a,b)=>a.sourceName.localeCompare(b.sourceName)); // ANATOMIQ_MUSCLE_EXTENSION_383
   const digestiveOld=entries.filter(s=>s.system==='digestive'&&s.layer!=='digestive-detail').sort(sort);
   const digestiveNew=entries.filter(s=>s.system==='digestive'&&s.layer==='digestive-detail').sort((a,b)=>a.sourceName.localeCompare(b.sourceName,undefined,{numeric:true}));
   const digestive=[...digestiveOld,...digestiveNew];
@@ -29,7 +30,7 @@ export function catalogAnatomy(entries){
   const lymphatic=entries.filter(s=>s.system==='lymphatic');
   const connective=entries.filter(s=>s.system==='connective');
   const ocular=entries.filter(s=>s.system==='ocular');
-  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic,...connective,...ocular,...skeletalExtension];
+  const structures=[...preCardio,...cardiovascular,...respiratory,...nervous,...urinary,...lymphatic,...connective,...ocular,...skeletalExtension,...muscleExtension];
   const originalCardio=[...preCardio,...legacyCv];
   return {structures,legacyCount:bones.length,legacyFingerprint:hashForStructures(bones.map(key)),
     baseCount:base.length,baseFingerprint:hashForStructures(base.map(key)),

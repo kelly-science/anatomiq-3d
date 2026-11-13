@@ -1,5 +1,9 @@
 // ANATOMIQ_OFFLINE_RELIABILITY_280 — generated from source imports at install time.
 self.ANATOMIQ_OFFLINE_SHELL_280 = Object.freeze([
+  './muscle-extension-383.mjs?rev=383', // ANATOMIQ_MUSCLE_EXTENSION_383
+  './muscle-registration-383.mjs?rev=383',
+  './models/muscle-extension-383.glb?rev=383',
+  './models/muscle-landmarks-383.json?rev=383',
   "./responsive-chapters-panels.css?rev=233&v=2.2.75&practical=377", // ANATOMIQ_PRACTICAL_DETAILS_HANDLE_377 cache
   "./loading-experience-376.css?rev=376", // ANATOMIQ_LOADING_EXPERIENCE_376
   "./loading-experience-376.js?rev=376",

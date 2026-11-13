@@ -14,6 +14,7 @@ import {createChapterCarousel,chapterSlideDirection} from './chapter-carousel-25
 import {createLiveChapterCarousel} from './chapter-live-carousel-256.mjs?rev=269h-label-cascade'; // ANATOMIQ_CAROUSEL_SPRING_259 // ANATOMIQ_LIVE_CHAPTER_CAROUSEL_256 // ANATOMIQ_CHAPTER_CAROUSEL_255 // ANATOMIQ_CHAPTER_IRIS_254
 import * as THREE from 'three';
 import {applyApprovedFacialAlignment} from './facial-muscle-alignment-271.mjs?rev=271-facial-pose'; // ANATOMIQ_APPROVED_FACIAL_ALIGNMENT_271
+import {loadMuscleExtension383,registerMuscleExtension383} from './muscle-extension-383.mjs?rev=383'; // ANATOMIQ_MUSCLE_EXTENSION_383
 import {createCinematicDepthOfField} from './cinematic-dof-268.mjs?rev=motionblur279b&defaults=306'; // ANATOMIQ_STABLE_DOF_268
 import {installVertebraPilot} from './vertebra-detail-264.mjs?rev=264'; // ANATOMIQ_VERTEBRA_PILOT_264
 import {installSkeletalGeometryUpgrade} from './skeletal-geometry-265.mjs?rev=268b'; // ANATOMIQ_SKELETAL_SOURCE_DETAIL_265
@@ -69,7 +70,7 @@ import {validateDigestiveManifest} from './digestive-detail.js';
 
 // Écorché: https://github.com/Charleeh/ecorche | CC BY-SA 4.0
 // A same-origin models/ecorche.glb overrides this hosted fallback when present.
-const APP_VERSION = '2.2.162'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
+const APP_VERSION = '2.2.163'; // ANATOMIQ_SCHOOL_HANDSHAKE_287 // ANATOMIQ_OFFLINE_RELIABILITY_280 // ANATOMIQ_DETAILED_ONLY_268B // ANATOMIQ_SINGLE_GROUP_LABEL_260 // ANATOMIQ_TRIQUETRUM_REFINEMENT_245 // ANATOMIQ_CHAPTER_IMPORT_357
 window.__AnatomIQBuildVersion=APP_VERSION; // Runtime source for About dialog
 
 const REMOTE_MODEL = 'https://cdn.jsdelivr.net/gh/Charleeh/ecorche@main/model/ecorche.glb';
@@ -306,6 +307,7 @@ function renderNativeMuscleCatalog(frag,groups,createPart){
 
 let __anat268bSkeletalReady=null; // Resolved before a Teacher or Student lesson is shown.
 let triquetrumEntries = []; // ANATOMIQ_TRIQUETRUM_244
+let muscleExtension383=null,muscleExtensionEntries=[]; // ANATOMIQ_MUSCLE_EXTENSION_383
 let eyeStructures=[];
 let legacyEyeVisibilityPending=true;
 let legacyStructureCount = 0;
@@ -1901,7 +1903,7 @@ function prepareStructures(root){
   });
   // Append muscles AFTER the exact legacy skeleton ordering. This preserves
   // label/paint structure indices from 0.3–0.9 and permits older shared scenes.
-  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList,...eyeStructures,...triquetrumEntries]);
+  const catalog=catalogAnatomy([...found,...digestiveSourceEntries,...detailEntries,...cardioEntries,...respiratoryEntriesList,...nervousEntriesList,...urinaryEntriesList,...lymphaticEntriesList,...connectiveEntriesList,...eyeStructures,...triquetrumEntries,...muscleExtensionEntries]);
   structures=catalog.structures;
   legacyStructureCount=catalog.legacyCount;
   legacyFingerprint=catalog.legacyFingerprint;
@@ -2502,6 +2504,8 @@ async function loadAnatomy(){
        if(requirements.connective)await loadConnective();
     }
     await loadTriquetrumExtension();
+    muscleExtension383=await loadMuscleExtension383(THREE,scene,materials,applySurfaceFinish,surfaceMode);
+    muscleExtensionEntries=muscleExtension383.entries; // ANATOMIQ_MUSCLE_EXTENSION_383
     prepareStructures(sceneRoot);
     if(!teacherMode){
       // The published schema has not changed; metadata-only meshes must
@@ -2521,6 +2525,7 @@ async function loadAnatomy(){
     const __skeletalReady=typeof __anat268bSkeletalReady==='function'
       ? await __anat268bSkeletalReady()
       : (__anat268bSkeletalReady ? await __anat268bSkeletalReady : false);
+    registerMuscleExtension383(THREE,muscleExtension383,structures); // ANATOMIQ_MUSCLE_EXTENSION_383
     const __skeletalStatus=window.__AnatomIQSkeletalDetail;
     const __skullWarning=__skeletalStatus?.skullError || '';
     const __skeletalIssue=!__skeletalReady || !!__skullWarning;
